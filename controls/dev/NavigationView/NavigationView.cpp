@@ -28,6 +28,7 @@
 #include "NavigationViewItemExpandingEventArgs.h"
 #include "NavigationViewItemCollapsedEventArgs.h"
 #include "InspectingDataSource.h"
+#include <exception>
 
 // General items
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
@@ -1869,6 +1870,7 @@ void NavigationView::UpdatePaneLayout()
 
 void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    NavigationViewTip::PaneTriggerScope tipTrigger{ m_paneTipTrigger, NavigationViewTip::PaneTipTrigger::toggle_button };
     if (IsPaneOpen())
     {
         m_wasForceClosed = true;
@@ -1884,7 +1886,10 @@ void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender
 void NavigationView::OnPaneSearchButtonClick(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
     m_wasForceClosed = false;
-    OpenPane();
+    {
+        NavigationViewTip::PaneTriggerScope tipTrigger{ m_paneTipTrigger, NavigationViewTip::PaneTipTrigger::search };
+        OpenPane();
+    }
 
     if (auto autoSuggestBox = AutoSuggestBox())
     {
@@ -1899,29 +1904,45 @@ void NavigationView::OnPaneTitleHolderSizeChanged(const winrt::IInspectable& /*s
 
 void NavigationView::OpenPane()
 {
-    auto scopeGuard = gsl::finally([this]()
-        {
-            m_isOpenPaneForInteraction = false;
-        });
-    m_isOpenPaneForInteraction = true;
-    IsPaneOpen(true);
+    SetIsPaneOpenFromNavigationView(true);
 }
 
 // Call this when you want an uncancellable close
 void NavigationView::ClosePane()
 {
-    auto scopeGuard = gsl::finally([this]()
+    SetIsPaneOpenFromNavigationView(false); // the SplitView is two-way bound to this value
+}
+
+// Used by OpenPane and ClosePane. For NavigationViewPaneTest, a change made here without an outer trigger is labeled
+// layout, a request that leaves IsPaneOpen unchanged is a failure, and an exception ignores the run of the change.
+void NavigationView::SetIsPaneOpenFromNavigationView(bool isOpen)
+{
+    NavigationViewTip::PaneTriggerScope tipTrigger{ m_paneTipTrigger, NavigationViewTip::PaneTipTrigger::layout };
+    const auto changeCount = m_isPaneOpenChangeCount;
+    const auto uncaughtExceptions = std::uncaught_exceptions();
+    auto scopeGuard = gsl::finally([this, uncaughtExceptions]()
         {
             m_isOpenPaneForInteraction = false;
+            if (std::uncaught_exceptions() > uncaughtExceptions)
+            {
+                IgnorePendingPaneTipRun(NavigationViewTip::PaneTipReason::unwound_by_exception);
+            }
         });
     m_isOpenPaneForInteraction = true;
-    IsPaneOpen(false); // the SplitView is two-way bound to this value
+    IsPaneOpen(isOpen);
+
+    // No IsPaneOpen change was raised, yet the value is not the requested one.
+    if (changeCount == m_isPaneOpenChangeCount && IsPaneOpen() != isOpen)
+    {
+        ReportPaneTipRequest(isOpen, NavigationViewTip::PaneTipReason::request_not_applied);
+    }
 }
 
 // Call this when NavigationView itself is going to trigger a close
 // where you will stop the close if the cancel is triggered
 bool NavigationView::AttemptClosePaneLightly()
 {
+    NavigationViewTip::PaneTriggerScope tipTrigger{ m_paneTipTrigger, NavigationViewTip::PaneTipTrigger::light_dismiss };
     bool pendingPaneClosingCancel = false;
 
     auto eventArgs = winrt::make_self<NavigationViewPaneClosingEventArgs>();
@@ -1935,7 +1956,129 @@ bool NavigationView::AttemptClosePaneLightly()
         return true;
     }
 
+    ReportPaneTipRequest(false /*isOpening*/, NavigationViewTip::PaneTipReason::cancelled);
     return false;
+}
+
+// NavigationViewPaneTest: one run per IsPaneOpen change. The check waits for the dispatcher, because the template's
+// SplitView receives the new value through its two-way binding only after NavigationView's property change handler.
+// Normal priority keeps the check close to the change, so fewer runs are superseded by a later change.
+void NavigationView::StartPaneTipRun()
+{
+    IgnorePendingPaneTipRun(NavigationViewTip::PaneTipReason::superseded);
+
+    const bool isOpening = IsPaneOpen();
+    const auto splitView = m_rootSplitView.get();
+    auto trigger = m_paneTipTrigger;
+    // A change NavigationView did not ask for, that the SplitView already has, came from the SplitView (light dismiss).
+    if (trigger == NavigationViewTip::PaneTipTrigger::app && splitView && splitView.IsPaneOpen() == isOpening)
+    {
+        trigger = NavigationViewTip::PaneTipTrigger::split_view;
+    }
+
+    auto& run = m_paneTipRun.emplace(*this, PaneDisplayMode(), DisplayMode(), isOpening, trigger);
+    if (!run.IsActive())
+    {
+        m_paneTipRun.reset();
+        return;
+    }
+    if (!splitView)
+    {
+        IgnorePendingPaneTipRun(NavigationViewTip::PaneTipReason::not_ready);
+        return;
+    }
+
+    // Previously we used get_weak() here, but we hit a refcounting problem where
+    // in some scenarios the outer object gets an extra Release() in this process.
+    auto weakThis{ winrt::make_weak(static_cast<winrt::NavigationView>(*this)) };
+    const auto changeCount = m_isPaneOpenChangeCount;
+    const bool queued = DispatcherQueue().TryEnqueue(
+        winrt::DispatcherQueuePriority::Normal,
+        winrt::DispatcherQueueHandler([weakThis, changeCount]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                winrt::get_self<NavigationView>(strongThis)->CompletePaneTipRun(changeCount);
+            }
+        }));
+    if (!queued)
+    {
+        IgnorePendingPaneTipRun(NavigationViewTip::PaneTipReason::not_checked);
+    }
+}
+
+void NavigationView::CompletePaneTipRun(uint32_t changeCount)
+{
+    // A later change replaced the run that scheduled this check.
+    if (!m_paneTipRun || changeCount != m_isPaneOpenChangeCount)
+    {
+        return;
+    }
+
+    NavigationViewTip::PaneTipReason reason;
+    try
+    {
+        reason = CheckPaneForTip();
+    }
+    catch (...)
+    {
+        reason = NavigationViewTip::PaneTipReason::unwound_by_exception;
+    }
+    m_paneTipRun->Complete(reason);
+    m_paneTipRun.reset();
+}
+
+// Read-only checks for NavigationViewPaneTest.
+NavigationViewTip::PaneTipReason NavigationView::CheckPaneForTip()
+{
+    using Reason = NavigationViewTip::PaneTipReason;
+    const auto splitView = m_rootSplitView.get();
+    if (!splitView)
+    {
+        return Reason::not_ready;
+    }
+    // In Top mode, or with IsPaneVisible == false, IsPaneOpen does not change anything on screen.
+    if (IsTopNavigationView() || !IsPaneVisible())
+    {
+        return Reason::pane_not_shown;
+    }
+    // A custom template may not bind SplitView.IsPaneOpen to NavigationView.IsPaneOpen; then they can differ by design.
+    if (!splitView.GetBindingExpression(winrt::SplitView::IsPaneOpenProperty()))
+    {
+        return Reason::custom_template;
+    }
+
+    const bool isSplitViewPaneOpen = splitView.IsPaneOpen();
+    if (IsPaneOpen() != isSplitViewPaneOpen)
+    {
+        return Reason::pane_state_mismatch;
+    }
+
+    const auto splitViewDisplayMode = splitView.DisplayMode();
+    const bool isClosedCompact = !isSplitViewPaneOpen &&
+        (splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactOverlay || splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactInline);
+    if (m_isClosedCompact != isClosedCompact)
+    {
+        return Reason::closed_compact_state_stale;
+    }
+
+    return Reason::scenario_completed;
+}
+
+void NavigationView::IgnorePendingPaneTipRun(NavigationViewTip::PaneTipReason reason) noexcept
+{
+    if (m_paneTipRun)
+    {
+        m_paneTipRun->Ignore(reason);
+        m_paneTipRun.reset();
+    }
+}
+
+// A NavigationViewPaneTest run for an open or close request that did not change IsPaneOpen (no change run exists for it).
+void NavigationView::ReportPaneTipRequest(bool isOpening, NavigationViewTip::PaneTipReason reason)
+{
+    NavigationViewTip::PaneRun run{ *this, PaneDisplayMode(), DisplayMode(), isOpening, m_paneTipTrigger };
+    run.Complete(reason);
 }
 
 void NavigationView::OnSplitViewClosedCompactChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
@@ -1967,6 +2110,17 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
         else
         {
             m_blockNextClosingEvent = false;
+        }
+    }
+
+    // The SplitView raises PaneClosing before it closes for a light dismiss, and honors Cancel only then. For a close
+    // that IsPaneOpen = false started, the SplitView pane is already closed here.
+    if (pendingPaneClosingCancel)
+    {
+        if (auto splitView = m_rootSplitView.get(); splitView && splitView.IsPaneOpen())
+        {
+            NavigationViewTip::PaneTriggerScope tipTrigger{ m_paneTipTrigger, NavigationViewTip::PaneTipTrigger::split_view };
+            ReportPaneTipRequest(false /*isOpening*/, NavigationViewTip::PaneTipReason::cancelled);
         }
     }
 
@@ -3599,6 +3753,7 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
     case winrt::VirtualKey::GamepadView:
         if (!IsPaneOpen() && !IsTopNavigationView())
         {
+            NavigationViewTip::PaneTriggerScope tipTrigger{ m_paneTipTrigger, NavigationViewTip::PaneTipTrigger::gamepad };
             OpenPane();
             handled = true;
         }
@@ -4627,6 +4782,8 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
 
     if (property == s_IsPaneOpenProperty)
     {
+        ++m_isPaneOpenChangeCount;
+        StartPaneTipRun();
         OnIsPaneOpenChanged();
         UpdateVisualStateForDisplayModeGroup(DisplayMode());
     }
@@ -5356,6 +5513,7 @@ void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::Naviga
 {
     if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && !DoesNavigationViewItemHaveChildren(selectedContainer) && !m_shouldIgnoreNextSelectionChange)
     {
+        NavigationViewTip::PaneTriggerScope tipTrigger{ m_paneTipTrigger, NavigationViewTip::PaneTipTrigger::item_selected };
         ClosePane();
     }
 }
@@ -5482,6 +5640,7 @@ void NavigationView::OnAutoSuggestBoxQuerySubmitted(const winrt::AutoSuggestBox&
     // When in compact or minimal, we want to close pane when an item gets chosen.
     if (DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && args.ChosenSuggestion() != nullptr)
     {
+        NavigationViewTip::PaneTriggerScope tipTrigger{ m_paneTipTrigger, NavigationViewTip::PaneTipTrigger::search };
         ClosePane();
     }
 }

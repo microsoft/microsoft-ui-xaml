@@ -12,6 +12,8 @@ namespace NavigationViewTip
 {
     namespace
     {
+        constexpr unsigned short c_firstIgnoreReason = 100;
+
         const char* GetReasonName(SelectionTipReason reason) noexcept
         {
             switch (reason)
@@ -28,6 +30,42 @@ namespace NavigationViewTip
             }
         }
 
+        const char* GetReasonName(PaneTipReason reason) noexcept
+        {
+            switch (reason)
+            {
+            case PaneTipReason::scenario_completed: return "scenario_completed";
+            case PaneTipReason::scenario_not_completed: return "scenario_not_completed";
+            case PaneTipReason::request_not_applied: return "request_not_applied";
+            case PaneTipReason::pane_state_mismatch: return "pane_state_mismatch";
+            case PaneTipReason::closed_compact_state_stale: return "closed_compact_state_stale";
+            case PaneTipReason::superseded: return "superseded";
+            case PaneTipReason::not_ready: return "not_ready";
+            case PaneTipReason::unwound_by_exception: return "unwound_by_exception";
+            case PaneTipReason::cancelled: return "cancelled";
+            case PaneTipReason::pane_not_shown: return "pane_not_shown";
+            case PaneTipReason::custom_template: return "custom_template";
+            case PaneTipReason::not_checked: return "not_checked";
+            default: return "unknown";
+            }
+        }
+
+        const char* GetTriggerName(PaneTipTrigger trigger) noexcept
+        {
+            switch (trigger)
+            {
+            case PaneTipTrigger::app: return "app";
+            case PaneTipTrigger::toggle_button: return "toggle_button";
+            case PaneTipTrigger::split_view: return "split_view";
+            case PaneTipTrigger::light_dismiss: return "light_dismiss";
+            case PaneTipTrigger::item_selected: return "item_selected";
+            case PaneTipTrigger::search: return "search";
+            case PaneTipTrigger::gamepad: return "gamepad";
+            case PaneTipTrigger::layout: return "layout";
+            default: return "unknown";
+            }
+        }
+
         bool IsTraceObserved() noexcept
         {
             return IsNavigationViewTracingEnabled() || NavigationViewTrace::s_IsDebugOutputEnabled ||
@@ -35,36 +73,22 @@ namespace NavigationViewTip
         }
     }
 
-    SelectionRun::SelectionRun(const winrt::IInspectable& owner, winrt::NavigationViewPaneDisplayMode paneDisplayMode,
-        bool isTopNavigation, bool isSettingsItem) noexcept :
-        m_uncaughtExceptions(std::uncaught_exceptions())
+    template <class TTest, class TReason>
+    void TipRun<TTest, TReason>::Start(const winrt::IInspectable& owner, const char* testName) noexcept
     {
-        {
-            auto data = m_test.data();
-            data->paneDisplayMode = static_cast<uint32_t>(paneDisplayMode);
-            data->isTopNavigation = isTopNavigation;
-            data->isSettingsItem = isSettingsItem;
-        }
         m_tipStarted = m_test.start() != GUID{};
         m_active = m_tipStarted || IsTraceObserved();
         if (m_active)
         {
-            m_owner = owner;
+            m_owner = winrt::make_weak(owner);
+            m_testName = testName;
         }
     }
 
-    SelectionRun::~SelectionRun()
+    template <class TTest, class TReason>
+    void TipRun<TTest, TReason>::Complete(TReason reason) noexcept
     {
-        if (m_active)
-        {
-            Ignore(std::uncaught_exceptions() > m_uncaughtExceptions ?
-                SelectionTipReason::unwound_by_exception : SelectionTipReason::superseded);
-        }
-    }
-
-    void SelectionRun::Complete(SelectionTipReason reason) noexcept
-    {
-        if (reason >= SelectionTipReason::superseded)
+        if (static_cast<unsigned short>(reason) >= c_firstIgnoreReason)
         {
             Ignore(reason);
             return;
@@ -80,10 +104,11 @@ namespace NavigationViewTip
             m_test.complete();
             m_test.reset();
         }
-        Trace(reason == SelectionTipReason::scenario_completed ? L"Succeeded" : L"Failed", reason);
+        Trace(reason == TReason::scenario_completed ? L"Succeeded" : L"Failed", reason);
     }
 
-    void SelectionRun::Ignore(SelectionTipReason reason) noexcept
+    template <class TTest, class TReason>
+    void TipRun<TTest, TReason>::Ignore(TReason reason) noexcept
     {
         if (!m_active)
         {
@@ -98,9 +123,59 @@ namespace NavigationViewTip
         Trace(L"Ignored", reason);
     }
 
-    void SelectionRun::Trace(PCWSTR outcome, SelectionTipReason reason) noexcept
+    template <class TTest, class TReason>
+    void TipRun<TTest, TReason>::Trace(PCWSTR outcome, TReason reason) noexcept
     {
-        NAVIGATIONVIEW_TRACE_INFO(m_owner, L"TiP NavigationViewSelectionTest: %s (%hs)\n", outcome, GetReasonName(reason));
+        // The owner can be gone, e.g. when a pending pane run is released with its NavigationView.
+        const auto owner = m_owner.get();
+        NAVIGATIONVIEW_TRACE_INFO(owner, L"TiP %hs: %s (%hs)%hs\n", m_testName, outcome, GetReasonName(reason), m_detail);
         m_owner = nullptr;
+    }
+
+    template class TipRun<NavigationViewSelectionTest, SelectionTipReason>;
+    template class TipRun<NavigationViewPaneTest, PaneTipReason>;
+
+    SelectionRun::SelectionRun(const winrt::IInspectable& owner, winrt::NavigationViewPaneDisplayMode paneDisplayMode,
+        bool isTopNavigation, bool isSettingsItem) noexcept :
+        m_uncaughtExceptions(std::uncaught_exceptions())
+    {
+        {
+            auto data = Test().data();
+            data->paneDisplayMode = static_cast<uint32_t>(paneDisplayMode);
+            data->isTopNavigation = isTopNavigation;
+            data->isSettingsItem = isSettingsItem;
+        }
+        Start(owner, "NavigationViewSelectionTest");
+    }
+
+    SelectionRun::~SelectionRun()
+    {
+        if (IsActive())
+        {
+            Ignore(std::uncaught_exceptions() > m_uncaughtExceptions ?
+                SelectionTipReason::unwound_by_exception : SelectionTipReason::superseded);
+        }
+    }
+
+    PaneRun::PaneRun(const winrt::IInspectable& owner, winrt::NavigationViewPaneDisplayMode paneDisplayMode,
+        winrt::NavigationViewDisplayMode displayMode, bool isOpening, PaneTipTrigger trigger) noexcept
+    {
+        {
+            auto data = Test().data();
+            data->paneDisplayMode = static_cast<uint32_t>(paneDisplayMode);
+            data->displayMode = static_cast<uint32_t>(displayMode);
+            data->isOpening = isOpening;
+            data->trigger = static_cast<uint32_t>(trigger);
+        }
+        Start(owner, "NavigationViewPaneTest");
+        if (IsActive() && FAILED(StringCchPrintfA(m_detail, ARRAYSIZE(m_detail), "; %s, %s", isOpening ? "open" : "close", GetTriggerName(trigger))))
+        {
+            m_detail[0] = '\0';
+        }
+    }
+
+    PaneRun::~PaneRun()
+    {
+        Ignore(PaneTipReason::not_checked);
     }
 }
