@@ -923,12 +923,15 @@ _Check_return_ HRESULT VectorCollectionView::OnLivePropertyChanged(_In_ LiveProp
 namespace
 {
     // Estimated costs of a live restore (amd64fre, CollectionViewPerfBenchmarks; see the design note). An insert or
-    // remove scans and shifts the view's integer arrays (source indices, key slots, the presented list's order) at
-    // ~2 ns a row (batch 6; it was ~14 ns while the presented list moved a TrackerPtr a row) and plans and raises the
-    // change in ~30 us; a flat re-sort on the cached keys announced as a Reset costs ~1.4 us a row, and a grouped
-    // recompute ~13 us a row. Moves keep the realized rows, focus, scroll position and UIA tree, so they are preferred
-    // until they cost twice a Reset, or while they fit a budget of a few frames.
-    constexpr DOUBLE c_nsPerShiftedRow = 2;
+    // remove scans and shifts the view's integer arrays (source indices, key slots, the presented list's order) and
+    // plans and raises the change in ~30 us. 14 ns a row was measured while the presented list moved a TrackerPtr a
+    // row; batch 6 keeps TrackerPtrs in stable slots and should cost less, but that is not measured yet, so the
+    // measured value stays.
+    // TODO: recalibrate c_nsPerShiftedRow from BenchIncrementalChanges / BenchLiveSortingTick on amd64fre.
+    // A flat re-sort on the cached keys announced as a Reset costs ~1.4 us a row, and a grouped recompute ~13 us a
+    // row. Moves keep the realized rows, focus, scroll position and UIA tree, so they are preferred until they cost
+    // twice a Reset, or while they fit a budget of a few frames.
+    constexpr DOUBLE c_nsPerShiftedRow = 14;
     constexpr DOUBLE c_nsPerChange = 30000;
     constexpr DOUBLE c_nsPerResortedRow = 1400;
     constexpr DOUBLE c_nsPerRecomputedRow = 13000;
