@@ -34,6 +34,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationView.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewTip.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemBase.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemHeader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemInvokedEventArgs.cpp" />
@@ -67,6 +68,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SplitDataSourceBase.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewTrace.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewTip.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewTipTests.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)NavigationView.idl" />

@@ -16,6 +16,7 @@ struct bringintoview_event_revoker;
 #include "NavigationView.properties.h"
 #include "NavigationViewItemsFactory.h"
 #include "NavigationViewTrace.h"
+#include "NavigationViewTip.h"
 
 enum class TopNavigationViewLayoutState
 {
@@ -117,6 +118,7 @@ private:
     void OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e);
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
+    NavigationViewTip::SelectionTipReason CheckSelectionForTip(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
     void CompletePendingSelectionChange();
     bool UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem);
     void UpdateSelectionModelSelection(const winrt::IndexPath& ip);

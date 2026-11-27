@@ -8474,6 +8474,287 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
         }
+
+        private const string SelectionTipPrefix = "TiP NavigationViewSelectionTest: ";
+        private readonly List<string> m_selectionTipOutcomes = new List<string>();
+
+        private void OnSelectionTipLoggingMessage(object sender, Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs args)
+        {
+            int index = args.Message.IndexOf(SelectionTipPrefix);
+            if (index >= 0)
+            {
+                lock (m_selectionTipOutcomes)
+                {
+                    m_selectionTipOutcomes.Add(args.Message.Substring(index + SelectionTipPrefix.Length).Trim());
+                }
+            }
+        }
+
+        // Runs uiAction with NavigationView logging on and returns the NavigationViewSelectionTest outcomes it traced, in order.
+        private List<string> CaptureSelectionTipOutcomes(Action uiAction)
+        {
+            lock (m_selectionTipOutcomes)
+            {
+                m_selectionTipOutcomes.Clear();
+            }
+
+            using (new PrivateLoggingHelper("NavigationView", isLoggingInfoLevel: true, isLoggingVerboseLevel: false))
+            {
+                Microsoft.UI.Private.Controls.MUXControlsTestHooks.LoggingMessage += OnSelectionTipLoggingMessage;
+                try
+                {
+                    RunOnUIThread.Execute(uiAction);
+                    IdleSynchronizer.Wait();
+                }
+                finally
+                {
+                    Microsoft.UI.Private.Controls.MUXControlsTestHooks.LoggingMessage -= OnSelectionTipLoggingMessage;
+                }
+            }
+
+            lock (m_selectionTipOutcomes)
+            {
+                var outcomes = new List<string>(m_selectionTipOutcomes);
+                Log.Comment("NavigationViewSelectionTest outcomes: " + string.Join(" | ", outcomes));
+                return outcomes;
+            }
+        }
+
+        [TestMethod]
+        public void VerifySelectionTipSucceedsForMenuSettingsAndClearedSelection()
+        {
+            var navView = SetupNavigationView(NavigationViewPaneDisplayMode.Left);
+
+            var outcomes = CaptureSelectionTipOutcomes(() =>
+            {
+                navView.SelectedItem = navView.MenuItems[0];
+                navView.SelectedItem = navView.MenuItems[1];
+                navView.SelectedItem = navView.SettingsItem;
+                navView.SelectedItem = null;
+            });
+
+            Verify.AreEqual(4, outcomes.Count, "One NavigationViewSelectionTest run per selection change");
+            foreach (var outcome in outcomes)
+            {
+                Verify.AreEqual("Succeeded (scenario_completed)", outcome);
+            }
+        }
+
+        [TestMethod]
+        public void VerifySelectionTipSucceedsForChildOfCollapsedParent()
+        {
+            var navView = SetupNavigationViewHierarchy(NavigationViewPaneDisplayMode.Left);
+
+            var outcomes = CaptureSelectionTipOutcomes(() =>
+            {
+                var parent = (NavigationViewItem)navView.MenuItems[0];
+                Verify.IsFalse(parent.IsExpanded);
+                navView.SelectedItem = parent.MenuItems[0];
+                // The child, still not in the visual tree, is now the previous item.
+                navView.SelectedItem = navView.MenuItems[1];
+            });
+
+            // The explicit child has no visual parent, so it is not judged as either the next or the previous item.
+            Verify.AreEqual(2, outcomes.Count);
+            Verify.AreEqual("Succeeded (scenario_completed)", outcomes[0]);
+            Verify.AreEqual("Succeeded (scenario_completed)", outcomes[1]);
+        }
+
+        [TestMethod]
+        public void VerifySelectionTipIgnoresSelectionRedirectedInSelectionChanged()
+        {
+            var navView = SetupNavigationView(NavigationViewPaneDisplayMode.Left);
+            object first = null;
+            object redirectTarget = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                first = navView.MenuItems[0];
+                redirectTarget = navView.MenuItems[1];
+                navView.SelectionChanged += (sender, args) =>
+                {
+                    if (args.SelectedItem == first)
+                    {
+                        navView.SelectedItem = redirectTarget;
+                    }
+                };
+            });
+
+            var outcomes = CaptureSelectionTipOutcomes(() => navView.SelectedItem = first);
+
+            // The redirect runs inside the first change, so it finishes first; the first change is then superseded.
+            Verify.AreEqual(2, outcomes.Count);
+            Verify.AreEqual("Succeeded (scenario_completed)", outcomes[0]);
+            Verify.AreEqual("Ignored (superseded)", outcomes[1]);
+            RunOnUIThread.Execute(() => Verify.AreEqual(redirectTarget, navView.SelectedItem));
+        }
+
+        [TestMethod]
+        public void VerifySelectionTipIgnoresPreviousItemRemovedBySelectionChanged()
+        {
+            var navView = SetupNavigationView(NavigationViewPaneDisplayMode.Left);
+            NavigationViewItem previous = null;
+            NavigationViewItem next = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                previous = (NavigationViewItem)navView.MenuItems[0];
+                next = (NavigationViewItem)navView.MenuItems[1];
+                navView.SelectedItem = previous;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView.SelectionChanged += (sender, args) =>
+                {
+                    if (args.SelectedItem == next && navView.MenuItems.Contains(previous))
+                    {
+                        // The app takes the previous item out of the menu and marks it for reuse elsewhere.
+                        navView.MenuItems.Remove(previous);
+                        previous.IsSelected = true;
+                    }
+                };
+            });
+
+            var outcomes = CaptureSelectionTipOutcomes(() => navView.SelectedItem = next);
+
+            // The removed item no longer belongs to this NavigationView, so its IsSelected is not a failure.
+            Verify.AreEqual(1, outcomes.Count);
+            Verify.AreEqual("Succeeded (scenario_completed)", outcomes[0]);
+            RunOnUIThread.Execute(() => Verify.AreEqual(next, navView.SelectedItem));
+        }
+
+        // A MenuItemsSource whose IndexOf can select another item once, the way an app's items source might.
+        private sealed class RedirectingItemsSource : IList<object>
+        {
+            private readonly List<object> m_items;
+            public Action OnIndexOf { get; set; }
+
+            public RedirectingItemsSource(IEnumerable<object> items) { m_items = new List<object>(items); }
+
+            public int IndexOf(object item)
+            {
+                var onIndexOf = OnIndexOf;
+                OnIndexOf = null;
+                onIndexOf?.Invoke();
+                return m_items.IndexOf(item);
+            }
+
+            public object this[int index] { get => m_items[index]; set => m_items[index] = value; }
+            public int Count => m_items.Count;
+            public bool IsReadOnly => false;
+            public void Add(object item) => m_items.Add(item);
+            public void Clear() => m_items.Clear();
+            public bool Contains(object item) => m_items.Contains(item);
+            public void CopyTo(object[] array, int arrayIndex) => m_items.CopyTo(array, arrayIndex);
+            public IEnumerator<object> GetEnumerator() => m_items.GetEnumerator();
+            public void Insert(int index, object item) => m_items.Insert(index, item);
+            public bool Remove(object item) => m_items.Remove(item);
+            public void RemoveAt(int index) => m_items.RemoveAt(index);
+            global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => m_items.GetEnumerator();
+        }
+
+        [TestMethod]
+        public void VerifySelectionTipIgnoresSelectionRedirectedByItemsSourceIndexOf()
+        {
+            NavigationView navView = null;
+            RedirectingItemsSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = new RedirectingItemsSource(new object[] { "Item 1", "Item 2", "Item 3" });
+                navView = new NavigationView() {
+                    MenuItemsSource = source,
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsSettingsVisible = false,
+                    Width = 800.0,
+                    Height = 600.0,
+                };
+                navView.SelectionChanged += (sender, args) =>
+                {
+                    if ("Item 1".Equals(args.SelectedItem))
+                    {
+                        // The next IndexOf call comes from the TiP check, after SelectionChanged.
+                        source.OnIndexOf = () => navView.SelectedItem = "Item 2";
+                    }
+                };
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+
+            var outcomes = CaptureSelectionTipOutcomes(() => navView.SelectedItem = "Item 1");
+
+            // The redirect runs inside the check of the first change, so it finishes first; the first change is then superseded.
+            Verify.AreEqual(2, outcomes.Count);
+            Verify.AreEqual("Succeeded (scenario_completed)", outcomes[0]);
+            Verify.AreEqual("Ignored (superseded)", outcomes[1]);
+            RunOnUIThread.Execute(() => Verify.AreEqual("Item 2", navView.SelectedItem));
+        }
+
+        [TestMethod]
+        public void VerifySelectionTipIgnoresHiddenSettingsItemMovedToAnotherNavigationView()
+        {
+            NavigationView navView = null;
+            NavigationView otherNavView = null;
+            NavigationViewItem first = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                first = new NavigationViewItem() { Content = "Item 1" };
+                navView = new NavigationView() { PaneDisplayMode = NavigationViewPaneDisplayMode.Left, Width = 400.0, Height = 600.0 };
+                navView.MenuItems.Add(first);
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item 2" });
+
+                otherNavView = new NavigationView() { PaneDisplayMode = NavigationViewPaneDisplayMode.Left, IsSettingsVisible = false, Width = 400.0, Height = 600.0 };
+                otherNavView.MenuItems.Add(new NavigationViewItem() { Content = "Other item" });
+
+                var panel = new StackPanel() { Orientation = Orientation.Horizontal };
+                panel.Children.Add(navView);
+                panel.Children.Add(otherNavView);
+                Content = panel;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Hiding Settings takes the Settings item out of the footer, so it has no visual parent.
+                navView.IsSettingsVisible = false;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(navView.SettingsItem);
+                Verify.IsNull(VisualTreeHelper.GetParent((NavigationViewItem)navView.SettingsItem));
+                navView.SelectedItem = navView.SettingsItem;
+                navView.SelectionChanged += (sender, args) =>
+                {
+                    if (args.SelectedItem == first)
+                    {
+                        // The app reuses the hidden Settings item in another NavigationView and selects it there.
+                        var settingsItem = (NavigationViewItem)navView.SettingsItem;
+                        otherNavView.MenuItems.Add(settingsItem);
+                        otherNavView.SelectedItem = settingsItem;
+                    }
+                };
+            });
+            IdleSynchronizer.Wait();
+
+            var outcomes = CaptureSelectionTipOutcomes(() => navView.SelectedItem = first);
+
+            // The Settings item now belongs to the other NavigationView, so its IsSelected is not a failure here.
+            Verify.AreEqual(2, outcomes.Count);
+            foreach (var outcome in outcomes)
+            {
+                Verify.AreEqual("Succeeded (scenario_completed)", outcome);
+            }
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(first, navView.SelectedItem);
+                Verify.IsTrue(((NavigationViewItem)otherNavView.SelectedItem).IsSelected);
+            });
+        }
     }
 
     // An app-style custom VisualStateManager: the first time NavigationView goes to a ClosedCompactGroup state on the

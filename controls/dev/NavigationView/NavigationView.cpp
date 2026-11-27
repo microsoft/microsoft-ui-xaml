@@ -2581,6 +2581,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
     const auto pendingPreviousItem = std::exchange(m_itemPendingUnselection, std::nullopt);
     const auto generation = ++m_selectionChangeGeneration;
     const bool isSettingsItem = IsSettingsItem(nextItem);
+    NavigationViewTip::SelectionRun tipRun{ *this, PaneDisplayMode(), IsTopNavigationView(), isSettingsItem };
 
     // Other transition other than default only apply to topnav
     // when clicking overflow on topnav, transition is from bottom
@@ -2761,6 +2762,89 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
                     rawThis->CompletePendingSelectionChange();
                 }
             }));
+    }
+
+    if (tipRun.IsActive())
+    {
+        if (generation != m_selectionChangeGeneration)
+        {
+            tipRun.Ignore(NavigationViewTip::SelectionTipReason::superseded);
+        }
+        else if (!m_appliedTemplate)
+        {
+            tipRun.Ignore(NavigationViewTip::SelectionTipReason::not_ready);
+        }
+        else
+        {
+            const auto result = CheckSelectionForTip(prevItem, nextItem);
+            // The check looks up containers through the app's items source (e.g. IndexOf), which can select another item.
+            if (generation != m_selectionChangeGeneration)
+            {
+                tipRun.Ignore(NavigationViewTip::SelectionTipReason::superseded);
+            }
+            else
+            {
+                tipRun.Complete(result);
+            }
+        }
+    }
+}
+
+// Read-only checks for NavigationViewSelectionTest. Containers that are unrealized or no longer in this NavigationView's menus
+// (e.g. removed by an app handler) are skipped: there is nothing on screen for this control to disagree with.
+NavigationViewTip::SelectionTipReason NavigationView::CheckSelectionForTip(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem)
+{
+    using Reason = NavigationViewTip::SelectionTipReason;
+    try
+    {
+        if (SelectedItem() != nextItem)
+        {
+            return Reason::selected_item_mismatch;
+        }
+
+        auto const ownedContainerFromData = [this](const winrt::IInspectable& item) -> winrt::NavigationViewItem
+        {
+            if (auto const container = NavigationViewItemOrSettingsContentFromData(item))
+            {
+                // A container with no visual parent is not on screen (for example, a child of a collapsed
+                // parent, or a hidden Settings item), so it is not judged. ChangeSelection treats it the same
+                // way (isUnrealizedDescendant). Settings gets the same owner and menu checks as any other item,
+                // because an app can move a hidden Settings item into another NavigationView.
+                if (!winrt::VisualTreeHelper::GetParent(container))
+                {
+                    return nullptr;
+                }
+                auto const containerImpl = winrt::get_self<NavigationViewItem>(container);
+                auto const owner = containerImpl->GetNavigationView();
+                if (owner && winrt::get_self<NavigationView>(owner) == this && containerImpl->IsInNavigationViewMenu())
+                {
+                    return container;
+                }
+            }
+            return nullptr;
+        };
+
+        auto const nextContainer = ownedContainerFromData(nextItem);
+        if (nextContainer && !nextContainer.IsSelected())
+        {
+            return Reason::selected_container_not_selected;
+        }
+
+        if (prevItem && prevItem != nextItem)
+        {
+            if (auto const prevContainer = ownedContainerFromData(prevItem))
+            {
+                if (prevContainer != nextContainer && prevContainer.IsSelected())
+                {
+                    return Reason::previous_container_still_selected;
+                }
+            }
+        }
+        return Reason::scenario_completed;
+    }
+    catch (...)
+    {
+        return Reason::unwound_by_exception;
     }
 }
 
