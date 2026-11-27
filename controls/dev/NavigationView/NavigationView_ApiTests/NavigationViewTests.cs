@@ -676,7 +676,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "The pane toggle button's 16x16 hamburger AnimatedIcon is laid out on whole pixels in the left pane modes, so its pixel-aligned bars stay crisp (#7048).")]
+        [TestProperty("Description", "Guard for #7048: the hamburger's bars are drawn on whole pixels of the 16x16 icon, so they only stay crisp if NavigationView lays the pane toggle button's icon out on whole pixels in the left pane modes.")]
         public void VerifyPaneToggleButtonIconIsOnWholePixels()
         {
             foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.LeftMinimal })

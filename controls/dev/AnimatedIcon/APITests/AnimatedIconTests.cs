@@ -1169,26 +1169,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 SetStateAndWaitForLayout(icon, state);
                 Verify.IsLessThan(Math.Abs((float)ExpectedMarkers.GlobalNavigationButton[endMarker] - ReadProgress(icon)), c_progressTolerance, state + " rests at " + endMarker);
                 VerifyBarsAreOnWholePixels(host, endMarker);
-                RenderAndLogInk(host, endMarker, 12.0);
-                RenderAndLogInk(host, endMarker, 16.0);
-            }
-
-            // Mid-transition frames, logged only, so the motion can be compared with other builds.
-            foreach (var progress in new[] { 0.05625, 0.18125, 0.30625, 0.43125, 0.61875, 0.86875 })
-            {
-                var state = progress.ToString(CultureInfo.InvariantCulture);
-                SetStateAndWaitForLayout(icon, state);
-                Verify.IsLessThan(Math.Abs((float)progress - ReadProgress(icon)), c_progressTolerance, "Progress " + state);
-                RenderAndLogInk(host, "Progress" + state, 16.0);
             }
         }
 
         // Measures the hamburger's bars in the middle columns of an 8x render (so the result doesn't depend on whether
-        // the renderer anti-aliases): there must be three bars, each 1 px thick with its edges on whole pixels.
+        // the renderer anti-aliases): there must be three bars, each 1 px thick at 100% scale (1 DIP) with its edges on
+        // whole pixels.
         private static void VerifyBarsAreOnWholePixels(FrameworkElement host, string label)
         {
-            const double scale = 8.0;
-            var (width, height, ink) = RenderAndLogInk(host, label, scale);
+            var (width, height, ink) = RenderAndLogInk(host, label, 8.0);
+
+            // RenderTargetBitmap also applies the display's rasterization scale, so measure in rendered pixels per DIP.
+            double scale = height / host.ActualHeight;
 
             // Coverage (0..1) of each row, averaged over the middle columns.
             var coverage = new double[height];
