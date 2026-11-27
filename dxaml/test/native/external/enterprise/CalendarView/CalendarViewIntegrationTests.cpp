@@ -7013,7 +7013,9 @@ VerifyAllTimeZonesPartImpl(19, 20)
         RunOnUIThread([&]()
         {
             VERIFY_IS_NOT_NULL(state->lastArgs);
+            VERIFY_ARE_EQUAL(::Windows::System::VirtualKey::Down, state->lastArgs->Key);
             verifyFocusedDate(november15);
+            state->lastArgs = nullptr;
             state->handleKeys = false;
         });
 
@@ -7027,6 +7029,7 @@ VerifyAllTimeZonesPartImpl(19, 20)
 
             // The handler still holds the args of that key press, which came from a day item.
             VERIFY_IS_NOT_NULL(state->lastArgs);
+            VERIFY_ARE_EQUAL(::Windows::System::VirtualKey::Down, state->lastArgs->Key);
             headerButton = safe_cast<xaml_controls::Button^>(CalendarHelper::GetTemplateChild(cv, L"HeaderButton"));
             VERIFY_IS_TRUE(headerButton->Focus(xaml::FocusState::Keyboard));
         });
