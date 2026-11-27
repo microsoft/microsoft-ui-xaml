@@ -203,7 +203,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void InvokeEllipsisItemTest()
         {
             // In this test we add some items to the BreadcrumbBar, once all items have been added
-            // the slider is clicked so nodes 'Node A_2', 'Node A' and 'Root' are crumbled.
+            // the breadcrumb width is reduced so nodes 'Node A_2', 'Node A' and 'Root' are crumbled.
             // Finally, we invoke the Ellipsis item to verify the crumbled nodes exist inside the flyout
             using (var setup = new TestSetupHelper("BreadcrumbBar Tests"))
             {
@@ -383,7 +383,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var rtlCheckbox = RetrieveRTLCheckBox(true);
 
-                SetFocusToFirstBreadcrumbBarItem(breadcrumb, true);
+                SetFocusToFirstBreadcrumbBarItem(breadcrumb, true, true);
 
                 KeyboardHelper.PressKey(Key.Left);
                 Wait.ForIdle();
@@ -530,8 +530,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject breadcrumb = RetrieveBreadcrumbControl();
                 ClickOnElements(new string[] { "Node A", "Node A_1" });
 
-                UIObject slider = RetrieveWidthSlider();
-                slider.Click(PointerButtons.Primary, 1, slider.BoundingRectangle.Height / 2);
+                SetBreadcrumbToMinWidth();
 
                 InvokeEllipsisItem(breadcrumb);
 
@@ -557,8 +556,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 UIObject breadcrumb = SetUpCrumbledTest();
 
-                UIObject slider = RetrieveWidthSlider();
-                slider.Click(PointerButtons.Primary, 1, slider.BoundingRectangle.Height / 2);
+                SetBreadcrumbToMinWidth();
 
                 InvokeEllipsisItem(breadcrumb);
 
@@ -581,16 +579,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return breadcrumb;
         }
 
+        // Initial width in DIPs targeting "... > Node A_2_3 > Node A_2_3_1" visible (~219 DIPs at
+        // 100% text scale) while collapsing "Root", "Node A", and "Node A_2" (~295 DIPs).
+        private const double CrumbledBreadcrumbWidth = 260;
+
         private UIObject SetUpCrumbledTest()
         {
             var breadcrumb = SetUpTest();
 
-            UIObject slider = RetrieveWidthSlider();
-            slider.Click(PointerButtons.Primary, (slider.BoundingRectangle.Width / 3) - 10, slider.BoundingRectangle.Height / 2);
+            // Narrow WidthSlider via UIA RangeValue until exactly "Root", "Node A", and "Node A_2"
+            // are collapsed into the ellipsis while "Node A_2_3" and "Node A_2_3_1" remain visible.
+            RangeValueSlider slider = RetrieveWidthSlider();
+            double width = CrumbledBreadcrumbWidth;
+            SetBreadcrumbWidth(slider, width);
+            var items = breadcrumb.Children;
 
-            Verify.AreEqual(6, breadcrumb.Children.Count, "The breadcrumb should contain 6 items: 5 items and ellipsis");
+            for (int attempt = 0; attempt < 10 && (items.Count < 6 || !items[3].IsOffscreen || items[4].IsOffscreen); attempt++)
+            {
+                width += (items.Count == 6 && items[4].IsOffscreen) ? 20 : -20;
+                width = Math.Max(slider.Minimum, Math.Min(slider.Maximum, width));
+                SetBreadcrumbWidth(slider, width);
+                items = breadcrumb.Children;
+            }
+
+            Verify.AreEqual(6, items.Count, "The breadcrumb should contain 6 items: 5 items and ellipsis");
+            Verify.IsTrue(items[3].IsOffscreen, "'Node A_2' should be collapsed into the ellipsis");
+            Verify.IsFalse(items[4].IsOffscreen, "'Node A_2_3' should remain visible");
 
             return breadcrumb;
+        }
+
+        private void SetBreadcrumbToMinWidth()
+        {
+            RangeValueSlider slider = RetrieveWidthSlider();
+            SetBreadcrumbWidth(slider, slider.Minimum);
+        }
+
+        private void SetBreadcrumbWidth(RangeValueSlider slider, double width)
+        {
+            // Use UIA RangeValue instead of clicking the slider track so the test does not
+            // move pointer focus to the slider or trigger its thumb ToolTip popup.
+            slider.SetValue(width);
+            Wait.ForIdle();
         }
 
         private void InvokeEllipsisItem(UIObject breadcrumb)
@@ -698,9 +728,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void SetFocusToFirstBreadcrumbBarItem(UIObject breadcrumb, bool isEllipsisVisible = false, bool isRightToLeft = false)
         {
-            UIObject anchor = RetrieveRTLCheckBox();
-            FocusHelper.SetFocus(anchor);
-
             int indexToFocus = 0;
 
             // The RS3 and RS2 behaviours seem a little odd on how many tabs need to be pressed
@@ -755,22 +782,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return breadcrumb;
         }
 
-        private UIObject RetrieveWidthSlider()
+        private RangeValueSlider RetrieveWidthSlider()
         {
-            UIObject slider = FindElement.ByName("WidthSlider");
+            RangeValueSlider slider = FindElement.ByName<RangeValueSlider>("WidthSlider");
             Verify.IsNotNull(slider, "WidthSlider not found");
 
             return slider;
         }
 
-        private UIObject RetrieveRTLCheckBox(bool mustClickCheckBox = false)
+        private UIObject RetrieveRTLCheckBox(bool mustCheckCheckBox = false)
         {
             var rtlCheckbox = FindElement.ByName<CheckBox>("RightToLeftCheckbox");
             Verify.IsNotNull(rtlCheckbox, "Verifying that we found a UIElement called RightToLeftCheckbox");
 
-            if (mustClickCheckBox)
+            if (mustCheckCheckBox)
             {
-                rtlCheckbox.Click();
+                rtlCheckbox.Check();
+                Wait.ForIdle();
             }
 
             return rtlCheckbox;
