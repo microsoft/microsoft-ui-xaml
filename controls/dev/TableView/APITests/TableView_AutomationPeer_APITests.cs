@@ -5685,7 +5685,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies a data row, flat or grouped, exposes no ExpandCollapse pattern on its row peer or on the item element AT holds (its EventsSource), while the group header keeps it.")]
-        public void VerifyFlatRowHasNoExpandCollapse()
+        public void VerifyDataRowHasNoExpandCollapse()
         {
             TableView flatTable = null;
             TableView groupedTable = null;
@@ -5732,7 +5732,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var cvs = TableViewShapingTestHelpers.MakeShapingView(TableViewShapingTestHelpers.MakeShapedPeople(), "DepartmentName");
+                var people = TableViewShapingTestHelpers.MakeShapedPeople();
+                people.Add(new ShapedPerson("Zoe", "Architect", "Platform"));
+                var cvs = TableViewShapingTestHelpers.MakeShapingView(people, "DepartmentName");
                 cvs.GroupDescriptions.Add(new PropertyGroupDescription("Role"));
                 tableView = TableViewShapingTestHelpers.CreateShapedTable(cvs.View);
                 LoadContent(tableView);
@@ -5742,17 +5744,65 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // Projection: #Studio, #Designer, Asha, Ines, #Platform, #Engineer, ...
+                // Projection: #Studio, #Designer, Asha, Ines, #Platform, #Engineer, Diego, Rafa, Owen, #Architect, Zoe,
+                // #Research, #Architect, Mei. Header ordinals: Studio 0, Designer 1, Platform 2, Engineer 3, Architect 4,
+                // Research 5, Architect 6.
                 Verify.AreEqual(1, GetGroupHeaderPeer(tableView, 0).GetLevel(), "A top-level group header is Level 1.");
                 Verify.AreEqual(2, GetGroupHeaderPeer(tableView, 1).GetLevel(), "A subgroup header is Level 2.");
                 var rowPeer = GetRowPeer(GetProjectedRow(tableView, 2));
                 Verify.AreEqual(3, rowPeer.GetLevel(), "A data row under a subgroup is one deeper than its header.");
                 Verify.AreEqual(3, rowPeer.EventsSource.GetLevel(), "The item element AT holds reports the same Level.");
 
+                var expectedSets = new[] { (0, 1, 3), (1, 1, 1), (2, 2, 3), (3, 1, 2), (4, 2, 2), (5, 3, 3), (6, 1, 1) };
+                foreach (var (header, position, size) in expectedSets)
+                {
+                    var peer = GetGroupHeaderPeer(tableView, header);
+                    Verify.AreEqual(position, peer.GetPositionInSet(), $"Header {header}'s position among the headers under its parent.");
+                    Verify.AreEqual(size, peer.GetSizeOfSet(), $"Header {header}'s count of headers under its parent.");
+                }
+
                 AutomationProperties.SetLevel(GetGroupHeader(tableView, 1), 7);
                 Verify.AreEqual(7, GetGroupHeaderPeer(tableView, 1).GetLevel(), "An app-set Level wins on a header.");
+                AutomationProperties.SetPositionInSet(GetGroupHeader(tableView, 1), 5);
+                Verify.AreEqual(5, GetGroupHeaderPeer(tableView, 1).GetPositionInSet(), "An app-set PositionInSet wins on a header.");
                 AutomationProperties.SetLevel(GetProjectedRow(tableView, 2), 9);
                 Verify.AreEqual(9, GetRowPeer(GetProjectedRow(tableView, 2)).GetLevel(), "An app-set Level wins on a row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the data-item peer of an unrealized row under nested groups reports the row's depth as Level without realizing it.")]
+        public void VerifyUnrealizedNestedRowItemPeerReportsLevel()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var people = Enumerable.Range(0, 120)
+                    .Select(i => new ShapedPerson($"P{i:D3}", $"R{i % 3}", $"D{i % 4}"))
+                    .ToList();
+                var cvs = TableViewShapingTestHelpers.MakeShapingView(people, "DepartmentName");
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("Role"));
+                tableView = CreateTableView(cvs.View, headers: new[] { "Name", "Role" }, width: 500, height: 200);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                // The last row is a data row: the last subgroup's last item.
+                var target = GetProjectedCount(tableView) - 1;
+                tableView.Select(target);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(target), "Precondition: the selected row must not be realized.");
+
+                var selected = RequireSelectionProvider(tableView).GetSelection();
+                Verify.AreEqual(1, selected == null ? 0 : selected.Length, "Precondition: the selected row is reported.");
+                var itemPeer = new ProviderPeerProbe().ToPeer(selected[0]);
+                Verify.AreEqual(3, itemPeer.GetLevel(), "An unrealized data row under a subgroup reports Level 3.");
+                Verify.IsNull(repeater.TryGetElement(target), "Reading Level must not realize the row.");
             });
         }
 

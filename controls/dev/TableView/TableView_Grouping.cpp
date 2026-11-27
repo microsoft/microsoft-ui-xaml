@@ -221,6 +221,43 @@ int32_t TableView::GetGroupedRowAutomationLevelInternal(int32_t rowIndex) const
     return std::max(0, rowInfo.Level) + 1;
 }
 
+bool TableView::TryGetGroupHeaderSetInternal(int32_t rowIndex, int32_t& position, int32_t& size) const
+{
+    TableViewRowInfo rowInfo{};
+    if (!m_rowFlattener || !m_rowFlattener->HasSubgroups() || !TryGetRowInfo(rowIndex, rowInfo) ||
+        rowInfo.Kind != TableViewRowKind::GroupHeader)
+    {
+        return false;
+    }
+
+    // A header with a lower Level is the parent (before) or the parent's next sibling (after): the set ends there.
+    auto const countSiblings = [&](int32_t from, int32_t step)
+    {
+        int32_t count = 0;
+        TableViewRowInfo other{};
+        for (int32_t index = from; TryGetRowInfo(index, other); index += step)
+        {
+            if (other.Kind != TableViewRowKind::GroupHeader)
+            {
+                continue;
+            }
+            if (other.Level < rowInfo.Level)
+            {
+                break;
+            }
+            if (other.Level == rowInfo.Level)
+            {
+                ++count;
+            }
+        }
+        return count;
+    };
+    const int32_t before = countSiblings(rowIndex - 1, -1);
+    position = before + 1;
+    size = position + countSiblings(rowIndex + 1, 1);
+    return true;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Expansion
 // ---------------------------------------------------------------------------------------------

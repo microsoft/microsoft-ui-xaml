@@ -136,18 +136,47 @@ int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
         return provided;
     }
 
-    if (auto const header = GetHeader())
+    if (auto const owner = GetOwningTableView())
     {
-        if (auto const owner = GetOwningTableView())
-        {
-            auto const tableImpl = winrt::get_self<TableView>(owner);
-            if (auto const repeater = tableImpl->GetRowsRepeaterForPeer())
-            {
-                return tableImpl->GetGroupedRowAutomationLevelInternal(repeater.GetElementIndex(header));
-            }
-        }
+        return winrt::get_self<TableView>(owner)->GetGroupedRowAutomationLevelInternal(TryGetRowIndex());
     }
     return 0;
+}
+
+int32_t TableViewGroupHeaderAutomationPeer::GetPositionInSetCore()
+{
+    const auto provided = __super::GetPositionInSetCore();
+    if (provided > 0)
+    {
+        return provided;
+    }
+
+    int32_t position = 0;
+    int32_t size = 0;
+    if (auto const owner = GetOwningTableView();
+        owner && winrt::get_self<TableView>(owner)->TryGetGroupHeaderSetInternal(TryGetRowIndex(), position, size))
+    {
+        return position;
+    }
+    return provided;
+}
+
+int32_t TableViewGroupHeaderAutomationPeer::GetSizeOfSetCore()
+{
+    const auto provided = __super::GetSizeOfSetCore();
+    if (provided > 0)
+    {
+        return provided;
+    }
+
+    int32_t position = 0;
+    int32_t size = 0;
+    if (auto const owner = GetOwningTableView();
+        owner && winrt::get_self<TableView>(owner)->TryGetGroupHeaderSetInternal(TryGetRowIndex(), position, size))
+    {
+        return size;
+    }
+    return provided;
 }
 
 void TableViewGroupHeaderAutomationPeer::RaiseExpandCollapseAutomationEvent(
@@ -235,9 +264,7 @@ winrt::TableView TableViewGroupHeaderAutomationPeer::GetOwningTableView() const
     return nullptr;
 }
 
-// The band occupies one grid row and spans every visible column -- the merged-cell shape that
-// TableViewAutomationPeer::GetItem reports for a header row.
-int32_t TableViewGroupHeaderAutomationPeer::Row()
+int32_t TableViewGroupHeaderAutomationPeer::TryGetRowIndex() const
 {
     if (auto const header = GetHeader())
     {
@@ -245,12 +272,20 @@ int32_t TableViewGroupHeaderAutomationPeer::Row()
         {
             if (auto const repeater = winrt::get_self<TableView>(owner)->GetRowsRepeaterForPeer())
             {
-                if (const auto index = repeater.GetElementIndex(header); index >= 0)
-                {
-                    return index;
-                }
+                return repeater.GetElementIndex(header);
             }
         }
+    }
+    return -1;
+}
+
+// The band occupies one grid row and spans every visible column -- the merged-cell shape that
+// TableViewAutomationPeer::GetItem reports for a header row.
+int32_t TableViewGroupHeaderAutomationPeer::Row()
+{
+    if (const auto index = TryGetRowIndex(); index >= 0)
+    {
+        return index;
     }
     // A recycled header has no row; -1 would read as a real coordinate.
     ThrowElementNotAvailable();

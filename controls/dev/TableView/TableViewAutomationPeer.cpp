@@ -170,6 +170,21 @@ namespace
             return true;
         }
 
+        // Not forwarded like the other members: an unrealized row's depth is known without realizing it.
+        int32_t GetLevelCore()
+        {
+            if (m_bound)
+            {
+                return BoundRow().second.GetLevel();
+            }
+            const int32_t index = ItemIndex();
+            if (auto const rowPeer = RealizedRowPeer(index))
+            {
+                return rowPeer.GetLevel();
+            }
+            return index >= 0 ? winrt::get_self<TableView>(m_table.get())->GetGroupedRowAutomationLevelInternal(index) : 0;
+        }
+
         winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface)
         {
             bool live = true;

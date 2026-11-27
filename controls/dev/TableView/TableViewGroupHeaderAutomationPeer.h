@@ -44,6 +44,9 @@ public:
     // Level conveys nesting depth for an ExpandCollapse container; without it Narrator hears a group
     // and its subgroup as siblings.
     int32_t GetLevelCore();
+    // Under nested groups: among the sibling headers under the same parent.
+    int32_t GetPositionInSetCore();
+    int32_t GetSizeOfSetCore();
 
     // Internal: announce a state change from THIS peer. UIA delivers property-changed events
     // through the peer the client is connected to, so the raise has to happen on the peer
@@ -64,5 +67,7 @@ public:
 private:
     winrt::TableViewGroupHeader GetHeader() const;
     winrt::TableView GetOwningTableView() const;
+    // The header's row index, or -1 when it is pooled.
+    int32_t TryGetRowIndex() const;
     void SetExpansion(bool expand);
 };
