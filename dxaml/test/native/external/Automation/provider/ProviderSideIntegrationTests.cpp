@@ -201,7 +201,8 @@ namespace ProviderSideMocks {
         virtual bool WaitForInputIdle(int milliseconds)
         {
             m_waitForInputIdleRequests.push_back(milliseconds);
-            // Not observable by the client today: CManagedWindowProvider::WaitForInputIdle drops the result (product concern PC-2).
+            // Not observable by the client today: CManagedWindowProvider::WaitForInputIdle (UIAPatternProvider.cpp) never writes
+            // the provider's result to its out-parameter (product concern PC-2 of PR #12805, pending a bug).
             return true;
         }
 
@@ -469,6 +470,17 @@ namespace ProviderSideMocks {
 
     private:
         MockPeerKind m_kind;
+    };
+
+    // App peer derived from the public CalendarDatePickerAutomationPeer, which makes the factory aggregate the XAML peer.
+    [::Windows::Foundation::Metadata::WebHostHiddenAttribute]
+    ref class DerivedCalendarDatePickerAutomationPeer sealed : public xaml_automation_peers::CalendarDatePickerAutomationPeer
+    {
+    public:
+        DerivedCalendarDatePickerAutomationPeer(xaml_controls::CalendarDatePicker^ owner) : xaml_automation_peers::CalendarDatePickerAutomationPeer(owner) {}
+
+    protected:
+        Platform::String^ GetClassNameCore() override { return L"DerivedCalendarDatePicker"; }
     };
 }
 
@@ -1190,7 +1202,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_SUCCEEDED(window->SetWindowVisualState(WindowVisualState_Minimized));
             // Only the forwarded timeout is asserted: CManagedWindowProvider::WaitForInputIdle does not copy the provider's
             // result into its out-parameter, so the value the client receives is not the provider's answer. This is product
-            // concern PC-2 in PR #12805 (no bug ID yet); add VERIFY_IS_TRUE(idle) once the product returns the provider's value.
+            // concern PC-2 of PR #12805, which is being triaged and has no bug ID yet. Add VERIFY_IS_TRUE(idle) once the
+            // product returns the provider's value.
             BOOL idle = FALSE;
             VERIFY_SUCCEEDED(window->WaitForInputIdle(1234, &idle));
             VERIFY_SUCCEEDED(window->Close());
@@ -1267,7 +1280,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_SUCCEEDED(textChild->get_TextContainer(&container));
             // The returned element is not asserted: CUIATextChildProviderWrapper::get_TextContainer queries the wrapper into
             // the address of its out-parameter instead of the out-parameter itself, so the client always receives null. This is
-            // product concern PC-4 in PR #12805 (no bug ID yet); add VerifyElementName(container.Get(), L"CellA") once fixed.
+            // product concern PC-4 of PR #12805, which is being triaged and has no bug ID yet. Add
+            // VerifyElementName(container.Get(), L"CellA") once the product returns the provider's element.
             VERIFY_SUCCEEDED(textChild->get_TextRange(range.ReleaseAndGetAddressOf()));
             VerifyRangeText(range.Get(), L"textchild");
 
@@ -1482,6 +1496,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 nullOwnerFailed = true;
             }
             VERIFY_IS_TRUE(nullOwnerFailed);
+
+            LOG_OUTPUT(L"An app peer derived from CalendarDatePickerAutomationPeer keeps the owner and its own override.");
+            auto derivedPeer = ref new ProviderSideMocks::DerivedCalendarDatePickerAutomationPeer(picker);
+            VERIFY_IS_TRUE(AreSameObject(derivedPeer->Owner, picker));
+            VerifyStringEquals(L"DerivedCalendarDatePicker", derivedPeer->GetClassName());
+            VERIFY_ARE_EQUAL(static_cast<int>(peer->GetAutomationControlType()), static_cast<int>(derivedPeer->GetAutomationControlType()));
         });
     }
 

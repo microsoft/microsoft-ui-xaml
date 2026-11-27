@@ -763,6 +763,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             textBlock->Margin = xaml::ThicknessHelper::FromLengths(5, 6, 7, 8);
             root->Children->Append(textBlock);
 
+            auto superscriptTextBlock = ref new xaml_controls::TextBlock();
+            xaml_automation::AutomationProperties::SetName(superscriptTextBlock, L"SuperscriptTextBlock");
+            auto superscriptRun = MakeRun(L"Sup");
+            docs::Typography::SetVariants(superscriptRun, xaml::FontVariants::Superscript);
+            superscriptTextBlock->Inlines->Append(superscriptRun);
+            root->Children->Append(superscriptTextBlock);
+
             TestServices::WindowHelper->WindowContent = root;
         });
         TestServices::WindowHelper->WaitForIdle();
@@ -834,6 +841,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(8.0, GetDoubleAttribute(textBlockRange.Get(), UIA_MarginBottomAttributeId, L"MarginBottom"));
             VERIFY_ARE_EQUAL(0.0, GetDoubleAttribute(textBlockRange.Get(), UIA_IndentationFirstLineAttributeId, L"IndentationFirstLine"));
             VERIFY_IS_FALSE(GetBoolAttribute(textBlockRange.Get(), UIA_IsSubscriptAttributeId, L"IsSubscript"));
+
+            LOG_OUTPUT(L"Text without decorations reports no underline and no strikethrough.");
+            VERIFY_ARE_EQUAL(static_cast<int>(TextDecorationLineStyle_None), GetIntAttribute(textBlockRange.Get(), UIA_UnderlineStyleAttributeId, L"UnderlineStyle"));
+            VERIFY_ARE_EQUAL(static_cast<int>(TextDecorationLineStyle_None), GetIntAttribute(textBlockRange.Get(), UIA_StrikethroughStyleAttributeId, L"StrikethroughStyle"));
+
+            LOG_OUTPUT(L"An attribute that XAML text does not provide is reported as UIA's NotSupported value.");
+            AutoVariant unsupported;
+            VERIFY_SUCCEEDED(textBlockRange->GetAttributeValue(UIA_AnimationStyleAttributeId, unsupported.ReleaseAndGetAddressOf()));
+            VERIFY_ARE_EQUAL(static_cast<int>(VT_UNKNOWN), static_cast<int>(unsupported.Storage()->vt));
+            wrl::ComPtr<IUnknown> notSupportedValue;
+            VERIFY_SUCCEEDED(automation->get_ReservedNotSupportedValue(&notSupportedValue));
+            VERIFY_IS_TRUE(unsupported.Storage()->punkVal == notSupportedValue.Get());
+
+            LOG_OUTPUT(L"A superscript run reports IsSuperscript and not IsSubscript.");
+            auto superscriptDocument = GetDocumentRange(L"SuperscriptTextBlock");
+            auto superscriptRange = CollapsedAtStart(superscriptDocument.Get());
+            VERIFY_SUCCEEDED(superscriptRange->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Character, 2, &moved));
+            VERIFY_ARE_EQUAL(2, moved);
+            VERIFY_SUCCEEDED(superscriptRange->MoveEndpointByUnit(TextPatternRangeEndpoint_Start, TextUnit_Character, 1, &moved));
+            VERIFY_ARE_EQUAL(1, moved);
+            VerifyRangeText(L"u", superscriptRange.Get());
+            VERIFY_IS_TRUE(GetBoolAttribute(superscriptRange.Get(), UIA_IsSuperscriptAttributeId, L"IsSuperscript"));
+            VERIFY_IS_FALSE(GetBoolAttribute(superscriptRange.Get(), UIA_IsSubscriptAttributeId, L"IsSubscript"));
         });
     }
 
@@ -1405,6 +1435,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(0, moved);
             verifyUnchanged(whole.Get(), document.Get());
 
+            LOG_OUTPUT(L"Format units: the start cannot move back from the document start, the end cannot move forward from the document end.");
+            VERIFY_SUCCEEDED(atStart->MoveEndpointByUnit(TextPatternRangeEndpoint_Start, TextUnit_Format, -1, &moved));
+            VERIFY_ARE_EQUAL(0, moved);
+            verifyUnchanged(atStart.Get(), CollapsedAtStart(document.Get()).Get());
+            VERIFY_SUCCEEDED(whole->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Format, 1, &moved));
+            VERIFY_ARE_EQUAL(0, moved);
+            verifyUnchanged(whole.Get(), document.Get());
+            LOG_OUTPUT(L"All the text has one format, so moving the end back by one format unit from the document end empties the range.");
+            auto formatBack = CloneRange(document.Get());
+            VERIFY_SUCCEEDED(formatBack->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Format, -1, &moved));
+            LOG_OUTPUT(L"MoveEndpointByUnit(End, Format, -1) moved %d units.", moved);
+            VERIFY_ARE_EQUAL(-1, moved);
+            VERIFY_ARE_EQUAL(0, CompareEndpoints(formatBack.Get(), TextPatternRangeEndpoint_Start, document.Get(), TextPatternRangeEndpoint_Start));
+            VerifyRangeText(L"", formatBack.Get());
+
             LOG_OUTPUT(L"Moving the end back by a line from the end of the second line ends the range at the start of that line.");
             auto firstLine = CloneRange(document.Get());
             VERIFY_SUCCEEDED(firstLine->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Line, -1, &moved));
@@ -1442,6 +1487,60 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto before = CloneRange(crossedToStart.Get());
             VERIFY_SUCCEEDED(before->MoveEndpointByRange(TextPatternRangeEndpoint_Start, document.Get(), TextPatternRangeEndpoint_Start));
             VerifyRangeText(L"", before.Get());
+        });
+    }
+
+    void TextIntegrationTests::VerifyRichTextBlockInlineUIContainerAndLinkChildren()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            auto richTextBlock = ref new xaml_controls::RichTextBlock();
+            xaml_automation::AutomationProperties::SetName(richTextBlock, L"ChildrenRichTextBlock");
+            auto paragraph = ref new docs::Paragraph();
+            paragraph->Inlines->Append(MakeRun(L"a "));
+            auto container = ref new docs::InlineUIContainer();
+            auto button = ref new xaml_controls::Button();
+            button->Content = ref new Platform::String(L"InlineButton");
+            xaml_automation::AutomationProperties::SetName(button, L"InlineButton");
+            container->Child = button;
+            paragraph->Inlines->Append(container);
+            paragraph->Inlines->Append(MakeRun(L" b "));
+            auto hyperlink = ref new docs::Hyperlink();
+            xaml_automation::AutomationProperties::SetName(hyperlink, L"InlineLink");
+            hyperlink->Inlines->Append(MakeRun(L"link"));
+            paragraph->Inlines->Append(hyperlink);
+            richTextBlock->Blocks->Append(paragraph);
+            TestServices::WindowHelper->WindowContent = richTextBlock;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            auto document = GetDocumentRange(L"ChildrenRichTextBlock");
+            wrl::ComPtr<IUIAutomationElementArray> children;
+            VERIFY_SUCCEEDED(document->GetChildren(&children));
+            VERIFY_IS_NOT_NULL(children.Get());
+            int length = 0;
+            VERIFY_SUCCEEDED(children->get_Length(&length));
+            VERIFY_ARE_EQUAL(2, length);
+
+            const wchar_t* expectedNames[] = { L"InlineButton", L"InlineLink" };
+            const CONTROLTYPEID expectedTypes[] = { UIA_ButtonControlTypeId, UIA_HyperlinkControlTypeId };
+            for (int i = 0; i < length && i < 2; ++i)
+            {
+                wrl::ComPtr<IUIAutomationElement> child;
+                VERIFY_SUCCEEDED(children->GetElement(i, &child));
+                VERIFY_IS_NOT_NULL(child.Get());
+                AutoBSTR name;
+                VERIFY_SUCCEEDED(child->get_CurrentName(name.ReleaseAndGetAddressOf()));
+                VERIFY_IS_TRUE(static_cast<bool>(name));
+                AutoBSTR::VerifyAreEqual(expectedNames[i], name);
+                CONTROLTYPEID controlType = 0;
+                VERIFY_SUCCEEDED(child->get_CurrentControlType(&controlType));
+                VERIFY_ARE_EQUAL(static_cast<int>(expectedTypes[i]), static_cast<int>(controlType));
+            }
         });
     }
 

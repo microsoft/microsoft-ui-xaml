@@ -76,7 +76,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyEndpointMovesAtDocumentEdgesAndCrossing)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies endpoint moves by line and paragraph at the start and end of a RichTextBlock document, and moving the end back across the start.")
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies endpoint moves by line, paragraph and format at the start and end of a RichTextBlock document, and moving the end back across the start.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyRichTextBlockInlineUIContainerAndLinkChildren)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that the children of a RichTextBlock text range are the element in an InlineUIContainer and the Hyperlink, in document order.")
         END_TEST_METHOD()
     };
 
