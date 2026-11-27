@@ -61,6 +61,14 @@ namespace MUXControlsTestApp
             navview.FooterMenuItems.Add(CreateMenuItem("Footer Item"));
         }
 
+        private void AddExpandableItemToFooter(object sender, RoutedEventArgs e)
+        {
+            var footerParent = CreateMenuItem("Footer Parent");
+            footerParent.MenuItems.Add(CreateMenuItem("Footer Child 1"));
+            footerParent.MenuItems.Add(CreateMenuItem("Footer Child 2"));
+            navview.FooterMenuItems.Add(footerParent);
+        }
+
         private void CollapseSelectedItem(object sender, RoutedEventArgs e)
         {
             var selectedItem = navview.SelectedItem;

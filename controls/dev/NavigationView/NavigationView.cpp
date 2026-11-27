@@ -3377,8 +3377,9 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
 
 void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
 {
-    // If focus change was invoked by Tab key and there is a selected item in the ItemsRepeater that is getting focus, put focus on that selected item.
-    if (m_TabKeyPrecedesFocusChange && args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard && m_selectionModel.SelectedIndex())
+    // Tab or Shift+Tab: focus entering a root repeater from outside goes to the selected item if it is in that repeater,
+    // and focus moving within the same root repeater leaves it, whether or not an item is selected.
+    if (m_TabKeyPrecedesFocusChange && args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard)
     {
         if (auto const oldFocusedElement = args.OldFocusedElement())
         {
@@ -3405,8 +3406,12 @@ void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, c
                     return isFocusOutsideCurrentRootRepeater;
                 }();
 
-                auto const rootRepeaterForSelectedItem = [this]()
+                auto const rootRepeaterForSelectedItem = [this]() -> winrt::ItemsRepeater
                 {
+                    if (!m_selectionModel.SelectedIndex())
+                    {
+                        return nullptr;
+                    }
                     if (IsTopNavigationView())
                     {
                         return m_selectionModel.SelectedIndex().GetAt(0) == c_mainMenuBlockIndex ? m_topNavRepeater.get() : m_topNavFooterMenuRepeater.get();
@@ -3463,6 +3468,14 @@ void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, c
                         for (const auto& nvib : containersWithTabFocusOff)
                         {
                             nvib.IsTabStop(true);
+                        }
+
+                        // FindNextElement returns null when nothing outside the root repeater can take focus, and
+                        // TrySetNewFocusedElement rejects null. Redirect to the root repeater instead: it isn't focusable,
+                        // so focus goes to its first item (Tab) or last item (Shift+Tab) and the menu stays one tab stop.
+                        if (!nextElement)
+                        {
+                            nextElement = newRootItemsRepeater;
                         }
 
                         if (args.TrySetNewFocusedElement(nextElement))

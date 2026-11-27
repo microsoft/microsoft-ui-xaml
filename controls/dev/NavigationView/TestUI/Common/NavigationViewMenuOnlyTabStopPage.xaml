@@ -1,0 +1,29 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.NavigationViewMenuOnlyTabStopPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls">
+
+    <!-- The menu items are the only tab stops in the window (the test frame bar is hidden while this page is loaded). -->
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <muxcontrols:NavigationView
+            x:Name="NavView"
+            PaneDisplayMode="Left"
+            IsPaneToggleButtonVisible="False"
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="False">
+            <muxcontrols:NavigationView.MenuItems>
+                <muxcontrols:NavigationViewItem Content="Menu Item 1" IsExpanded="True">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 2" />
+                        <muxcontrols:NavigationViewItem Content="Menu Item 3" />
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
+                <muxcontrols:NavigationViewItem Content="Menu Item 4" />
+            </muxcontrols:NavigationView.MenuItems>
+            <TextBlock Text="This page has no focusable content." />
+        </muxcontrols:NavigationView>
+    </Grid>
+</local:TestPage>
