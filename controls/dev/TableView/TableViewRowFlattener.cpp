@@ -133,11 +133,19 @@ TableViewRowFlattener::TableViewRowFlattener(winrt::Microsoft::UI::Xaml::Data::I
     }
 
     m_groupRowsView = winrt::ItemsSourceView{ m_groupRows };
+    m_treeRowsView = winrt::ItemsSourceView{ m_treeRows };
 
     m_groupExpansion.SetChangedHandler(
         [this](ShapingHelpers::RowExpansionModel::Change const& change)
         {
             OnGroupExpansionChanged(change);
+        });
+
+    m_nodeExpansion.SetAllExpanded(false);
+    m_nodeExpansion.SetChangedHandler(
+        [this](ShapingHelpers::RowExpansionModel::Change const& change)
+        {
+            OnNodeExpansionChanged(change);
         });
 }
 
@@ -152,6 +160,11 @@ TableViewRowFlattener::~TableViewRowFlattener()
         ShapingHelpers::SafeRevokeWith([&] { m_viewGroups.VectorChanged(m_viewGroupsChangedToken); });
     }
     UnsubscribeFromGroupItems();
+    if (m_viewNodes && m_viewNodesChangedToken.value)
+    {
+        ShapingHelpers::SafeRevokeWith([&] { m_viewNodes.VectorChanged(m_viewNodesChangedToken); });
+    }
+    DetachTreeRows();
 }
 
 winrt::hstring TableViewRowFlattener::ObjectIdentity(winrt::IInspectable const& item)
@@ -176,7 +189,9 @@ void TableViewRowFlattener::Start()
 {
     std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
     m_isShapingView = static_cast<bool>(m_view.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewShaping>());
+    m_hierarchy = m_view.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewHierarchy>();
     AttachViewGroupsNow();
+    AttachViewNodesNow();
 
     // A shaping view keeps its identity when it starts or stops grouping (WPF): CollectionGroups turns
     // non-null or null and PropertyChanged("CollectionGroups") is raised before the view's Reset.
@@ -186,9 +201,16 @@ void TableViewRowFlattener::Start()
         m_viewPropertyChangedToken = notify.PropertyChanged(
             [weakThis](winrt::IInspectable const&, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
             {
-                if (auto strongThis = weakThis.lock(); strongThis && args.PropertyName() == L"CollectionGroups")
+                if (auto strongThis = weakThis.lock())
                 {
-                    strongThis->AttachViewGroups();
+                    if (args.PropertyName() == L"CollectionGroups")
+                    {
+                        strongThis->AttachViewGroups();
+                    }
+                    else if (args.PropertyName() == L"CollectionNodes" && strongThis->AttachViewNodesNow())
+                    {
+                        strongThis->Update();
+                    }
                 }
             });
     }
@@ -349,6 +371,19 @@ void TableViewRowFlattener::SetKind(Kind kind, winrt::ItemsSourceView const& row
 
 void TableViewRowFlattener::UpdateCore()
 {
+    if (m_viewNodes)
+    {
+        DetachGroupRows();
+        if (m_kind != Kind::Tree)
+        {
+            m_treeRowsAttached = true;
+            RebuildTreeRows();
+        }
+        SetKind(Kind::Tree, m_treeRowsView);
+        return;
+    }
+
+    DetachTreeRows();
     if (!m_viewGroups)
     {
         DetachGroupRows();
@@ -369,7 +404,7 @@ void TableViewRowFlattener::UpdateCore()
 
 TableViewRowMetadataProvider TableViewRowFlattener::RowMetadata()
 {
-    if (m_kind != Kind::Grouped)
+    if (m_kind != Kind::Grouped && m_kind != Kind::Tree)
     {
         return nullptr;
     }
@@ -381,7 +416,9 @@ TableViewRowMetadataProvider TableViewRowFlattener::RowMetadata()
         }
     }
 
-    auto const created = tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(shared_from_this(), MakeIdentitySelector());
+    auto const created = (m_kind == Kind::Tree)
+        ? tabularPrimitives::RowMetadataProvider::CreateForHierarchicalRows(shared_from_this(), MakeIdentitySelector())
+        : tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(shared_from_this(), MakeIdentitySelector());
     m_rowMetadata = created;
     m_rowMetadataStale = false;
     return created;
@@ -418,6 +455,12 @@ std::vector<TableViewRowFlattener::GroupInfo> TableViewRowFlattener::CurrentGrou
 }
 
 uint32_t TableViewRowFlattener::SourceRowCount() const
+{
+    return m_view.Size();
+}
+
+// A tree view's own list is every kept node, so the data rows are the view's items in every kind.
+uint32_t TableViewRowFlattener::DataRowCount() const
 {
     return m_view.Size();
 }

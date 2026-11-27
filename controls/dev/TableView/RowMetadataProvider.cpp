@@ -56,6 +56,15 @@ TableViewRowMetadataProvider RowMetadataProvider::CreateForGroupedRows(
         SourceKind::Grouped, flattener ? flattener->GroupedRows() : nullptr, flattener, itemKeySelector);
 }
 
+TableViewRowMetadataProvider RowMetadataProvider::CreateForHierarchicalRows(
+    FlattenerPtr const& flattener,
+    ItemKeySelector const& itemKeySelector)
+{
+    return std::make_shared<RowMetadataProvider>(
+        SourceKind::Hierarchical, flattener ? flattener->TreeRows() : nullptr, flattener, itemKeySelector);
+}
+
+
 RowMetadataProvider::RowMetadataProvider(
     SourceKind sourceKind,
     winrt::ItemsSourceView const& rows,
@@ -284,6 +293,8 @@ TableViewRowInfo RowMetadataProvider::GetRowInfo(int32_t index)
     bool isExpandable = false;
     bool isExpanded = false;
     int32_t childCount = 0;
+    // Set only for hierarchical data rows.
+    TableViewRowFlattener::NodeRow const* node = nullptr;
 
     switch (m_sourceKind)
     {
@@ -305,9 +316,28 @@ TableViewRowInfo RowMetadataProvider::GetRowInfo(int32_t index)
 
         groupLevel = DataRowGroupLevel(index);
         break;
+
+    case SourceKind::Hierarchical:
+        if (m_flattener)
+        {
+            node = m_flattener->TryGetNodeRow(index);
+        }
+        break;
     }
 
-    return TableViewRowInfo{ kind, groupLevel, isExpandable, isExpanded, childCount };
+    TableViewRowInfo info{ kind, groupLevel, isExpandable, isExpanded, childCount };
+    if (node)
+    {
+        // Depth is 0-based; Level (and UIA AutomationProperties.Level) is 1-based.
+        info.Level = node->Depth + 1;
+        info.IsExpandable = node->HasChildren;
+        info.IsExpanded = node->IsExpanded;
+        info.ChildCount = node->ChildCount;
+        info.ParentIdentity = node->ParentKey;
+        info.PositionInSet = static_cast<uint32_t>(node->SiblingIndex);
+        info.SizeOfSet = static_cast<uint32_t>(node->SiblingCount);
+    }
+    return info;
 }
 
 winrt::hstring RowMetadataProvider::GetIdentity(int32_t index)
@@ -331,6 +361,17 @@ winrt::hstring RowMetadataProvider::GetIdentity(int32_t index)
             return GetGroupExpansionIdentity(entry->Identity());
         }
         return GetItemKey(GetRow(index));
+
+    case SourceKind::Hierarchical:
+        // Node key, matching what expand/collapse takes; survives item re-creation.
+        if (m_flattener)
+        {
+            if (auto const* const node = m_flattener->TryGetNodeRow(index))
+            {
+                return node->NodeKey;
+            }
+        }
+        throw winrt::hresult_out_of_bounds();
     }
 
     throw winrt::hresult_out_of_bounds();
@@ -351,24 +392,45 @@ bool RowMetadataProvider::SetGroupExpandedCore(winrt::hstring const& groupIdenti
 
 bool RowMetadataProvider::Expand(winrt::hstring const& key)
 {
+    if (IsNodeExpansionKey(key))
+    {
+        return SetNodeExpandedCore(key, true);
+    }
     return SetGroupExpandedCore(ResolveGroupFromKey(key), true);
 }
 
 bool RowMetadataProvider::Collapse(winrt::hstring const& key)
 {
+    if (IsNodeExpansionKey(key))
+    {
+        return SetNodeExpandedCore(key, false);
+    }
     return SetGroupExpandedCore(ResolveGroupFromKey(key), false);
 }
 
 bool RowMetadataProvider::Toggle(winrt::hstring const& key)
 {
+    if (IsNodeExpansionKey(key))
+    {
+        return SetNodeExpandedCore(key, std::nullopt);
+    }
     return SetGroupExpandedCore(ResolveGroupFromKey(key), std::nullopt);
 }
 
-// The guard of SetGroupExpandedCore: a group that resolves, in another state than the one requested.
+// The guards of SetGroupExpandedCore and TableViewRowFlattener::SetNodeExpanded: a group that resolves, or a
+// presented node with children, in another state than the one requested.
 bool RowMetadataProvider::WouldChangeExpansion(winrt::hstring const& key, std::optional<bool> desired) noexcept
 {
     try
     {
+        if (IsNodeExpansionKey(key))
+        {
+            int32_t index = -1;
+            auto const* const row = m_flattener->TryGetIndexForNodeKey(key, index)
+                ? m_flattener->TryGetNodeRow(index) : nullptr;
+            return row && row->HasChildren && (!desired || row->IsExpanded != *desired);
+        }
+
         auto const groupIdentity = ResolveGroupFromKey(key);
         return !groupIdentity.empty() && HasGroups() &&
             (!desired || m_flattener->IsGroupExpanded(groupIdentity) != *desired);
@@ -377,6 +439,27 @@ bool RowMetadataProvider::WouldChangeExpansion(winrt::hstring const& key, std::o
     {
         return true;
     }
+}
+
+// The key spaces are disjoint by prefix, so route on the key, not SourceKind.
+bool RowMetadataProvider::IsNodeExpansionKey(winrt::hstring const& key) const
+{
+    return HasNodes() && !key.empty() && TableViewRowFlattener::IsNodeKey(key);
+}
+
+bool RowMetadataProvider::SetNodeExpandedCore(winrt::hstring const& nodeKey, std::optional<bool> desired)
+{
+    if (!HasNodes() || nodeKey.empty())
+    {
+        return false;
+    }
+
+    auto const flattener = m_flattener;
+    const bool before = flattener->IsNodeExpanded(nodeKey);
+    flattener->SetNodeExpanded(nodeKey, desired.value_or(!before));
+
+    // Reports any change (collapse included), not the resulting state.
+    return flattener->IsNodeExpanded(nodeKey) != before;
 }
 
 winrt::IInspectable RowMetadataProvider::GetRow(int32_t index) const
@@ -417,6 +500,7 @@ winrt::com_ptr<GroupedEntry> RowMetadataProvider::TryGetGroupHeaderEntry(int32_t
 
 void RowMetadataProvider::ExpandAllGroups()
 {
+
     if (HasGroups())
     {
         auto const flattener = m_flattener;
@@ -430,6 +514,34 @@ void RowMetadataProvider::CollapseAllGroups()
     {
         auto const flattener = m_flattener;
         flattener->CollapseAllGroups();
+    }
+}
+
+void RowMetadataProvider::ExpandAllRows()
+{
+    // Moves the node baseline; no app code runs. Does not open group headers.
+    if (HasNodes())
+    {
+        auto const flattener = m_flattener;
+        flattener->ExpandAllNodes();
+    }
+}
+
+void RowMetadataProvider::CollapseAllRows()
+{
+    if (HasNodes())
+    {
+        auto const flattener = m_flattener;
+        flattener->CollapseAllNodes();
+    }
+}
+
+void RowMetadataProvider::ExpandSubtree(winrt::hstring const& key)
+{
+    if (IsNodeExpansionKey(key))
+    {
+        auto const flattener = m_flattener;
+        flattener->ExpandSubtree(key);
     }
 }
 
@@ -455,7 +567,7 @@ winrt::hstring RowMetadataProvider::GetGroupExpansionIdentity(winrt::hstring con
 
 bool RowMetadataProvider::TryGetGroupExpansionInfo(winrt::hstring const& identity, TableViewGroupExpansionInfo& info)
 {
-    if (!HasGroups())
+    if (IsNodeExpansionKey(identity) || !HasGroups())
     {
         return false;
     }

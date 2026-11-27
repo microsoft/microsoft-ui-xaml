@@ -64,6 +64,7 @@ namespace TableViewTelemetry
             case TableViewTip::Operation::GroupConfiguration: return 5;
             case TableViewTip::Operation::Selection: return 6;
             case TableViewTip::Operation::GroupExpansion: return 10;
+            case TableViewTip::Operation::HierarchyExpansion: return 11;
             case TableViewTip::Operation::ColumnReorder: return 12;
             default: return std::nullopt;
             }

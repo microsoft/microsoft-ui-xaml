@@ -10,6 +10,8 @@ namespace TableViewDetails
     inline constexpr double c_headerFontSizeFallback{ 14.0 };
     inline constexpr double c_resizeGripperWidthFallback{ 8.0 };
     inline constexpr double c_sortIndicatorSizeFallback{ 16.0 };
+    inline constexpr double c_defaultRowIndentSize{ 16.0 };
+    inline constexpr double c_defaultRowExpanderSize{ 24.0 };
     inline constexpr double c_defaultGroupExpanderSize{ 12.0 };
     inline constexpr double c_defaultGroupExpanderSpacing{ 4.0 };
 

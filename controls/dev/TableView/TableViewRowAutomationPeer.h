@@ -10,6 +10,9 @@
 #include <functional>
 #include <vector>
 
+class TableView;
+struct TableViewRowInfo;
+
 class TableViewRowAutomationPeer :
     public ReferenceTracker<TableViewRowAutomationPeer, winrt::implementation::TableViewRowAutomationPeerT, winrt::IVirtualizedItemProvider>
 {
@@ -30,13 +33,14 @@ public:
     hstring GetNameCore();
 
     // Rows are virtualized: UIA only ever sees the realized window, so the control has to supply
-    // "row i of n" on the same flat basis as IGridProvider.
+    // "row i of n" on the same flat basis as IGridProvider. A tree row reports its position
+    // within its sibling set instead.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
-    int32_t GetLevelCore();
     // By row index, so the data-item peer of an unrealized row reports what its realized row would.
     static int32_t PositionInSetAt(winrt::TableView const& tableView, int32_t rowIndex);
     static int32_t SizeOfSetAt(winrt::TableView const& tableView, int32_t rowIndex);
+    static int32_t LevelAt(winrt::TableView const& tableView, int32_t rowIndex);
 
     // Expose direct cell wrappers only to avoid deep, costly UIA subtree walks.
     winrt::IVector<winrt::AutomationPeer> GetChildrenCore();
@@ -71,7 +75,35 @@ public:
     void TrackCurrentRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     void DropCellPeerCache();
 
+    // IExpandCollapseProvider — hierarchical rows only. A leaf reports LeafNode rather than the
+    // pattern being withdrawn, matching TableViewGroupHeaderAutomationPeer.
+    winrt::ExpandCollapseState ExpandCollapseState();
+    void Expand();
+    void Collapse();
+
+    // IAutomationPeerOverrides3. Level is the row's 1-based tree depth, or its nested group depth.
+    int32_t GetLevelCore();
+
+    // Raised by the owning row on expansion change so clients don't read stale state.
+    void RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
+
+    // Raised by the owning row on every hierarchy restamp. Clients cache Level/PositionInSet/
+    // SizeOfSet, so a reparent or sibling insert must notify; compares against the last values
+    // this peer reported and raises only for the ones that moved.
+    void RaiseHierarchyPositionChanged();
+
+    void ResetReportedHierarchyState();
+
 private:
+    int32_t ComputeLevel();
+    int32_t ComputePositionInSet();
+    int32_t ComputeSizeOfSet();
+
+    // Last values handed to a client through the Get*Core overrides; -1 until first read.
+    int32_t m_lastReportedLevel{ -1 };
+    int32_t m_lastReportedPositionInSet{ -1 };
+    int32_t m_lastReportedSizeOfSet{ -1 };
+
     // The owning TableView, or null once the row has been recycled out of the tree.
     winrt::TableView GetOwningTableView();
     // This row's index in the owner's ItemsSource index space, or -1 when unrealized.
@@ -112,4 +144,10 @@ private:
     int32_t m_lastKnownRowIndex{ -1 };
     int32_t m_trackedItemOccurrence{ -1 };
     winrt::TableViewRow GetRow() const;
+    bool IsHierarchicalRow() const;
+    // Passed to the owner unresolved so it stays idempotent.
+    void SetExpansion(bool expand);
+    static bool IsTreeRowInfo(TableView* tableImpl, int32_t rowIndex, TableViewRowInfo& info);
+    // Sibling-set position/size. False when not a tree row (UIA gets 0, "unknown").
+    static bool TryGetTreeSetAt(winrt::TableView const& tableView, int32_t rowIndex, int32_t& positionInSet, int32_t& sizeOfSet);
 };
