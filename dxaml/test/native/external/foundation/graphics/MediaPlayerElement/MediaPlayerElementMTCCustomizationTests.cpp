@@ -2552,6 +2552,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VerifyText(expectedText->Data(), errorText->Text, L"Error text for the reported MediaPlayerError");
                 VerifyText(expectedText->Data(), xaml_automation::AutomationProperties::GetName(errorText), L"Error text automation name");
             });
+
+            LOG_OUTPUT(L"Moving the seek bar of the failed (closed) media does not seek.");
+            RunOnUIThread([&]()
+            {
+                auto session = scene.player->PlaybackSession;
+                VERIFY_IS_TRUE(wmpb::MediaPlaybackState::None == session->PlaybackState, L"Precondition: the failed media is closed");
+                auto slider = FindPart<xaml_controls::Slider>(scene.mpe, L"ProgressSlider");
+                slider->Value = (slider->Minimum + slider->Maximum) / 2;
+                VERIFY_ARE_EQUAL(0LL, session->Position.Duration, L"The seek bar does not seek closed media");
+            });
         }
 
         //------------------------------------------------------------------------
@@ -2821,6 +2831,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     CreatePcmDescriptor(nullptr, L"Descriptive", L"de-DE"),
                     CreatePcmDescriptor(nullptr, nullptr, L"fr-FR"),
                     CreatePcmDescriptor(L"Commentary", nullptr, nullptr),
+                    // Same name as the first track: no field makes the two tags unique, so both keep the name.
+                    CreatePcmDescriptor(nullptr, L"Director", L"es-ES"),
                 };
                 item = ref new wmpb::MediaPlaybackItem(wmcore::MediaSource::CreateFromMediaStreamSource(CreateSyntheticSource(descriptors, 60 * c_hnsPerSecond)));
                 return item;
@@ -2829,7 +2841,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             xaml_controls::Button^ audioButton = nullptr;
             RunOnUIThread([&]()
             {
-                VERIFY_ARE_EQUAL(4u, item->AudioTracks->Size, L"Precondition: one audio track per stream descriptor");
+                VERIFY_ARE_EQUAL(5u, item->AudioTracks->Size, L"Precondition: one audio track per stream descriptor");
+                // The app labels the fourth track (stream descriptor labels do not reach the audio tracks).
+                item->AudioTracks->GetAt(3)->Label = L"Commentary";
                 audioButton = FindPart<xaml_controls::Button>(scene.mpe, L"AudioTracksSelectionButton");
             });
             VERIFY_IS_NOT_NULL(item, L"Precondition: the playback item was created");
@@ -2875,7 +2889,22 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                         }
                         else if (track->Name != nullptr && track->Name->Length() > 0)
                         {
-                            VERIFY_IS_TRUE(text == track->Name->Data(), WEX::Common::String().Format(L"Track %u is named by its name: '%s'", i, text.c_str()));
+                            unsigned int sameName = 0;
+                            for (unsigned int j = 0; j < item->AudioTracks->Size; j++)
+                            {
+                                auto other = item->AudioTracks->GetAt(j)->Name;
+                                sameName += (other != nullptr && wcscmp(other->Data(), track->Name->Data()) == 0) ? 1 : 0;
+                            }
+                            if (sameName > 1)
+                            {
+                                // The tag of a shared name may be extended to tell the tracks apart; it still starts with the name.
+                                const std::wstring name(track->Name->Data());
+                                VERIFY_IS_TRUE(text.compare(0, name.size(), name) == 0, WEX::Common::String().Format(L"Track %u with a shared name starts with its name: '%s'", i, text.c_str()));
+                            }
+                            else
+                            {
+                                VERIFY_IS_TRUE(text == track->Name->Data(), WEX::Common::String().Format(L"Track %u is named by its name: '%s'", i, text.c_str()));
+                            }
                         }
                         else
                         {
