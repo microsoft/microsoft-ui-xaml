@@ -25,7 +25,7 @@ full `DataGrid` replacement.
 |---|---|
 | PR 1 | Empty `Microsoft.UI.Xaml.Controls.Tabular.dll` scaffolding |
 | **PR 2 (this)** | Display-only baseline: columns/cells/headers, gridlines, density, row virtualization, leading-frozen columns, keyboard row-focus nav, read-only UIA peers |
-| PR 3 | Selection, single-column sort, filtering, grouping, hierarchical rows, column resize/reorder, nav-state; themed rendering. Shipped incrementally: selection, then the shaping engine with filter + sort, then grouping. |
+| PR 3 | Selection, single-column sort, filtering, grouping, column resize/reorder, nav-state; themed rendering. Shipped incrementally: selection, then the shaping engine with filter + sort, then grouping. |
 | PR 4 | Tests + `TableViewSamples` e2e app |
 
 ## Functional requirements
@@ -55,13 +55,12 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Leading-prefix frozen columns; trailing reserved. — **PR2** (leading) · trailing deferred
 - Multi-column sort. — *deferred (P2 / vNext)*
 
-### Row & hierarchy
+### Rows
 - Single + multi selection (Ctrl/Shift). — **PR3**
 - Per-row/cell context menus, column-header menus, and table fallback. See [Context menus](#context-menus). — **implemented**
 - Checkbox selection (File-Explorer-specific). — **PR3** / surface
 - Single-level grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
-- Hierarchical rows from a flat source via `TableView.ItemKeyPath` / `ParentKeyPath` (property paths; an empty path shows the rows flat), over a plain collection or a `CollectionViewSource` view, no depth limit; row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`; per-row programmatic expand/collapse is out of scope for v1. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
-- Live shaping (reshaping when an item's `PropertyChanged` moves a sort, filter, group or parent value). — *deferred: needs CVS live shaping; call `Refresh()`*
+- Live shaping (reshaping when an item's `PropertyChanged` moves a sort, filter or group value). — *deferred: needs CVS live shaping; call `Refresh()`*
 - Row drag-drop, marquee selection. — *out of scope*
 
 ### Grouping

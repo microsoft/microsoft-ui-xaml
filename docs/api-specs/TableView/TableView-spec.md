@@ -610,19 +610,11 @@ The view stays in charge of its shape: TableView renders the rows and groups the
 
 A column with a `CustomSortComparer` sorts the view through its `CustomSort` instead. A plain collection (not a view) is shown through a `CollectionViewSource` view the table creates over it, as WPF shows every `ItemsSource` through a view, so a header click sorts it the same way and the collection itself is never reordered. For any other `ICollectionView` (one that does not implement `ICollectionViewShaping`, such as an app's own view or an `IsSourceGrouped` view), a column-header sort raises `Sorting` and then leaves the rows alone, without lighting an arrow or raising `Sorted`; sort the view's source in the handler and set `TableViewColumn.SortDirection` to show the arrow. Header sorting depends on the experimental `CollectionViewSource` shaping API (`Feature_ExperimentalApi`). Current-item synchronization (`ICollectionView.CurrentItem`) is not supported.
 
-> `TableViewSource`, the table-specific shaping source of earlier previews, has been removed; `CollectionViewSource` replaces it. See [Hierarchical rows](#hierarchical-rows) for the parent-key relation it used to declare.
+> `TableViewSource`, the table-specific shaping source of earlier previews, has been removed; `CollectionViewSource` replaces it.
 
 ### Hierarchical rows
 
-A flat collection whose items name their parent can be shown as a tree. Set `ItemKeyPath` to the property that holds each item's unique key and `ParentKeyPath` to the property that holds its parent's key:
-
-```xaml
-<tabular:TableView ItemsSource="{x:Bind Employees}" ItemKeyPath="EmployeeId" ParentKeyPath="ManagerId">
-```
-
-A row whose parent key is `null` is a root, and a row whose parent key matches no item is shown as an orphan root. Rows start collapsed; the chevron, the keyboard (Right, Left, `*`), UI Automation `ExpandCollapse`, `ExpandAllRows` and `CollapseAllRows` expand them. Duplicate keys and cycles throw `E_INVALIDARG` and keep the previous projection. Changing either path replaces the relation and collapses every row; clearing either path shows the rows flat.
-
-The relation works over a plain collection and over a `CollectionViewSource` view. With a view, the view's filter and sort run first: siblings keep the view's order, and a match whose parent is filtered out is shown as a root. With a grouped view, each root is placed in its group and keeps its subtree. A key edit is not a collection change: call `Refresh()` on the view (or replace the item) to reparent a row. A hierarchy description on `CollectionViewSource` itself is future work.
+TableView shows no hierarchy in this release; hierarchical rows move to a follow-up PR, as a hierarchy description in the `CollectionViewSource` view.
 
 ### Editing cells
 
@@ -690,8 +682,6 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `ItemsSource` | `Object` | `null` | Source collection for table rows. An `ICollectionView` (for example `CollectionViewSource.View`) is shown read-only, including its `CollectionGroups`; see [Using a CollectionViewSource](#using-a-collectionviewsource). |
-| `ItemKeyPath` | `String` | `""` | Property path of each item's unique key. With `ParentKeyPath`, shows the rows as a tree; see [Hierarchical rows](#hierarchical-rows). |
-| `ParentKeyPath` | `String` | `""` | Property path of each item's parent key; `null` makes a root. Rows are flat while either path is empty. Duplicate keys or a cycle throw `E_INVALIDARG`. |
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
 | `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the body's horizontal (row) and vertical (column) gridlines. |
@@ -733,7 +723,7 @@ Group-header slots: `Select(headerIndex)` is a silent no-op that keeps the curre
 | `Deselect(Int32 index)` | `void` | Clears the selection only when `index` is the selected index, so a stale call cannot clobber a newer selection. |
 | `IsSelected(Int32 index)` | `Boolean` | Whether `index` is the selected index. |
 | `DeselectAll()` | `void` | Clears the selection. Works regardless of `SelectionMode`, so turning selection off can always be made to stick. |
-| `IndexOf(Object item)` | `Int32` | The item's row index in TableView's displayed rows, the index space of `Select`, `SelectedIndex` and `StartBringItemIntoView`: each group header row takes an index, tree rows are counted in tree order, and rows under a collapsed group or parent are absent. This is not the index the bound view's or collection's own `IndexOf` returns (that one counts no header rows and includes collapsed rows); the two agree only for a flat source with no groups and no hierarchy. `-1` for null, or when the item is not displayed (absent, filtered out, or under a collapsed group or parent). Value-typed items (boxed numbers, strings) match by value, reference items by identity; duplicates, including equal boxed values, resolve to the first displayed match. Works before `Loaded`. |
+| `IndexOf(Object item)` | `Int32` | The item's row index in TableView's displayed rows, the index space of `Select`, `SelectedIndex` and `StartBringItemIntoView`: each group header row takes an index, and rows under a collapsed group are absent. This is not the index the bound view's or collection's own `IndexOf` returns (that one counts no header rows and includes collapsed rows); the two agree only for a source with no groups. `-1` for null, or when the item is not displayed (absent, filtered out, or under a collapsed group). Value-typed items (boxed numbers, strings) match by value, reference items by identity; duplicates, including equal boxed values, resolve to the first displayed match. Works before `Loaded`. |
 | `StartBringItemIntoView(Int32 index, BringIntoViewOptions options)` | `void` | Asynchronously realizes the row at `index`, lays it out, and brings its real bounds into view, accounting for the sticky header and frozen columns. Same shape as `ItemsView`. `options` may be null; an out-of-range index throws `E_INVALIDARG`. Safe before `Loaded`. A pending request is cancelled when `ItemsSource` changes or the table unloads. |
 
 ## TableView selection events
@@ -901,8 +891,8 @@ to match cell text vertically. The section host retains its separate 4px leading
 trailing padding and the chevron retains its symmetric density padding. App-owned section
 templates and explicit section `Padding` keep their authored alignment.
 
-With built-in metrics, a flat section row's first visible cell aligns with its title in LTR/RTL.
-Other cells, unsectioned rows, and `ItemKeyPath` / `ParentKeyPath` hierarchy indentation are unchanged.
+With built-in metrics, a section row's first visible cell aligns with its title in LTR/RTL.
+Other cells and unsectioned rows are unchanged.
 
 Customize these text-padding resources for different font metrics. Explicit header `Padding`
 applies directly to its generated label; app-owned header content keeps its authored padding.
@@ -1570,7 +1560,7 @@ TableView provides UI Automation peers for grid/table accessibility and row sele
 | Peer | Base type | Provider interfaces |
 |---|---|---|
 | `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
-| `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider`, `IExpandCollapseProvider` (tree rows) |
+| `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
 | `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort), `ITransformProvider` (resize; implementation-only, not in the IDL) |
 | `TableViewGroupHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
 | `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider` |
@@ -1602,7 +1592,7 @@ A column header exposes the Transform pattern (required by UIA for a resizable `
 
 `ScrollItem` is not implemented explicitly on cells — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a cell into view after reaching it through `IGridProvider.GetItem`. A row's UIA element (below) is not a `FrameworkElementAutomationPeer`, so it implements `ScrollItem` itself.
 
-A realized row's UIA element is the element of one binding of that row to an item, not the row's own peer. Rows are recycled, so each time a row is bound to an item (prepared, recycled to another item, or moved to another table) it gets a new element, installed as its peer's `EventsSource`; an `EventsSource` the app installed on the row's peer is left in place. A client that holds the element across a scroll, sort, filter, collapse or source change never sees it start describing a different item: once the row is cleared or rebound, every member of the held element, including pattern objects obtained from it, fails with `UIA_E_ELEMENTNOTAVAILABLE`, and the client re-queries to reach the row's current element. While the binding is current, the element forwards to the row's peer its name, bounds, focus, enabled state, culture, children (the row's cells), tree navigation, `PositionInSet`, `SizeOfSet`, `Level` and the `AutomationProperties` set on the row (such as `ItemStatus`, `FullDescription` and `HelpText`); it serves `SelectionItem`, `ExpandCollapse` and `ScrollItem` itself, so a held pattern object goes stale with it. `IItemContainerProvider.FindItemByProperty` accepts a current row element as `startAfter` and returns null for a stale one rather than restarting from the first item.
+A realized row's UIA element is the element of one binding of that row to an item, not the row's own peer. Rows are recycled, so each time a row is bound to an item (prepared, recycled to another item, or moved to another table) it gets a new element, installed as its peer's `EventsSource`; an `EventsSource` the app installed on the row's peer is left in place. A client that holds the element across a scroll, sort, filter, collapse or source change never sees it start describing a different item: once the row is cleared or rebound, every member of the held element, including pattern objects obtained from it, fails with `UIA_E_ELEMENTNOTAVAILABLE`, and the client re-queries to reach the row's current element. While the binding is current, the element forwards to the row's peer its name, bounds, focus, enabled state, culture, children (the row's cells), tree navigation, `PositionInSet`, `SizeOfSet`, `Level` and the `AutomationProperties` set on the row (such as `ItemStatus`, `FullDescription` and `HelpText`); it serves `SelectionItem` and `ScrollItem` itself, so a held pattern object goes stale with it. `IItemContainerProvider.FindItemByProperty` accepts a current row element as `startAfter` and returns null for a stale one rather than restarting from the first item.
 
 A realized group header's UIA element is likewise not the header's own peer, but it belongs to the **group** rather than to one binding: the table keeps one element per group and installs it as the `EventsSource` of whichever header shows that group, so a client that holds it keeps the same element when the group's header is toggled, recycled away and later shown again, even by another pooled header. The table keeps these elements for up to 256 groups: once it holds that many, it drops the elements of groups no header shows, so a held element of an off-screen group can stay unavailable and the group gets a new element when it is shown again. While no header shows the group (scrolled out, filtered, or the group is gone), every member of the held element, including pattern objects obtained from it, fails with `UIA_E_ELEMENTNOTAVAILABLE`; it never describes or toggles a different group. While its group is shown, the element forwards to the header's peer its name, bounds, focus, enabled state, culture, children, tree navigation and the `AutomationProperties` set on the header, and serves `ExpandCollapse`, `GridItem` and `ScrollItem` itself. Replacing the source, or reshaping it into a new projection, starts a new set of group elements; elements held from the old projection stay unavailable. `FindItemByProperty` accepts a group's current element as `startAfter`, as it does a row's.
 `Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's current UIA element when that row is realized. Otherwise it returns a container-free data-item peer for the selected item, without realizing the row: a `DataItem` named from the visible columns' `DisplayMemberBinding` values (with their converters), where columns without one contribute nothing, else from the item's `ToString` (a name the app gives the row, or template-cell text, appears only once the row is realized), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns (including `ScrollItem`) to the row's peer (not its children: cells are reached through the row), but it remains a separate element with its own `RuntimeId`; `GetSelection()` then returns the row's current UIA element, and returns the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer: it follows the selected occurrence of an item that appears more than once, and a boxed value (which has no identity of its own) is tied to its row index and stops being available once that row is no longer selected. A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
@@ -1821,14 +1811,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         TableViewRow();
 
         Boolean IsSelected { get; };
-        Int32 Level { get; };
-        Boolean IsExpandable { get; };
-        Boolean IsExpanded { get; };
 
         static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty LevelProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
     };
 
     [MUX_PREVIEW, webhosthidden, contentproperty("Columns")]
@@ -1837,8 +1821,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         TableView();
 
         Object ItemsSource;
-        String ItemKeyPath;
-        String ParentKeyPath;
         Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn> Columns { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility HeadersVisibility;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility GridLinesVisibility;
@@ -1882,21 +1864,17 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewColumnReorderedEventArgs> ColumnReordered;
 
-        // ----- Grouping and hierarchy -----
+        // ----- Grouping -----
 
         void ExpandGroup(Object groupKey);
         void CollapseGroup(Object groupKey);
         void ExpandAllGroups();
         void CollapseAllGroups();
-        void ExpandAllRows();
-        void CollapseAllRows();
 
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupExpandingEventArgs> GroupExpanding;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupCollapsedEventArgs> GroupCollapsed;
 
         static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty ItemKeyPathProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty ParentKeyPathProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
@@ -1928,8 +1906,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
     [MUX_PREVIEW, webhosthidden]
     unsealed runtimeclass TableViewRowAutomationPeer :
         Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-        Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider,
-        Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+        Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
     {
         TableViewRowAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableViewRow owner);
     };

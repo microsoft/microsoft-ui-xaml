@@ -781,31 +781,10 @@ The public `TableViewSource` (and its `TableViewPredicate`, `TableViewKeySelecto
 TableView its `View`. A plain collection is wrapped in a `CollectionViewSource` of TableView's own, so it is sorted by
 the same view code on a header click (see "One engine").
 
-### Hierarchy: TableView.ItemKeyPath / ParentKeyPath (V1)
+### Hierarchy
 
-Tree rows have **no CVS or WPF equivalent**. It is not just one more descriptor: in tree mode sort applies per
-sibling set and grouping buckets roots only, and `ICollectionViewGroup` has no notion of depth. Task Manager's
-expandable Apps rows need it.
-
-For V1 the relation is declared on TableView with two string property paths, `ItemKeyPath` and `ParentKeyPath`
-(preview, like the rest of TableView). TableView nests the items of the view it shows: the internal view over a plain
-collection, or the app's CVS `View`. The view's filter, sort and grouping run first, then the rows are nested:
-
-- Siblings keep the view's order, so `SortDescriptions` sorts each sibling set.
-- The CVS filter runs before nesting: a match whose parent is filtered out is shown as an orphan root (the former
-  `TableViewSource` kept the ancestors of a match).
-- With a grouped view, each root is placed in its group and keeps its subtree.
-- Live shaping moves an item in the view; the tree is rebuilt from the view's new order. A rebuild is coalesced: the
-  first `ItemInserted`, `ItemChanged` or `Reset` of a dispatcher turn rebuilds at once, and an `ItemRemoved` (the first
-  half of a move) or any later change in the turn rebuilds once at the next turn. A live tick that moves k rows costs
-  at most two rebuilds, not 2k. A rebuild reads the key and parent key only of the rows a view `ItemInserted` or
-  `ItemChanged` brought in since the last one (a `Reset`, a new `ItemKeyPath`/`ParentKeyPath` and object keys read
-  every row), and the rebuilt rows reach the repeater as the inserts and removals that turn the old rows into them
-  (up to 64 rows, or a moved run of up to 64 rows) instead of a `Reset`, so realized rows, scroll position and focus
-  stay. The rebuild itself is still O(n) native work (see "Performance").
-
-Hierarchy on CVS itself (a `HierarchyDescription`, or option (b)) is future work; if it is approved, the relation
-moves from TableView into the view and `ItemKeyPath` / `ParentKeyPath` become a shorthand for it.
+TableView shows no tree rows in this change. Hierarchy moves to a follow-up PR, as a hierarchy description in the
+`CollectionViewSource` view (`CollectionViewSource.HierarchyDescription`).
 
 ### One engine: every ItemsSource goes through a view
 
@@ -833,15 +812,6 @@ filters or groups; the view never flattens, because expansion state is per contr
   finished. When the view starts or stops grouping (`PropertyChanged("CollectionGroups")`), the same flattener
   switches between flat and grouped rows; `ItemsSource` is not reassigned. Expansion is keyed by the group's key
   value, so a collapsed group stays collapsed across a regroup and across grouping off and on.
-- **Tree** (`ItemKeyPath` / `ParentKeyPath`): the view's items, in the view's order, are indexed by key and parent key
-  (`ParentKeyIndex`) and nested by the flattener; under a grouped view each root is placed in the group that holds
-  it. A view `Insert`, `Remove` or `Replace` of a plain tree is applied to the index in place: only the changed row's
-  keys are read, it joins or leaves its sibling list at its place in the view's order, and its row is spliced in or out
-  of the visible rows. What that cannot localize (a row with children leaving, a row whose key orphaned rows name,
-  object keys, a duplicate, a tree under a grouped view, a `Reset`) rebuilds the tree, at most once per dispatcher turn.
-  The flattener owns the index and is its only writer; everything is located before anything changes, and a view
-  change made by app code (a key selector, a row handler) while one is applied makes it fall back to a rebuild. The
-  expansion intent of a removed row is dropped at the end of the turn unless the row came back (a move).
 
 Row identity is the item's COM identity. A header sort keeps the selection on its item (the selected item is found
 again after the view reorders) and restores body focus; `Sorting` / `Sorted`, the arrow reconcile and
@@ -855,10 +825,9 @@ None of these are in public IDL or the XAML metadata provider.
 | Component | Role |
 |---|---|
 | `CollectionViewSource` view / `ICollectionViewShaping` (framework) | The one engine, owned by the view (`VectorCollectionView`; the CVS is a proxy over it): sort, filter, group, `CustomSort`, `DeferRefresh`, incremental flat updates. |
-| `TableViewRowFlattener` | The one row flattener (WPF `ItemContainerGenerator`'s role): turns the view's items, `CollectionGroups` and tree into flat, grouped or tree rows, and owns group and row expansion state. No shaping. |
-| `ParentKeyIndex` | The key / parent-key index of the view's items that the flattener nests. Stays on TableView until hierarchy moves into the view. |
+| `TableViewRowFlattener` | The one row flattener (WPF `ItemContainerGenerator`'s role): turns the view's items and `CollectionGroups` into flat or grouped rows, and owns group expansion state. No shaping. |
 | `GroupedEntry` | A group header row: the group's identity, key, counts and expansion. |
-| `RowMetadataProvider` | Per-row kind, level, identity and expansion for grouped and tree rows. |
+| `RowMetadataProvider` | Per-row kind, level, identity and expansion for grouped rows. |
 
 Retired: `ShapedItemsSource` (TableView's own sort, filter, group and live-shaping engine, with `RowIdentity`,
 `LiveShapingTracker` and `ShapingPipeline`), the `TableViewShapingSource` facade over it, and the comparer rank
@@ -889,9 +858,7 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 
 #### Follow-ups (not in this change)
 
-- Hierarchy plus filter: keep the ancestors of a match (the view filters before the tree is built, so a match whose
-  parent is filtered out is shown as a root; `ParentKeyIndex` and `TableViewRowFlattener` keep their filter overlay
-  for this).
+- Hierarchy, in the `CollectionViewSource` view (see "Hierarchy").
 
 ## Performance
 
@@ -909,7 +876,6 @@ group, k = items a live tick changed.
 | Live tick, k changed items (batch 4) | O(n + k·(m + log m compares)), two changes per move; one `Reset` past fixed thresholds (k ≥ 80% of n, or n ≥ 1024 and k ≥ n/8, flat k ≥ 256) | k moves while they cost less than twice a `Reset` or 50 ms; else a flat view re-sorts on cached keys (only the k items are read), finds the longest run still in order (O(m log m)) and raises a move for each other item, or one `Reset` if those cost more; a grouped view recomputes; a source change while an edit waits is applied incrementally |
 | `Refresh` with live shaping on | n·p listeners torn down and recreated | kept when the live properties and the items are unchanged |
 | Live shaping setup, p live properties (batch 6) | n·p property path listeners (a listener, its step, a property access and a `PropertyChanged` handler each) | n `PropertyChanged` handlers and n tracked references for the plain property names on `INotifyPropertyChanged` items; a listener per item and path only for a dotted or indexed path, a `DependencyObject`, a map or a collection view |
-| TableView tree, one view change | every row's key and parent key read (app code) + O(n) rebuild + `Reset` | batch 3: only the rows the change brought in are read + O(n) native rebuild, published as a splice; batch 5: an `Insert`, `Remove` or `Replace` reads the one row's keys and updates the index and rows in place: O(siblings) to place it plus O(rows) scans of native pointers to find its row, no rebuild |
 
 Measured with `CollectionViewPerfBenchmarks` (TableView API tests, `Ignore=True`; run them with `te.exe ...
 /select:"@Name='*CollectionViewPerfBenchmarks*'" /runIgnoredTests`): amd64**fre**, Hyper-V test VM, C# rows with
@@ -929,8 +895,6 @@ Measured with `CollectionViewPerfBenchmarks` (TableView API tests, `Ignore=True`
 | Live tick, 0.9·n edits (≈59% of rows), flat | 1,694 | 53.7 | 230,143 | 726 |
 | Live tick, 1,000 edits, 100 groups | 49.7 | 33.8 | 104 | 63 (one run: 1,424) |
 | Live tick, 0.9·n edits, 100 groups | 322 | 105 | 6,005 | 1,275 |
-| TableView tree, insert one row | 411 | 43.2 | 4,298 | 540 |
-| TableView tree, expand all | 19.8 | 16.3 | 156 | 127 |
 
 Each number is one run (the sorts are the median of three); the 100k live ticks vary with garbage collection of the
 earlier scenarios' rows (the grouped 1,000-edit tick took 63 ms in two runs and 1,424 ms in a third, on the same
@@ -967,32 +931,12 @@ What is still O(n) per change, and why it stays for now:
   `LiveShapingTree`) would make it O(log n), but at 100k rows the integer moves (~0.1–0.2 ms) are already below the
   cost of raising the two changes and of the consumers' handling of them, so it is not done.
 - **Source index shifts.** A source insert or remove renumbers the later source indices (a scan of n integers).
-- **TableView's tree** applies a single row's change in place (batch 5) but still finds the row with a linear scan of
-  its visible rows and renumbers the sibling positions it shows (a few ms at 100k rows). Per-sibling visible-subtree
-  counts (a Fenwick tree) would make that logarithmic; not needed at these sizes. A row with children leaving, a
-  `Reset` and the other cases in "Tree" above still rebuild (about 0.5 s at 100k rows). A node expand or collapse
-  splices up to 64 rows per toggle (WinRT vector changes have no ranges) and otherwise raises one `Reset`.
 - Each item still costs one property read per sort field, group level and live property on a full recompute, and
   one observer per item (a listener per item and path for paths that are not a plain name; WPF binds each).
 
-Batch 5 (TableView tree, `38c2a7b` vs the incremental index, same harness; n/10 roots with nine children each,
-sorted view, every row expanded; "through the turn" includes work deferred to the end of the dispatcher turn):
-
-| Scenario | 10k before | 10k now | 100k before | 100k now |
-|---|---:|---:|---:|---:|
-| Insert one row, through the turn | 50.6 | 3.9 | 614 | 7.3 |
-| Remove one leaf, through the turn | 51.8 | 3.8 | 624 | 5.2 |
-| Reparent one row (`Replace`), through the turn | 57.0 | 3.7 | 700 | 5.8 |
-| Insert one row, synchronous part | 53.8 | 1.1 | 624 | 4.8 |
-| Load (create, bind, first layout) | 924 | 927 | 8,375 | 8,633 |
-| Expand all | 19.4 | 18.5 | 152 | 147 |
-| Collapse all | 7.7 | 7.9 | 51 | 50 |
-
-Load and expand-all build the index once and were unchanged by batch 5.
-
 Batch 6 (code complete, not yet measured; the expected effect is stated, and the benchmarks above are the ones to rerun:
 `BenchIncrementalChanges`, `BenchLiveSortingTick` including its new `LiveFlat.Create` / `LiveGrouped100.Create`,
-`BenchTree`, and `BenchTeardown` on fre and chk):
+and `BenchTeardown` on fre and chk):
 
 - **Slow live view creation (chk).** `BenchTeardown` created a grouped, live-sorted, live-grouped view over 60 rows
   in 1.3–1.9 s, and non-live views got slower the more were alive (19 ms each for 100 views, 87 ms for 1,600). The
@@ -1030,19 +974,6 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   (amd64fre) and update `c_nsPerShiftedRow` and the move-versus-`Reset` row counts in Behavior (computed at 14 ns).
 - **P-5.** The tracker shift it listed is gone (P-2). The flat `std::find`, the source-index renumbering and burst
   coalescing are not changed: they are integer scans, and coalescing changes the notifications (out of scope).
-- **TableView tree load.** Every row's `ItemKeyPath` and `ParentKeyPath` are read through a one-time `{Binding}`
-  (`SortMemberPathResolver`), which set the probe's `DataContext` to the row and then back to null, and a load read
-  every key twice: once to validate the relation (`SetHierarchy`) and again, with the key cache just cleared, to
-  build it. Now the validation's reads fill the key cache the build uses, and the probe's `DataContext` is cleared
-  once on the next dispatcher turn instead of after each read (the same row twice in a row is still re-read through
-  a null `DataContext`, so an edited key is seen). Expected: a quarter of the binding evaluations at load (4n
-  instead of 8n `DataContext` writes for n rows); if those dominate, as their count suggests, the 8.4 s load at
-  100k should drop to roughly 2–3 s, the rest being the view's sort, the index build and the first layout.
-- **Tree rebuild and expand-all.** A rebuild no longer builds the node-key index eagerly (it is built on first use,
-  as after a splice), no longer collects every key into a set to prune expansion intent when no key differs from
-  the default (a load, after expand-all or collapse-all), and skips the context-key and intent lookups when those
-  sets are empty. Expected: expand-all at 100k somewhat below its 147 ms (one hash map of n `hstring`s and n
-  lookups fewer); the per-row `hstring` and `NodeRow` are unchanged.
 
 ## Out of scope for the POC
 
@@ -1050,7 +981,7 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
 - `GroupNames` in markup is supported; nested groups in ListView / GridView (they show the first level) are not.
 - A public composable `ListCollectionView` (see "Extensibility") and editing (`IEditableCollectionView`, see "WPF
   parity pass").
-- Hierarchy on CVS (see "Hierarchy: TableView.ItemKeyPath / ParentKeyPath (V1)").
+- Hierarchy on CVS (see "Hierarchy").
 - `Move` as a single change (a live move is a remove and an insert), and coalescing a burst of source changes (live
   property changes are coalesced per dispatcher turn, as in WPF).
 - WPF's insertion-sort path for a restore where most items are marked: the cost-based restore replaces it (see
@@ -1128,10 +1059,6 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
 - **Errors in app code are reported, not thrown, for source changes and live restores** (see "Exceptions in app
   code"). An app that relies on `Add` throwing when its filter throws (WPF) sees no exception there; the error goes
   to `Application.UnhandledException` (and ends an app that does not handle it) and the view recomputes.
-- **TableView tree and `Id` / `ParentId` edits.** The tree reads the keys of the rows a change brings in and caches
-  the others, so re-parenting a row by editing its `ParentId` (no Insert, Replace or Reset) is not seen until the
-  next `Refresh()` or source `Reset`. A tree `Remove` that cannot be applied in place (the row has children) is
-  published at the end of the dispatcher turn, so for that turn the rows, selection and UIA may still show it.
 - **Feature gate in tests.** The new test assumes `Feature_ExperimentalApi` is enabled in the test configuration,
   like other experimental-API tests (for example `GridViewIntegrationTests.cpp:573`).
 - **Live shaping cost and lifetime.** One `PropertyChanged` handler per `INotifyPropertyChanged` source item for its
@@ -1141,7 +1068,7 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   its `PropertyChanged` handlers) in its reference tracker walk; they unsubscribe when an item leaves the source,
   when the features are turned off and when the view is destroyed. A restore after a turn in which most items
   changed costs one remove and one insert per moved item (one `Reset` when the moves would cost more, see "Live
-  shaping"); TableView's tree mode rebuilds its tree at most twice for it.
+  shaping").
 - **Live moves and consumers.** A move is `ItemRemoved` + `ItemInserted`. ListView and GridView recycle the moved
   container, so selection and focus on it follow their remove semantics (focus stays in the list, on the row that
   took the removed one's place); TableView keeps the selection and keyboard focus on the item (see "Live shaping"
@@ -1152,13 +1079,6 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   asserts) and the iterator fails fast on a slot past the end (round A, A-2). `Clear` takes its items out first and
   releases them after the list is empty, so a release that inserts into the list does not grow the storage being
   walked (round B, B-2).
-- **TableView tree re-entrancy (round B, SB-1, SB-2).** The tree rows are published one row at a time, and an
-  `ItemsRepeater` handler of a row change (`ElementClearing`, `ElementIndexChanged`) can release the tree and declare
-  a new one (`ItemKeyPath` cleared and set again) before it returns. Each loop compares a tree generation, bumped by
-  every `SetTreeIndex` and `ClearTreeIndex`, and the rows collection it started on, and checks its index against the
-  node rows before each erase or insert; on a change it stops, and the new tree's pending rebuild publishes its rows.
-  A `Replace` whose removal was interrupted does not go on to insert, and an insert finds no index once the tree is
-  released.
 - **App groups are app objects (round B, SB-3).** TableView reads an app view's nested groups (`GroupItems` that are
   groups) with an explicit stack: a group seen before (a group that contains itself, or a cycle) is skipped, and
   levels below 64 are shown as leaves, so a malformed group graph cannot overflow the stack.
@@ -1194,9 +1114,6 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   whose `InsertAt` inserted and then failed while a handler removed another item is inserted again. A failed reorder
   re-selects the item, which raises one more `SelectionChanged` while the error still propagates. Both are on the
   failure path only.
-- **Sort key probe lifetime (TableView, round A, RA-4).** `SortMemberPathResolver` clears its probe's `DataContext`
-  on the next dispatcher turn, so the last row item it read stays alive until then; a same-turn `GC.Collect` and
-  weak-reference check after a key read sees it alive. No test relies on that today.
 
 ## Regeneration
 
@@ -1342,15 +1259,13 @@ Grouping keeps the view (phase C):
 - `VerifyHeaderSortOnAppCollectionViewRaisesSortingWithoutReordering`: an app's own `ICollectionView` gets `Sorting`
   and keeps its order and an unlit arrow.
 - `VerifySelectionFollowsItemAcrossHeaderSort`: the selection follows its item through a sort and a clear.
-- `TableView_Hierarchy_APITests`: `VerifyHeaderSortOnPlainListTreeKeepsListOrder` and
-  `VerifyHeaderSortOnCollectionViewTreeSortsTheView` sort a tree over a plain list and over `cvs.View`.
 - `TableView_ViewEngine_APITests` (`TableViewViewEngineTests`): random source operations, rule changes and refreshes
   (and, live, property edits) on flat, grouped and two-level views compared with a fresh view after each step;
   re-entrant changes from `VectorChanged` handlers and a `Filter`; incremental loading through a shaped view;
   the `Filter` event after a GC with only `View` held; no leak through live listeners; group `ItemCount`
   notifications; currency before first / after last; exact `Int64` / `UInt64` keys; turning live sorting on;
-  replaced views; rules on an `IsSourceGrouped` CVS; off-thread live changes; and TableView live sort, filter,
-  group and tree, including at most a couple of tree rebuilds per live tick. Batch 4 adds: a total order over mixed
+  replaced views; rules on an `IsSourceGrouped` CVS; off-thread live changes; and TableView live sort, filter and
+  group. Batch 4 adds: a total order over mixed
   key types and NaN; a C# `GroupDescription` subclass (with and without `NamesMatch`) against a fresh view; no leak
   through a `CustomSort`, a group `CustomSort`, a `Converter` or a `GroupDescription` subclass that captures its
   owner; app code that throws (filter, `CustomSort`, converter, `GroupDescription` overrides, the `Filter` event, a
