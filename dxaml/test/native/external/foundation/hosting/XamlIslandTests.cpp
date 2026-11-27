@@ -4107,7 +4107,7 @@ void VerifyApplicationBehaviorAtCoreShutdown(const ApplicationBehaviorState& sta
 
     //
     // WinUI's Application object is a combination of things that are process-wide, independent of any UI
-    // thread (like Xaml metadata, HighContrastAdjustment getter, FocusVisualKind, DebugSettings object,
+    // thread (like Xaml metadata, HighContrastAdjustment getter, FocusVisualKind getter, DebugSettings object,
     // and FailFastOnErrors), and things that are tied to a UI thread (everything else). Confirm that the
     // parts independent of the UI thread still work after shutdown, and the UI-thread-dependent stuff
     // returns RPC_E_WRONG_THREAD.
@@ -4149,6 +4149,16 @@ void VerifyApplicationBehaviorAtCoreShutdown(const ApplicationBehaviorState& sta
         state.application->HighContrastAdjustment = newHighContrastAdjustment,
         Platform::Exception^,
         [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+
+    const auto newFocusVisualKind =
+        state.focusVisualKind == FocusVisualKind::HighVisibility
+        ? FocusVisualKind::DottedLine
+        : FocusVisualKind::HighVisibility;
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        state.application->FocusVisualKind = newFocusVisualKind,
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+    VERIFY_ARE_EQUAL(state.focusVisualKind, state.application->FocusVisualKind);
 
     VERIFY_THROWS_SPECIFIC_WINRT(
         static_cast<void>(state.debugSettings->EnableFrameRateCounter),

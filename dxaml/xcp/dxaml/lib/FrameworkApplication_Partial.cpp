@@ -643,7 +643,8 @@ _Check_return_ HRESULT FrameworkApplication::Initialize()
 
     IFC_RETURN(FrameworkApplicationGenerated::Initialize());
 
-    IFC_RETURN(put_FocusVisualKindImpl(xaml::FocusVisualKind_HighVisibility));
+    // Islands hosts create the Application before Xaml is initialized on the thread, so there may be no core to update yet.
+    m_focusVisualKind = xaml::FocusVisualKind_HighVisibility;
 
     return S_OK;
 }
@@ -1181,18 +1182,18 @@ _Check_return_ HRESULT FrameworkApplication::get_FocusVisualKindImpl(_Out_ xaml:
 // Sets the FrameworkApplication::FocusVisualKind property value.
 _Check_return_ HRESULT FrameworkApplication::put_FocusVisualKindImpl(_In_ xaml::FocusVisualKind value)
 {
+    IFC_RETURN(DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    IFCEXPECT_RETURN(dxamlCore);
+
     if (m_focusVisualKind != value)
     {
         m_focusVisualKind = value;
 
-        auto dxamlCore = DXamlCore::GetCurrent();
-        if (dxamlCore) // May be null during initialization of XamlIslandRoot in some legacy test scenarios.
-        {
-            bool isReveal = m_focusVisualKind == xaml::FocusVisualKind::FocusVisualKind_Reveal;
-            IFC_RETURN(dxamlCore->GetHandle()->SetFocusVisualKindIsReveal(isReveal));
+        bool isReveal = m_focusVisualKind == xaml::FocusVisualKind::FocusVisualKind_Reveal;
+        IFC_RETURN(dxamlCore->GetHandle()->SetFocusVisualKindIsReveal(isReveal));
 
-            dxamlCore->OnApplicationFocusVisualKindChanged();
-        }
+        dxamlCore->OnApplicationFocusVisualKindChanged();
     }
 
     return S_OK;
