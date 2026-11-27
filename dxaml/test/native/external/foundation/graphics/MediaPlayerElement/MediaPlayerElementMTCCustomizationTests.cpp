@@ -1507,8 +1507,37 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             const INT64 c_hnsPerSecond = 10000000;
             const std::chrono::milliseconds c_eventTimeout(15000);
 
+            // The transport-controls tests compare automation names, the seek bar value text and error messages with the
+            // en-US resources. This selects en-US resources (ApplicationLanguages.PrimaryLanguageOverride, and XAML's cached
+            // resource libraries are freed) for the lifetime of the object, independent of the machine's display language.
+            class EnglishResourcesScope
+            {
+            public:
+                EnglishResourcesScope()
+                {
+                    TestServices::Utilities->SetApplicationLanguageOverride(L"en-US");
+                }
+
+                ~EnglishResourcesScope()
+                {
+                    try
+                    {
+                        TestServices::Utilities->ClearApplicationLanguageOverride();
+                    }
+                    catch (...)
+                    {
+                        WEX::Logging::Log::Error(L"Failed to clear the en-US application language override");
+                    }
+                }
+
+                EnglishResourcesScope(const EnglishResourcesScope&) = delete;
+                EnglishResourcesScope& operator=(const EnglishResourcesScope&) = delete;
+            };
+
             struct TransportControlsScene
             {
+                // First member: constructed before any control of the scene and destroyed after the scene released them.
+                EnglishResourcesScope englishResources;
                 xaml_controls::Grid^ root = nullptr;
                 xaml_controls::MediaPlayerElement^ mpe = nullptr;
                 wmpb::MediaPlayer^ player = nullptr;

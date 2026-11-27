@@ -34,6 +34,11 @@ using namespace Private::Infrastructure;
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Graphics { namespace Media {
 
+        namespace
+        {
+            void RestoreCaptionSettingsLeftByKilledRun();
+        }
+
         Platform::String^ MediaCCTestsMPE::GetResourcesPath() const
         {
             return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\media\\";
@@ -42,6 +47,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         bool MediaCCTestsMPE::ClassSetup()
         {
             CommonTestSetupHelper::CommonTestClassSetup();
+            // The caption tests (and their master files) depend on the Windows caption settings: undo a change left by a
+            // CaptionSettingsScope whose test host was killed.
+            RestoreCaptionSettingsLeftByKilledRun();
             return true;
         }
 
@@ -510,35 +518,119 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 wmcc::ClosedCaptionOpacity regionOpacity = wmcc::ClosedCaptionOpacity::Default;
             };
 
+            const wchar_t* const c_captionSettingNames[] =
+            {
+                L"CaptionColor", L"CaptionOpacity", L"CaptionSize", L"CaptionFontStyle", L"CaptionEdgeEffect",
+                L"BackgroundColor", L"BackgroundOpacity", L"RegionColor", L"RegionOpacity",
+            };
+
+            // Test-owned copy of the original caption settings, kept while a CaptionSettingsScope may have changed them, so
+            // that a run whose host is killed before the scope's destructor runs is repaired by the next run.
+            const wchar_t c_captionSettingsBackupKey[] = L"Software\\Microsoft\\Microsoft.UI.Xaml.Tests\\ClosedCaptioningBackup";
+            // Bit i is set when c_captionSettingNames[i] existed. Written after the backed up values, so it marks a complete backup.
+            const wchar_t c_captionSettingsBackupExistedMask[] = L"ExistedMask";
+
+            // Restores the settings to 'original' (deleting the values that did not exist); returns false if any restore failed.
+            bool RestoreCaptionSettings(const DWORD (&original)[ARRAYSIZE(c_captionSettingNames)], DWORD existedMask)
+            {
+                bool restored = true;
+                for (size_t i = 0; i < ARRAYSIZE(c_captionSettingNames); i++)
+                {
+                    const LSTATUS status = (existedMask & (1u << i)) ?
+                        RegSetKeyValueW(HKEY_CURRENT_USER, c_captionSettingsKey, c_captionSettingNames[i], REG_DWORD, &original[i], sizeof(DWORD)) :
+                        RegDeleteKeyValueW(HKEY_CURRENT_USER, c_captionSettingsKey, c_captionSettingNames[i]);
+                    if (status != ERROR_SUCCESS && status != ERROR_FILE_NOT_FOUND)
+                    {
+                        WEX::Logging::Log::Error(WEX::Common::String().Format(L"Failed to restore caption setting %s (error %d)", c_captionSettingNames[i], status));
+                        restored = false;
+                    }
+                }
+                return restored;
+            }
+
+            // Restores the caption settings from a backup left by a run that was killed while it had changed them.
+            void RestoreCaptionSettingsLeftByKilledRun()
+            {
+                DWORD existedMask = 0;
+                DWORD size = sizeof(existedMask);
+                const LSTATUS maskStatus = RegGetValueW(HKEY_CURRENT_USER, c_captionSettingsBackupKey, c_captionSettingsBackupExistedMask, RRF_RT_REG_DWORD, nullptr, &existedMask, &size);
+                if (maskStatus == ERROR_FILE_NOT_FOUND)
+                {
+                    // No backup, or an incomplete one written before any setting was changed.
+                    RegDeleteTreeW(HKEY_CURRENT_USER, c_captionSettingsBackupKey);
+                    return;
+                }
+                VERIFY_ARE_EQUAL(ERROR_SUCCESS, maskStatus, L"Read the caption settings backup");
+
+                WEX::Logging::Log::Warning(L"Restoring the Windows caption settings changed by a previous test run that did not finish");
+                DWORD original[ARRAYSIZE(c_captionSettingNames)] = {};
+                for (size_t i = 0; i < ARRAYSIZE(c_captionSettingNames); i++)
+                {
+                    if (existedMask & (1u << i))
+                    {
+                        size = sizeof(DWORD);
+                        VERIFY_ARE_EQUAL(ERROR_SUCCESS, RegGetValueW(HKEY_CURRENT_USER, c_captionSettingsBackupKey, c_captionSettingNames[i], RRF_RT_REG_DWORD, nullptr, &original[i], &size),
+                            L"Read a backed up caption setting");
+                    }
+                }
+                VERIFY_IS_TRUE(RestoreCaptionSettings(original, existedMask), L"Restore the caption settings from the backup");
+                VERIFY_ARE_EQUAL(ERROR_SUCCESS, RegDeleteTreeW(HKEY_CURRENT_USER, c_captionSettingsBackupKey), L"Delete the caption settings backup");
+            }
+
             // Overrides the per-user caption settings and restores the original registry values (deleting values that did
-            // not exist) when it goes out of scope, including when the test fails.
+            // not exist) when it goes out of scope, including when the test fails. The originals are also backed up to
+            // c_captionSettingsBackupKey before anything is changed, and the backup is only removed after a successful restore.
             class CaptionSettingsScope
             {
             public:
                 CaptionSettingsScope()
                 {
-                    for (size_t i = 0; i < ARRAYSIZE(s_valueNames); i++)
+                    RestoreCaptionSettingsLeftByKilledRun();
+
+                    for (size_t i = 0; i < ARRAYSIZE(c_captionSettingNames); i++)
                     {
                         DWORD value = 0;
                         DWORD size = sizeof(value);
-                        m_existed[i] = (RegGetValueW(HKEY_CURRENT_USER, c_captionSettingsKey, s_valueNames[i], RRF_RT_REG_DWORD, nullptr, &value, &size) == ERROR_SUCCESS);
-                        m_original[i] = value;
+                        const LSTATUS status = RegGetValueW(HKEY_CURRENT_USER, c_captionSettingsKey, c_captionSettingNames[i], RRF_RT_REG_DWORD, nullptr, &value, &size);
+                        // Only a missing key or value means "not set". Any other error (for example a value that is not a
+                        // DWORD, or access denied) stops the test here, before anything is written, so nothing is lost.
+                        VERIFY_IS_TRUE(status == ERROR_SUCCESS || status == ERROR_FILE_NOT_FOUND,
+                            WEX::Common::String().Format(L"Snapshot caption setting %s (error %d)", c_captionSettingNames[i], status));
+                        if (status == ERROR_SUCCESS)
+                        {
+                            m_existedMask |= (1u << i);
+                            m_original[i] = value;
+                        }
                     }
+
+                    HKEY backupKey = nullptr;
+                    VERIFY_ARE_EQUAL(ERROR_SUCCESS, RegCreateKeyExW(HKEY_CURRENT_USER, c_captionSettingsBackupKey, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &backupKey, nullptr));
+                    auto closeBackupKey = wil::scope_exit([backupKey]() { RegCloseKey(backupKey); });
+                    for (size_t i = 0; i < ARRAYSIZE(c_captionSettingNames); i++)
+                    {
+                        if (m_existedMask & (1u << i))
+                        {
+                            VERIFY_ARE_EQUAL(ERROR_SUCCESS, RegSetValueExW(backupKey, c_captionSettingNames[i], 0, REG_DWORD, reinterpret_cast<const BYTE*>(&m_original[i]), sizeof(DWORD)));
+                        }
+                    }
+                    VERIFY_ARE_EQUAL(ERROR_SUCCESS, RegSetValueExW(backupKey, c_captionSettingsBackupExistedMask, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&m_existedMask), sizeof(DWORD)));
                 }
 
                 ~CaptionSettingsScope()
                 {
-                    for (size_t i = 0; i < ARRAYSIZE(s_valueNames); i++)
+                    if (RestoreCaptionSettings(m_original, m_existedMask))
                     {
-                        const LSTATUS status = m_existed[i] ?
-                            RegSetKeyValueW(HKEY_CURRENT_USER, c_captionSettingsKey, s_valueNames[i], REG_DWORD, &m_original[i], sizeof(DWORD)) :
-                            RegDeleteKeyValueW(HKEY_CURRENT_USER, c_captionSettingsKey, s_valueNames[i]);
-                        if (status != ERROR_SUCCESS && status != ERROR_FILE_NOT_FOUND)
-                        {
-                            WEX::Logging::Log::Warning(WEX::Common::String().Format(L"Failed to restore caption setting %s (error %d)", s_valueNames[i], status));
-                        }
+                        RegDeleteTreeW(HKEY_CURRENT_USER, c_captionSettingsBackupKey);
+                    }
+                    else
+                    {
+                        // Keep the backup: the next CaptionSettingsScope or MediaCCTestsMPE::ClassSetup restores from it.
+                        WEX::Logging::Log::Error(L"The caption settings were not fully restored; the backup is kept for the next run");
                     }
                 }
+
+                CaptionSettingsScope(const CaptionSettingsScope&) = delete;
+                CaptionSettingsScope& operator=(const CaptionSettingsScope&) = delete;
 
                 // Writes the settings and verifies, as a precondition, that the public ClosedCaptionProperties API reports them.
                 void Apply(const CaptionSettings& settings)
@@ -555,14 +647,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                         static_cast<DWORD>(settings.regionColor),
                         static_cast<DWORD>(settings.regionOpacity),
                     };
-                    static_assert(ARRAYSIZE(values) == ARRAYSIZE(s_valueNames), "One value per caption setting");
+                    static_assert(ARRAYSIZE(values) == ARRAYSIZE(c_captionSettingNames), "One value per caption setting");
 
                     HKEY key = nullptr;
                     VERIFY_ARE_EQUAL(ERROR_SUCCESS, RegCreateKeyExW(HKEY_CURRENT_USER, c_captionSettingsKey, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key, nullptr));
                     auto closeKey = wil::scope_exit([key]() { RegCloseKey(key); });
                     for (size_t i = 0; i < ARRAYSIZE(values); i++)
                     {
-                        VERIFY_ARE_EQUAL(ERROR_SUCCESS, RegSetValueExW(key, s_valueNames[i], 0, REG_DWORD, reinterpret_cast<const BYTE*>(&values[i]), sizeof(DWORD)));
+                        VERIFY_ARE_EQUAL(ERROR_SUCCESS, RegSetValueExW(key, c_captionSettingNames[i], 0, REG_DWORD, reinterpret_cast<const BYTE*>(&values[i]), sizeof(DWORD)));
                     }
 
                     const wchar_t* precondition = L"Precondition: ClosedCaptionProperties reports the caption setting written to HKCU";
@@ -578,14 +670,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 }
 
             private:
-                static constexpr const wchar_t* s_valueNames[] =
-                {
-                    L"CaptionColor", L"CaptionOpacity", L"CaptionSize", L"CaptionFontStyle", L"CaptionEdgeEffect",
-                    L"BackgroundColor", L"BackgroundOpacity", L"RegionColor", L"RegionOpacity",
-                };
-
-                bool m_existed[ARRAYSIZE(s_valueNames)] = {};
-                DWORD m_original[ARRAYSIZE(s_valueNames)] = {};
+                DWORD m_existedMask = 0;
+                DWORD m_original[ARRAYSIZE(c_captionSettingNames)] = {};
             };
 
             wf::TimeSpan Milliseconds(INT64 ms)
@@ -1124,11 +1210,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             positionA.Y = 20;
             positionA.Unit = TimedTextUnit::Pixels;
             regionA->Position = positionA;
+            // The same padding on every edge: CueStyler maps Before/After to Left/Right and Start/End to Top/Bottom, while TTML
+            // defines before/after as the block (top/bottom) edges and start/end as the inline (left/right) edges (PC-6). Equal
+            // edges keep the expected thickness valid for both mappings; percentages still scale by width horizontally and by
+            // height vertically.
             TimedTextPadding paddingA = {};
             paddingA.Before = 10;
-            paddingA.After = 20;
-            paddingA.Start = 5;
-            paddingA.End = 15;
+            paddingA.After = 10;
+            paddingA.Start = 10;
+            paddingA.End = 10;
             paddingA.Unit = TimedTextUnit::Percentage;
             regionA->Padding = paddingA;
             regionA->TextWrapping = TimedTextWrapping::Wrap;
@@ -1151,10 +1241,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             positionB.Unit = TimedTextUnit::Percentage;
             regionB->Position = positionB;
             TimedTextPadding paddingB = {};
-            paddingB.Before = 2;
-            paddingB.After = 4;
+            paddingB.Before = 6;
+            paddingB.After = 6;
             paddingB.Start = 6;
-            paddingB.End = 8;
+            paddingB.End = 6;
             paddingB.Unit = TimedTextUnit::Pixels;
             regionB->Padding = paddingB;
             regionB->TextWrapping = TimedTextWrapping::NoWrap;
@@ -1194,7 +1284,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VerifyClose(200, caption.regionBorder->Width, L"Pixel extent width");
                 VerifyClose(50, caption.regionBorder->Height, L"Pixel extent height (center aligned keeps the extent height)");
                 VerifyThickness(MakeThickness(10, 20, 0, 0), caption.regionBorder->Margin, L"Pixel position with an extent");
-                VerifyThickness(MakeThickness(width * 0.10, height * 0.05, width * 0.20, height * 0.15), caption.regionBorder->Padding, L"Percentage padding");
+                VerifyThickness(MakeThickness(width * 0.10, height * 0.10, width * 0.10, height * 0.10), caption.regionBorder->Padding, L"Percentage padding");
                 VerifyBrushColor(Argb(0x80, 0x00, 0x00, 0xFF), caption.regionBorder->Background, L"Region background from the cue region");
                 VERIFY_ARE_EQUAL(0, xaml_controls::Canvas::GetZIndex(caption.regionBorder));
                 VERIFY_ARE_EQUAL(xaml::HorizontalAlignment::Center, caption.cueElement->HorizontalAlignment, L"Line alignment Center");
@@ -1214,7 +1304,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 // Bottom aligned captions span from the top of the area to the bottom of the extent: 60% position + (20% + 5% line padding) extent.
                 VerifyClose(height * 0.85, caption.regionBorder->Height, L"Bottom aligned region height");
                 VerifyThickness(MakeThickness(width * 0.10, 0, 0, 0), caption.regionBorder->Margin, L"Percentage position, top margin folded into the height");
-                VerifyThickness(MakeThickness(2, 6, 4, 8), caption.regionBorder->Padding, L"Pixel padding");
+                VerifyThickness(MakeThickness(6, 6, 6, 6), caption.regionBorder->Padding, L"Pixel padding");
                 VERIFY_ARE_EQUAL(3, xaml_controls::Canvas::GetZIndex(caption.regionBorder));
                 VERIFY_ARE_EQUAL(xaml::HorizontalAlignment::Right, caption.cueElement->HorizontalAlignment, L"Line alignment End");
                 VERIFY_ARE_EQUAL(xaml::TextWrapping::NoWrap, caption.captionText->TextWrapping);
