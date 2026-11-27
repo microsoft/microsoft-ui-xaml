@@ -1908,7 +1908,21 @@ namespace
         {
             const int px = static_cast<int>(x * scale);
             const int py = static_cast<int>(y * scale);
-            const uint32_t value = pixels[py * pixelWidth + px];
+
+            // Fail cleanly instead of reading outside the captured bitmap if it is smaller than expected.
+            const bool isInBitmap = px >= 0 && px < pixelWidth && py >= 0 && py < pixelHeight &&
+                static_cast<size_t>(py) * pixelWidth + px < pixels.size();
+            if (!isInBitmap)
+            {
+                LOG_OUTPUT(L"Pixel (%d, %d) maps to (%d, %d), outside the %d x %d capture", x, y, px, py, pixelWidth, pixelHeight);
+            }
+            VERIFY_IS_TRUE(isInBitmap);
+            if (!isInBitmap)
+            {
+                return 0;
+            }
+
+            const uint32_t value = pixels[static_cast<size_t>(py) * pixelWidth + px];
             LOG_OUTPUT(L"Pixel (%d, %d) = %08x", x, y, value);
             return value;
         }
@@ -1918,13 +1932,17 @@ namespace
     const uint32_t c_greenPixel = 0xFF00FF00;
 
     // Renders element (of the given logical width) with RenderTargetBitmap and reads its pixels back.
-    // Completion handlers only capture shared state by value.
+    // Completion handlers only capture shared state by value, record failures and cancellation in it, and always
+    // signal; the results are verified on the test thread.
     CapturedPixels CaptureElementPixels(UIElement^ element, double logicalWidth)
     {
         struct RenderState
         {
             std::shared_ptr<Event> renderedEvent = std::make_shared<Event>();
             std::shared_ptr<Event> getPixelsEvent = std::make_shared<Event>();
+            HRESULT renderResult = E_PENDING;
+            wf::AsyncStatus getPixelsStatus = wf::AsyncStatus::Started;
+            HRESULT getPixelsResult = E_PENDING;
             IBuffer^ buffer = nullptr;
         };
         auto state = std::make_shared<RenderState>();
@@ -1933,27 +1951,88 @@ namespace
         RunOnUIThread([&]()
         {
             rtb = ref new RenderTargetBitmap();
-            auto renderedEvent = state->renderedEvent;
-            create_task(rtb->RenderAsync(element)).then([renderedEvent]()
+            try
             {
-                LOG_OUTPUT(L"RenderTargetBitmap::RenderAsync completed.");
-                renderedEvent->Set();
-            });
+                create_task(rtb->RenderAsync(element)).then([state](concurrency::task<void> renderTask)
+                {
+                    HRESULT hr = S_OK;
+                    try
+                    {
+                        renderTask.get();
+                    }
+                    catch (Platform::Exception^ e)
+                    {
+                        hr = e->HResult;
+                    }
+                    catch (const concurrency::task_canceled&)
+                    {
+                        hr = HRESULT_FROM_WIN32(ERROR_CANCELLED);
+                    }
+                    catch (...)
+                    {
+                        hr = E_FAIL;
+                    }
+                    LOG_OUTPUT(L"RenderTargetBitmap::RenderAsync completed: 0x%08x.", hr);
+                    state->renderResult = hr;
+                    state->renderedEvent->Set();
+                });
+            }
+            catch (Platform::Exception^ e)
+            {
+                state->renderResult = e->HResult;
+                state->renderedEvent->Set();
+            }
         });
         state->renderedEvent->WaitForDefault();
+        VERIFY_SUCCEEDED(state->renderResult);
 
         RunOnUIThread([&]()
         {
-            auto getPixelsAsyncOperation = rtb->GetPixelsAsync();
-            getPixelsAsyncOperation->Completed = ref new wf::AsyncOperationCompletedHandler<IBuffer^>(
-                [state](wf::IAsyncOperation<IBuffer^>^ operation, wf::AsyncStatus)
+            try
             {
-                LOG_OUTPUT(L"GetPixelsAsync operation completed.");
-                state->buffer = operation->GetResults();
+                auto getPixelsAsyncOperation = rtb->GetPixelsAsync();
+                getPixelsAsyncOperation->Completed = ref new wf::AsyncOperationCompletedHandler<IBuffer^>(
+                    [state](wf::IAsyncOperation<IBuffer^>^ operation, wf::AsyncStatus status)
+                {
+                    HRESULT hr = S_OK;
+                    try
+                    {
+                        if (status == wf::AsyncStatus::Completed)
+                        {
+                            state->buffer = operation->GetResults();
+                        }
+                        else if (status == wf::AsyncStatus::Error)
+                        {
+                            hr = operation->ErrorCode.Value;
+                        }
+                        else
+                        {
+                            hr = HRESULT_FROM_WIN32(ERROR_CANCELLED);
+                        }
+                    }
+                    catch (Platform::Exception^ e)
+                    {
+                        hr = e->HResult;
+                    }
+                    catch (...)
+                    {
+                        hr = E_FAIL;
+                    }
+                    LOG_OUTPUT(L"GetPixelsAsync operation completed: status %d, 0x%08x.", static_cast<int>(status), hr);
+                    state->getPixelsStatus = status;
+                    state->getPixelsResult = hr;
+                    state->getPixelsEvent->Set();
+                });
+            }
+            catch (Platform::Exception^ e)
+            {
+                state->getPixelsResult = e->HResult;
                 state->getPixelsEvent->Set();
-            });
+            }
         });
         state->getPixelsEvent->WaitForDefault();
+        VERIFY_SUCCEEDED(state->getPixelsResult);
+        VERIFY_ARE_EQUAL(wf::AsyncStatus::Completed, state->getPixelsStatus);
 
         CapturedPixels result;
         RunOnUIThread([&]()
@@ -2071,6 +2150,7 @@ void RenderTargetBitmapTests::ProjectedClippedRTBWUCFull()
     TestServices::WindowHelper->WaitForIdle();
 
     const CapturedPixels captured = CaptureElementPixels(host, 200.0);
+    VERIFY_ARE_EQUAL(captured.pixelWidth, captured.pixelHeight);
 
     // The clipped band (0..100) is translated to 50..150.
     VERIFY_ARE_EQUAL(c_redPixel, captured.At(54, 100));
@@ -2127,6 +2207,7 @@ void RenderTargetBitmapTests::NestedAxisAlignedClipsRTBWUCFull()
     TestServices::WindowHelper->WaitForIdle();
 
     const CapturedPixels captured = CaptureElementPixels(host, 200.0);
+    VERIFY_ARE_EQUAL(captured.pixelWidth, captured.pixelHeight);
 
     // Inside both clips.
     VERIFY_ARE_EQUAL(c_redPixel, captured.At(120, 100));

@@ -43,6 +43,10 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"The visible bounds of a VirtualSurfaceImageSource on an element with a Matrix3DProjection exclude the parts behind the near plane, and are empty for non-positive w.")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(PopupBehindViewerIsNotHitTested)
+        TEST_METHOD_PROPERTY(L"Description", L"The child of an open Popup whose parent's Matrix3DProjection puts it behind the viewer (negative w) is not hit-testable, while the same position is hit with an identity projection.")
+    END_TEST_METHOD()
+
 private:
     inline Platform::String^ GetResourcesPath() const;
 };

@@ -205,8 +205,18 @@ void TransformToVisualTests::ProjectedElementTransformInverse()
         {
             const wf::Point inRoot = toRoot->TransformPoint(local);
 
-            // The projection (and the margin) actually moves the point.
-            VERIFY_IS_GREATER_THAN(std::abs(inRoot.X - local.X) + std::abs(inRoot.Y - local.Y), 10.0f);
+            // The margin alone would put the point at (local.X + 50, local.Y + 60). The projection rotates the element
+            // around its center (100, 50) (the default CenterOfRotation), so the center stays at its margin-only
+            // position and every other point is moved away from it.
+            const wf::Point marginOnly(local.X + 50.0f, local.Y + 60.0f);
+            if (local.X == 100.0f && local.Y == 50.0f)
+            {
+                VERIFY_IS_TRUE(AreClose(marginOnly, inRoot, 0.5f));
+            }
+            else
+            {
+                VERIFY_IS_GREATER_THAN(std::abs(inRoot.X - marginOnly.X) + std::abs(inRoot.Y - marginOnly.Y), 5.0f);
+            }
 
             // The inverse maps the point back into the element's space.
             VERIFY_IS_TRUE(AreClose(local, toRootInverse->TransformPoint(inRoot)));
@@ -471,6 +481,114 @@ void TransformToVisualTests::NearPlaneClippedProjectionVisibleBounds()
     {
         host->Background = nullptr;
         vsis = nullptr;
+        host = nullptr;
+        root = nullptr;
+    });
+}
+
+void TransformToVisualTests::PopupBehindViewerIsNotHitTested()
+{
+    TestCleanupWrapper cleanup;
+    const auto& wh = TestServices::WindowHelper;
+    wh->SetWindowSizeOverride(wf::Size(500, 500));
+
+    Grid^ root = nullptr;
+    Border^ host = nullptr;
+    Primitives::Popup^ popup = nullptr;
+    xaml_shapes::Rectangle^ popupChild = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        root = safe_cast<Grid^>(xaml_markup::XamlReader::Load(
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+            L"      Width='400' Height='400' HorizontalAlignment='Left' VerticalAlignment='Top'>"
+            L"  <Border x:Name='host' Width='200' Height='200' Margin='100,100,0,0' HorizontalAlignment='Left' VerticalAlignment='Top'>"
+            L"    <Popup x:Name='popup' HorizontalOffset='50' VerticalOffset='50'>"
+            L"      <Rectangle x:Name='popupChild' Width='100' Height='100' Fill='Red'/>"
+            L"    </Popup>"
+            L"  </Border>"
+            L"</Grid>"));
+        host = safe_cast<Border^>(root->FindName(L"host"));
+        popup = safe_cast<Primitives::Popup^>(root->FindName(L"popup"));
+        popupChild = safe_cast<xaml_shapes::Rectangle^>(root->FindName(L"popupChild"));
+        wh->WindowContent = root;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        popup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+
+    auto closePopup = wil::scope_exit([&]()
+    {
+        RunOnUIThread([&]()
+        {
+            if (popup && popup->IsOpen)
+            {
+                popup->IsOpen = false;
+            }
+        });
+        wh->WaitForIdle();
+    });
+
+    // The popup child covers host coordinates 50..150, i.e. 150..250 in the window. Both projections below map a host
+    // point (x, y) to (x, y) after dividing by w, so the center of the popup child is always at (200, 200).
+    struct ProjectionCase
+    {
+        const wchar_t* description;
+        Media3D::Matrix3D matrix;
+        bool isHit;
+    };
+    const ProjectionCase cases[] =
+    {
+        { L"identity", Media3D::Matrix3DHelper::Identity, true },
+        // (x', y', z', w') = (-x, -y, 0, -1): w' < 0 for every point, so the popup's parent is behind the viewer and
+        // hit testing must not find anything under it.
+        { L"mirrored, negative w", Media3D::Matrix3DHelper::FromElements(
+            -1, 0, 0, 0,
+            0, -1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, -1), false },
+        // Back to the identity: the popup child is hit again.
+        { L"identity again", Media3D::Matrix3DHelper::Identity, true },
+    };
+
+    for (const auto& projectionCase : cases)
+    {
+        LOG_OUTPUT(L"Projection: %s", projectionCase.description);
+
+        RunOnUIThread([&]()
+        {
+            auto projection = ref new Matrix3DProjection();
+            projection->ProjectionMatrix = projectionCase.matrix;
+            host->Projection = projection;
+        });
+        wh->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(popup->IsOpen);
+
+            // In islands mode a subtree is required; the XamlRoot content includes the popups of that XamlRoot.
+            UIElement^ xamlRootContent = root->XamlRoot->Content;
+            VERIFY_IS_NOT_NULL(xamlRootContent);
+
+            VERIFY_ARE_EQUAL(projectionCase.isHit,
+                ContainsElement(VisualTreeHelper::FindElementsInHostCoordinates(wf::Point(200, 200), xamlRootContent), popupChild));
+
+            // Outside the popup child, it is never hit.
+            VERIFY_IS_FALSE(ContainsElement(VisualTreeHelper::FindElementsInHostCoordinates(wf::Point(120, 380), xamlRootContent), popupChild));
+        });
+    }
+
+    closePopup.reset();
+
+    RunOnUIThread([&]()
+    {
+        popupChild = nullptr;
+        popup = nullptr;
         host = nullptr;
         root = nullptr;
     });

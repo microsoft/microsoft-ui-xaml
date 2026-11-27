@@ -358,12 +358,15 @@ void ElementSoundPlayerTests::InteractionSoundsForTextElementsAndFlyouts()
         VERIFY_ARE_EQUAL(xaml::ElementSoundMode::Default, soundPlayerPrivate->GetEffectiveSoundMode(emptyFlyout));
 
         // Interaction sounds for a text element (positioned at its containing TextBlock), for silent elements and for
-        // elements whose sound mode doesn't allow the sound.
+        // elements whose sound mode doesn't allow the sound. Pending requests are prioritized (Focus is the lowest), and
+        // all requests below run in one UI callback before the pending sound is played and its priority reset. So the
+        // Focus request for the FocusOnly button (which its sound mode allows) comes first; after the Invoke request for
+        // `link`, a Focus request would be skipped before its sound mode is checked.
+        soundPlayerPrivate->RequestInteractionSoundForElement(xaml::ElementSoundKind::Focus, focusOnlyButton);
         soundPlayerPrivate->RequestInteractionSoundForElement(xaml::ElementSoundKind::Invoke, link);
         soundPlayerPrivate->RequestInteractionSoundForElement(xaml::ElementSoundKind::Invoke, silentLink);
         soundPlayerPrivate->RequestInteractionSoundForElement(xaml::ElementSoundKind::Invoke, text);
         soundPlayerPrivate->RequestInteractionSoundForElement(xaml::ElementSoundKind::Invoke, focusOnlyButton);
-        soundPlayerPrivate->RequestInteractionSoundForElement(xaml::ElementSoundKind::Focus, focusOnlyButton);
 
         // A flyout without content is positioned at the center of the window.
         soundPlayerPrivate->RequestInteractionSoundForElement(xaml::ElementSoundKind::Show, emptyFlyout);

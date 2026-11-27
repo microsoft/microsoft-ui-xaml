@@ -170,7 +170,7 @@ void Matrix3DProjectionTests::NonAffineInverseTest()
                 0, 1, 0, 0,
                 0, 0, 1, 0,
                 0, 0, 0, 1 } },
-            // A dense non-affine matrix (M14, M24, M34 != 0 and M44 = 2) with an exact rational inverse (det = 2).
+            // A dense non-affine matrix (M14, M24, M34 != 0 and M44 = 2) with an exact rational inverse (det = 1).
             { L"dense", Matrix3DHelper::FromElements(
                 2, 0, 1, 0.5,
                 0, 3, 0, -1,
