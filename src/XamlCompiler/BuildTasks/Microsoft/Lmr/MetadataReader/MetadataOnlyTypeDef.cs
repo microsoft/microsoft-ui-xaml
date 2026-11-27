@@ -402,7 +402,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         /// <remarks>
         /// See http://msdn.microsoft.com/en-us/library/system.type.makegenerictype.aspx for details on invariants here. 
         /// </remarks>
-        public override Type MakeGenericType(Type[] argTypes)
+        internal override Type MakeGenericTypeCore(Type[] argTypes)
         {
             if (argTypes == null)
             {
@@ -474,7 +474,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             if (current.GetType() != typeof(MetadataOnlyTypeDef) || current.IsInterface)
             {
                 // true if this type a base type on one of the interface impl
-                Type[] interfaces = target.GetInterfaces();
+                Type[] interfaces = target.GetInterfacesLmr();
                 for (int i = 0; i < interfaces.Length; i++)
                 {
                     if (interfaces[i].Equals(current))
@@ -685,7 +685,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
 
         // Implementation of System.Type.GetFields(BindingFlags)
-        public override FieldInfo[] GetFields(System.Reflection.BindingFlags flags)
+        internal override FieldInfo[] GetFieldsCore(System.Reflection.BindingFlags flags)
         {
             return MetadataOnlyModule.GetFieldsOnType(this, flags);
         }
@@ -693,7 +693,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         //Need to go through all the fields here by calling the GetFields method
         //to handle the BindingFlags matching. 
         //We might be able to look up the field directly to improve the performance.
-        public override FieldInfo GetField(string name, BindingFlags bindingAttr)
+        internal override FieldInfo GetFieldCore(string name, BindingFlags bindingAttr)
         {
             if (name == null)
             {
@@ -702,7 +702,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
             StringComparison comparison = SignatureUtil.GetStringComparison(bindingAttr);
 
-            FieldInfo[] fs = GetFields(bindingAttr);
+            FieldInfo[] fs = GetFieldsCore(bindingAttr);
             foreach (FieldInfo f in fs)
             {
                 if (f.Name.Equals(name, comparison))
@@ -736,7 +736,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
             // Need to return the property matching all the criteria and in the most
             //derived class.
-            PropertyInfo[] ps = type.GetProperties(bindingAttr);
+            PropertyInfo[] ps = type.GetPropertiesLmr(bindingAttr);
             foreach (PropertyInfo p in ps)
             {
                 if (!p.Name.Equals(name, comparison))
@@ -765,7 +765,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         private Type[] _interfacesCache;
 
-        public override Type[] GetInterfaces()
+        internal override Type[] GetInterfacesCore()
         {
             if (_interfacesCache == null)
             {
@@ -813,7 +813,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             if (type.BaseType != null)
             {
                 // This calls through Type.GetInterfaces(), which is the public API and will do the flattening.
-                var ifaces = type.BaseType.GetInterfaces();
+                var ifaces = type.BaseType.GetInterfacesLmr();
                 interfaces.UnionWith(ifaces);
             }
 
@@ -828,7 +828,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 interfaces.Add(i);
 
                 // Getting the children interface is the slow path and makes this a non-linear operation.
-                var iChildren = i.GetInterfaces();
+                var iChildren = i.GetInterfacesLmr();
                 interfaces.UnionWith(iChildren);
             }
 
@@ -838,9 +838,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return result;
         }
 
-        public override Type GetInterface(string name, bool ignoreCase)
+        internal override Type GetInterfaceCore(string name, bool ignoreCase)
         {
-            return MetadataOnlyModule.GetInterfaceHelper(GetInterfaces(), name, ignoreCase);
+            return MetadataOnlyModule.GetInterfaceHelper(GetInterfacesCore(), name, ignoreCase);
         }
 
 
@@ -880,12 +880,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return true;
         }
 
-        public override EventInfo[] GetEvents(System.Reflection.BindingFlags flags)
+        internal override EventInfo[] GetEventsCore(System.Reflection.BindingFlags flags)
         {
             return MetadataOnlyModule.GetEventsOnType(this, flags);
         }
 
-        public override EventInfo GetEvent(string name, System.Reflection.BindingFlags flags)
+        internal override EventInfo GetEventCore(string name, System.Reflection.BindingFlags flags)
         {
             if (name == null)
             {
@@ -894,7 +894,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
             StringComparison comparison = SignatureUtil.GetStringComparison(flags);
 
-            EventInfo[] es = GetEvents(flags);
+            EventInfo[] es = GetEventsCore(flags);
             foreach (EventInfo e in es)
             {
                 if (e.Name.Equals(name, comparison))
@@ -909,7 +909,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         //Need to go through all the nested types here by calling the GetNestedTypes method
         //to handle the BindingFlags matching. 
         //We might be able to look up the field directly to improve the performance.
-        public override Type GetNestedType(string name, BindingFlags bindingAttr)
+        internal override Type GetNestedTypeCore(string name, BindingFlags bindingAttr)
         {
             if (name == null)
             {
@@ -918,7 +918,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
             StringComparison comparison = SignatureUtil.GetStringComparison(bindingAttr);
 
-            Type[] nestedTypes = GetNestedTypes(bindingAttr);
+            Type[] nestedTypes = GetNestedTypesCore(bindingAttr);
             foreach (Type type in nestedTypes)
             {
                 if (type.Name.Equals(name, comparison))
@@ -930,7 +930,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return null;
         }
 
-        public override Type[] GetNestedTypes(BindingFlags bindingAttr)
+        internal override Type[] GetNestedTypesCore(BindingFlags bindingAttr)
         {
             // This algorithm is extremely slow and takes 90% of the time when running a signature dumper on mscorlib.
             List<Type> l = new List<Type>(m_resolver.GetNestedTypesOnType(this, bindingAttr));
@@ -938,9 +938,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         }
 
 
-        public override MemberInfo[] GetMember(string name, MemberTypes type, BindingFlags bindingAttr)
+        internal override MemberInfo[] GetMemberCore(string name, MemberTypes type, BindingFlags bindingAttr)
         {
-            MemberInfo[] members = GetMembers(bindingAttr);
+            MemberInfo[] members = GetMembersCore(bindingAttr);
             List<MemberInfo> l = new List<MemberInfo>();
 
             StringComparison comparison = SignatureUtil.GetStringComparison(bindingAttr);
@@ -968,12 +968,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         static internal MemberInfo[] GetMembersHelper(Type type, BindingFlags bindingAttr)
         {
             //return Methods, Constructors, Fields, Properties, Events, and Nested Types.
-            List<MemberInfo> l = new List<MemberInfo>(type.GetMethods(bindingAttr));
-            l.AddRange(type.GetConstructors(bindingAttr));
-            l.AddRange(type.GetFields(bindingAttr));
-            l.AddRange(type.GetProperties(bindingAttr));
-            l.AddRange(type.GetEvents(bindingAttr));
-            l.AddRange(type.GetNestedTypes(bindingAttr));
+            List<MemberInfo> l = new List<MemberInfo>(type.GetMethodsLmr(bindingAttr));
+            l.AddRange(type.GetConstructorsLmr(bindingAttr));
+            l.AddRange(type.GetFieldsLmr(bindingAttr));
+            l.AddRange(type.GetPropertiesLmr(bindingAttr));
+            l.AddRange(type.GetEventsLmr(bindingAttr));
+            l.AddRange(type.GetNestedTypesLmr(bindingAttr));
             return l.ToArray();
         }
 
@@ -1005,7 +1005,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return false;
         }
 
-        public override object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
+        internal override object InvokeMemberCore(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
         {
             throw new NotSupportedException();
         }

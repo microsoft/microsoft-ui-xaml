@@ -30,9 +30,6 @@
 using System;
 using Antlr4.Runtime.Sharpen;
 
-#if COMPACT
-using OperationCanceledException = System.Exception;
-#endif
 
 namespace Antlr4.Runtime.Misc
 {

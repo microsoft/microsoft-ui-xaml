@@ -7,8 +7,8 @@ using System.Text;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler
 {
-    // Abstracts away the file system and IVsMSBuildTaskFileManager to callers. This is used by
-    // the markupcompiler, but any build task can use it.
+    // Abstracts away the file system to the compiler: in design-time builds, the files open in the IDE are read from the
+    // overlays the CompileXaml task gets from Visual Studio instead (see OverlayTaskFileService).
     internal class BuildTaskFileService
     {
         private string langExtension;
@@ -50,10 +50,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         {
             Directory.CreateDirectory(Path.GetDirectoryName(destinationFile));
 
-            using (StreamWriter sw = new StreamWriter(destinationFile, false, new UTF8Encoding(true)))
+            AtomicFile.Write(destinationFile, stream =>
             {
-                sw.WriteLine(fileContents);
-            }
+                using (StreamWriter sw = new StreamWriter(stream, new UTF8Encoding(true)))
+                {
+                    sw.WriteLine(fileContents);
+                }
+            });
         }
 
         public virtual bool IsRealBuild

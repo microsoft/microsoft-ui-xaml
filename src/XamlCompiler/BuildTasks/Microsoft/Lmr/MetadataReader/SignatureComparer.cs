@@ -214,12 +214,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             if (isConstructor)
             {
                 Debug.Assert(genericParameterCount == 0, "constructor can't be generic method");
-                candidateMethods = FilterConstructors(filter, typeToInspect.GetConstructors(MembersDeclaredOnTypeOnly));
+                candidateMethods = FilterConstructors(filter, typeToInspect.GetConstructorsLmr(MembersDeclaredOnTypeOnly));
             }
             else
             {
                 // Get subset of methods that satisfies our filter.
-                candidateMethods = FilterMethods(filter, typeToInspect.GetMethods(MembersDeclaredOnTypeOnly));
+                candidateMethods = FilterMethods(filter, typeToInspect.GetMethodsLmr(MembersDeclaredOnTypeOnly));
             }
 
             MethodBase result = null;            
@@ -252,7 +252,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 bool isGenericMethod = false;
                 if ((genericParameterCount > 0) && (context.MethodArgs.Length > 0))
                 {
-                    candidateMethod = (method as MethodInfo).MakeGenericMethod(context.MethodArgs);
+                    candidateMethod = (method as MethodInfo).MakeGenericMethodLmr(context.MethodArgs);
                     isGenericMethod = true;
                 }
 
@@ -328,7 +328,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         /// </remarks>
         private static MethodBase GetTemplateMethod(Type typeToInspect, int methodToken)
         {
-            return typeToInspect.GetGenericTypeDefinition().Module.ResolveMethod(methodToken);
+            return typeToInspect.GetGenericTypeDefinition().Module.ResolveMethodLmr(methodToken);
         }
 
         private const BindingFlags MembersDeclaredOnTypeOnly = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;

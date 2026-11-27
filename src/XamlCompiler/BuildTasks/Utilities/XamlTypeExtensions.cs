@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Xaml;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler
 {
@@ -326,7 +327,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
 
             // first ask the source if it's aware of an implicit conversion
-            MethodInfo[] methods = source.GetMethods(BindingFlags.Public | BindingFlags.Static);
+            MethodInfo[] methods = source.GetMethodsLmr(BindingFlags.Public | BindingFlags.Static);
             foreach (MethodInfo method in methods)
             {
                 if (method.ReturnType == target && method.Name.Equals(KnownStrings.op_Implicit))
@@ -336,7 +337,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
 
             // then ask the target if it's aware of an implicit conversion
-            methods = target.GetMethods(BindingFlags.Public | BindingFlags.Static);
+            methods = target.GetMethodsLmr(BindingFlags.Public | BindingFlags.Static);
             foreach (MethodInfo method in methods)
             {
                 if (method.ReturnType == target && method.Name.Equals(KnownStrings.op_Implicit))
@@ -546,7 +547,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             if (!canExplicitlyCast)
             {
                 // does the source have an explicit cast to the target?
-                MethodInfo[] methods = sourceType.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                MethodInfo[] methods = sourceType.GetMethodsLmr(BindingFlags.Public | BindingFlags.Static);
                 foreach (MethodInfo method in methods)
                 {
                     if (method.ReturnType == targetType && method.Name.Equals(KnownStrings.op_Explicit))
@@ -560,7 +561,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             if (!canExplicitlyCast)
             {
                 // does the target have an explicit cast from the source?
-                MethodInfo[] methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                MethodInfo[] methods = targetType.GetMethodsLmr(BindingFlags.Public | BindingFlags.Static);
                 foreach (MethodInfo method in methods)
                 {
                     if (method.ReturnType == targetType && method.Name.Equals(KnownStrings.op_Explicit))
@@ -745,7 +746,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 }
 
                 // Resolve the type/method
-                MethodInfo[] methods = methodType.UnderlyingType.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                MethodInfo[] methods = methodType.UnderlyingType.GetMethodsLmr(BindingFlags.Public | BindingFlags.Static);
                 bool foundMatchingMethod = false;
                 bool foundMatchingMethodWithMatchingParameters = false;
                 foreach (MethodInfo method in methods.Where(m => m.Name.Equals(methodName, StringComparison.OrdinalIgnoreCase)))

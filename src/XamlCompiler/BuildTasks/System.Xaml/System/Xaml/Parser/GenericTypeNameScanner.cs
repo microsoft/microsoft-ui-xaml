@@ -8,7 +8,6 @@ using System.Text;
 using System.Diagnostics;
 
 using System.Xaml.MS.Impl;
-using System.Xaml.Context;
 
 namespace MS.Internal.Xaml.Parser
 {

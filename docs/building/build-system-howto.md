@@ -182,8 +182,8 @@ and sample apps.
 
 ### Xaml Compilation
 
-If your project needs to compile `.xaml` files into `.xbf`, we want to ensure that the
-`Microsoft.UI.Xaml.Markup.Compiler.dll` that is produced from source in this repository is used,
+If your project needs to compile `.xaml` files into `.xbf`, we want to ensure that the XAML compiler
+(`XamlCompiler.exe` and its `Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll` MSBuild task) that is produced from source in this repository is used,
 rather than one that ships in the SDK. In order to ensure this happens, simply set the `UseXamlCompiler`
 property to `true` in your project. This will ensure that the project is built and the proper targets are imported.
 

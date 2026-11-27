@@ -16,7 +16,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             : base(valueType, parent, apiInformation)
         {
             Key = key;
-            keyHashCode = ((uint)key.GetHashCode()).ToString();
+            keyHashCode = ((uint)StableStringHash.Compute(key)).ToString();
         }
 
         public override string UniqueName => string.Format("K{0}", keyHashCode);

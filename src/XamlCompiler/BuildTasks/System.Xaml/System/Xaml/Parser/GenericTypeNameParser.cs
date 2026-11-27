@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Xaml.Context;
 using System.Xaml;
 using System.Xaml.Schema;
 using System.Diagnostics;
@@ -23,11 +22,6 @@ namespace MS.Internal.Xaml.Parser
             {
             }
 
-#if !NET8_0_OR_GREATER
-            protected TypeNameParserException(SerializationInfo si, StreamingContext sc) : base(si, sc)
-            {
-            }
-#endif
         }
 
         private GenericTypeNameScanner _scanner;

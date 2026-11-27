@@ -22,7 +22,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         private readonly bool _useVcMetaManaged = true;
 
-        public FingerPrinter(IAssemblyItem localAssembly, IEnumerable<IAssemblyItem> referenceAssemblies, String[] ignorePaths, string vcInstallDir, string vcInstallPath32, string vcInstallPath64, bool useVCMetaManaged)
+        public FingerPrinter(IAssemblyItem localAssembly, IEnumerable<IAssemblyItem> referenceAssemblies, String[] ignorePaths, string vcInstallDir, string vcInstallPath64, bool useVCMetaManaged)
         {
             IgnorePathsList = ignorePaths;
             SetLocalAssembly(localAssembly);
@@ -31,7 +31,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             _useVcMetaManaged = useVCMetaManaged;
             if (!_useVcMetaManaged)
             {
-                FingerPrinter.s_VcMetaIsLoaded = NativeMethodsHelper.EnsureVcMetaIsLoaded(vcInstallDir, vcInstallPath32, vcInstallPath64);
+                FingerPrinter.s_VcMetaIsLoaded = NativeMethodsHelper.EnsureVcMetaIsLoaded(vcInstallDir, vcInstallPath64);
             }
         }
 

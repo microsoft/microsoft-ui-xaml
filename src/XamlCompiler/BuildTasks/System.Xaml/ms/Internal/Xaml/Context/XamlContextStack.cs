@@ -29,35 +29,6 @@ namespace MS.Internal.Xaml.Context
             Debug.Assert(CurrentFrame.Depth == Depth);
         }
 
-        public XamlContextStack(XamlContextStack<T> source, bool copy)
-        {
-            _creationDelegate = source._creationDelegate;
-            _depth = source.Depth;
-            if (!copy)
-            {
-                _currentFrame = source.CurrentFrame;
-            }
-            else
-            {
-                T iteratorFrame = source.CurrentFrame;
-                T lastFrameInNewStack = null;
-                while (iteratorFrame != null)
-                {
-                    T newFrame = (T)iteratorFrame.Clone();
-                    if (_currentFrame == null)
-                    {
-                        _currentFrame = newFrame;
-                    }
-                    if (lastFrameInNewStack != null)
-                    {
-                        lastFrameInNewStack.Previous = newFrame;
-                    }
-                    lastFrameInNewStack = newFrame;
-                    iteratorFrame = (T)iteratorFrame.Previous;
-                }
-            }
-        }
-
         //allocate a new frame as the new currentFrame;
         private void Grow()
         {

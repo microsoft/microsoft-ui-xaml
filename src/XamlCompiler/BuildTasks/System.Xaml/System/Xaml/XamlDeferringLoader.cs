@@ -6,11 +6,9 @@ using System;
 
 namespace System.Xaml
 {
-    // Implemented by templates and any other processors of deferred content.
+    // The loader of deferred content, such as templates. The XAML compiler only uses it to know which members have deferred
+    // content (XamlMember.DeferringLoader, XamlType.DeferringLoader): it never loads that content at build time.
     public abstract class XamlDeferringLoader
     {
-        public abstract object Load(XamlReader xamlReader, IServiceProvider serviceProvider);
-
-        public abstract XamlReader Save(object value, IServiceProvider serviceProvider);
     }
 }

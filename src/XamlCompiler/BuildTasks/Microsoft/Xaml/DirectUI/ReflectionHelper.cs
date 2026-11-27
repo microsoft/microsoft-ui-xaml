@@ -176,69 +176,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             return null;
         }
 
-        // FxCop says this is not called
-#if FxCop_Says_This_Is_Not_Called
-        private static readonly ConcurrentDictionary<Assembly, IList<CustomAttributeData>> _asmAttrs = new ConcurrentDictionary<Assembly, IList<CustomAttributeData>>();
-
-        internal static IList<CustomAttributeData> GetCustomAttributeData(Assembly asm)
-        {
-            IList<CustomAttributeData> data;
-            if (!_asmAttrs.TryGetValue(asm, out data))
-            {
-                data = asm.GetCustomAttributesData();
-                _asmAttrs[asm] = data;
-            }
-            return data;
-        }
-
-        internal static XmlnsDefinitionAttribute[] GetAssemblyXmlNsDefinitionAttributes(Assembly asm, Type attributeType)
-        {
-            int defCount = 0;
-            List<XmlnsDefinitionAttribute> defList = new List<XmlnsDefinitionAttribute>();
-
-            try
-            {
-                foreach (CustomAttributeData cad in asm.GetCustomAttributesData())
-                {
-                    ConstructorInfo cinfo = cad.Constructor;
-                    if (cinfo.ReflectedType == attributeType)
-                    {
-                        defCount += 1;
-                        String xmlns = cad.ConstructorArguments[0].Value as String;
-                        String clrpath = cad.ConstructorArguments[1].Value as String;
-                        XmlnsDefinitionAttribute def = new XmlnsDefinitionAttribute(xmlns, clrpath);
-                        defList.Add(def);
-                    }
-                }
-            }
-            catch (TypeLoadException ex)
-            {
-                Debug.WriteLine("Attribute Reflection Error: " + ex.Message);
-            }
-            return defList.ToArray();
-        }
-
-        internal static XmlnsPrefixAttribute[] GetAssemblyXmlNsPrefixAttributes(Assembly asm, Type attributeType)
-        {
-            int defCount = 0;
-            List<XmlnsPrefixAttribute> defList = new List<XmlnsPrefixAttribute>();
-
-            foreach (CustomAttributeData cad in asm.GetCustomAttributesData())
-            {
-                ConstructorInfo cinfo = cad.Constructor;
-                if (cinfo.ReflectedType == attributeType)
-                {
-                    defCount += 1;
-                    String xmlns = cad.ConstructorArguments[0].Value as String;
-                    String prefix = cad.ConstructorArguments[1].Value as String;
-                    XmlnsPrefixAttribute def = new XmlnsPrefixAttribute(xmlns, prefix);
-                    defList.Add(def);
-                }
-            }
-            return defList.ToArray();
-
-        }
-#endif
 
     }
 }

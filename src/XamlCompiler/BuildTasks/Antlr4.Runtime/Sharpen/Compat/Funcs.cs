@@ -25,7 +25,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 //
 
-#if !NET35PLUS
 
 using System.Runtime.CompilerServices;
 
@@ -38,4 +37,3 @@ namespace Antlr4.Runtime.Sharpen {
 	public delegate TResult Func<in T1, in T2, out TResult> (T1 arg1, T2 arg2);
 }
 
-#endif

@@ -11,138 +11,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security;
-using System.Security.Permissions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-#if SYSTEM_XAML
 using TypeConverterHelper = System.Xaml.TypeConverterHelper;
-#else
-using Microsoft.Win32;
-using MS.Win32;
-using TypeConverterHelper = System.Windows.Markup.TypeConverterHelper;
-#endif
-#if PRESENTATIONFRAMEWORK
-        using System.Windows;
-        using System.Windows.Media;
-#endif
 
 // The SafeSecurityHelper class differs between assemblies and could not actually be
 //  shared, so it is duplicated across namespaces to prevent name collision.
-#if WINDOWS_BASE
-namespace MS.Internal.WindowsBase
-#elif PRESENTATION_CORE
-namespace MS.Internal.PresentationCore
-#elif PRESENTATIONFRAMEWORK
-namespace MS.Internal.PresentationFramework
-#elif REACHFRAMEWORK
-namespace MS.Internal.ReachFramework
-#elif DRT
-namespace MS.Internal.Drt
-#elif SYSTEM_XAML
 namespace System.Xaml
-#else
-#error Class is being used from an unknown assembly.
-#endif
 {
     internal static partial class SafeSecurityHelper
     {
-#if PRESENTATION_CORE
-        ///<summary>
-        /// Given a rectangle with coords in local screen coordinates.
-        /// Return the rectangle in global screen coordinates.
-        ///</summary>
-        ///<SecurityNote>
-        /// Critical - calls a critical function.
-        /// TreatAsSafe - handing out a transformed rect is considered safe.
-        ///
-        ///                      Although we are calling a function that passes an array, and no. of elements.
-        ///                      We limit this call to only call this function with a 2 as the count of elements.
-        ///                      Thereby containing any potential for the call to Win32 to cause a buffer overrun.
-        ///</SecurityNote>
-        [SecurityCritical, SecurityTreatAsSafe ]
-        internal static void TransformLocalRectToScreen(HandleRef hwnd, ref NativeMethods.RECT rcWindowCoords)
-        {
-            int retval = MS.Internal.WindowsBase.NativeMethodsSetLastError.MapWindowPoints(hwnd , new HandleRef(null, IntPtr.Zero), ref rcWindowCoords, 2);
-            int win32Err = Marshal.GetLastWin32Error();
-            if(retval == 0 && win32Err != 0)
-            {
-                throw new System.ComponentModel.Win32Exception(win32Err);
-            }
-        }
-#endif
 
-#if PRESENTATION_CORE || PRESENTATIONFRAMEWORK ||REACHFRAMEWORK || DEBUG
 
-#if !WINDOWS_BASE && !SYSTEM_XAML
-        /// <summary>
-        ///     Given an assembly, returns the partial name of the assembly.
-        /// </summary>
-        /// <SecurityNote>
-        ///     This code used to perform an elevation but no longer needs to.
-        ///     The method is being kept in this class to ease auditing and
-        ///     should have a security review if changed.
-        ///     The string returned does not contain path information.
-        ///     This code is duplicated in SafeSecurityHelperPBT.cs.
-        /// </SecurityNote>
-        internal static string GetAssemblyPartialName(Assembly assembly)
-        {
-            AssemblyName name = new AssemblyName(assembly.FullName);
-            string partialName = name.Name;
-            return (partialName != null) ? partialName : String.Empty;
-        }
-#endif
 
-#endif
-
-#if PRESENTATIONFRAMEWORK
-
-        /// <summary>
-        ///     Get the full assembly name by combining the partial name passed in
-        ///     with everything else from proto assembly.
-        /// </summary>
-        /// <SecurityNote>
-        ///     This code used to perform an elevation but no longer needs to.
-        ///     The method is being kept in this class to ease auditing and
-        ///     should have a security review if changed.
-        ///     The string returned does not contain path information.
-        /// </SecurityNote>
-        internal static string GetFullAssemblyNameFromPartialName(
-                                    Assembly protoAssembly,
-                                    string partialName)
-        {
-            AssemblyName name = new AssemblyName(protoAssembly.FullName);
-            name.Name = partialName;
-            return name.FullName;
-        }
-
-        /// <SecurityNote>
-        ///     Critical: This code accesses PresentationSource which is critical but does not
-        ///     expose it.
-        ///     TreatAsSafe: PresentationSource is not exposed and Client to Screen co-ordinates is
-        ///     safe to expose
-        /// </SecurityNote>
-        [SecurityCritical,SecurityTreatAsSafe]
-        internal static Point ClientToScreen(UIElement relativeTo, Point point)
-        {
-            GeneralTransform transform;
-            PresentationSource source = PresentationSource.CriticalFromVisual(relativeTo);
-
-            if (source == null)
-            {
-                return new Point(double.NaN, double.NaN);
-            }
-            transform = relativeTo.TransformToAncestor(source.RootVisual);
-            Point ptRoot;
-            transform.TryTransform(point, out ptRoot);
-            Point ptClient = PointUtil.RootToClient(ptRoot, source);
-            Point ptScreen = PointUtil.ClientToScreen(ptClient, source);
-
-            return ptScreen;
-        }
-#endif // PRESENTATIONFRAMEWORK
-
-#if WINDOWS_BASE || PRESENTATION_CORE || SYSTEM_XAML
 
         // Cache of Assembly -> AssemblyName, because calling new AssemblyName() is expensive.
         // If the assembly is static, the key is the assembly; if it's dynamic, the key is a WeakRefKey
@@ -282,17 +164,11 @@ namespace System.Xaml
             }
         }
 
-#endif  // WINDOWS_BASE || PRESENTATION_CORE || SYSTEM_XAML
 
         //
         // Determine if two Public Key Tokens are the same.
         //
-#if !REACHFRAMEWORK
-#if PRESENTATIONFRAMEWORK || SYSTEM_XAML
         internal
-#else
-        private
-#endif
         static bool IsSameKeyToken(byte[] reqKeyToken, byte[] curKeyToken)
         {
            bool isSame = false;
@@ -322,136 +198,12 @@ namespace System.Xaml
 
            return isSame;
         }
-#endif //!REACHFRAMEWORK
 
-#if PRESENTATION_CORE || PRESENTATIONFRAMEWORK
-        // enum to choose between the various keys
-        internal enum KeyToRead
-        {
-             WebBrowserDisable = 0x01 ,
-             MediaAudioDisable = 0x02 ,
-             MediaVideoDisable = 0x04 ,
-             MediaImageDisable = 0x08 ,
-             MediaAudioOrVideoDisable = KeyToRead.MediaVideoDisable | KeyToRead.MediaAudioDisable  ,
-             ScriptInteropDisable = 0x10 ,
-        }
 
-        /// <SecurityNote>
-        ///   Critical: This code elevates to access registry
-        ///   TreatAsSafe: The information it exposes is safe to give out and all it does is read a specific key
-        /// </SecurityNote>
-        [SecurityCritical,SecurityTreatAsSafe]
-        internal static bool IsFeatureDisabled(KeyToRead key)
-        {
-            string regValue = null;
-            bool fResult = false;
-
-            switch (key)
-            {
-                case KeyToRead.WebBrowserDisable:
-                    regValue = RegistryKeys.value_WebBrowserDisallow;
-                    break;
-                case KeyToRead.MediaAudioDisable:
-                    regValue = RegistryKeys.value_MediaAudioDisallow;
-                    break;
-                case KeyToRead.MediaVideoDisable:
-                    regValue = RegistryKeys.value_MediaVideoDisallow;
-                    break;
-                case KeyToRead.MediaImageDisable:
-                    regValue = RegistryKeys.value_MediaImageDisallow;
-                    break;
-                case KeyToRead.MediaAudioOrVideoDisable:
-                    regValue = RegistryKeys.value_MediaAudioDisallow;
-                    break;
-                case KeyToRead.ScriptInteropDisable:
-                    regValue = RegistryKeys.value_ScriptInteropDisallow;
-                    break;
-                default:// throw exception for invalid key
-                throw(new System.ArgumentException(key.ToString()));
-
-            }
-
-            RegistryKey featureKey;
-            //Assert for read access to HKLM\Software\Microsoft\Windows\Avalon
-            RegistryPermission regPerm = new RegistryPermission(RegistryPermissionAccess.Read,"HKEY_LOCAL_MACHINE\\"+RegistryKeys.WPF_Features);//BlessedAssert
-            regPerm.Assert();//BlessedAssert
-            try
-            {
-                object obj = null;
-                bool keyValue = false;
-                // open the key and read the value
-                featureKey = Registry.LocalMachine.OpenSubKey(RegistryKeys.WPF_Features);
-                if (featureKey != null)
-                {
-                    // If key exists and value is 1 return true else false
-                    obj = featureKey.GetValue(regValue);
-                    keyValue = obj is int && ((int)obj == 1);
-                    if (keyValue)
-                    {
-                        fResult = true;
-                    }
-
-                    // special case for audio and video since they can be orred
-                    // this is in the condition that audio is enabled since that is
-                    // the path that MediaAudioVideoDisable defaults to
-                    // This is purely to optimize perf on the number of calls to assert
-                    // in the media or audio scenario.
-
-                    if ((fResult == false) && (key == KeyToRead.MediaAudioOrVideoDisable))
-                    {
-                        regValue = RegistryKeys.value_MediaVideoDisallow;
-                        // If key exists and value is 1 return true else false
-                        obj = featureKey.GetValue(regValue);
-                        keyValue = obj is int && ((int)obj == 1);
-                        if (keyValue)
-                        {
-                            fResult = true;
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                RegistryPermission.RevertAssert();
-            }
-            return fResult;
-        }
-#endif //PRESENTATIONCORE||PRESENTATIONFRAMEWORK
-
-#if PRESENTATION_CORE
-
-        /// <summary>
-        ///     This function is a wrapper for CultureInfo.GetCultureInfoByIetfLanguageTag().
-        ///     The wrapper works around a bug in that routine, which causes it to throw
-        ///     a SecurityException in Partial Trust.
-        /// </summary>
-        /// <SecurityNote>
-        ///   Critical: This code elevates to access registry
-        ///   TreatAsSafe: The information it exposes is safe to give out and all it does is read a specific key
-        /// </SecurityNote>
-        [SecurityCritical,SecurityTreatAsSafe]
-        static internal CultureInfo GetCultureInfoByIetfLanguageTag(string languageTag)
-        {
-            CultureInfo culture = null;
-
-            RegistryPermission regPerm = new RegistryPermission(RegistryPermissionAccess.Read, RegistryKeys.HKLM_IetfLanguage);//BlessedAssert
-            regPerm.Assert();//BlessedAssert
-            try
-            {
-                culture = CultureInfo.GetCultureInfoByIetfLanguageTag(languageTag);
-            }
-            finally
-            {
-                 RegistryPermission.RevertAssert();
-            }
-            return culture;
-        }
-#endif //PRESENTATIONCORE
 
         internal const string IMAGE = "image";
     }
 
-#if WINDOWS_BASE || PRESENTATION_CORE || SYSTEM_XAML
     // for use as the key to a dictionary, when the "real" key is an object
     // that we should not keep alive by a strong reference.
     class WeakRefKey : WeakReference
@@ -526,5 +278,4 @@ namespace System.Xaml
             new GCNotificationToken(callback, state);
         }
     }
-#endif
 }

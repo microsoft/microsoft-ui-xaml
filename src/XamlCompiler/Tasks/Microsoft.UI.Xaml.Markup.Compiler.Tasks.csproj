@@ -1,0 +1,72 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!--
+  The MSBuild tasks of the XAML compiler (Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll): CompileXaml, which runs the Native AOT
+  XAML compiler (Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj, XamlCompiler.exe), and the AddDefaultXamlLinkMetadata
+  and GetXamlCppIncludeDirectories helper tasks of the C++ build. There is no compiler code here.
+
+  It is a single netstandard2.0 assembly without any dependency other than the MSBuild API, so that both the .NET Framework MSBuild
+  (Visual Studio, msbuild.exe) and .NET MSBuild ('dotnet build') load it as is, without assembly conflicts with MSBuild itself.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <SigningMethods Include="StrongName" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Microsoft.UI.Xaml.Markup.Compiler.Tasks</AssemblyName>
+    <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler.Tasks</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <TargetDestination>$(MarkupCompilerDestinationPath)</TargetDestination>
+    <SymbolsBinDir>$(ProductSymbolsBinplacePath)</SymbolsBinDir>
+    <CopyToSuiteBin>true</CopyToSuiteBin>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The MSBuild API is provided by the MSBuild that loads the tasks: compile against the oldest supported version only -->
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" ExcludeAssets="runtime" PrivateAssets="all" />
+    <!--
+      Only downloaded (no dependencies): the IVsMSBuildTaskFreeThreadedFileManager interface of the Visual Studio project system (CPS)
+      is embedded into the task assembly from it, see the Reference below and IdeHostFileManager.cs.
+    -->
+    <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem" Version="[$(MicrosoftVisualStudioProjectSystemVersion)]" />
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>$(NugetPackageDirectory)\Microsoft.VisualStudio.ProjectSystem\$(MicrosoftVisualStudioProjectSystemVersion)\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="*.cs" />
+    <!-- Path helpers shared with the compiler -->
+    <Compile Include="..\BuildTasks\XamlHelper.cs" Link="Shared\XamlHelper.cs" />
+    <None Include="..\Targets\*">
+      <Link>Targets\%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="UnitTests" Key="00240000048000009400000006020000002400005253413100040000010001001d17b2695c776a953710dd27ae732b5759779795e03f73a2a29079de2fb1ed25746f89533cc76df251bb97c06cf054bb12b38968060a1f40f380e26b139f7f892716c4aa5dd7455448c0851d807ef44ddbaaafa1e3a5d6317b0b2ffa205b439abc92a84b017ab0184676163479484a965e87c85a90ee644a801e8c767dd979b9" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Not a dependency of the tasks, but the compiler they run: building the tasks builds (and packages) the compiler too -->
+    <ProjectReference Include="..\Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj" ReferenceOutputAssembly="false" Private="false"
+                      SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="TargetFramework" />
+  </ItemGroup>
+  <!--
+    The package layout of the XAML compiler (see eng\packaging.targets):
+      * build\: the targets (Targets\*), which run the tasks;
+      * tools\Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll: the tasks;
+      * tools\win-x64\XamlCompiler.exe, tools\win-arm64\XamlCompiler.exe: the Native AOT compiler, packaged by
+        Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj;
+      * tools\<arch>\GenXbf.dll: the XBF generator the compiler loads, packaged by eng\BuildGenXbfForMSBuild.
+  -->
+  <ItemGroup>
+    <PackageContent Include="..\Targets\*" PackageLocation="$(BuildTargetsPackageLocation)" />
+    <PackageContent Include="$(OutDir)$(AssemblyName).dll" PackageLocation="$(ToolsPackageLocation)" />
+  </ItemGroup>
+  <Import Project="..\Contracts\Contracts.projitems" Label="Shared" />
+</Project>

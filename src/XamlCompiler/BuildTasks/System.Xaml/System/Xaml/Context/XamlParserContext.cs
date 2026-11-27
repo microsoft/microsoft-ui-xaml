@@ -10,7 +10,6 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Xaml;
 using XAML3 = System.Windows.Markup;
-using System.Xaml.Context;
 using System.Xaml.Schema;
 using MS.Internal.Xaml.Parser;
 using System.Xaml.MS.Impl;

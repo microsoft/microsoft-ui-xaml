@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)FunctionNumberParam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FunctionPathParam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FunctionStep.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StableStringHash.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FunctionStringParam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapIndexStep.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parameter.cs" />

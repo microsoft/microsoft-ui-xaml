@@ -26,7 +26,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             : this(method, apiInformation)
         {
             Parameters.AddRange(parameters);
-            paramsHashCode = ((uint)string.Concat(Parameters.Select(p => p.CodeName).ToArray()).GetHashCode()).ToString();
+            paramsHashCode = ((uint)StableStringHash.Compute(string.Concat(Parameters.Select(p => p.CodeName).ToArray()))).ToString();
 
             foreach (var pathParam in Parameters.OfType<FunctionPathParam>())
             {

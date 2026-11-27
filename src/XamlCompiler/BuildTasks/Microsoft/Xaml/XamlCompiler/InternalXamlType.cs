@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Markup;
 using System.Xaml;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 {
@@ -210,7 +211,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                 }
 
                 // Exclude all types with no static constructors
-                if (_simpleTypeEntry.UnderlyingType.GetConstructor(BindingFlags.Static | BindingFlags.NonPublic, null, Type.EmptyTypes, null) == null)
+                if (_simpleTypeEntry.UnderlyingType.GetConstructorLmr(BindingFlags.Static | BindingFlags.NonPublic, null, Type.EmptyTypes, null) == null)
                 {
                     return false;
                 }

@@ -29,19 +29,6 @@ namespace System.Windows.Markup
         {
         }
         
-        /// <summary>
-        ///  Return an object that should be set on the targetObject's targetProperty
-        ///  for this markup extension.  In this case it is simply null.
-        /// </summary>
-        /// <param name="serviceProvider">Object that can provide services for the markup extension.</param>
-        /// <returns>
-        ///  The object to set on this property.
-        /// </returns>
-        public override object ProvideValue(IServiceProvider serviceProvider)
-        {
-            return null;
-        }
-
     }
 }
 

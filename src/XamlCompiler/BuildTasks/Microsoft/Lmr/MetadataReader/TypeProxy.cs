@@ -9,6 +9,7 @@ using System.Text;
 using System.Globalization;
 using System.Reflection.Adds;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using System.Reflection;  
 
@@ -198,18 +199,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return GetResolvedType().GetArrayRank();
         }
 
-        public override Type MakeGenericType(Type[] args)
+        internal override Type MakeGenericTypeCore(Type[] args)
         {            
             // Build up the type tree to avoid resolution.
             return new ProxyGenericType(this, args);
         }
 
-        public override Type MakeArrayType()
+        internal override Type MakeArrayTypeCore()
         {
             return this.Resolver.Factory.CreateVectorType(this);
         }
 
-        public override Type MakeArrayType(int rank)
+        internal override Type MakeArrayTypeCore(int rank)
         {
             return this.Resolver.Factory.CreateArrayType(this, rank);
         }
@@ -296,14 +297,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
         }
 
-        public override MethodInfo[] GetMethods(BindingFlags flags)
+        internal override MethodInfo[] GetMethodsCore(BindingFlags flags)
         {
-            return GetResolvedType().GetMethods(flags);
+            return GetResolvedType().GetMethodsLmr(flags);
         }
 
-        public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
+        internal override ConstructorInfo[] GetConstructorsCore(BindingFlags bindingAttr)
         {
-            return GetResolvedType().GetConstructors(bindingAttr);
+            return GetResolvedType().GetConstructorsLmr(bindingAttr);
         }
 
         public override bool IsAssignableFrom(Type c)
@@ -336,21 +337,21 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return GetResolvedType().Attributes;
         }
 
-        protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        internal override MethodInfo GetMethodImplCore(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
             // prevent GetMethod() on the resolved type from throwing a bogus ArgumentNullException when we delegate from GetMethodImpl() on the proxy type.  
             // Ideally, we would just call GetMethodImpl() directly on the resolved type, but we can’t do that because it’s protected. 
             if ((types == null) && (modifiers == null) && (binder == null) && (callConvention == CallingConventions.Any))
             {
-                return GetResolvedType().GetMethod(name, bindingAttr);
+                return GetResolvedType().GetMethodLmr(name, bindingAttr);
             }
             else
             {
-                return GetResolvedType().GetMethod(name, bindingAttr, binder, callConvention, types, modifiers);
+                return GetResolvedType().GetMethodLmr(name, bindingAttr, binder, callConvention, types, modifiers);
             }
         }
 
-        protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
+        internal override PropertyInfo GetPropertyImplCore(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
         {
             if ((types == null) && (modifiers == null))
             {
@@ -358,65 +359,65 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 // So we need to call the appropriate narrower overload. 
                 if (returnType != null)
                 {
-                    return GetResolvedType().GetProperty(name, returnType);
+                    return GetResolvedType().GetPropertyLmr(name, returnType);
                 }
                 else
                 {
-                    return GetResolvedType().GetProperty(name, bindingAttr);
+                    return GetResolvedType().GetPropertyLmr(name, bindingAttr);
                 }
                
             }
-            return GetResolvedType().GetProperty(name, bindingAttr, binder, returnType, types, modifiers);
+            return GetResolvedType().GetPropertyLmr(name, bindingAttr, binder, returnType, types, modifiers);
         }
 
-        protected override ConstructorInfo GetConstructorImpl(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        internal override ConstructorInfo GetConstructorImplCore(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
-            return GetResolvedType().GetConstructor(bindingAttr, binder, callConvention, types, modifiers);
+            return GetResolvedType().GetConstructorLmr(bindingAttr, binder, callConvention, types, modifiers);
         }
 
-        public override FieldInfo[] GetFields(BindingFlags flags)
+        internal override FieldInfo[] GetFieldsCore(BindingFlags flags)
         {
-            return GetResolvedType().GetFields(flags);
+            return GetResolvedType().GetFieldsLmr(flags);
         }
 
-        public override PropertyInfo[] GetProperties(BindingFlags flags)
+        internal override PropertyInfo[] GetPropertiesCore(BindingFlags flags)
         {
-            return GetResolvedType().GetProperties(flags);
+            return GetResolvedType().GetPropertiesLmr(flags);
         }
 
-        public override EventInfo[] GetEvents(BindingFlags flags)
+        internal override EventInfo[] GetEventsCore(BindingFlags flags)
         {
-            return GetResolvedType().GetEvents(flags);
+            return GetResolvedType().GetEventsLmr(flags);
         }
 
-        public override EventInfo GetEvent(string name, System.Reflection.BindingFlags flags)
+        internal override EventInfo GetEventCore(string name, System.Reflection.BindingFlags flags)
         {
-            return GetResolvedType().GetEvent(name, flags);
+            return GetResolvedType().GetEventLmr(name, flags);
         }
 
-        public override FieldInfo GetField(string name, BindingFlags flags)
+        internal override FieldInfo GetFieldCore(string name, BindingFlags flags)
         {
-            return GetResolvedType().GetField(name, flags);
+            return GetResolvedType().GetFieldLmr(name, flags);
         }
 
-        public override Type[] GetNestedTypes(BindingFlags bindingAttr)
+        internal override Type[] GetNestedTypesCore(BindingFlags bindingAttr)
         {
-            return GetResolvedType().GetNestedTypes(bindingAttr);
+            return GetResolvedType().GetNestedTypesLmr(bindingAttr);
         }
 
-        public override Type GetNestedType(string name, BindingFlags bindingAttr)
+        internal override Type GetNestedTypeCore(string name, BindingFlags bindingAttr)
         {
-            return GetResolvedType().GetNestedType(name, bindingAttr);
+            return GetResolvedType().GetNestedTypeLmr(name, bindingAttr);
         }
 
-        public override MemberInfo[] GetMember(string name, MemberTypes type, BindingFlags bindingAttr)
+        internal override MemberInfo[] GetMemberCore(string name, MemberTypes type, BindingFlags bindingAttr)
         {
-            return GetResolvedType().GetMember(name, type, bindingAttr);
+            return GetResolvedType().GetMemberLmr(name, type, bindingAttr);
         }
 
-        public override MemberInfo[] GetMembers(BindingFlags bindingAttr)
+        internal override MemberInfo[] GetMembersCore(BindingFlags bindingAttr)
         {
-            return GetResolvedType().GetMembers(bindingAttr);
+            return GetResolvedType().GetMembersLmr(bindingAttr);
         }
 
         public override bool IsInstanceOfType(object o)
@@ -424,15 +425,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return GetResolvedType().IsInstanceOfType(o);
         }
 
-        public override Type[] GetInterfaces()
+        internal override Type[] GetInterfacesCore()
         {
-            return GetResolvedType().GetInterfaces();
+            return GetResolvedType().GetInterfacesLmr();
         }
 
-        public override Type GetInterface(string name, bool ignoreCase)
+        internal override Type GetInterfaceCore(string name, bool ignoreCase)
         {
             if (name == null) throw new ArgumentNullException("name");
-            return GetResolvedType().GetInterface(name, ignoreCase);
+            return GetResolvedType().GetInterfaceLmr(name, ignoreCase);
         }
 
         public override bool IsGenericParameter
@@ -469,9 +470,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return this.IsArray || this.IsByRef || this.IsPointer;
         }
 
-        public override object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
+        internal override object InvokeMemberCore(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
         {
-            return GetResolvedType().InvokeMember(name, invokeAttr, binder, target, args, modifiers, culture, namedParameters);
+            return GetResolvedType().InvokeMemberLmr(name, invokeAttr, binder, target, args, modifiers, culture, namedParameters);
         }
 
         protected override bool IsCOMObjectImpl()
@@ -479,9 +480,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return GetResolvedType().IsCOMObject;
         }
 
-        public override MemberInfo[] GetDefaultMembers()
+        internal override MemberInfo[] GetDefaultMembersCore()
         {
-            return GetResolvedType().GetDefaultMembers();
+            return GetResolvedType().GetDefaultMembersLmr();
         }
 
         public override IList<CustomAttributeData> GetCustomAttributesData()
@@ -523,20 +524,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return GetResolvedType().GetGenericParameterConstraints();
         }
 
-        public override System.Reflection.InterfaceMapping GetInterfaceMap(Type interfaceType)
+        public override System.Reflection.InterfaceMapping GetInterfaceMap([DynamicallyAccessedMembers(LmrTypeBase.AllMethods)] Type interfaceType)
         {
             return GetResolvedType().GetInterfaceMap(interfaceType);
         }
 
-        public override Type[] FindInterfaces(TypeFilter filter, object filterCriteria)
-        {
-            return GetResolvedType().FindInterfaces(filter, filterCriteria);
-        }
-
-        public override MemberInfo[] GetMember(string name, BindingFlags bindingAttr)
-        {
-            return GetResolvedType().GetMember(name, bindingAttr);
-        }
+        // FindInterfaces, FindMembers and GetMember(string, BindingFlags) are not forwarded to the resolved type, unlike the
+        // other members: they need the trimming annotations of Type on the resolved type, which can't be expressed. The
+        // implementations of Type are used instead, which is the same: they are implemented on top of other members of Type
+        // (GetInterfaces, GetMethods, GetFields..., GetMember(string, MemberTypes, BindingFlags)) that are forwarded to the
+        // resolved type, and the LMR types it resolves to don't override them either.
 
         public override bool IsSerializable
         {
@@ -544,12 +541,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             {
                 return GetResolvedType().IsSerializable;
             }
-        }
-
-
-        public override MemberInfo[] FindMembers(MemberTypes memberType, BindingFlags bindingAttr, MemberFilter filter, object filterCriteria)
-        {
-            return GetResolvedType().FindMembers(memberType, bindingAttr, filter, filterCriteria);
         }
 
         #endregion // Type Members

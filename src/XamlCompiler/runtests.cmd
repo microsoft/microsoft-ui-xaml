@@ -29,7 +29,7 @@ call :find_vstest
 if errorlevel 1 exit /b 1
 if not defined VsTest goto :vstest_not_found
 
-echo [INFO] Running XamlCompiler tests for %Flavor%...
+echo [INFO] Running XamlCompiler tests for %Flavor% (%TestDir%)...
 pushd "%TestDir%" >nul
 "%VsTest%" UnitTests.dll /Settings:"%RunSettings%" %*
 set "Result=%ERRORLEVEL%"

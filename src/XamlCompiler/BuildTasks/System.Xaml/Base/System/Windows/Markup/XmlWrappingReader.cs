@@ -10,13 +10,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Security.Policy;
 
-#if PBTCOMPILER
-namespace MS.Internal.Markup
-#elif SYSTEM_XAML
 namespace System.Xaml
-#else
-namespace System.Windows.Markup 
-#endif
 {
 
     internal class XmlWrappingReader : XmlReader, IXmlLineInfo, IXmlNamespaceResolver {

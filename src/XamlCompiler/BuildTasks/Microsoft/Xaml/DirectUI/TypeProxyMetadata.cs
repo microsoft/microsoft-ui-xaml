@@ -43,7 +43,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         {
             Name = "TemplateBindingExtension",
             IsMarkupExtension = true,
-            UnderlyingTypeName = typeof(ProxyTypes.TemplateBindingExtension).FullName,
+            UnderlyingTypeName = ProxyTypeNames.TemplateBindingExtension,
             BaseTypeName = "System.Windows.Markup.MarkupExtension"
         };
 
@@ -51,7 +51,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         {
             Name = "StaticResourceExtension",
             IsMarkupExtension = true,
-            UnderlyingTypeName = typeof(ProxyTypes.StaticResourceExtension).FullName,
+            UnderlyingTypeName = ProxyTypeNames.StaticResourceExtension,
             BaseTypeName = "System.Windows.Markup.MarkupExtension",
             MemberNamesAndMetadata = new Dictionary<string, XamlTypeName>()
             {
@@ -63,7 +63,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         {
             Name = "ThemeResourceExtension",
             IsMarkupExtension = true,
-            UnderlyingTypeName = typeof(ProxyTypes.ThemeResourceExtension).FullName,
+            UnderlyingTypeName = ProxyTypeNames.ThemeResourceExtension,
             BaseTypeName = "System.Windows.Markup.MarkupExtension",
             MemberNamesAndMetadata = new Dictionary<string, XamlTypeName>()
             {
@@ -75,7 +75,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         {
             Name = "NullExtension",
             IsMarkupExtension = true,
-            UnderlyingTypeName = typeof(ProxyTypes.NullExtension).FullName,
+            UnderlyingTypeName = ProxyTypeNames.NullExtension,
             BaseTypeName = "System.Windows.Markup.MarkupExtension"
         };
 
@@ -83,7 +83,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         {
             Name = "CustomResourceExtension",
             IsMarkupExtension = true,
-            UnderlyingTypeName = typeof(ProxyTypes.CustomResourceExtension).FullName,
+            UnderlyingTypeName = ProxyTypeNames.CustomResourceExtension,
             BaseTypeName = "System.Windows.Markup.MarkupExtension",
             MemberNamesAndMetadata = new Dictionary<string, XamlTypeName>()
             {
@@ -95,7 +95,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         {
             Name = "BindExtension",
             IsMarkupExtension = true,
-            UnderlyingTypeName = typeof(ProxyTypes.BindExtension).FullName,
+            UnderlyingTypeName = ProxyTypeNames.BindExtension,
             BaseTypeName = "System.Windows.Markup.MarkupExtension",
             MemberNamesAndMetadata = new Dictionary<string, XamlTypeName>()
             {
@@ -115,7 +115,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         {
             Name = "Properties",
             IsMarkupExtension = false,
-            UnderlyingTypeName = typeof(ProxyTypes.Properties).FullName,
+            UnderlyingTypeName = ProxyTypeNames.Properties,
             BaseTypeName = "System.Object",
             CollectionKind = XamlCollectionKind.Collection,
             MemberNamesAndMetadata = new Dictionary<string, XamlTypeName>()
@@ -128,7 +128,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         {
             Name = "Property",
             IsMarkupExtension = false,
-            UnderlyingTypeName = typeof(ProxyTypes.Property).FullName,
+            UnderlyingTypeName = ProxyTypeNames.Property,
             BaseTypeName = "System.Object",
             MemberNamesAndMetadata = new Dictionary<string, XamlTypeName>()
             {
@@ -140,99 +140,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             }
         };
     }
-}
 
-namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI.ProxyTypes
-{
-
-    public abstract class MarkupExtension
+    // Full names of the types in the embedded Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes assembly (see XamlTypeUniverse.GetXamlProxyAssembly).
+    internal static class ProxyTypeNames
     {
-        public abstract object ProvideValue(IServiceProvider serviceProvider);
-    }
-
-    public class NullExtension : ProxyTypes.MarkupExtension
-    {
-        public NullExtension() { }
-
-        public override object ProvideValue(System.IServiceProvider serviceProvider)
-        {
-            return null;
-        }
-    }
-
-    public class StaticResourceExtension : ProxyTypes.MarkupExtension
-    {
-        public StaticResourceExtension() { }
-
-        public StaticResourceExtension(object resourceKey)
-        {
-            ResourceKey = resourceKey;
-        }
-        public object ResourceKey { get; set; }
-        public override object ProvideValue(System.IServiceProvider serviceProvider)
-        {
-            return null;
-        }
-    }
-    
-    public class ThemeResourceExtension : ProxyTypes.MarkupExtension
-    {
-        public ThemeResourceExtension() { }
-
-        public ThemeResourceExtension(object resourceKey)
-        {
-            ResourceKey = resourceKey;
-        }
-        public object ResourceKey { get; set; }
-        public override object ProvideValue(System.IServiceProvider serviceProvider)
-        {
-            return null;
-        }
-    }
-
-    public class CustomResourceExtension : ProxyTypes.MarkupExtension
-    {
-        public CustomResourceExtension() { }
-
-        public CustomResourceExtension(object resourceKey)
-        {
-            ResourceKey = resourceKey;
-        }
-        public object ResourceKey { get; set; }
-        public override object ProvideValue(System.IServiceProvider serviceProvider)
-        {
-            return null;
-        }
-    }
-
-    public class TemplateBindingExtension : ProxyTypes.MarkupExtension
-    {
-        public TemplateBindingExtension() { }
-
-        public override object ProvideValue(System.IServiceProvider serviceProvider)
-        {
-            return null;
-        }
-    }
-
-    public class BindExtension : ProxyTypes.MarkupExtension
-    {
-        public BindExtension() { }
-        public BindExtension(string path) { }
-
-        public override object ProvideValue(System.IServiceProvider serviceProvider)
-        {
-            return null;
-        }
-    }
-
-    public class Properties
-    {
-        public Properties() { }
-    }
-
-    public class Property
-    {
-        public Property() { }
+        public const string MarkupExtension = KnownNamespaces.ProxyTypes + ".MarkupExtension";
+        public const string NullExtension = KnownNamespaces.ProxyTypes + ".NullExtension";
+        public const string StaticResourceExtension = KnownNamespaces.ProxyTypes + ".StaticResourceExtension";
+        public const string ThemeResourceExtension = KnownNamespaces.ProxyTypes + ".ThemeResourceExtension";
+        public const string CustomResourceExtension = KnownNamespaces.ProxyTypes + ".CustomResourceExtension";
+        public const string TemplateBindingExtension = KnownNamespaces.ProxyTypes + ".TemplateBindingExtension";
+        public const string BindExtension = KnownNamespaces.ProxyTypes + ".BindExtension";
+        public const string Properties = KnownNamespaces.ProxyTypes + ".Properties";
+        public const string Property = KnownNamespaces.ProxyTypes + ".Property";
     }
 }

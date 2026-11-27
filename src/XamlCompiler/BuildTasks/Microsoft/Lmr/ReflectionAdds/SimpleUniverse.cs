@@ -9,6 +9,7 @@ using System.Globalization;
 namespace System.Reflection.Adds
 {
     using System.Reflection;
+    using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
     using Type = System.Type;
 
  
@@ -153,7 +154,7 @@ namespace System.Reflection.Adds
             Type val;
             if (!m_hash.TryGetValue(fullName, out val))
             {
-                val = this.GetSystemAssembly().GetType(fullName, true, false);
+                val = this.GetSystemAssembly().GetTypeLmr(fullName, true, false);
                 m_hash[fullName] = val;
             }
             return val;
@@ -203,7 +204,7 @@ namespace System.Reflection.Adds
             // The system assembly is the only one with no assembly references. 
             foreach (var a in this.m_loadedAssemblies)
             {
-                int countRefs = a.GetReferencedAssemblies().Length;
+                int countRefs = a.GetReferencedAssembliesLmr().Length;
                 if (countRefs == 0)
                 {
                     return a;
@@ -357,7 +358,7 @@ namespace System.Reflection.Adds
                 if(null != assembly) 
                 {
                     bool thowOnErrorWhileResolvingType = false;
-                    type = assembly.GetType(typeName, thowOnErrorWhileResolvingType, ignoreCase);
+                    type = assembly.GetTypeLmr(typeName, thowOnErrorWhileResolvingType, ignoreCase);
 
                     if(null != type) 
                     {

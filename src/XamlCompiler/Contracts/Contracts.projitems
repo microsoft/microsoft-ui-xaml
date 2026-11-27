@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!--
+  The JSON contract between the CompileXaml task (Tasks\Microsoft.UI.Xaml.Markup.Compiler.Tasks.csproj, which serializes it with
+  DataContractJsonSerializer) and the XAML compiler (Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj, which serializes it
+  with the System.Text.Json source generator): compiled into both. See CompilerContract.cs for the rules these types must follow.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CompilerContract.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompilerInputs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompilerOutputs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Item.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MSBuildItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MSBuildLogEntry.cs" />
+  </ItemGroup>
+</Project>
