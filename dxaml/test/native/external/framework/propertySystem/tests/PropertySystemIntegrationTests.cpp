@@ -2294,4 +2294,88 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
+        namespace
+        {
+            // IInspectable::GetIids must list the interfaces the object implements; every listed interface must be queryable.
+            void VerifyGetIidsListsQueryableInterfaces(IInspectable* object, std::initializer_list<GUID> expectedIids)
+            {
+                ULONG count = 0;
+                IID* iids = nullptr;
+                VERIFY_SUCCEEDED(object->GetIids(&count, &iids));
+                std::unique_ptr<IID, decltype(&CoTaskMemFree)> iidsHolder(iids, &CoTaskMemFree);
+                VERIFY_IS_NOT_NULL(iids);
+                VERIFY_IS_GREATER_THAN_OR_EQUAL(count, static_cast<ULONG>(expectedIids.size()));
+
+                for (ULONG i = 0; i < count; ++i)
+                {
+                    ComPtr<IUnknown> queried;
+                    VERIFY_SUCCEEDED(object->QueryInterface(iids[i], reinterpret_cast<void**>(queried.GetAddressOf())));
+                    VERIFY_IS_NOT_NULL(queried.Get());
+                }
+
+                for (const GUID& expected : expectedIids)
+                {
+                    VERIFY_IS_TRUE(std::find(iids, iids + count, expected) != iids + count);
+                }
+            }
+        }
+
+        void PropertySystemIntegrationTests::XamlBoxedValuesListTheirInterfacesFromGetIids()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([]()
+            {
+                auto border = ref new Border();
+                border->Margin = Thickness{ 1, 2, 3, 4 };
+                border->Visibility = Visibility::Collapsed;
+
+                LOG_OUTPUT(L"A XAML struct box lists IPropertyValue and IReference<Thickness>.");
+                Platform::Object^ boxedMargin = border->GetValue(FrameworkElement::MarginProperty);
+                VERIFY_IS_NOT_NULL(boxedMargin);
+                VerifyGetIidsListsQueryableInterfaces(
+                    reinterpret_cast<IInspectable*>(boxedMargin),
+                    { __uuidof(::Windows::Foundation::IPropertyValue^), __uuidof(Platform::IBox<Thickness>^) });
+
+                LOG_OUTPUT(L"A XAML enum box lists IPropertyValue and IReference<Visibility>.");
+                Platform::Object^ boxedVisibility = border->GetValue(UIElement::VisibilityProperty);
+                VERIFY_IS_NOT_NULL(boxedVisibility);
+                VerifyGetIidsListsQueryableInterfaces(
+                    reinterpret_cast<IInspectable*>(boxedVisibility),
+                    { __uuidof(::Windows::Foundation::IPropertyValue^), __uuidof(Platform::IBox<Visibility>^) });
+
+                LOG_OUTPUT(L"The RectHelper activation factory lists its public statics interface, and every listed interface is queryable.");
+                auto statics = GetRectHelperStatics();
+                VerifyGetIidsListsQueryableInterfaces(
+                    statics.Get(),
+                    { __uuidof(ABI::Microsoft::UI::Xaml::IRectHelperStatics) });
+            });
+        }
+
+        void PropertySystemIntegrationTests::XamlBoxedDoubleOnInt32PropertyIsConvertedAndBooleanIsRejected()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([]()
+            {
+                auto textBlock = ref new TextBlock();
+                VERIFY_ARE_EQUAL(0, textBlock->CharacterSpacing);
+
+                LOG_OUTPUT(L"A boxed Double with an integral value sets the Int32 CharacterSpacing property.");
+                textBlock->SetValue(TextBlock::CharacterSpacingProperty, PropertyValue::CreateDouble(40.0));
+                VERIFY_ARE_EQUAL(40, textBlock->CharacterSpacing);
+                textBlock->SetValue(TextBlock::CharacterSpacingProperty, PropertyValue::CreateDouble(-25.0));
+                VERIFY_ARE_EQUAL(-25, textBlock->CharacterSpacing);
+
+                LOG_OUTPUT(L"A boxed Boolean is not convertible to Int32, so SetValue fails and the value is unchanged.");
+                {
+                    DisableErrorReportingScopeGuard disableErrorReporting;
+                    VERIFY_THROWS_WINRT(
+                        textBlock->SetValue(TextBlock::CharacterSpacingProperty, PropertyValue::CreateBoolean(true)),
+                        Platform::Exception^);
+                }
+                VERIFY_ARE_EQUAL(-25, textBlock->CharacterSpacing);
+            });
+        }
+
 } } } } } }

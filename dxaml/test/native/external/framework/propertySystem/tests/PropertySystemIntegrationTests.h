@@ -211,6 +211,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(EnumPropertyAcceptsInt32AndUInt32Boxes)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that an enum-typed core property accepts boxed Int32 and UInt32 values and maps them to the enum value.")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(XamlBoxedValuesListTheirInterfacesFromGetIids)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates IInspectable::GetIids on XAML-created struct and enum boxes and on the RectHelper activation factory: the list contains the implemented public interfaces and each listed interface can be queried.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(XamlBoxedDoubleOnInt32PropertyIsConvertedAndBooleanIsRejected)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that an Int32-typed core property accepts a boxed Double and rejects a boxed Boolean without changing its value.")
+        END_TEST_METHOD()
     };
 
     ref class MyItemTemplateSelector : public Microsoft::UI::Xaml::Controls::DataTemplateSelector
