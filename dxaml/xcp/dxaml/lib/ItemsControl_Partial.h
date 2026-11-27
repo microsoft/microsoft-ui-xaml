@@ -434,7 +434,8 @@ namespace DirectUI
         _Check_return_ HRESULT GetScrolledIntoViewAndPreparedContainer(
             int index,
             _In_opt_ xaml::IDependencyObject* itemContainerCandidate,
-            _Outptr_result_maybenull_ xaml::IDependencyObject** itemContainer);
+            _Outptr_result_maybenull_ xaml::IDependencyObject** itemContainer,
+            _In_ DOUBLE scrollOffset = 0.0);
 
         // Helper for determining if this ItemsControl uses an IModernCollectionBasePanel implementing panel.
         _Check_return_ HRESULT ShouldCustomizeTabNavigation(
