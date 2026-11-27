@@ -136,6 +136,7 @@ public:
 
     TEST_METHOD(DeviceLostOnCreatingSvgDecoder_Uri)
     TEST_METHOD(DeviceLostOnCreatingSvgDecoder_Stream)
+    TEST_METHOD(DeviceLostOnFirstMetadataParse)
 
     BEGIN_TEST_METHOD(ReloadsOnScaleChange)
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
