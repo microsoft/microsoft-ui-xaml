@@ -12,6 +12,8 @@
     IFC(CValueBoxer::CopyValue(<#= Model.PropertyType.AbiParameterName #>, <#= Model.FrameworkFieldName #>.ReleaseAndGetAddressOf()));
 <# } else if (Model.PropertyType.IsValueType) { #>
     IFC(CValueBoxer::CopyValue(<#= Model.PropertyType.AbiParameterName #>, &<#= Model.FrameworkFieldName #>));
+<# } else if (Model.XamlPropertyFlags.WeakRef) { #>
+    IFC(ctl::AsWeak(<#= Model.PropertyType.AbiParameterName #>, &<#= Model.FrameworkFieldName #>));
 <# } else if (Model.XamlPropertyFlags.UseComPtr) { #>
     <#= Model.FrameworkFieldName #> = <#= Model.PropertyType.AbiParameterName #>;
 <# } else { #>
