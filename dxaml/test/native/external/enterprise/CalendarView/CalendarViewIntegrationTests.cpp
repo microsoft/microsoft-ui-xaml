@@ -54,58 +54,6 @@ namespace
         }
     }
 
-    // Pins language, calendar and clock so expected dates and strings don't depend on the machine's locale.
-    ::Windows::Globalization::Calendar^ CreateEnUsGregorianCalendar()
-    {
-        auto languages = ref new Platform::Collections::Vector<Platform::String^>();
-        languages->Append(L"en-US");
-        return ref new ::Windows::Globalization::Calendar(
-            languages,
-            ::Windows::Globalization::CalendarIdentifiers::Gregorian,
-            ::Windows::Globalization::ClockIdentifiers::TwentyFourHour);
-    }
-
-    ::Windows::Foundation::DateTime MakeEnUsGregorianDate(int year, int month, int day)
-    {
-        auto calendar = CreateEnUsGregorianCalendar();
-        calendar->Day = 1; // keep the date valid while the year and month change
-        calendar->Year = year;
-        calendar->Month = month;
-        calendar->Day = day;
-        calendar->Hour = 12;
-        calendar->Minute = 0;
-        calendar->Second = 0;
-        calendar->Nanosecond = 0;
-        return calendar->GetDateTime();
-    }
-
-    bool IsSameEnUsGregorianDay(::Windows::Foundation::DateTime lhs, ::Windows::Foundation::DateTime rhs)
-    {
-        auto lhsCalendar = CreateEnUsGregorianCalendar();
-        lhsCalendar->SetDateTime(lhs);
-        auto rhsCalendar = CreateEnUsGregorianCalendar();
-        rhsCalendar->SetDateTime(rhs);
-        return lhsCalendar->Era == rhsCalendar->Era &&
-            lhsCalendar->Year == rhsCalendar->Year &&
-            lhsCalendar->Month == rhsCalendar->Month &&
-            lhsCalendar->Day == rhsCalendar->Day;
-    }
-
-    // Compares COM identity; different interface hats of the same object are not reference-equal.
-    bool AreSameObject(Platform::Object^ lhs, Platform::Object^ rhs)
-    {
-        if (lhs == nullptr || rhs == nullptr)
-        {
-            return lhs == nullptr && rhs == nullptr;
-        }
-
-        wrl::ComPtr<IUnknown> lhsUnknown;
-        wrl::ComPtr<IUnknown> rhsUnknown;
-        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(lhs)->QueryInterface(IID_PPV_ARGS(&lhsUnknown)));
-        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(rhs)->QueryInterface(IID_PPV_ARGS(&rhsUnknown)));
-        return lhsUnknown.Get() == rhsUnknown.Get();
-    }
-
     Microsoft::UI::Xaml::Thickness MakeThickness(double left, double top, double right, double bottom)
     {
         Microsoft::UI::Xaml::Thickness thickness;
@@ -6308,7 +6256,7 @@ VerifyAllTimeZonesPartImpl(19, 20)
                 VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(property)->QueryInterface(IID_PPV_ARGS(&identity)));
                 identities.insert(identity.Get());
             }
-            static_assert(_countof(properties) == 75, "CalendarView exposes 75 dependency properties; update this list when that changes.");
+            static_assert(_countof(properties) == 75, "This list must name each of the 75 CalendarView dependency properties (CalendarView.g.h) once; it does not detect properties added to CalendarView.");
             VERIFY_ARE_EQUAL(_countof(properties), identities.size());
 
             LOG_OUTPUT(L"Assign a distinct, non-default value to every settable property through its typed setter.");
@@ -6657,7 +6605,7 @@ VerifyAllTimeZonesPartImpl(19, 20)
                 CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_VERIFY_FALLBACK_MARGIN)
 #undef CALENDARVIEW_VERIFY_FALLBACK_MARGIN
 #else
-                LOG_OUTPUT(L"Skipping the fallback checks: the fallback values are only applied by debug (chk) builds of Microsoft.UI.Xaml.dll.");
+                WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped, L"The rounded chrome fallback values are only applied by debug (chk) builds of Microsoft.UI.Xaml.dll.");
 #endif
                 clearContent();
             });
