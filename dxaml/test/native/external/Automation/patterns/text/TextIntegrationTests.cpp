@@ -1232,4 +1232,217 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void TextIntegrationTests::VerifyRichTextBlockOverflowRangesAndClamping()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::RichTextBlock^ master = nullptr;
+        auto releaseOnUIThread = wil::scope_exit([&]()
+        {
+            RunOnUIThread([&]()
+            {
+                master = nullptr;
+            });
+        });
+
+        RunOnUIThread([&]()
+        {
+            auto root = ref new xaml_controls::StackPanel();
+
+            // Every line is exactly 20 px high and the RichTextBlock is 30 px high, so only the first paragraph fits in it
+            // and the second one flows into the RichTextBlockOverflow.
+            master = ref new xaml_controls::RichTextBlock();
+            master->Width = 300;
+            master->Height = 30;
+            master->FontSize = 16;
+            master->LineHeight = 20;
+            master->LineStackingStrategy = xaml::LineStackingStrategy::BlockLineHeight;
+            master->IsTextSelectionEnabled = true;
+            xaml_automation::AutomationProperties::SetName(master, L"OverflowMaster");
+
+            auto first = ref new docs::Paragraph();
+            first->Inlines->Append(MakeRun(L"Alpha"));
+            master->Blocks->Append(first);
+            auto second = ref new docs::Paragraph();
+            second->Inlines->Append(MakeRun(L"Bravo "));
+            auto hyperlink = ref new docs::Hyperlink();
+            xaml_automation::AutomationProperties::SetName(hyperlink, L"OverflowLink");
+            hyperlink->Inlines->Append(MakeRun(L"Link"));
+            second->Inlines->Append(hyperlink);
+            master->Blocks->Append(second);
+
+            auto overflow = ref new xaml_controls::RichTextBlockOverflow();
+            overflow->Width = 300;
+            overflow->Height = 100;
+            xaml_automation::AutomationProperties::SetName(overflow, L"OverflowTarget");
+            master->OverflowContentTarget = overflow;
+
+            root->Children->Append(master);
+            root->Children->Append(overflow);
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(master->HasOverflowContent);
+        });
+
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            LOG_OUTPUT(L"The RichTextBlock's document range holds only its own part of the text, the overflow's holds the rest.");
+            auto masterDocument = GetDocumentRange(L"OverflowMaster");
+            const auto masterText = GetRangeText(masterDocument.Get());
+            LOG_OUTPUT(L"RichTextBlock document text: \"%s\".", masterText.c_str());
+            VERIFY_IS_TRUE(StartsWith(masterText, L"Alpha"));
+            VERIFY_IS_FALSE(Contains(masterText, L"Bravo"));
+            auto overflowDocument = GetDocumentRange(L"OverflowTarget");
+            const auto overflowText = GetRangeText(overflowDocument.Get());
+            LOG_OUTPUT(L"RichTextBlockOverflow document text: \"%s\".", overflowText.c_str());
+            VERIFY_IS_TRUE(Contains(overflowText, L"Bravo Link"));
+            VERIFY_IS_FALSE(Contains(overflowText, L"Alpha"));
+
+            LOG_OUTPUT(L"Moving the start past the end of the RichTextBlock's part clamps both endpoints to the end of its document range.");
+            auto clamped = CloneRange(masterDocument.Get());
+            int moved = 0;
+            VERIFY_SUCCEEDED(clamped->MoveEndpointByUnit(TextPatternRangeEndpoint_Start, TextUnit_Character, 100, &moved));
+            LOG_OUTPUT(L"MoveEndpointByUnit(Start, Character, 100) moved %d units.", moved);
+            VERIFY_IS_GREATER_THAN(moved, 0);
+            VERIFY_ARE_EQUAL(0, CompareEndpoints(clamped.Get(), TextPatternRangeEndpoint_Start, masterDocument.Get(), TextPatternRangeEndpoint_End));
+            VERIFY_ARE_EQUAL(0, CompareEndpoints(clamped.Get(), TextPatternRangeEndpoint_End, masterDocument.Get(), TextPatternRangeEndpoint_End));
+            VERIFY_IS_GREATER_THAN(CompareEndpoints(clamped.Get(), TextPatternRangeEndpoint_Start, masterDocument.Get(), TextPatternRangeEndpoint_Start), 0);
+            VerifyRangeText(L"", clamped.Get());
+
+            LOG_OUTPUT(L"Moving the end past the end of the RichTextBlock's part clamps it to the end of its document range.");
+            auto endClamped = CollapsedAtStart(masterDocument.Get());
+            VERIFY_SUCCEEDED(endClamped->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Character, 100, &moved));
+            LOG_OUTPUT(L"MoveEndpointByUnit(End, Character, 100) moved %d units.", moved);
+            VERIFY_IS_GREATER_THAN(moved, 0);
+            VERIFY_ARE_EQUAL(0, CompareEndpoints(endClamped.Get(), TextPatternRangeEndpoint_Start, masterDocument.Get(), TextPatternRangeEndpoint_Start));
+            VERIFY_ARE_EQUAL(0, CompareEndpoints(endClamped.Get(), TextPatternRangeEndpoint_End, masterDocument.Get(), TextPatternRangeEndpoint_End));
+            VERIFY_IS_TRUE(GetRangeText(endClamped.Get()) == masterText);
+
+            LOG_OUTPUT(L"The overflow's document range has the Hyperlink of the overflowing paragraph as its only child.");
+            wrl::ComPtr<IUIAutomationElementArray> children;
+            VERIFY_SUCCEEDED(overflowDocument->GetChildren(&children));
+            VERIFY_IS_NOT_NULL(children.Get());
+            int length = 0;
+            VERIFY_SUCCEEDED(children->get_Length(&length));
+            VERIFY_ARE_EQUAL(1, length);
+            wrl::ComPtr<IUIAutomationElement> child;
+            VERIFY_SUCCEEDED(children->GetElement(0, &child));
+            VERIFY_IS_NOT_NULL(child.Get());
+            AutoBSTR childName;
+            VERIFY_SUCCEEDED(child->get_CurrentName(childName.ReleaseAndGetAddressOf()));
+            VERIFY_IS_TRUE(static_cast<bool>(childName));
+            AutoBSTR::VerifyAreEqual(L"OverflowLink", childName);
+            CONTROLTYPEID controlType = 0;
+            VERIFY_SUCCEEDED(child->get_CurrentControlType(&controlType));
+            VERIFY_ARE_EQUAL(static_cast<int>(UIA_HyperlinkControlTypeId), static_cast<int>(controlType));
+
+            LOG_OUTPUT(L"Select on a range of the overflow selects that text in the RichTextBlock.");
+            auto bravo = CollapsedAtStart(overflowDocument.Get());
+            VERIFY_SUCCEEDED(bravo->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Character, 5, &moved));
+            VERIFY_ARE_EQUAL(5, moved);
+            VerifyRangeText(L"Bravo", bravo.Get());
+            VERIFY_SUCCEEDED(bravo->Select());
+        });
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Selected text: \"%s\".", master->SelectedText ? master->SelectedText->Data() : L"<null>");
+            VERIFY_ARE_EQUAL(0, Platform::String::CompareOrdinal(L"Bravo", master->SelectedText));
+        });
+    }
+
+    void TextIntegrationTests::VerifyEndpointMovesAtDocumentEdgesAndCrossing()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            auto richTextBlock = ref new xaml_controls::RichTextBlock();
+            richTextBlock->Width = 400;
+            xaml_automation::AutomationProperties::SetName(richTextBlock, L"EdgeRichTextBlock");
+            auto first = ref new docs::Paragraph();
+            first->Inlines->Append(MakeRun(L"Hello World"));
+            richTextBlock->Blocks->Append(first);
+            auto second = ref new docs::Paragraph();
+            second->Inlines->Append(MakeRun(L"Second"));
+            richTextBlock->Blocks->Append(second);
+            TestServices::WindowHelper->WindowContent = richTextBlock;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            auto document = GetDocumentRange(L"EdgeRichTextBlock");
+            int moved = 0;
+
+            auto verifyUnchanged = [](IUIAutomationTextRange* range, IUIAutomationTextRange* original)
+            {
+                VERIFY_ARE_EQUAL(0, CompareEndpoints(range, TextPatternRangeEndpoint_Start, original, TextPatternRangeEndpoint_Start));
+                VERIFY_ARE_EQUAL(0, CompareEndpoints(range, TextPatternRangeEndpoint_End, original, TextPatternRangeEndpoint_End));
+            };
+
+            LOG_OUTPUT(L"At the start of the document, the start cannot move back by a line or a paragraph, and the range cannot move back.");
+            auto atStart = CollapsedAtStart(document.Get());
+            VERIFY_SUCCEEDED(atStart->MoveEndpointByUnit(TextPatternRangeEndpoint_Start, TextUnit_Line, -1, &moved));
+            VERIFY_ARE_EQUAL(0, moved);
+            verifyUnchanged(atStart.Get(), CollapsedAtStart(document.Get()).Get());
+            VERIFY_SUCCEEDED(atStart->MoveEndpointByUnit(TextPatternRangeEndpoint_Start, TextUnit_Paragraph, -1, &moved));
+            VERIFY_ARE_EQUAL(0, moved);
+            verifyUnchanged(atStart.Get(), CollapsedAtStart(document.Get()).Get());
+            VERIFY_SUCCEEDED(atStart->Move(TextUnit_Character, -1, &moved));
+            VERIFY_ARE_EQUAL(0, moved);
+            verifyUnchanged(atStart.Get(), CollapsedAtStart(document.Get()).Get());
+
+            LOG_OUTPUT(L"At the end of the document, the end cannot move forward by a line or a paragraph.");
+            auto whole = CloneRange(document.Get());
+            VERIFY_SUCCEEDED(whole->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Line, 1, &moved));
+            VERIFY_ARE_EQUAL(0, moved);
+            verifyUnchanged(whole.Get(), document.Get());
+            VERIFY_SUCCEEDED(whole->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Paragraph, 1, &moved));
+            VERIFY_ARE_EQUAL(0, moved);
+            verifyUnchanged(whole.Get(), document.Get());
+
+            LOG_OUTPUT(L"Moving the end back by a line from the end of the second line ends the range at the start of that line.");
+            auto firstLine = CloneRange(document.Get());
+            VERIFY_SUCCEEDED(firstLine->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Line, -1, &moved));
+            VERIFY_ARE_EQUAL(-1, moved);
+            const auto firstLineText = GetRangeText(firstLine.Get());
+            LOG_OUTPUT(L"Range text after moving the end back by a line: \"%s\".", firstLineText.c_str());
+            VERIFY_IS_TRUE(StartsWith(firstLineText, L"Hello World"));
+            VERIFY_IS_FALSE(Contains(firstLineText, L"Second"));
+
+            LOG_OUTPUT(L"Moving the end back across the start makes the range degenerate at the new end.");
+            auto hel = CollapsedAtStart(document.Get());
+            VERIFY_SUCCEEDED(hel->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Character, 3, &moved));
+            VERIFY_ARE_EQUAL(3, moved);
+            VerifyRangeText(L"Hel", hel.Get());
+            auto world = CollapsedAtStart(document.Get());
+            VERIFY_SUCCEEDED(world->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Character, 11, &moved));
+            VERIFY_ARE_EQUAL(11, moved);
+            VERIFY_SUCCEEDED(world->MoveEndpointByUnit(TextPatternRangeEndpoint_Start, TextUnit_Character, 6, &moved));
+            VERIFY_ARE_EQUAL(6, moved);
+            VerifyRangeText(L"World", world.Get());
+            auto crossed = CloneRange(world.Get());
+            VERIFY_SUCCEEDED(crossed->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Character, -8, &moved));
+            VERIFY_ARE_EQUAL(-8, moved);
+            VERIFY_ARE_EQUAL(0, CompareEndpoints(crossed.Get(), TextPatternRangeEndpoint_Start, hel.Get(), TextPatternRangeEndpoint_End));
+            VERIFY_ARE_EQUAL(0, CompareEndpoints(crossed.Get(), TextPatternRangeEndpoint_End, hel.Get(), TextPatternRangeEndpoint_End));
+            VerifyRangeText(L"", crossed.Get());
+
+            LOG_OUTPUT(L"Moving the end back across the start and past the start of the document leaves a degenerate range with no text before it.");
+            auto crossedToStart = CloneRange(world.Get());
+            VERIFY_SUCCEEDED(crossedToStart->MoveEndpointByUnit(TextPatternRangeEndpoint_End, TextUnit_Character, -100, &moved));
+            LOG_OUTPUT(L"MoveEndpointByUnit(End, Character, -100) moved %d units.", moved);
+            VERIFY_IS_LESS_THAN(moved, 0);
+            VERIFY_ARE_EQUAL(0, CompareEndpoints(crossedToStart.Get(), TextPatternRangeEndpoint_Start, crossedToStart.Get(), TextPatternRangeEndpoint_End));
+            VERIFY_IS_LESS_THAN(CompareEndpoints(crossedToStart.Get(), TextPatternRangeEndpoint_End, hel.Get(), TextPatternRangeEndpoint_End), 0);
+            auto before = CloneRange(crossedToStart.Get());
+            VERIFY_SUCCEEDED(before->MoveEndpointByRange(TextPatternRangeEndpoint_Start, document.Get(), TextPatternRangeEndpoint_Start));
+            VerifyRangeText(L"", before.Get());
+        });
+    }
+
 } } } } } }

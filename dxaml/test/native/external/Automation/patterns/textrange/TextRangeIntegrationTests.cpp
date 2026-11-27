@@ -880,27 +880,33 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             AutoBSTR::VerifyAreEqual(expectedText, text);
         }
 
-        // An empty attribute collection must not be reported as a non-empty array.
-        void VerifyNoArrayElements(VARIANT* value)
+        // XAML marshals an empty Tabs/AnnotationTypes list as VT_EMPTY (CUIAWindow::CValueToVariant), which UIA reports to
+        // clients as its reserved NotSupported value. An empty SAFEARRAY of the attribute's documented element type is the
+        // other valid representation; any other value (a scalar, another object, the MixedAttribute sentinel, a non-empty or
+        // differently typed array) is a marshalling error.
+        void VerifyEmptyCollectionAttribute(VARIANT* value, VARTYPE expectedElementType)
         {
             LOG_OUTPUT(L"Attribute variant type: %d.", static_cast<int>(value->vt));
-            if ((value->vt & VT_ARRAY) != 0 && value->parray != nullptr)
+            if ((value->vt & VT_ARRAY) != 0)
             {
+                VERIFY_ARE_EQUAL(static_cast<int>(VT_ARRAY | expectedElementType), static_cast<int>(value->vt));
+                VERIFY_IS_NOT_NULL(value->parray);
                 LONG lower = 0;
                 LONG upper = -1;
                 VERIFY_SUCCEEDED(SafeArrayGetLBound(value->parray, 1, &lower));
                 VERIFY_SUCCEEDED(SafeArrayGetUBound(value->parray, 1, &upper));
                 VERIFY_ARE_EQUAL(0, static_cast<int>(upper - lower + 1));
             }
-            else if (value->vt == VT_UNKNOWN && value->punkVal != nullptr)
+            else
             {
-                wrl::ComPtr<IUIAutomationElementArray> elements;
-                if (SUCCEEDED(value->punkVal->QueryInterface(IID_PPV_ARGS(&elements))))
-                {
-                    int length = -1;
-                    VERIFY_SUCCEEDED(elements->get_Length(&length));
-                    VERIFY_ARE_EQUAL(0, length);
-                }
+                VERIFY_ARE_EQUAL(static_cast<int>(VT_UNKNOWN), static_cast<int>(value->vt));
+                AutomationClient::AutomationClientManager clientManager;
+                wrl::ComPtr<IUIAutomation> automation;
+                clientManager.GetAutomation(&automation);
+                wrl::ComPtr<IUnknown> notSupportedValue;
+                VERIFY_SUCCEEDED(automation->get_ReservedNotSupportedValue(&notSupportedValue));
+                VERIFY_IS_NOT_NULL(notSupportedValue.Get());
+                VERIFY_IS_TRUE(value->punkVal == notSupportedValue.Get());
             }
         }
     }
@@ -993,7 +999,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             AutoBSTR zzz(L"zzz");
             const HRESULT notFoundResult = document->FindText(zzz, FALSE, TRUE, found.ReleaseAndGetAddressOf());
             LOG_OUTPUT(L"FindText for text the provider does not find returned 0x%08x.", notFoundResult);
-            VERIFY_IS_TRUE(FAILED(notFoundResult) || found == nullptr);
+            VERIFY_SUCCEEDED(notFoundResult);
+            VERIFY_IS_NULL(found.Get());
 
             LOG_OUTPUT(L"A SolidColorBrush color attribute is reported as a COLORREF (0x00BBGGRR).");
             AutoVariant attribute;
@@ -1006,11 +1013,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(static_cast<int>(VT_I4), static_cast<int>(attribute.Storage()->vt));
             VERIFY_ARE_EQUAL(0, static_cast<int>(attribute.Storage()->lVal));
 
-            LOG_OUTPUT(L"Empty collection attributes are not reported as non-empty arrays.");
+            LOG_OUTPUT(L"Empty collection attributes are reported as empty (an empty typed array or UIA's NotSupported value).");
             VERIFY_SUCCEEDED(document->GetAttributeValue(UIA_TabsAttributeId, attribute.ReleaseAndGetAddressOf()));
-            VerifyNoArrayElements(attribute.Storage());
+            VerifyEmptyCollectionAttribute(attribute.Storage(), VT_R8);
             VERIFY_SUCCEEDED(document->GetAttributeValue(UIA_AnnotationTypesAttributeId, attribute.ReleaseAndGetAddressOf()));
-            VerifyNoArrayElements(attribute.Storage());
+            VerifyEmptyCollectionAttribute(attribute.Storage(), VT_I4);
 
             LOG_OUTPUT(L"GetBoundingRectangles returns every provider value; sizes and relative offsets are preserved.");
             SAFEARRAY* rectangles = nullptr;
@@ -1109,7 +1116,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             wrl::ComPtr<IUIAutomationTextRange> clone;
             const HRESULT cloneResult = document->Clone(&clone);
             LOG_OUTPUT(L"Clone returned 0x%08x.", cloneResult);
-            VERIFY_IS_TRUE(FAILED(cloneResult) || clone == nullptr);
+            VERIFY_SUCCEEDED(cloneResult);
+            VERIFY_IS_NULL(clone.Get());
         });
 
         RunOnUIThread([&]()

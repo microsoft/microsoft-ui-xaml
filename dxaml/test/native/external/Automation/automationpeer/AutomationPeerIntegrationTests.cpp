@@ -1162,12 +1162,13 @@ void AutomationPeerIntegrationTests::VerifyItemContainerFindItemByPropertyIds()
         VERIFY_SUCCEEDED(itemContainer->FindItemByProperty(nullptr, UIA_SelectionItemIsSelectedPropertyId, *selectedValue.Storage(), found.ReleaseAndGetAddressOf()));
         verifyName(found.Get(), L"Item2");
 
-        LOG_OUTPUT(L"A property that ItemContainer does not support does not find an item.");
+        LOG_OUTPUT(L"A property that ItemContainer does not support is rejected, not treated as a search with no match.");
         Common::AutoVariant helpTextValue;
         helpTextValue.SetString(L"Item1");
         const HRESULT unsupportedResult = itemContainer->FindItemByProperty(nullptr, UIA_HelpTextPropertyId, *helpTextValue.Storage(), found.ReleaseAndGetAddressOf());
         LOG_OUTPUT(L"FindItemByProperty(HelpText) returned 0x%08x.", unsupportedResult);
-        VERIFY_IS_TRUE(FAILED(unsupportedResult) || found == nullptr);
+        VERIFY_FAILED(unsupportedResult);
+        VERIFY_IS_NULL(found.Get());
     });
 }
 

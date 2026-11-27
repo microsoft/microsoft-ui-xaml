@@ -190,7 +190,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TextEditChangeType uiaChangeType;
             const wchar_t* name;
         };
-        // AutomationTextEditChangeType::None is not covered: by design no UIA event is raised for it, so there is nothing to observe.
+        // AutomationTextEditChangeType::None raises no UIA event; it is checked separately after these cases.
         const ChangeTypeCase cases[] =
         {
             { Microsoft::UI::Xaml::Automation::AutomationTextEditChangeType::Composition, TextEditChangeType_Composition, L"Composition" },
@@ -210,6 +210,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 wrl::ComPtr<Patterns::TextEditTextChangedEventHandler> spHandler;
                 spHandler.Attach(new Patterns::TextEditTextChangedEventHandler(spAutomationClientManager, spEvent, TreeScope_Subtree, changeTypeCase.uiaChangeType));
                 spHandler->AttachEventHandler();
+                // Unregister on every exit path, including a failed raise or wait. RemoveEventHandler is idempotent and can
+                // throw, so the guard swallows its failure instead of terminating the process while a test failure unwinds.
+                auto unregisterHandler = wil::scope_exit([&]()
+                {
+                    try
+                    {
+                        spHandler->RemoveEventHandler();
+                    }
+                    catch (...)
+                    {
+                        LOG_OUTPUT(L"Removing the TextEditTextChanged handler during cleanup failed.");
+                    }
+                });
 
                 RunOnUIThread([&]()
                 {
@@ -221,5 +234,35 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 spHandler->ConfirmAndUnregister();
             });
         }
+
+        LOG_OUTPUT(L"Raising a TextEditTextChanged event with change type None raises no UIA event.");
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            auto spAutomationClientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo);
+            auto spEvent = std::make_shared<Event>();
+            wrl::ComPtr<Patterns::TextEditTextChangedEventHandler> spHandler;
+            spHandler.Attach(new Patterns::TextEditTextChangedEventHandler(spAutomationClientManager, spEvent, TreeScope_Subtree, TextEditChangeType_None));
+            spHandler->AttachEventHandler();
+            auto unregisterHandler = wil::scope_exit([&]()
+            {
+                try
+                {
+                    spHandler->RemoveEventHandler();
+                }
+                catch (...)
+                {
+                    LOG_OUTPUT(L"Removing the TextEditTextChanged handler during cleanup failed.");
+                }
+            });
+
+            RunOnUIThread([&]()
+            {
+                auto changedData = ref new Platform::Collections::Vector<Platform::String^>();
+                changedData->Append(L"None");
+                mockAP->RaiseTextEditTextChangedEvent(Microsoft::UI::Xaml::Automation::AutomationTextEditChangeType::None, changedData->GetView());
+            });
+
+            spHandler->ConfirmNegativeAndUnregister();
+        });
     }
 } } } } } } // Microsoft::UI::Xaml::Tests::Automation::AutomationPeer

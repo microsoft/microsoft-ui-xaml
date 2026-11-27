@@ -70,6 +70,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyHyperlinkChildrenAndEnclosingElement)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies GetChildren and GetEnclosingElement for TextBlock text ranges with and without a Hyperlink.")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyRichTextBlockOverflowRangesAndClamping)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies text ranges of a RichTextBlock whose content overflows into a RichTextBlockOverflow: clamping to the end of the RichTextBlock's part, and GetChildren and Select on the overflow's ranges.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyEndpointMovesAtDocumentEdgesAndCrossing)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies endpoint moves by line and paragraph at the start and end of a RichTextBlock document, and moving the end back across the start.")
+        END_TEST_METHOD()
     };
 
 } } } } } }

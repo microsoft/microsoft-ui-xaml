@@ -66,6 +66,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyLocalizedControlTypeForFlipViewAndInvalidType)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the localized control type for FlipView and that an unknown control type is rejected.")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyRaiseStructureChangedEventWithInvalidType)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that RaiseStructureChangedEvent rejects an unknown structure change type.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyAutomationPeerFactoryDefaultInterfaces)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that every interface the AutomationPeer activation factory reports through GetIids can be queried.")
+        END_TEST_METHOD()
     };
 
 } } } } } }

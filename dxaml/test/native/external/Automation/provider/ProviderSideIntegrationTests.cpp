@@ -201,7 +201,8 @@ namespace ProviderSideMocks {
         virtual bool WaitForInputIdle(int milliseconds)
         {
             m_waitForInputIdleRequests.push_back(milliseconds);
-            return milliseconds == 1234;
+            // Not observable by the client today: CManagedWindowProvider::WaitForInputIdle drops the result (product concern PC-2).
+            return true;
         }
 
         // ISynchronizedInputProvider
@@ -338,7 +339,7 @@ namespace ProviderSideMocks {
         public xap::IAnnotationProvider
     {
     public:
-        TextMockPeer(xaml_controls::Button^ owner) : xaml_automation_peers::ButtonAutomationPeer(owner), m_rangeFromPointCount(0), m_textContainerCount(0) {}
+        TextMockPeer(xaml_controls::Button^ owner) : xaml_automation_peers::ButtonAutomationPeer(owner), m_rangeFromPointCount(0), m_textContainerCount(0), m_returnNoRanges(false) {}
 
         // ITextProvider
         virtual Platform::Array<xap::ITextRangeProvider^>^ GetSelection() { return ref new Platform::Array<xap::ITextRangeProvider^>(0); }
@@ -360,7 +361,7 @@ namespace ProviderSideMocks {
         virtual xap::ITextRangeProvider^ RangeFromAnnotation(xap::IRawElementProviderSimple^ annotationElement)
         {
             m_rangeFromAnnotationPeers.push_back(PeerFromProvider(annotationElement));
-            return ref new LabeledTextRange(L"annotation");
+            return m_returnNoRanges ? nullptr : ref new LabeledTextRange(L"annotation");
         }
         virtual xap::ITextRangeProvider^ GetCaretRange(bool* isActive)
         {
@@ -377,7 +378,7 @@ namespace ProviderSideMocks {
                 return ProviderFromPeer(m_cells.at(0));
             }
         }
-        virtual property xap::ITextRangeProvider^ TextRange { xap::ITextRangeProvider^ get() { return ref new LabeledTextRange(L"textchild"); } }
+        virtual property xap::ITextRangeProvider^ TextRange { xap::ITextRangeProvider^ get() { return m_returnNoRanges ? nullptr : ref new LabeledTextRange(L"textchild"); } }
 
         // IAnnotationProvider
         virtual property int AnnotationTypeId { int get() { return static_cast<int>(xaml_automation::AnnotationType::Comment); } }
@@ -392,6 +393,8 @@ namespace ProviderSideMocks {
         std::vector<xaml_automation_peers::AutomationPeer^> m_rangeFromAnnotationPeers;
         int m_rangeFromPointCount;
         int m_textContainerCount;
+        // When set, RangeFromAnnotation and TextRange report that there is no range.
+        bool m_returnNoRanges;
 
     protected:
         Platform::Object^ GetPatternCore(xaml_automation_peers::PatternInterface patternInterface) override
@@ -781,6 +784,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             auto controlledPeers = peer->GetControlledPeers();
             VERIFY_IS_TRUE(controlledPeers == nullptr || controlledPeers->Size == 0);
+            auto annotations = peer->GetAnnotations();
+            VERIFY_IS_TRUE(annotations == nullptr || annotations->Size == 0);
 
             // The default ShowContextMenu does nothing and must not fail.
             peer->ShowContextMenu();
@@ -1184,7 +1189,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             VERIFY_SUCCEEDED(window->SetWindowVisualState(WindowVisualState_Minimized));
             // Only the forwarded timeout is asserted: CManagedWindowProvider::WaitForInputIdle does not copy the provider's
-            // result into its out-parameter, so the value the client receives is not the provider's answer.
+            // result into its out-parameter, so the value the client receives is not the provider's answer. This is product
+            // concern PC-2 in PR #12805 (no bug ID yet); add VERIFY_IS_TRUE(idle) once the product returns the provider's value.
             BOOL idle = FALSE;
             VERIFY_SUCCEEDED(window->WaitForInputIdle(1234, &idle));
             VERIFY_SUCCEEDED(window->Close());
@@ -1247,7 +1253,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             const POINT center = { (bounds.left + bounds.right) / 2, (bounds.top + bounds.bottom) / 2 };
             const HRESULT rangeFromPointResult = text->RangeFromPoint(center, range.ReleaseAndGetAddressOf());
             LOG_OUTPUT(L"RangeFromPoint returned 0x%08x.", rangeFromPointResult);
-            VERIFY_IS_TRUE(FAILED(rangeFromPointResult) || range == nullptr);
+            VERIFY_SUCCEEDED(rangeFromPointResult);
+            VERIFY_IS_NULL(range.Get());
 
             LOG_OUTPUT(L"Text2 pattern: RangeFromAnnotation.");
             auto text2 = GetUiaPattern<IUIAutomationTextPattern2>(element.Get(), UIA_TextPattern2Id);
@@ -1259,7 +1266,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             wrl::ComPtr<IUIAutomationElement> container;
             VERIFY_SUCCEEDED(textChild->get_TextContainer(&container));
             // The returned element is not asserted: CUIATextChildProviderWrapper::get_TextContainer queries the wrapper into
-            // the address of its out-parameter instead of the out-parameter itself, so the client always receives null.
+            // the address of its out-parameter instead of the out-parameter itself, so the client always receives null. This is
+            // product concern PC-4 in PR #12805 (no bug ID yet); add VerifyElementName(container.Get(), L"CellA") once fixed.
             VERIFY_SUCCEEDED(textChild->get_TextRange(range.ReleaseAndGetAddressOf()));
             VerifyRangeText(range.Get(), L"textchild");
 
@@ -1288,15 +1296,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             wrl::ComPtr<IUIAutomationTextPattern2> textOnly2;
             const HRESULT text2Result = textOnlyElement->GetCurrentPatternAs(UIA_TextPattern2Id, __uuidof(IUIAutomationTextPattern2), &textOnly2);
             LOG_OUTPUT(L"GetCurrentPatternAs(Text2) on the ITextProvider-only element returned 0x%08x.", text2Result);
-            VERIFY_IS_TRUE(FAILED(text2Result) || textOnly2 == nullptr);
+            VERIFY_SUCCEEDED(text2Result);
+            VERIFY_IS_NULL(textOnly2.Get());
+
+            LOG_OUTPUT(L"When a provider has no range for a child, an annotation or a text child, the client gets S_OK and no range.");
+            VERIFY_SUCCEEDED(textOnly->RangeFromChild(cellA.Get(), range.ReleaseAndGetAddressOf()));
+            VERIFY_IS_NULL(range.Get());
+            RunOnUIThread([&]()
+            {
+                mockPeer->m_returnNoRanges = true;
+            });
+            VERIFY_SUCCEEDED(text2->RangeFromAnnotation(cellB.Get(), range.ReleaseAndGetAddressOf()));
+            VERIFY_IS_NULL(range.Get());
+            VERIFY_SUCCEEDED(textChild->get_TextRange(range.ReleaseAndGetAddressOf()));
+            VERIFY_IS_NULL(range.Get());
         });
 
         RunOnUIThread([&]()
         {
             VERIFY_ARE_EQUAL(1u, static_cast<unsigned int>(mockPeer->m_rangeFromChildPeers.size()));
             VERIFY_IS_TRUE(AreSameObject(mockPeer->m_rangeFromChildPeers[0], cellPeers[0]));
-            VERIFY_ARE_EQUAL(1u, static_cast<unsigned int>(mockPeer->m_rangeFromAnnotationPeers.size()));
+            VERIFY_ARE_EQUAL(2u, static_cast<unsigned int>(mockPeer->m_rangeFromAnnotationPeers.size()));
             VERIFY_IS_TRUE(AreSameObject(mockPeer->m_rangeFromAnnotationPeers[0], cellPeers[1]));
+            VERIFY_IS_TRUE(AreSameObject(mockPeer->m_rangeFromAnnotationPeers[1], cellPeers[1]));
             VERIFY_ARE_EQUAL(1, mockPeer->m_rangeFromPointCount);
             VERIFY_ARE_EQUAL(1, mockPeer->m_textContainerCount);
         });
@@ -1359,7 +1381,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VerifyElementName(cell.Get(), L"CellB");
             const HRESULT emptyNameResult = spreadsheet->GetItemByName(nullptr, cell.ReleaseAndGetAddressOf());
             LOG_OUTPUT(L"GetItemByName(null) returned 0x%08x.", emptyNameResult);
-            VERIFY_IS_TRUE(FAILED(emptyNameResult) || cell == nullptr);
+            VERIFY_SUCCEEDED(emptyNameResult);
+            VERIFY_IS_NULL(cell.Get());
 
             LOG_OUTPUT(L"SpreadsheetItem pattern.");
             auto spreadsheetItem = GetUiaPattern<IUIAutomationSpreadsheetItemPattern>(element.Get(), UIA_SpreadsheetItemPatternId);
@@ -1416,7 +1439,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             const HRESULT dropEffectsResult = drag->get_CurrentDropEffects(&dropEffects);
             auto destroyDropEffects = wil::scope_exit([&]() { if (dropEffects) { SafeArrayDestroy(dropEffects); } });
             LOG_OUTPUT(L"get_CurrentDropEffects for an empty list returned 0x%08x.", dropEffectsResult);
-            VERIFY_IS_TRUE(FAILED(dropEffectsResult) || GetSafeArrayCount(dropEffects) == 0);
+            VERIFY_SUCCEEDED(dropEffectsResult);
+            VERIFY_ARE_EQUAL(0, static_cast<int>(GetSafeArrayCount(dropEffects)));
             wrl::ComPtr<IUIAutomationElementArray> grabbedItems;
             VERIFY_SUCCEEDED(drag->GetCurrentGrabbedItems(&grabbedItems));
             VerifyElementArrayNames(grabbedItems.Get(), { L"CellA", L"CellB" });
@@ -1486,6 +1510,51 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 unknownTypeFailed = true;
             }
             VERIFY_IS_TRUE(unknownTypeFailed);
+        });
+    }
+
+    void ProviderSideIntegrationTests::VerifyRaiseStructureChangedEventWithInvalidType()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            auto peer = ref new BaseOnlyAutomationPeer();
+            HRESULT raiseResult = S_OK;
+            try
+            {
+                peer->RaiseStructureChangedEvent(static_cast<xaml_automation_peers::AutomationStructureChangeType>(999), nullptr);
+            }
+            catch (Platform::Exception^ e)
+            {
+                raiseResult = e->HResult;
+            }
+            LOG_OUTPUT(L"RaiseStructureChangedEvent with an unknown change type returned 0x%08x.", raiseResult);
+            VERIFY_ARE_EQUAL(E_UNEXPECTED, raiseResult);
+        });
+    }
+
+    void ProviderSideIntegrationTests::VerifyAutomationPeerFactoryDefaultInterfaces()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            wrl::ComPtr<IActivationFactory> factory;
+            VERIFY_SUCCEEDED(RoGetActivationFactory(wrl::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Automation.Peers.AutomationPeer").Get(), IID_PPV_ARGS(&factory)));
+            ULONG iidCount = 0;
+            IID* iids = nullptr;
+            VERIFY_SUCCEEDED(factory->GetIids(&iidCount, &iids));
+            auto freeIids = wil::scope_exit([&]() { CoTaskMemFree(iids); });
+            LOG_OUTPUT(L"The AutomationPeer activation factory reports %u interfaces.", static_cast<unsigned int>(iidCount));
+            VERIFY_IS_GREATER_THAN(iidCount, 0ul);
+            VERIFY_IS_NOT_NULL(iids);
+            for (ULONG i = 0; i < iidCount; ++i)
+            {
+                wrl::ComPtr<IUnknown> iface;
+                VERIFY_SUCCEEDED(factory.Get()->QueryInterface(iids[i], &iface));
+                VERIFY_IS_NOT_NULL(iface.Get());
+            }
         });
     }
 } } } } } } // Microsoft::UI::Xaml::Tests::Automation::Provider
