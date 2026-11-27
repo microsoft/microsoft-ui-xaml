@@ -211,9 +211,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             using (var outsideGotFocus = new AutoResetEvent(false))
             using (var scrollCompleted = new AutoResetEvent(false))
             {
+                int scrollId = -1;
                 RoutedEventHandler anchorGotFocusHandler = (sender, args) => anchorGotFocus.Set();
                 RoutedEventHandler outsideGotFocusHandler = (sender, args) => outsideGotFocus.Set();
-                TypedEventHandler<ScrollView, ScrollingScrollCompletedEventArgs> scrollCompletedHandler = (sender, args) => scrollCompleted.Set();
+                TypedEventHandler<ScrollView, ScrollingScrollCompletedEventArgs> scrollCompletedHandler = (sender, args) =>
+                {
+                    if (args.CorrelationId == scrollId)
+                    {
+                        scrollCompleted.Set();
+                    }
+                };
 
                 try
                 {
@@ -282,7 +289,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     RunOnUIThread.Execute(() =>
                     {
                         scrollView.ScrollCompleted += scrollCompletedHandler;
-                        scrollView.ScrollTo(0, 2000, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled));
+                        scrollId = scrollView.ScrollTo(0, 2000, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled));
                     });
 
                     Verify.IsTrue(scrollCompleted.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for scroll away from item zero.");
@@ -300,6 +307,444 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         if (anchor != null)
                         {
                             anchor.GotFocus -= anchorGotFocusHandler;
+                        }
+                        outsideButton.GotFocus -= outsideGotFocusHandler;
+                        scrollView.ScrollCompleted -= scrollCompletedHandler;
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Switching Layout twice before measure on a keyed source must not drop focus tracking and leak the focused item's pin.")]
+        public void KeyedLayoutSwitchTwiceBeforeMeasureDoesNotLeakFocusedPin()
+        {
+            ItemsRepeater repeater = null;
+            ScrollView scrollView = null;
+            Button outsideButton = null;
+            Button anchor = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new WinRTCollection(Enumerable.Range(0, 100).Select(i => $"Item {i}"));
+                repeater = new ItemsRepeater()
+                {
+                    ItemsSource = MockItemsSource.CreateDataSource(data, supportsUniqueIds: true),
+                    Layout = new StackLayout(),
+                    ItemTemplate = GetDataTemplate("<Button Width='170' Height='68' Content='{Binding}'/>")
+                };
+                Verify.IsTrue(repeater.ItemsSourceView.HasKeyIndexMapping, "Test requires a keyed ItemsSourceView.");
+                scrollView = new ScrollView()
+                {
+                    Width = 620,
+                    Height = 450,
+                    Content = repeater
+                };
+                outsideButton = new Button() { Content = "Outside" };
+                var root = new StackPanel();
+                root.Children.Add(outsideButton);
+                root.Children.Add(scrollView);
+                Content = root;
+            });
+
+            IdleSynchronizer.Wait();
+
+            using (var anchorGotFocus = new AutoResetEvent(false))
+            using (var outsideGotFocus = new AutoResetEvent(false))
+            using (var scrollCompleted = new AutoResetEvent(false))
+            {
+                int scrollId = -1;
+                RoutedEventHandler anchorGotFocusHandler = (sender, args) => anchorGotFocus.Set();
+                RoutedEventHandler outsideGotFocusHandler = (sender, args) => outsideGotFocus.Set();
+                TypedEventHandler<ScrollView, ScrollingScrollCompletedEventArgs> scrollCompletedHandler = (sender, args) =>
+                {
+                    if (args.CorrelationId == scrollId)
+                    {
+                        scrollCompleted.Set();
+                    }
+                };
+
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        anchor = (Button)repeater.TryGetElement(0);
+                        Verify.IsNotNull(anchor);
+                        anchor.GotFocus += anchorGotFocusHandler;
+                        Verify.IsTrue(anchor.Focus(FocusState.Programmatic));
+                    });
+
+                    Verify.IsTrue(anchorGotFocus.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for initial anchor GotFocus.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        // Switch Layout twice before measure so item zero is already in UniqueIdResetPool
+                        // when the second OnLayoutChanging runs.
+                        repeater.Layout = new UniformGridLayout() { MinItemWidth = 180, MinItemHeight = 84 };
+                        repeater.Layout = new StackLayout();
+                        Content.UpdateLayout();
+
+                        Verify.AreSame(anchor, repeater.TryGetElement(0), "Keyed item zero must be reused after double layout switch.");
+                        Verify.AreSame(anchor, FocusManager.GetFocusedElement(repeater.XamlRoot));
+                    });
+
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        outsideButton.GotFocus += outsideGotFocusHandler;
+                        Verify.IsTrue(outsideButton.Focus(FocusState.Programmatic));
+                    });
+
+                    Verify.IsTrue(outsideGotFocus.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for focus to leave the repeater.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        scrollView.ScrollCompleted += scrollCompletedHandler;
+                        scrollId = scrollView.ScrollTo(0, 2000, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled));
+                    });
+
+                    Verify.IsTrue(scrollCompleted.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for scroll away from item zero.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsNull(repeater.TryGetElement(0), "Unfocused keyed item zero must be recycled after scrolling away (no leaked pin).");
+                    });
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        if (anchor != null)
+                        {
+                            anchor.GotFocus -= anchorGotFocusHandler;
+                        }
+                        outsideButton.GotFocus -= outsideGotFocusHandler;
+                        scrollView.ScrollCompleted -= scrollCompletedHandler;
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Focusing an inner repeater item from its group header and switching the outer Layout in the same tick must keep the group pinned until inner GotFocus and balance pins when focus leaves.")]
+        public void OuterLayoutSwitchBeforeInnerRepeaterGotFocusPreservesGroupAndBalancesPins()
+        {
+            ItemsRepeater outerRepeater = null;
+            ScrollView scrollView = null;
+            Button outsideButton = null;
+            StackPanel group0 = null;
+            Button headerButton = null;
+            Button innerItem0 = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var groups = Enumerable.Range(0, 50)
+                    .Select(g => Enumerable.Range(0, 2).Select(i => $"G{g}-I{i}").ToList())
+                    .ToList();
+
+                outerRepeater = new ItemsRepeater()
+                {
+                    ItemsSource = groups,
+                    Layout = new StackLayout(),
+                    ItemTemplate = GetDataTemplate(
+                        "<StackPanel Height='120'>" +
+                            "<Button Height='36' Content='Header'/>" +
+                            "<ItemsRepeater ItemsSource='{Binding}'>" +
+                                "<ItemsRepeater.ItemTemplate>" +
+                                    "<DataTemplate>" +
+                                        "<Button Height='36' Content='{Binding}'/>" +
+                                    "</DataTemplate>" +
+                                "</ItemsRepeater.ItemTemplate>" +
+                            "</ItemsRepeater>" +
+                        "</StackPanel>")
+                };
+                scrollView = new ScrollView()
+                {
+                    Width = 620,
+                    Height = 450,
+                    Content = outerRepeater
+                };
+                outsideButton = new Button() { Content = "Outside" };
+                var root = new StackPanel();
+                root.Children.Add(outsideButton);
+                root.Children.Add(scrollView);
+                Content = root;
+            });
+
+            IdleSynchronizer.Wait();
+
+            using (var headerGotFocus = new AutoResetEvent(false))
+            using (var innerGotFocus = new AutoResetEvent(false))
+            using (var outsideGotFocus = new AutoResetEvent(false))
+            using (var scrollCompleted = new AutoResetEvent(false))
+            {
+                int scrollId = -1;
+                RoutedEventHandler headerGotFocusHandler = (sender, args) => headerGotFocus.Set();
+                RoutedEventHandler innerGotFocusHandler = (sender, args) => innerGotFocus.Set();
+                RoutedEventHandler outsideGotFocusHandler = (sender, args) => outsideGotFocus.Set();
+                TypedEventHandler<ScrollView, ScrollingScrollCompletedEventArgs> scrollCompletedHandler = (sender, args) =>
+                {
+                    if (args.CorrelationId == scrollId)
+                    {
+                        scrollCompleted.Set();
+                    }
+                };
+
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        group0 = (StackPanel)outerRepeater.TryGetElement(0);
+                        Verify.IsNotNull(group0);
+                        headerButton = (Button)group0.Children[0];
+                        var innerRepeater = (ItemsRepeater)group0.Children[1];
+                        innerItem0 = (Button)innerRepeater.TryGetElement(0);
+                        Verify.IsNotNull(headerButton);
+                        Verify.IsNotNull(innerItem0);
+
+                        headerButton.GotFocus += headerGotFocusHandler;
+                        Verify.IsTrue(headerButton.Focus(FocusState.Programmatic));
+                    });
+
+                    Verify.IsTrue(headerGotFocus.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for group header GotFocus.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        bool group0Cleared = false;
+                        TypedEventHandler<ItemsRepeater, ItemsRepeaterElementClearingEventArgs> clearingHandler = (sender, args) =>
+                        {
+                            if (object.ReferenceEquals(args.Element, group0))
+                            {
+                                group0Cleared = true;
+                            }
+                        };
+                        outerRepeater.ElementClearing += clearingHandler;
+
+                        try
+                        {
+                            innerItem0.GotFocus += innerGotFocusHandler;
+                            Verify.IsTrue(innerItem0.Focus(FocusState.Programmatic));
+
+                            // Switch the outer layout on the same tick before queued LostFocus/inner GotFocus runs.
+                            outerRepeater.Layout = new UniformGridLayout() { MinItemWidth = 300, MinItemHeight = 120 };
+                            outerRepeater.InvalidateMeasure();
+                            Content.UpdateLayout();
+                        }
+                        finally
+                        {
+                            outerRepeater.ElementClearing -= clearingHandler;
+                        }
+
+                        Verify.IsFalse(group0Cleared, "Outer group container must not be cleared/recycled before inner GotFocus.");
+                        Verify.AreSame(group0, outerRepeater.TryGetElement(0), "Outer group container must stay pinned and not be recycled before inner GotFocus.");
+                        Verify.AreSame(innerItem0, FocusManager.GetFocusedElement(outerRepeater.XamlRoot));
+                    });
+
+                    Verify.IsTrue(innerGotFocus.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for inner item GotFocus.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreSame(group0, outerRepeater.TryGetElement(0));
+                        outsideButton.GotFocus += outsideGotFocusHandler;
+                        Verify.IsTrue(outsideButton.Focus(FocusState.Programmatic));
+                    });
+
+                    Verify.IsTrue(outsideGotFocus.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for focus to leave the outer repeater.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        scrollView.ScrollCompleted += scrollCompletedHandler;
+                        scrollId = scrollView.ScrollTo(0, 2500, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled));
+                    });
+
+                    Verify.IsTrue(scrollCompleted.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for scroll away from group zero.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsNull(outerRepeater.TryGetElement(0), "Unfocused group zero must be recycled after scrolling away (no leaked pin).");
+                    });
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        if (headerButton != null)
+                        {
+                            headerButton.GotFocus -= headerGotFocusHandler;
+                        }
+                        if (innerItem0 != null)
+                        {
+                            innerItem0.GotFocus -= innerGotFocusHandler;
+                        }
+                        outsideButton.GotFocus -= outsideGotFocusHandler;
+                        scrollView.ScrollCompleted -= scrollCompletedHandler;
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Switching Layout on the same tick focus moves between items must retain the old item's pin until LostFocus commits a two-way TextBox binding while preserving the newly focused item and balancing all pins.")]
+        public void LayoutSwitchBeforeLostFocusCommitsTextBoxTwoWayBindingAndPreservesNewAnchor()
+        {
+            ItemsRepeater repeater = null;
+            ScrollView scrollView = null;
+            Button outsideButton = null;
+            TextBox textBox0 = null;
+            TextBox textBox1 = null;
+            List<RepeaterEditableTextItem> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = Enumerable.Range(0, 100)
+                    .Select(i => new RepeaterEditableTextItem { Text = $"Item {i}" })
+                    .ToList();
+
+                repeater = new ItemsRepeater()
+                {
+                    ItemsSource = items,
+                    Layout = new StackLayout(),
+                    ItemTemplate = GetDataTemplate("<TextBox Width='170' Height='68' Text='{Binding Text, Mode=TwoWay}'/>")
+                };
+                scrollView = new ScrollView()
+                {
+                    Width = 620,
+                    Height = 450,
+                    Content = repeater
+                };
+                outsideButton = new Button() { Content = "Outside" };
+                var root = new StackPanel();
+                root.Children.Add(outsideButton);
+                root.Children.Add(scrollView);
+                Content = root;
+            });
+
+            IdleSynchronizer.Wait();
+
+            using (var item0GotFocus = new AutoResetEvent(false))
+            using (var item1GotFocus = new AutoResetEvent(false))
+            using (var outsideGotFocus = new AutoResetEvent(false))
+            using (var scrollCompleted = new AutoResetEvent(false))
+            {
+                int scrollId = -1;
+                RoutedEventHandler item0GotFocusHandler = (sender, args) => item0GotFocus.Set();
+                RoutedEventHandler item1GotFocusHandler = (sender, args) => item1GotFocus.Set();
+                RoutedEventHandler outsideGotFocusHandler = (sender, args) => outsideGotFocus.Set();
+                TypedEventHandler<ScrollView, ScrollingScrollCompletedEventArgs> scrollCompletedHandler = (sender, args) =>
+                {
+                    if (args.CorrelationId == scrollId)
+                    {
+                        scrollCompleted.Set();
+                    }
+                };
+
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        textBox0 = (TextBox)repeater.TryGetElement(0);
+                        textBox1 = (TextBox)repeater.TryGetElement(1);
+                        Verify.IsNotNull(textBox0);
+                        Verify.IsNotNull(textBox1);
+
+                        textBox0.GotFocus += item0GotFocusHandler;
+                        Verify.IsTrue(textBox0.Focus(FocusState.Programmatic));
+                    });
+
+                    Verify.IsTrue(item0GotFocus.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for item zero TextBox GotFocus.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        textBox0.Text = "EditedValue";
+                        Verify.AreEqual("Item 0", items[0].Text, "Two-way TextBox.Text binding should not commit before LostFocus.");
+
+                        bool item0Cleared = false;
+                        bool item1Cleared = false;
+                        TypedEventHandler<ItemsRepeater, ItemsRepeaterElementClearingEventArgs> clearingHandler = (sender, args) =>
+                        {
+                            if (object.ReferenceEquals(args.Element, textBox0))
+                            {
+                                item0Cleared = true;
+                            }
+                            else if (object.ReferenceEquals(args.Element, textBox1))
+                            {
+                                item1Cleared = true;
+                            }
+                        };
+                        repeater.ElementClearing += clearingHandler;
+
+                        try
+                        {
+                            textBox1.GotFocus += item1GotFocusHandler;
+                            Verify.IsTrue(textBox1.Focus(FocusState.Programmatic));
+
+                            // Switch Layout on the same tick before queued LostFocus(item 0) and GotFocus(item 1) run.
+                            // OnLayoutChanged clears all realized elements before measuring the new layout, so item 0
+                            // would be recycled (clearing its DataContext) if its pin were dropped before LostFocus.
+                            repeater.Layout = new UniformGridLayout() { MinItemWidth = 180, MinItemHeight = 84 };
+                            repeater.InvalidateMeasure();
+                            Content.UpdateLayout();
+                        }
+                        finally
+                        {
+                            repeater.ElementClearing -= clearingHandler;
+                        }
+
+                        Verify.IsFalse(item0Cleared, "Previous focused item zero must stay pinned through layout switch until LostFocus runs.");
+                        Verify.IsFalse(item1Cleared, "Newly focused item one must stay pinned through layout switch.");
+                        Verify.AreSame(textBox1, repeater.TryGetElement(1), "Newly focused item one must stay pinned as the anchor.");
+                        Verify.AreSame(textBox1, FocusManager.GetFocusedElement(repeater.XamlRoot));
+                    });
+
+                    Verify.IsTrue(item1GotFocus.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for item one TextBox GotFocus.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual("EditedValue", items[0].Text, "Item zero's DataContext must remain intact until LostFocus commits the two-way binding.");
+
+                        outsideButton.GotFocus += outsideGotFocusHandler;
+                        Verify.IsTrue(outsideButton.Focus(FocusState.Programmatic));
+                    });
+
+                    Verify.IsTrue(outsideGotFocus.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for focus to leave the repeater.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        scrollView.ScrollCompleted += scrollCompletedHandler;
+                        scrollId = scrollView.ScrollTo(0, 2000, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled));
+                    });
+
+                    Verify.IsTrue(scrollCompleted.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for scroll away from items zero and one.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsNull(repeater.TryGetElement(0), "Unfocused item zero must be recycled after scrolling away (no leaked pin).");
+                        Verify.IsNull(repeater.TryGetElement(1), "Unfocused item one must be recycled after scrolling away (no leaked pin).");
+                    });
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        if (textBox0 != null)
+                        {
+                            textBox0.GotFocus -= item0GotFocusHandler;
+                        }
+                        if (textBox1 != null)
+                        {
+                            textBox1.GotFocus -= item1GotFocusHandler;
                         }
                         outsideButton.GotFocus -= outsideGotFocusHandler;
                         scrollView.ScrollCompleted -= scrollCompletedHandler;
@@ -1669,5 +2114,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                            {0}
                         </DataTemplate>", content));
         }
+    }
+
+    [Microsoft.UI.Xaml.Data.Bindable]
+    public sealed partial class RepeaterEditableTextItem
+    {
+        public string Text { get; set; }
     }
 }
