@@ -95,6 +95,16 @@ public:
     winrt::TreeViewNode GetAssociatedNode(winrt::IInspectable item);
     winrt::IInspectable ItemFromNode(winrt::TreeViewNode const& node);
     winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item);
+    winrt::TreeViewNode OriginNode() const { return m_originNode.safe_get(); }
+    uint64_t SelectionMutationVersion() const { return m_selectionMutationVersion; }
+    uint64_t IncrementSelectionMutationVersion() { return ++m_selectionMutationVersion; }
+    bool IsInSelectionVectorNotification() const { return m_selectionVectorNotificationDepth > 0; }
+    void EnterSelectionVectorNotification() { ++m_selectionVectorNotificationDepth; }
+    void ExitSelectionVectorNotification() { --m_selectionVectorNotificationDepth; }
+    void SetPendingInsertedItemFromSelectedItems(winrt::IInspectable const& item) { m_pendingInsertedItemFromSelectedItems = item; }
+    bool ConsumePendingInsertedItemFromSelectedItems(winrt::TreeViewNode const& node);
+    void SetPendingRemovedItemFromSelectedItems(winrt::IInspectable const& item) { m_pendingRemovedItemFromSelectedItems = item; }
+    bool ConsumePendingRemovedItemFromSelectedItems(winrt::TreeViewNode const& node);
 
 private:
     tracker_ref<winrt::IVector<winrt::TreeViewNode>> m_selectedNodes{ this };
@@ -113,6 +123,10 @@ private:
     std::vector<winrt::weak_ref<winrt::IInspectable>> m_addedSelectedItems;
     std::vector<winrt::IInspectable> m_removedSelectedItems;
     uint32_t m_selectionTrackingCounter{ 0 };
+    uint64_t m_selectionMutationVersion{ 0 };
+    uint32_t m_selectionVectorNotificationDepth{ 0 };
+    winrt::IInspectable m_pendingInsertedItemFromSelectedItems{ nullptr };
+    winrt::IInspectable m_pendingRemovedItemFromSelectedItems{ nullptr };
 
     // Methods
     FlatListItem MakeFlatListItem(winrt::IInspectable const& value);
@@ -134,6 +148,7 @@ private:
     void UpdateSelectionStateOfDescendants(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState);
     void UpdateSelectionStateOfAncestors(winrt::TreeViewNode const& targetNode);
     TreeNodeSelectionState SelectionStateBasedOnChildren(winrt::TreeViewNode const& node);
+    void RemoveDetachedSelectedNodes();
     void ClearEventTokenVectors();
     void BeginSelectionChanges();
     void EndSelectionChanges();
@@ -207,9 +222,10 @@ public:
     void SetViewModel(ViewModel& viewModel);
     void Append(winrt::IInspectable const& item);
     void InsertAt(unsigned int index, winrt::IInspectable const& item);
-    void InsertAt_NoContainsCheck(unsigned int index, winrt::IInspectable const& item);
+    void InsertAt_NoContainsCheck(unsigned int index, winrt::IInspectable const& item, bool syncSelectedNodes = true);
     void SetAt(unsigned int index, winrt::IInspectable const& item);
     void RemoveAt(unsigned int index);
+    void RemoveAtCore(unsigned int index, bool syncSelectedNodes);
     void RemoveAtEnd();
     void ReplaceAll(winrt::array_view<winrt::IInspectable const> items);
     void Clear();
