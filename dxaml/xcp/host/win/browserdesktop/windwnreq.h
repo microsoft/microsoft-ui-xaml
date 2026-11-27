@@ -69,6 +69,7 @@ class CWindowsDownloadRequest final
     , public IInternetBindInfo
     , public IAuthenticate
     , public IHttpNegotiate
+    , public IWinInetHttpTimeouts
 {
 public :
     ~CWindowsDownloadRequest();
@@ -132,6 +133,12 @@ public :
         _In_z_ LPCWSTR szRequestHeaders,
         _Outptr_result_z_ LPWSTR *pszAdditionalRequestHeaders
     );
+
+    // IWinInetHttpTimeouts methods
+    STDMETHOD(GetRequestTimeouts)(
+        _Out_ DWORD* pdwConnectTimeout,
+        _Out_ DWORD* pdwSendTimeout,
+        _Out_ DWORD* pdwReceiveTimeout);
 
     void Abort();
 
