@@ -614,6 +614,20 @@ int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
     return 0;
 }
 
+int32_t TableViewRowAutomationPeer::GetLevelCore()
+{
+    if (const auto provided = __super::GetLevelCore(); provided > 0)
+    {
+        return provided;
+    }
+
+    if (auto const tableView = GetOwningTableView())
+    {
+        return winrt::get_self<TableView>(tableView)->GetGroupedRowAutomationLevelInternal(GetRowIndex());
+    }
+    return 0;
+}
+
 winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
     winrt::FrameworkElement const& cell)
 {

@@ -5684,10 +5684,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a data row exposes no ExpandCollapse pattern, so AT does not announce it as collapsed.")]
+        [TestProperty("Description", "Verifies a data row, flat or grouped, exposes no ExpandCollapse pattern on its row peer or on the item element AT holds (its EventsSource), while the group header keeps it.")]
         public void VerifyFlatRowHasNoExpandCollapse()
         {
             TableView flatTable = null;
+            TableView groupedTable = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -5701,6 +5702,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsNull(GetRowPeer(GetProjectedRow(flatTable, 0)).GetPattern(PatternInterface.ExpandCollapse),
                     "A data row must not expose ExpandCollapse, or AT announces it as collapsed.");
+
+                groupedTable = CreateTwoGroupAutomationTable();
+                LoadContent(groupedTable);
+            });
+
+            SettleLayout(groupedTable);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Projected row 0 is the Designer header; row 1 is Asha, a data row in that group.
+                var rowPeer = GetRowPeer(GetProjectedRow(groupedTable, 1));
+                Verify.IsNull(rowPeer.GetPattern(PatternInterface.ExpandCollapse), "A grouped data row's peer must not expose ExpandCollapse.");
+                Verify.IsNotNull(rowPeer.EventsSource, "Precondition: the grouped row's peer has the item element AT holds.");
+                Verify.IsNull(rowPeer.EventsSource.GetPattern(PatternInterface.ExpandCollapse),
+                    "The item element must not forward an ExpandCollapse pattern for a grouped data row.");
+                Verify.AreEqual(0, rowPeer.GetLevel(), "A single-level grouped data row reports no Level.");
+                Verify.AreEqual(0, rowPeer.EventsSource.GetLevel(), "The item element reports no Level for a single-level grouped data row.");
+                Verify.IsNotNull(GetGroupHeaderPeer(groupedTable, 0).GetPattern(PatternInterface.ExpandCollapse),
+                    "The group header keeps ExpandCollapse.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies with two GroupDescriptions the group header and data row peers report their 1-based depth as UIA Level, and an app-set Level wins.")]
+        public void VerifyNestedGroupPeersReportLevel()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = TableViewShapingTestHelpers.MakeShapingView(TableViewShapingTestHelpers.MakeShapedPeople(), "DepartmentName");
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("Role"));
+                tableView = TableViewShapingTestHelpers.CreateShapedTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Projection: #Studio, #Designer, Asha, Ines, #Platform, #Engineer, ...
+                Verify.AreEqual(1, GetGroupHeaderPeer(tableView, 0).GetLevel(), "A top-level group header is Level 1.");
+                Verify.AreEqual(2, GetGroupHeaderPeer(tableView, 1).GetLevel(), "A subgroup header is Level 2.");
+                var rowPeer = GetRowPeer(GetProjectedRow(tableView, 2));
+                Verify.AreEqual(3, rowPeer.GetLevel(), "A data row under a subgroup is one deeper than its header.");
+                Verify.AreEqual(3, rowPeer.EventsSource.GetLevel(), "The item element AT holds reports the same Level.");
+
+                AutomationProperties.SetLevel(GetGroupHeader(tableView, 1), 7);
+                Verify.AreEqual(7, GetGroupHeaderPeer(tableView, 1).GetLevel(), "An app-set Level wins on a header.");
+                AutomationProperties.SetLevel(GetProjectedRow(tableView, 2), 9);
+                Verify.AreEqual(9, GetRowPeer(GetProjectedRow(tableView, 2)).GetLevel(), "An app-set Level wins on a row.");
             });
         }
 

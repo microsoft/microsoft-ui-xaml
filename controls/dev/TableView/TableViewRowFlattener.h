@@ -40,6 +40,8 @@ public:
 
     // True when the rows include group headers.
     bool IsGrouped() const noexcept { return m_viewGroups != nullptr; }
+    // True when the view's groups have subgroups (more than one GroupDescription), collapsed or not.
+    bool HasSubgroups() const noexcept { return IsGrouped() && m_hasSubgroupRows; }
 
     winrt::ItemsSourceView ItemsSourceView() const noexcept { return m_itemsSourceView; }
     // Null for flat rows: a row is its item. A new provider whenever the kind of rows changes.

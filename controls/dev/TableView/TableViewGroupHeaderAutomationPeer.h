@@ -41,8 +41,8 @@ public:
     void Collapse();
     winrt::ExpandCollapseState ExpandCollapseState();
 
-    // Grouping is hierarchical, and Level is how an ExpandCollapse container conveys depth.
-    // Without it Narrator hears two nested groups as siblings.
+    // Level conveys nesting depth for an ExpandCollapse container; without it Narrator hears a group
+    // and its subgroup as siblings.
     int32_t GetLevelCore();
 
     // Internal: announce a state change from THIS peer. UIA delivers property-changed events

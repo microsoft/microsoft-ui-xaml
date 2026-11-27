@@ -136,7 +136,17 @@ int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
         return provided;
     }
 
-    // Grouping is single-level: no synthesized Level (0 = not specified) unless the app sets one.
+    if (auto const header = GetHeader())
+    {
+        if (auto const owner = GetOwningTableView())
+        {
+            auto const tableImpl = winrt::get_self<TableView>(owner);
+            if (auto const repeater = tableImpl->GetRowsRepeaterForPeer())
+            {
+                return tableImpl->GetGroupedRowAutomationLevelInternal(repeater.GetElementIndex(header));
+            }
+        }
+    }
     return 0;
 }
 

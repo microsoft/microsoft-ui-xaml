@@ -33,6 +33,7 @@ public:
     // "row i of n" on the same flat basis as IGridProvider.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
+    int32_t GetLevelCore();
 
     // Expose direct cell wrappers only to avoid deep, costly UIA subtree walks.
     winrt::IVector<winrt::AutomationPeer> GetChildrenCore();

@@ -210,6 +210,17 @@ int32_t TableView::GetDataRowSizeOfSetInternal() const
     return dataRowCount;
 }
 
+int32_t TableView::GetGroupedRowAutomationLevelInternal(int32_t rowIndex) const
+{
+    // Single-level groups report no Level (owner decision, dev-spec Accessibility); nested groups need it to tell depths apart.
+    TableViewRowInfo rowInfo{};
+    if (!m_rowFlattener || !m_rowFlattener->HasSubgroups() || !TryGetRowInfo(rowIndex, rowInfo))
+    {
+        return 0;
+    }
+    return std::max(0, rowInfo.Level) + 1;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Expansion
 // ---------------------------------------------------------------------------------------------

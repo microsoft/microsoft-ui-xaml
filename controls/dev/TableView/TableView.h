@@ -367,6 +367,8 @@ public:
     int32_t GetRowCountInternal() const { return GetItemsSourceCount(); }
     int32_t GetDataRowPositionInSetInternal(int32_t rowIndex) const;
     int32_t GetDataRowSizeOfSetInternal() const;
+    // 1-based UIA Level of a row under nested groups (top-level header 1, one deeper per level); 0 otherwise.
+    int32_t GetGroupedRowAutomationLevelInternal(int32_t rowIndex) const;
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
     // Releases the rows repeater's layout anchor, made by GetOrCreateElement(anchor's index), without scrolling.
     void ReleaseRowsRepeaterAnchor(winrt::UIElement const& anchor);
