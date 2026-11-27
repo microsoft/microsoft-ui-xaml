@@ -6547,24 +6547,57 @@ VerifyAllTimeZonesPartImpl(19, 20)
     X(FirstOfMonthLabelMargin, 0, 1, 0, 0, 0, 0, 5, 0) \
     X(FirstOfYearDecadeLabelMargin, 0, 3, 0, 0, 0, 0, 0, 5)
 
+    // Shows a CalendarView whose fallback brushes are locally null and whose fallback margins are locally zero:
+    // these are the "unset" inputs of the rounded chrome fallback.
+    static xaml_controls::CalendarView^ ShowCalendarViewWithUnsetRoundedChromeValues()
+    {
+        auto cv = ref new xaml_controls::CalendarView();
+#define CALENDARVIEW_SET_NULL_BRUSH(name, argb) cv->name = nullptr;
+        CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_SET_NULL_BRUSH)
+#undef CALENDARVIEW_SET_NULL_BRUSH
+#define CALENDARVIEW_SET_ZERO_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) cv->name = MakeThickness(0, 0, 0, 0);
+        CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_SET_ZERO_MARGIN)
+#undef CALENDARVIEW_SET_ZERO_MARGIN
+        TestServices::WindowHelper->WindowContent = cv;
+        return cv;
+    }
+
     void CalendarViewIntegrationTests::VerifyRoundedChromeFallbackPropertiesWhenForced()
+    {
+#ifndef DBG
+        WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped, L"The rounded chrome fallback values are only applied by debug (chk) builds of Microsoft.UI.Xaml.dll.");
+        return;
+#else
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+        RuntimeEnabledFeatureOverride forceRoundedChrome(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceRoundedCalendarViewBaseItemChrome, true);
+
+        LOG_OUTPUT(L"Rounded chrome forced: applying the template fills every unset value with its fallback.");
+        RunOnUIThread([&]()
+        {
+            cv = ShowCalendarViewWithUnsetRoundedChromeValues();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+#define CALENDARVIEW_VERIFY_FALLBACK_BRUSH(name, argb) VerifySolidColorBrush(cv->name, argb, #name);
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_VERIFY_FALLBACK_BRUSH)
+#undef CALENDARVIEW_VERIFY_FALLBACK_BRUSH
+#define CALENDARVIEW_VERIFY_FALLBACK_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) VerifyThickness(MakeThickness(fl, ft, fr, fb), cv->name, #name);
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_VERIFY_FALLBACK_MARGIN)
+#undef CALENDARVIEW_VERIFY_FALLBACK_MARGIN
+            TestServices::WindowHelper->WindowContent = nullptr;
+            cv = nullptr;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+#endif
+    }
+
+    void CalendarViewIntegrationTests::VerifyRoundedChromeKeepsUnforcedAndCustomValues()
     {
         TestCleanupWrapper cleanup;
         xaml_controls::CalendarView^ cv = nullptr;
         std::vector<xaml_media::Brush^> customBrushes;
-
-        // Every fallback brush is locally null and every fallback margin is locally zero: these are the "unset" inputs.
-        auto showCalendarViewWithUnsetValues = [&]()
-        {
-            cv = ref new xaml_controls::CalendarView();
-#define CALENDARVIEW_SET_NULL_BRUSH(name, argb) cv->name = nullptr;
-            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_SET_NULL_BRUSH)
-#undef CALENDARVIEW_SET_NULL_BRUSH
-#define CALENDARVIEW_SET_ZERO_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) cv->name = MakeThickness(0, 0, 0, 0);
-            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_SET_ZERO_MARGIN)
-#undef CALENDARVIEW_SET_ZERO_MARGIN
-            TestServices::WindowHelper->WindowContent = cv;
-        };
 
         auto clearContent = [&]()
         {
@@ -6574,7 +6607,10 @@ VerifyAllTimeZonesPartImpl(19, 20)
         };
 
         LOG_OUTPUT(L"Rounded chrome not forced: the unset values stay unset.");
-        RunOnUIThread(showCalendarViewWithUnsetValues);
+        RunOnUIThread([&]()
+        {
+            cv = ShowCalendarViewWithUnsetRoundedChromeValues();
+        });
         TestServices::WindowHelper->WaitForIdle();
         RunOnUIThread([&]()
         {
@@ -6590,60 +6626,38 @@ VerifyAllTimeZonesPartImpl(19, 20)
         });
         TestServices::WindowHelper->WaitForIdle();
 
+        RuntimeEnabledFeatureOverride forceRoundedChrome(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceRoundedCalendarViewBaseItemChrome, true);
+
+        LOG_OUTPUT(L"Rounded chrome forced: non-null brushes and margins that are non-zero on a single side are kept.");
+        RunOnUIThread([&]()
         {
-            RuntimeEnabledFeatureOverride forceRoundedChrome(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceRoundedCalendarViewBaseItemChrome, true);
-
-            LOG_OUTPUT(L"Rounded chrome forced: applying the template fills every unset value with its fallback.");
-            RunOnUIThread(showCalendarViewWithUnsetValues);
-            TestServices::WindowHelper->WaitForIdle();
-            RunOnUIThread([&]()
-            {
-#ifdef DBG
-#define CALENDARVIEW_VERIFY_FALLBACK_BRUSH(name, argb) VerifySolidColorBrush(cv->name, argb, #name);
-                CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_VERIFY_FALLBACK_BRUSH)
-#undef CALENDARVIEW_VERIFY_FALLBACK_BRUSH
-#define CALENDARVIEW_VERIFY_FALLBACK_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) VerifyThickness(MakeThickness(fl, ft, fr, fb), cv->name, #name);
-                CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_VERIFY_FALLBACK_MARGIN)
-#undef CALENDARVIEW_VERIFY_FALLBACK_MARGIN
-#else
-                WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped, L"The rounded chrome fallback values are only applied by debug (chk) builds of Microsoft.UI.Xaml.dll.");
-#endif
-                clearContent();
-            });
-            TestServices::WindowHelper->WaitForIdle();
-
-            LOG_OUTPUT(L"Rounded chrome forced: non-null brushes and margins that are non-zero on a single side are kept.");
-            RunOnUIThread([&]()
-            {
-                cv = ref new xaml_controls::CalendarView();
+            cv = ref new xaml_controls::CalendarView();
 #define CALENDARVIEW_SET_CUSTOM_BRUSH(name, argb) \
-                customBrushes.push_back(ref new xaml_media::SolidColorBrush(Microsoft::UI::ColorHelper::FromArgb(0xFF, static_cast<unsigned char>(customBrushes.size() + 1), 0x11, 0x22))); \
-                cv->name = customBrushes.back();
-                CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_SET_CUSTOM_BRUSH)
+            customBrushes.push_back(ref new xaml_media::SolidColorBrush(Microsoft::UI::ColorHelper::FromArgb(0xFF, static_cast<unsigned char>(customBrushes.size() + 1), 0x11, 0x22))); \
+            cv->name = customBrushes.back();
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_SET_CUSTOM_BRUSH)
 #undef CALENDARVIEW_SET_CUSTOM_BRUSH
 #define CALENDARVIEW_SET_CUSTOM_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) cv->name = MakeThickness(cl, ct, cr, cb);
-                CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_SET_CUSTOM_MARGIN)
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_SET_CUSTOM_MARGIN)
 #undef CALENDARVIEW_SET_CUSTOM_MARGIN
-                TestServices::WindowHelper->WindowContent = cv;
-            });
-            TestServices::WindowHelper->WaitForIdle();
-            RunOnUIThread([&]()
-            {
-                size_t brushIndex = 0;
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            size_t brushIndex = 0;
 #define CALENDARVIEW_VERIFY_CUSTOM_BRUSH(name, argb) \
-                LOG_OUTPUT(L"Verifying %hs keeps its custom brush", #name); \
-                VERIFY_IS_TRUE(AreSameObject(customBrushes[brushIndex++], cv->name));
-                CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_VERIFY_CUSTOM_BRUSH)
+            LOG_OUTPUT(L"Verifying %hs keeps its custom brush", #name); \
+            VERIFY_IS_TRUE(AreSameObject(customBrushes[brushIndex++], cv->name));
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_VERIFY_CUSTOM_BRUSH)
 #undef CALENDARVIEW_VERIFY_CUSTOM_BRUSH
 #define CALENDARVIEW_VERIFY_CUSTOM_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) VerifyThickness(MakeThickness(cl, ct, cr, cb), cv->name, #name);
-                CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_VERIFY_CUSTOM_MARGIN)
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_VERIFY_CUSTOM_MARGIN)
 #undef CALENDARVIEW_VERIFY_CUSTOM_MARGIN
-                clearContent();
-            });
-            TestServices::WindowHelper->WaitForIdle();
-        }
+            clearContent();
+        });
+        TestServices::WindowHelper->WaitForIdle();
     }
-
 #undef CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES
 #undef CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS
 
@@ -6819,7 +6833,7 @@ VerifyAllTimeZonesPartImpl(19, 20)
 
             LOG_OUTPUT(L"MinDate is later than MaxDate: measuring the CalendarView fails and it is the layout exception element.");
             VERIFY_THROWS_WINRT(cv->Measure(::Windows::Foundation::Size(400, 400)), Platform::FailureException^);
-            VERIFY_ARE_EQUAL(safe_cast<xaml::UIElement^>(cv), xaml_primitives::LayoutInformation::GetLayoutExceptionElement(TestServices::WindowHelper->CurrentDispatcher));
+            VERIFY_IS_TRUE(AreSameObject(cv, xaml_primitives::LayoutInformation::GetLayoutExceptionElement(TestServices::WindowHelper->CurrentDispatcher)));
 
             LOG_OUTPUT(L"After the range is made valid, the CalendarView measures again.");
             cv->MaxDate = MakeEnUsGregorianDate(2001, 12, 31);
@@ -6912,6 +6926,120 @@ VerifyAllTimeZonesPartImpl(19, 20)
         RunOnUIThread([&]()
         {
             VERIFY_ARE_EQUAL(formatJapaneseYear(heisei1), cv->TemplateSettings->HeaderText);
+        });
+    }
+
+    void CalendarViewIntegrationTests::VerifyKeyDownHandledByAppOrFromNonItemIsIgnored()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+        xaml_controls::Primitives::CalendarPanel^ monthViewPanel = nullptr;
+        ::Windows::Foundation::EventRegistrationToken keyDownToken{};
+        const auto november15 = MakeEnUsGregorianDate(2000, 11, 15);
+        const auto november22 = MakeEnUsGregorianDate(2000, 11, 22);
+
+        // Owned by the handler (captured by value): whether to handle keys, and the last key args it saw.
+        struct PanelKeyDownState
+        {
+            bool handleKeys = false;
+            Microsoft::UI::Xaml::Input::KeyRoutedEventArgs^ lastArgs = nullptr;
+        };
+        auto state = std::make_shared<PanelKeyDownState>();
+
+        auto verifyFocusedDate = [&](::Windows::Foundation::DateTime expectedDate)
+        {
+            auto focusedItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(cv->XamlRoot));
+            VERIFY_IS_TRUE(focusedItem != nullptr);
+            VERIFY_IS_TRUE(IsSameEnUsGregorianDay(expectedDate, focusedItem->Date));
+        };
+
+        auto removeHandler = wil::scope_exit([&]()
+        {
+            RunOnUIThread([&]()
+            {
+                if (monthViewPanel != nullptr)
+                {
+                    monthViewPanel->KeyDown -= keyDownToken;
+                }
+                state->lastArgs = nullptr;
+            });
+        });
+
+        RunOnUIThread([&]()
+        {
+            cv = ref new xaml_controls::CalendarView();
+            cv->Language = L"en-US";
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Gregorian;
+            cv->FirstDayOfWeek = ::Windows::Globalization::DayOfWeek::Sunday;
+            cv->MinDate = MakeEnUsGregorianDate(2000, 11, 1);
+            cv->MaxDate = MakeEnUsGregorianDate(2000, 12, 31);
+            cv->SetDisplayDate(november15);
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            monthViewPanel = safe_cast<xaml_controls::Primitives::CalendarPanel^>(CalendarHelper::GetTemplateChild(cv, L"MonthViewPanel"));
+            keyDownToken = monthViewPanel->KeyDown += ref new Microsoft::UI::Xaml::Input::KeyEventHandler(
+                [state](Platform::Object^, Microsoft::UI::Xaml::Input::KeyRoutedEventArgs^ e)
+            {
+                state->lastArgs = e;
+                if (state->handleKeys)
+                {
+                    e->Handled = true;
+                }
+            });
+
+            xaml_controls::CalendarViewDayItem^ startItem = nullptr;
+            for (unsigned i = 0; i < monthViewPanel->Children->Size; ++i)
+            {
+                auto dayItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(monthViewPanel->Children->GetAt(i));
+                if (dayItem != nullptr && IsSameEnUsGregorianDay(dayItem->Date, november15))
+                {
+                    startItem = dayItem;
+                    break;
+                }
+            }
+            VERIFY_IS_NOT_NULL(startItem);
+            VERIFY_IS_TRUE(startItem->Focus(xaml::FocusState::Keyboard));
+            state->handleKeys = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"The app handles Down on its way from the day item to the CalendarView: focus stays on 2000-11-15.");
+        TestServices::KeyboardHelper->Down();
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(state->lastArgs);
+            verifyFocusedDate(november15);
+            state->handleKeys = false;
+        });
+
+        LOG_OUTPUT(L"Unhandled, Down moves focus one week down, to 2000-11-22.");
+        TestServices::KeyboardHelper->Down();
+        TestServices::WindowHelper->WaitForIdle();
+        xaml_controls::Button^ headerButton = nullptr;
+        RunOnUIThread([&]()
+        {
+            verifyFocusedDate(november22);
+
+            // The handler still holds the args of that key press, which came from a day item.
+            VERIFY_IS_NOT_NULL(state->lastArgs);
+            headerButton = safe_cast<xaml_controls::Button^>(CalendarHelper::GetTemplateChild(cv, L"HeaderButton"));
+            VERIFY_IS_TRUE(headerButton->Focus(xaml::FocusState::Keyboard));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Down from the header button isn't a date navigation: focus stays on the header button and the month view stays.");
+        TestServices::KeyboardHelper->Down();
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            auto focusedElement = Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(cv->XamlRoot);
+            VERIFY_IS_TRUE(AreSameObject(headerButton, focusedElement));
+            VERIFY_ARE_EQUAL(xaml_controls::CalendarViewDisplayMode::Month, cv->DisplayMode);
         });
     }
 } } } } } } // Microsoft::UI::Xaml::Tests::Enterprise::CalendarView

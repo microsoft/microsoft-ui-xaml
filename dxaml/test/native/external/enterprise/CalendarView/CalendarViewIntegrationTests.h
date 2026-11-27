@@ -660,6 +660,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verify that forcing the rounded CalendarViewBaseItem chrome fills unset brushes and zero margins with fallback values (debug builds only).")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyRoundedChromeKeepsUnforcedAndCustomValues)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that unset brushes and margins stay unset when the rounded CalendarViewBaseItem chrome isn't forced, and that set brushes and one-sided margins are kept when it is.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(KeyboardNavigationTestPageUpAtCalendarMinDate)
             TEST_METHOD_PROPERTY(L"Description", L"Verify PageUp in the first month the calendar system supports moves focus to the first date.")
         END_TEST_METHOD()
@@ -674,6 +678,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyNextButtonCrossesJapaneseEraWithinOneYearViewRow)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that in year view the Next button moves from Showa 64 to Heisei 1 even though both years start in the same row.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyKeyDownHandledByAppOrFromNonItemIsIgnored)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that CalendarView doesn't navigate dates for a day item key that the app already handled, nor for a key that comes from an element that isn't a calendar item.")
         END_TEST_METHOD()
 
 #define VerifyAllTimeZonesPartDecl(i) \
