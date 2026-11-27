@@ -16,8 +16,8 @@ runtimeclass TableViewTestHooks
     static Boolean CompleteColumnReorderDrag(Object tableView, Double translationX);
     static Boolean IsColumnReorderDragging(Object tableView);
 
-    // Raised (sender: the row) at the end of each row cell rebuild. Null clears the handler.
-    static void SetRowCellRebuildHandler(Windows.Foundation.EventHandler<Object> handler);
+    // Raised (sender: the row) at the end of each row cell rebuild.
+    static event Windows.Foundation.EventHandler<Object> RowCellRebuilt;
 }
 
 }

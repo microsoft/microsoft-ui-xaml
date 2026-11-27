@@ -883,6 +883,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var trackedRows = new HashSet<TableViewRow>();
             int recycles = 0;
             int rebuilds = 0;
+            global::System.EventHandler<object> onRebuild = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -899,13 +900,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     trackedRows.Add(row);
                 }
                 Verify.IsGreaterThan(trackedRows.Count, 0, "Precondition: rows must realize.");
-                TableViewTestHooks.SetRowCellRebuildHandler((sender, args) =>
+                onRebuild = (sender, args) =>
                 {
                     if (sender is TableViewRow row && trackedRows.Contains(row))
                     {
                         ++rebuilds;
                     }
-                });
+                };
+                TableViewTestHooks.RowCellRebuilt += onRebuild;
 
                 GetRowsRepeater(tableView).ElementPrepared += (s, e) =>
                 {
@@ -922,7 +924,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                RunOnUIThread.Execute(() => TableViewTestHooks.SetRowCellRebuildHandler(null));
+                RunOnUIThread.Execute(() => TableViewTestHooks.RowCellRebuilt -= onRebuild);
             }
 
             RunOnUIThread.Execute(() =>
@@ -1075,6 +1077,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             TableViewTemplateColumn templateColumn = null;
             TableViewRow changedDuring = null;
             int cellsAtPrepare = -1;
+            global::System.EventHandler<object> onRebuild = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -1091,7 +1094,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // The repeater sets a recycled row's DataContext before giving it an index, so this
                 // fires inside the DataContext-driven rebuild, ahead of ElementPrepared.
-                TableViewTestHooks.SetRowCellRebuildHandler((sender, args) =>
+                onRebuild = (sender, args) =>
                 {
                     if (changedDuring == null && sender is TableViewRow row &&
                         row.DataContext != null && repeater.GetElementIndex(row) < 0)
@@ -1099,7 +1102,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         changedDuring = row;
                         templateColumn.CellTemplate = CreateBoundTextTemplate("Role");
                     }
-                });
+                };
+                TableViewTestHooks.RowCellRebuilt += onRebuild;
 
                 // Subscribed after TableView's own handler, so this observes the row once prepare has finished;
                 // a later recycle would rebuild the row and hide the defect.
@@ -1119,7 +1123,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                RunOnUIThread.Execute(() => TableViewTestHooks.SetRowCellRebuildHandler(null));
+                RunOnUIThread.Execute(() => TableViewTestHooks.RowCellRebuilt -= onRebuild);
             }
 
             RunOnUIThread.Execute(() =>
