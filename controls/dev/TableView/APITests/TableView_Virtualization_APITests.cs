@@ -312,7 +312,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
 
                 tableView = CreateVirtualizationTable(new List<Person>());
-                tableView.ItemsSource = TableViewTreeTestHelpers.MakeShapingView(items, "Role").View;
+                tableView.ItemsSource = TableViewShapingTestHelpers.MakeShapingView(items, "Role").View;
                 LoadContent(tableView);
             });
 

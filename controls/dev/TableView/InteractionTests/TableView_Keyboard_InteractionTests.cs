@@ -2858,37 +2858,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
         [TestMethod]
-        [TestProperty("Description", "In a wide read-only tree, Right then Left the same number of times returns the root row to the start of the scroll range.")]
-        public void TreeRightThenLeftUndoesHorizontalScroll()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                if (TableViewHierarchyInteractionTests.SelectHierarchyPivotAndGetTable() == null) { return; }
-                if (!SetPageCheckBox(ScrollFixturesCheckBox, true)) { return; }
-
-                UIObject row = GetRowsHost(HierarchyTable).Children[0];
-                row.SetFocus();
-                Wait.ForIdle();
-                // Start at the beginning of the scroll range: Left on a collapsed root scrolls back.
-                KeyboardHelper.PressKey(Key.Left);
-                Wait.ForIdle();
-                row = GetRowsHost(HierarchyTable).Children[0];
-                int start = row.Children[0].BoundingRectangle.X;
-
-                KeyboardHelper.PressKey(Key.Right, numPresses: 6);
-                Wait.ForIdle();
-                row = GetRowsHost(HierarchyTable).Children[0];
-                int scrolled = row.Children[0].BoundingRectangle.X;
-                KeyboardHelper.PressKey(Key.Left, numPresses: 6);
-                Wait.ForIdle();
-                row = GetRowsHost(HierarchyTable).Children[0];
-                Log.Comment("First cell X {0} -> {1} -> {2}; focused {3}.", start, scrolled, row.Children[0].BoundingRectangle.X, DescribeFocused());
-                Verify.AreNotEqual(start, scrolled, "Right on a row with no actionable cell must scroll.");
-                Verify.AreEqual(start, row.Children[0].BoundingRectangle.X, "Left must undo the scroll once there is nothing to collapse.");
-                Verify.IsTrue(row.HasKeyboardFocus, "Focus must stay on the root row.");
-            }
-        }
-        [TestMethod]
         [TestProperty("Description", "Under RTL, header arrows skip a non-actionable header in reading order.")]
         public void RightToLeftHeaderArrowsSkipNonActionableHeader()
         {

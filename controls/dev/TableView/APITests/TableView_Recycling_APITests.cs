@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
@@ -779,7 +780,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 .Select(i => new Person { Name = $"Person {i}", Role = $"Group {i / ItemsPerGroup}" })
                 .ToList();
 
-            return CreateTableView(TableViewTreeTestHelpers.MakeShapingView(items, "Role").View, headers: new[] { "Name", "Role" }, width: 500, height: 240);
+            return CreateTableView(TableViewShapingTestHelpers.MakeShapingView(items, "Role").View, headers: new[] { "Name", "Role" }, width: 500, height: 240);
         }
 
         // RealizationBound's viewport-plus-cache formula, sized by the shortest realized element so shorter group headers cannot exceed it.
@@ -879,13 +880,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyRowRecycleRefreshesCellsOnce()
         {
             TableView tableView = null;
-            CountingVisualStateManager vsm = null;
             var trackedRows = new HashSet<TableViewRow>();
             int recycles = 0;
+            int rebuilds = 0;
 
             RunOnUIThread.Execute(() =>
             {
-                vsm = new CountingVisualStateManager();
                 tableView = CreateScrollableTable(MakeManyItems(RecyclingSourceCount));
                 LoadContent(tableView);
             });
@@ -894,15 +894,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // Each rebuild raises a RowHierarchyStates GoToState; a custom VSM on the template root counts them.
                 foreach (var row in GetRealizedRows(tableView))
                 {
-                    var root = VisualTreeHelper.GetChildrenCount(row) > 0 ? VisualTreeHelper.GetChild(row, 0) as FrameworkElement : null;
-                    Verify.IsNotNull(root, "Precondition: a realized row must have its template applied.");
-                    VisualStateManager.SetCustomVisualStateManager(root, vsm);
                     trackedRows.Add(row);
                 }
                 Verify.IsGreaterThan(trackedRows.Count, 0, "Precondition: rows must realize.");
+                TableViewTestHooks.SetRowCellRebuildHandler((sender, args) =>
+                {
+                    if (sender is TableViewRow row && trackedRows.Contains(row))
+                    {
+                        ++rebuilds;
+                    }
+                });
 
                 GetRowsRepeater(tableView).ElementPrepared += (s, e) =>
                 {
@@ -913,19 +916,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 };
             });
 
-            ScrollInSteps(tableView);
+            try
+            {
+                ScrollInSteps(tableView);
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => TableViewTestHooks.SetRowCellRebuildHandler(null));
+            }
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsGreaterThan(recycles, 0, "Precondition: scrolling must recycle tracked rows.");
 
-                // One RebuildCells pass plus RefreshRowHierarchyState's own; the slack absorbs incidental refreshes.
-                const int expectedPerRecycle = 2;
+                // One RebuildCells pass per recycle; the slack absorbs incidental refreshes.
+                const int expectedPerRecycle = 1;
                 const int slack = 8;
-                var ratio = (double)vsm.HierarchyStateCalls / recycles;
-                Log.Comment($"Recycles={recycles} RowHierarchyStates GoToState calls={vsm.HierarchyStateCalls} perRecycle={ratio:F2}");
-                Verify.IsLessThanOrEqual(vsm.HierarchyStateCalls, (expectedPerRecycle * recycles) + slack,
-                    $"A recycled row must refresh its cells once per recycle; saw {ratio:F2} hierarchy refreshes per recycle (expected <= {expectedPerRecycle}).");
+                var ratio = (double)rebuilds / recycles;
+                Log.Comment($"Recycles={recycles} cell rebuilds={rebuilds} perRecycle={ratio:F2}");
+                Verify.IsLessThanOrEqual(rebuilds, (expectedPerRecycle * recycles) + slack,
+                    $"A recycled row must refresh its cells once per recycle; saw {ratio:F2} rebuilds per recycle (expected <= {expectedPerRecycle}).");
             });
         }
 
@@ -1063,7 +1073,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView tableView = null;
             TableViewTemplateColumn templateColumn = null;
-            CountingVisualStateManager vsm = null;
             TableViewRow changedDuring = null;
             int cellsAtPrepare = -1;
 
@@ -1079,27 +1088,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var repeater = GetRowsRepeater(tableView);
-                vsm = new CountingVisualStateManager
-                {
-                    // The repeater sets a recycled row's DataContext before giving it an index, so this
-                    // fires inside the DataContext-driven rebuild, ahead of ElementPrepared.
-                    OnHierarchyState = control =>
-                    {
-                        if (changedDuring == null && control is TableViewRow row &&
-                            row.DataContext != null && repeater.GetElementIndex(row) < 0)
-                        {
-                            changedDuring = row;
-                            templateColumn.CellTemplate = CreateBoundTextTemplate("Role");
-                        }
-                    }
-                };
 
-                foreach (var row in GetRealizedRows(tableView))
+                // The repeater sets a recycled row's DataContext before giving it an index, so this
+                // fires inside the DataContext-driven rebuild, ahead of ElementPrepared.
+                TableViewTestHooks.SetRowCellRebuildHandler((sender, args) =>
                 {
-                    var root = VisualTreeHelper.GetChildrenCount(row) > 0 ? VisualTreeHelper.GetChild(row, 0) as FrameworkElement : null;
-                    Verify.IsNotNull(root, "Precondition: a realized row must have its template applied.");
-                    VisualStateManager.SetCustomVisualStateManager(root, vsm);
-                }
+                    if (changedDuring == null && sender is TableViewRow row &&
+                        row.DataContext != null && repeater.GetElementIndex(row) < 0)
+                    {
+                        changedDuring = row;
+                        templateColumn.CellTemplate = CreateBoundTextTemplate("Role");
+                    }
+                });
 
                 // Subscribed after TableView's own handler, so this observes the row once prepare has finished;
                 // a later recycle would rebuild the row and hide the defect.
@@ -1112,8 +1112,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 };
             });
 
-            ScrollInSteps(tableView);
-            SettleLayout(tableView);
+            try
+            {
+                ScrollInSteps(tableView);
+                SettleLayout(tableView);
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => TableViewTestHooks.SetRowCellRebuildHandler(null));
+            }
 
             RunOnUIThread.Execute(() =>
             {
@@ -1203,23 +1210,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ScrollBodyTo(tableView, ScrollAxis.Vertical, (extent - 1.0) * step / ScrollSteps);
             }
         }
-
-        private sealed class CountingVisualStateManager : VisualStateManager
-        {
-            public int HierarchyStateCalls { get; private set; }
-
-            public global::System.Action<Control> OnHierarchyState { get; set; }
-
-            protected override bool GoToStateCore(Control control, FrameworkElement templateRoot, string stateName, VisualStateGroup group, VisualState state, bool useTransitions)
-            {
-                if (stateName == "RowHierarchical" || stateName == "RowNotHierarchical")
-                {
-                    ++HierarchyStateCalls;
-                    OnHierarchyState?.Invoke(control);
-                }
-                return base.GoToStateCore(control, templateRoot, stateName, group, state, useTransitions);
-            }
-        }
     }
 
     internal static class TableViewRecyclingTestHelpers
@@ -1236,7 +1226,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal static TableView CreateScrollableGroupedTable()
         {
-            return CreateTableView(TableViewTreeTestHelpers.MakeShapingView(MakeManyItems(RecyclingSourceCount), "Role").View,
+            return CreateTableView(TableViewShapingTestHelpers.MakeShapingView(MakeManyItems(RecyclingSourceCount), "Role").View,
                 headers: new[] { "Name", "Role" }, width: 500, height: 240);
         }
 

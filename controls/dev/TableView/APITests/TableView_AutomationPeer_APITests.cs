@@ -1809,43 +1809,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a held tree row element expands and collapses its own item and stays the row's element across the toggle (#12444).")]
-        public void VerifyTreeRowElementExpandsItsOwnItemAndSurvivesTheToggle()
-        {
-            var tableView = PlaceTreeTable(() => TableViewTreeTestHelpers.MakeTree());
-            AutomationPeer held = null;
-            IExpandCollapseProvider heldProvider = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                held = RowPeerOf(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada"));
-                Verify.AreEqual(1, held.GetLevel(), "Ada's element must report Level 1.");
-                heldProvider = (IExpandCollapseProvider)held.GetPattern(PatternInterface.ExpandCollapse);
-                Verify.IsNotNull(heldProvider, "Ada's element must offer ExpandCollapse.");
-                Verify.AreEqual(ExpandCollapseState.Collapsed, heldProvider.ExpandCollapseState, "Ada starts collapsed.");
-                heldProvider.Expand();
-            });
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(5, GetProjectedCount(tableView), "Expanding Ada must project Ben and Cy.");
-                Verify.AreSame(held, RowPeerOf(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada")), "Ada's row must keep the held element.");
-                Verify.AreEqual(ExpandCollapseState.Expanded, heldProvider.ExpandCollapseState, "The held pattern must report Ada expanded.");
-                var ben = RowPeerOf(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ben"));
-                Verify.AreEqual(2, ben.GetLevel(), "Ben's element must report Level 2.");
-                Verify.AreEqual("1/2", $"{ben.GetPositionInSet()}/{ben.GetSizeOfSet()}", "Ben's element must count Ada's children.");
-                heldProvider.Collapse();
-            });
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(3, GetProjectedCount(tableView), "Collapse through the held element must collapse Ada.");
-            });
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies held row elements never describe another item after a sort, and every row's current element names its own item (#12444).")]
         public void VerifyHeldRowElementsNeverRetargetAfterSort()
         {
@@ -1942,7 +1905,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private static TableView CreateManyGroupsTable()
         {
-            var source = TableViewTreeTestHelpers.MakeShapingView(Enumerable.Range(0, 80).Select(i => new Person { Name = $"P{i}", Role = $"G{i / 10}" }).ToList(), "Role");
+            var source = TableViewShapingTestHelpers.MakeShapingView(Enumerable.Range(0, 80).Select(i => new Person { Name = $"P{i}", Role = $"G{i / 10}" }).ToList(), "Role");
             var tableView = CreateTableViewShell(source.View, 600, 300);
             tableView.Columns.Add(MakeTextTemplateColumn("Name"));
             return tableView;
@@ -5720,12 +5683,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        #region Hierarchical rows
-
-        // Tree fixture, ParentBy(Id, ManagerId): Ada > { Ben > { Dan }, Cy }, Eve > { Fay }, Gus.
-
         [TestMethod]
-        [TestProperty("Description", "Verifies a row of a flat projection exposes no ExpandCollapse pattern, including after ClearParentBy.")]
+        [TestProperty("Description", "Verifies a data row exposes no ExpandCollapse pattern, so AT does not announce it as collapsed.")]
         public void VerifyFlatRowHasNoExpandCollapse()
         {
             TableView flatTable = null;
@@ -5740,115 +5699,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var row = GetProjectedRow(flatTable, 0);
-                Verify.AreEqual(0, row.Level, "A flat row must report Level 0.");
-                Verify.IsNull(GetRowPeer(row).GetPattern(PatternInterface.ExpandCollapse),
-                    "A flat row must not expose ExpandCollapse, or AT announces it as collapsed.");
-            });
-
-            var tableView = PlaceTreeTable(() => TableViewTreeTestHelpers.MakeTree());
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsNotNull(TableViewTreeTestHelpers.GetRowExpandCollapse(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada")),
-                    "Precondition: a tree row exposes ExpandCollapse.");
-                tableView.ParentKeyPath = "";
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsNull(TableViewTreeTestHelpers.GetRowExpandCollapse(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada")),
-                    "Once the relation is cleared the row is flat and must drop ExpandCollapse.");
+                Verify.IsNull(GetRowPeer(GetProjectedRow(flatTable, 0)).GetPattern(PatternInterface.ExpandCollapse),
+                    "A data row must not expose ExpandCollapse, or AT announces it as collapsed.");
             });
         }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a tree row's ExpandCollapse state matches its node, and Expand() grows the projection.")]
-        public void VerifyExpandCollapseStates()
-        {
-            var tableView = PlaceTreeTable(() => TableViewTreeTestHelpers.MakeTree());
-            var countBefore = 0;
-
-            RunOnUIThread.Execute(() =>
-            {
-                countBefore = GetProjectedCount(tableView);
-                Verify.AreEqual(3, countBefore, "Precondition: only the roots Ada, Eve and Gus are projected.");
-                Verify.AreEqual("Collapsed", TreeRowState(tableView, "Ada"), "Ada has children and starts collapsed.");
-                Verify.AreEqual("LeafNode", TreeRowState(tableView, "Gus"), "Gus has no children.");
-
-                TableViewTreeTestHelpers.GetRowExpandCollapse(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada")).Expand();
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual("Expanded", TreeRowState(tableView, "Ada"), "Expand() must report Expanded.");
-                Verify.AreEqual(countBefore + 2, GetProjectedCount(tableView), "Expanding Ada must project Ben and Cy.");
-                Verify.AreEqual("Collapsed", TreeRowState(tableView, "Ben"), "Ben has a child and starts collapsed.");
-                Verify.AreEqual("LeafNode", TreeRowState(tableView, "Cy"), "Cy has no children.");
-                Verify.AreEqual("LeafNode", TreeRowState(tableView, "Gus"), "Gus has no children.");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies tree row peers report Level, PositionInSet and SizeOfSet relative to their sibling set.")]
-        public void VerifyLevelPositionSizeUngrouped()
-        {
-            var tableView = PlaceTreeTable(() => TableViewTreeTestHelpers.MakeTree());
-
-            RunOnUIThread.Execute(() => TableViewTreeTestHelpers.ToggleTreeRow(tableView, "Ada", expand: true));
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                var levels = string.Join(" ", GetProjectedElements(tableView).OfType<TableViewRow>()
-                    .Select(r => $"{TableViewTreeTestHelpers.NameOf(r.DataContext)}:{GetRowPeer(r).GetLevel()}"));
-                Verify.AreEqual("Ada:1 Ben:2 Cy:2 Eve:1 Gus:1", levels, "Peer Level must be the 1-based tree depth.");
-                Verify.AreEqual("Ada 1/3 Ben 1/2 Cy 2/2 Eve 2/3 Gus 3/3", TableViewTreeTestHelpers.PositionLabels(tableView),
-                    "PositionInSet and SizeOfSet must count siblings, not projected rows.");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies grouped tree root peers report PositionInSet and SizeOfSet scoped to their group.")]
-        public void VerifyPositionInSetGrouped()
-        {
-            var tableView = PlaceTreeTable(() => TableViewTreeTestHelpers.MakeShapingView(TableViewTreeTestHelpers.MakeTree(), "Dept").View);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual("Ada 1/1 Eve 1/2 Gus 2/2", TableViewTreeTestHelpers.PositionLabels(tableView),
-                    "Root sibling sets must be scoped by group.");
-            });
-        }
-
-        private TableView PlaceTreeTable(Func<object> makeSource)
-        {
-            TableView tableView = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                EnsureTabularControlsResources();
-                tableView = TableViewTreeTestHelpers.CreateTreeTable(makeSource(),
-                    TableViewTreeTestHelpers.IdPath, TableViewTreeTestHelpers.ManagerPath);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-            return tableView;
-        }
-
-        // The row's ExpandCollapseState as text, or "none" when the pattern is absent.
-        private static string TreeRowState(TableView tableView, string name)
-        {
-            var provider = TableViewTreeTestHelpers.GetRowExpandCollapse(TableViewTreeTestHelpers.FindTreeRow(tableView, name));
-            return provider == null ? "none" : provider.ExpandCollapseState.ToString();
-        }
-
-        #endregion
 
         #region Teardown
 
@@ -5921,7 +5775,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // The same three columns over a source grouped by Role, so group headers realize.
         internal static TableView CreateGroupedAutomationTable()
         {
-            var source = TableViewTreeTestHelpers.MakeShapingView(MakeItems(), "Role");
+            var source = TableViewShapingTestHelpers.MakeShapingView(MakeItems(), "Role");
 
             return AddAutomationColumns(CreateTableViewShell(source.View, 600, 400));
         }
@@ -5939,7 +5793,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // from flat metadata.
         internal static TableView CreateTwoGroupAutomationTable()
         {
-            var source = TableViewTreeTestHelpers.MakeShapingView(new List<Person>
+            var source = TableViewShapingTestHelpers.MakeShapingView(new List<Person>
             {
                 new Person { Name = "Asha", Role = "Designer" },
                 new Person { Name = "Bo", Role = "Designer" },

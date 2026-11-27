@@ -89,29 +89,6 @@ namespace MUXControlsTestApp
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    // Data item for the Hierarchy pivot. Flat: the tree comes from ParentBy(Id, ManagerId).
-    public sealed class HierarchyTestEmployee
-    {
-        public HierarchyTestEmployee(int id, int? managerId, string name, string dept, int score)
-        {
-            Id = id;
-            ManagerId = managerId;
-            Name = name;
-            Dept = dept;
-            Score = score;
-        }
-
-        public int Id { get; }
-
-        public int? ManagerId { get; }
-
-        public string Name { get; set; }
-
-        public string Dept { get; set; }
-
-        public int Score { get; }
-    }
-
     [TopLevelTestPage(Name = "TableView")]
     [AxeScanTestPage(Name = "TableView-Axe")]
     public sealed partial class TableViewPage : TestPage
@@ -177,7 +154,6 @@ namespace MUXControlsTestApp
 
             ScrollingTableView.LayoutUpdated += OnScrollingTableViewLayoutUpdated;
 
-            HookHierarchyTables();
             InitializeFixtureCells();
             HookContextMenuTable();
         }
@@ -480,135 +456,6 @@ namespace MUXControlsTestApp
             var source = new CollectionViewSource { Source = items };
             source.GroupDescriptions.Add(new PropertyGroupDescription(nameof(TableViewTestPerson.City)));
             return source.View;
-        }
-
-        // ---------- Hierarchy pivot ----------
-
-        private bool _hierarchyRefreshQueued;
-
-        private static ObservableCollection<HierarchyTestEmployee> CreateHierarchySource()
-        {
-            var items = new ObservableCollection<HierarchyTestEmployee>();
-            for (int i = 0; i < Facts.HierarchyIds.Length; i++)
-            {
-                items.Add(new HierarchyTestEmployee(
-                    Facts.HierarchyIds[i],
-                    Facts.HierarchyManagerIds[i],
-                    Facts.HierarchyNames[i],
-                    Facts.HierarchyDepts[i],
-                    Facts.HierarchyScores[i]));
-            }
-
-            return items;
-        }
-
-        private void HookHierarchyTables()
-        {
-            HierarchyTable.SelectionChanged += (s, args) => QueueHierarchyReadoutRefresh();
-
-            // Expansion changes re-project rows, which always re-lays out the table.
-            HierarchyTable.LayoutUpdated += (s, args) => RefreshHierarchyReadout();
-            HierarchyRtlTable.LayoutUpdated += (s, args) => RefreshHierarchyReadout();
-
-            ResetHierarchy();
-        }
-
-        // A fresh source per table: every test starts from the same all-collapsed, unshaped, unselected state.
-        private void ResetHierarchy()
-        {
-            HierarchyTable.ItemsSource = CreateHierarchySource();
-            HierarchyRtlTable.ItemsSource = CreateHierarchySource();
-            if (HierarchyTable.IsLoaded)
-            {
-                HierarchyTable.DeselectAll();
-                HierarchyRtlTable.DeselectAll();
-            }
-
-            QueueHierarchyReadoutRefresh();
-        }
-
-        private void OnResetHierarchyClick(object sender, RoutedEventArgs e) => ResetHierarchy();
-
-        // Low priority so the readout describes the settled state, after focus and layout have moved.
-        private void QueueHierarchyReadoutRefresh()
-        {
-            if (_hierarchyRefreshQueued)
-            {
-                return;
-            }
-
-            _hierarchyRefreshQueued = true;
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-            {
-                _hierarchyRefreshQueued = false;
-                RefreshHierarchyReadout();
-            });
-        }
-
-        // Assigns only on change: the assignment re-lays out the TextBox, which raises LayoutUpdated again.
-        private void RefreshHierarchyReadout()
-        {
-            if (HierarchyReadout == null || HierarchyTable == null || HierarchyRtlTable == null)
-            {
-                return;
-            }
-
-            var selected = HierarchyTable.SelectedItem as HierarchyTestEmployee;
-            string text =
-                Facts.TreeField + "=" + ProjectionLabel(HierarchyTable) + ";" +
-                Facts.RtlTreeField + "=" + ProjectionLabel(HierarchyRtlTable) + ";" +
-                Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name);
-
-            if (HierarchyReadout.Text != text)
-            {
-                HierarchyReadout.Text = text;
-            }
-        }
-
-        // Realized elements in projection order. The fixture is small enough that every row is realized.
-        private static string ProjectionLabel(TableView table)
-        {
-            var repeater = FindDescendantByName<ItemsRepeater>(table, "PART_RowsRepeater");
-            if (repeater == null)
-            {
-                return string.Empty;
-            }
-
-            var entries = new SortedDictionary<int, string>();
-            int count = VisualTreeHelper.GetChildrenCount(repeater);
-            for (int i = 0; i < count; i++)
-            {
-                var element = VisualTreeHelper.GetChild(repeater, i) as UIElement;
-                if (element == null)
-                {
-                    continue;
-                }
-
-                int index = repeater.GetElementIndex(element);
-                if (index < 0)
-                {
-                    continue;
-                }
-
-                entries[index] = DescribeProjectedElement(element);
-            }
-
-            return string.Join(" ", entries.Values);
-        }
-
-        private static string DescribeProjectedElement(UIElement element)
-        {
-            var row = element as TableViewRow;
-            if (row != null)
-            {
-                var employee = row.DataContext as HierarchyTestEmployee;
-                string mark = row.IsExpandable ? (row.IsExpanded ? "-" : "+") : string.Empty;
-                return (employee == null ? "?" : employee.Name) + row.Level + mark;
-            }
-
-            var header = element as TableViewGroupHeader ?? FindDescendant<TableViewGroupHeader>(element);
-            var info = header == null ? null : header.Content as TableViewGroupInfo;
-            return "[" + (info == null || info.Key == null ? "?" : info.Key.ToString()) + "]";
         }
 
         // ---- Context menus ----
@@ -981,27 +828,24 @@ namespace MUXControlsTestApp
         // need actionable cells: these columns get a cell menu (a tooltip on ContextMenuTable's Age, whose
         // tests need a cell without a menu). InactiveCellsCheckBox removes them.
         private readonly List<TableViewColumn> _fixtureMenuColumns = new List<TableViewColumn>();
-        private readonly List<TableViewColumn> _hierarchyFixtureMenuColumns = new List<TableViewColumn>();
         private bool _fixtureCellsInactive;
 
         private void InitializeFixtureCells()
         {
-            foreach (var table in new[] { BasicTableView, RtlTableView, ScrollingTableView, HierarchyTable, HierarchyRtlTable })
+            foreach (var table in new[] { BasicTableView, RtlTableView, ScrollingTableView })
             {
-                var target = ReferenceEquals(table, HierarchyTable) ? _hierarchyFixtureMenuColumns : _fixtureMenuColumns;
                 foreach (var column in table.Columns)
                 {
                     if (column.CellContextFlyout == null && column.CellToolTipBinding == null &&
                         !Equals(column.Header, "ReadOnlyCity") &&
                         (IsFixtureTextColumn(column) || ReferenceEquals(column, TemplateColumn)))
                     {
-                        target.Add(column);
+                        _fixtureMenuColumns.Add(column);
                     }
                 }
             }
 
             ApplyFixtureCells();
-            SetFixtureCellMenus(_hierarchyFixtureMenuColumns, true);
         }
 
         // The text columns are template columns over the page's *TextCellTemplate resources.
@@ -1092,7 +936,7 @@ namespace MUXControlsTestApp
         }
 
         // With InactiveCellsCheckBox set, a menu makes RtlAge, beyond the viewport, the only actionable
-        // column of the RTL table, and the hierarchy table becomes a wide tree of inactive cells.
+        // column of the RTL table.
         private void OnScrollFixturesToggled(object sender, RoutedEventArgs e)
         {
             bool on = ((CheckBox)sender).IsChecked == true;
@@ -1100,8 +944,6 @@ namespace MUXControlsTestApp
             menu.Items.Add(new MenuFlyoutItem { Text = "Age" });
             RtlTableView.Columns[1].Width = new GridLength(on ? 400 : 220);
             RtlTableView.Columns[2].CellContextFlyout = on ? menu : null;
-            HierarchyTable.Columns[2].Width = new GridLength(on ? 500 : 100);
-            SetFixtureCellMenus(_hierarchyFixtureMenuColumns, !on);
             if (on && ScrollingTableView.Columns.Count == 4)
             {
                 ScrollingTableView.Columns.Add(new TableViewTemplateColumn
@@ -1147,8 +989,6 @@ namespace MUXControlsTestApp
 
         private void OnGoToScrollingClick(object sender, RoutedEventArgs e) => ShowTableHost(ScrollingTableHost);
 
-        private void OnGoToHierarchyClick(object sender, RoutedEventArgs e) => ShowTableHost(HierarchyTableHost);
-
         private void OnGoToGroupedPagingClick(object sender, RoutedEventArgs e) => ShowTableHost(GroupedPagingTableHost);
         private void OnGoToContextMenuClick(object sender, RoutedEventArgs e) => ShowTableHost(ContextMenuTableHost);
 
@@ -1168,7 +1008,6 @@ namespace MUXControlsTestApp
             GroupedTableHost.Visibility = Visibility.Collapsed;
             GroupedPagingTableHost.Visibility = Visibility.Collapsed;
             ScrollingTableHost.Visibility = Visibility.Collapsed;
-            HierarchyTableHost.Visibility = Visibility.Collapsed;
             ContextMenuTableHost.Visibility = Visibility.Collapsed;
             CellControlsTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;

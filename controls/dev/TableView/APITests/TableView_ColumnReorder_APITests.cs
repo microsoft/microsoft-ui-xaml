@@ -182,7 +182,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 int sorting = 0;
                 RunOnUIThread.Execute(() =>
                 {
-                    source = TableViewTreeTestHelpers.MakeShapingView(TableViewShapingTestHelpers.MakeShapedPeople());
+                    source = TableViewShapingTestHelpers.MakeShapingView(TableViewShapingTestHelpers.MakeShapedPeople());
                     tableView = TableViewSortingTestHelpers.CreateSortTable(source.View);
                     tableView.CanUserReorderColumns = true;
                     name = tableView.Columns[0];
@@ -235,7 +235,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 int sorting = 0;
                 RunOnUIThread.Execute(() =>
                 {
-                    var source = TableViewTreeTestHelpers.MakeShapingView(TableViewShapingTestHelpers.MakeShapedPeople());
+                    var source = TableViewShapingTestHelpers.MakeShapingView(TableViewShapingTestHelpers.MakeShapedPeople());
                     tableView = TableViewSortingTestHelpers.CreateSortTable(source.View);
                     tableView.CanUserReorderColumns = true;
                     team = MakeTextTemplateColumn("Team", bound: false);

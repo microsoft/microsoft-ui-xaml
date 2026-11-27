@@ -1242,7 +1242,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 tableView.Columns[0].CustomSortComparer = new ThrowingSortComparer();
                 var returned = true;
-                Verify.AreEqual("no exception", TableViewTreeTestHelpers.ThrownTypeName(
+                Verify.AreEqual("no exception", TableViewShapingTestHelpers.ThrownTypeName(
                     () => returned = tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending)),
                     "A comparer fault must not escape SortByColumn.");
                 Verify.IsFalse(returned, "SortByColumn reports that the sort was not applied.");

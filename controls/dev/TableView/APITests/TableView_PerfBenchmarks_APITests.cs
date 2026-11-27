@@ -18,13 +18,12 @@ using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
-using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpers;
 
 using SortDescription = Microsoft.UI.Xaml.Data.SortDescription;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // Timings of the CollectionViewSource shaping engine and TableView's tree over it. Not part of a normal run:
+    // Timings of the CollectionViewSource shaping engine. Not part of a normal run:
     // te.exe ... /select:"@Name='*CollectionViewPerfBenchmarks*'" /runIgnoredTests. Each result is logged as
     // "BENCH|<scenario>|<items>|<milliseconds>".
     [TestClass]
@@ -261,90 +260,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Times TableView's tree over a sorted view: expanding every row and inserting one row.")]
-        public void BenchTree()
-        {
-            foreach (var n in s_sizes)
-            {
-                ObservableCollection<BenchRow> rows = null;
-                TableView tableView = null;
-                RunOnUIThread.Execute(() =>
-                {
-                    rows = MakeTreeRows(n);
-                    var cvs = new CollectionViewSource { Source = rows };
-                    cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Score), CollectionViewSortDirection.Ascending));
-                    var ms = Time(() =>
-                    {
-                        tableView = CreateTreeTable(cvs.View, nameof(BenchRow.Id), nameof(BenchRow.ParentId));
-                        tableView.Tag = cvs;
-                        LoadContent(tableView);
-                    });
-                    Report("Tree.Load", n, ms);
-                });
-                SettleLayout(tableView);
-
-                RunOnUIThread.Execute(() => Report("Tree.ExpandAll", n, Time(() => tableView.ExpandAllRows())));
-                SettleLayout(tableView);
-
-                var total = 0.0;
-                const int inserts = 5;
-                for (var i = 0; i < inserts; i++)
-                {
-                    RunOnUIThread.Execute(() =>
-                    {
-                        var row = new BenchRow(n + 1 + i, "Inserted", i, parentId: 1 + i);
-                        total += Time(() => rows.Insert(rows.Count / 2, row));
-                    });
-                    SettleLayout(tableView);
-                }
-                Report("Tree.InsertEach", n, total / inserts);
-
-                total = 0.0;
-                for (var i = 0; i < inserts; i++)
-                {
-                    RunOnUIThread.Execute(() => total += Time(() => rows.RemoveAt(rows.Count - 1 - i)));
-                    SettleLayout(tableView);
-                }
-                Report("Tree.RemoveLeafEach", n, total / inserts);
-
-                // Through the end of the dispatcher turn, which holds any work the tree defers.
-                Report("Tree.TurnBaseline", n, Enumerable.Range(0, inserts).Select(_ => TimeThroughTurn(() => { })).Average());
-                total = 0.0;
-                for (var i = 0; i < inserts; i++)
-                {
-                    var row = new BenchRow(n + 101 + i, "Inserted", i, parentId: 1 + i);
-                    total += TimeThroughTurn(() => rows.Insert(rows.Count / 2, row));
-                    SettleLayout(tableView);
-                }
-                Report("Tree.InsertTurnEach", n, total / inserts);
-
-                total = 0.0;
-                for (var i = 0; i < inserts; i++)
-                {
-                    total += TimeThroughTurn(() => rows.RemoveAt(rows.Count - 1 - i));
-                    SettleLayout(tableView);
-                }
-                Report("Tree.RemoveLeafTurnEach", n, total / inserts);
-
-                total = 0.0;
-                for (var i = 0; i < inserts; i++)
-                {
-                    var at = rows.Count - 1 - 2 * inserts - i;
-                    var old = rows[at];
-                    var moved = new BenchRow(old.Id, old.Name, old.Score, parentId: 1 + (old.ParentId.Value + 7 * (i + 1)) % (n / 10));
-                    total += TimeThroughTurn(() => rows[at] = moved);
-                    SettleLayout(tableView);
-                }
-                Report("Tree.ReparentTurnEach", n, total / inserts);
-
-                RunOnUIThread.Execute(() => Report("Tree.CollapseAll", n, Time(() => tableView.CollapseAllRows())));
-                SettleLayout(tableView);
-                RunOnUIThread.Execute(() => Content = null);
-                IdleSynchronizer.Wait();
-            }
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Times how long the UI thread takes to release views and groups the GC found unreachable: many small grouped views (over copies, or live over one shared source), and one view with many groups.")]
         public void BenchTeardown()
         {
@@ -450,20 +365,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var letter = (char)('a' + random.Next(26));
                 chars[c] = random.Next(4) == 0 ? char.ToUpperInvariant(letter) : letter;
             }
-            return new BenchRow(id, new string(chars), random.Next(1_000_000), parentId: null);
-        }
-
-        // n/10 roots, each with nine children.
-        private static ObservableCollection<BenchRow> MakeTreeRows(int n)
-        {
-            var roots = n / 10;
-            var random = new Random(7);
-            var rows = new List<BenchRow>(n);
-            for (var i = 0; i < n; i++)
-            {
-                rows.Add(new BenchRow(i + 1, $"R{i}", random.Next(1_000_000), i < roots ? (int?)null : (i % roots) + 1));
-            }
-            return new ObservableCollection<BenchRow>(rows);
+            return new BenchRow(id, new string(chars), random.Next(1_000_000));
         }
 
         private static double Time(Action action)
@@ -473,26 +375,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return stopwatch.Elapsed.TotalMilliseconds;
         }
 
-        private static double TimeThroughTurn(Action action)
-        {
-            var elapsed = 0.0;
-            using (var done = new global::System.Threading.ManualResetEventSlim(false))
-            {
-                RunOnUIThread.Execute(() =>
-                {
-                    var queue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-                    var stopwatch = Stopwatch.StartNew();
-                    action();
-                    queue.TryEnqueue(() =>
-                    {
-                        elapsed = stopwatch.Elapsed.TotalMilliseconds;
-                        done.Set();
-                    });
-                });
-                Verify.IsTrue(done.Wait(TimeSpan.FromSeconds(60)), "The turn ended.");
-            }
-            return elapsed;
-        }
         private static double Median(Action action)
         {
             var samples = Enumerable.Range(0, 3).Select(_ => Time(action)).OrderBy(ms => ms).ToList();
@@ -521,12 +403,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     {
         private int _score;
 
-        public BenchRow(int id, string name, int score, int? parentId)
+        public BenchRow(int id, string name, int score)
         {
             Id = id;
             Name = name;
             _score = score;
-            ParentId = parentId;
             Team100 = $"T{id % 100:D2}";
             Team1k = $"K{id % 1000:D3}";
             Team10 = $"G{id % 10}";
@@ -536,7 +417,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         public int Id { get; }
         public string Name { get; }
-        public int? ParentId { get; }
         public string Team100 { get; }
         public string Team1k { get; }
         public string Team10 { get; }
