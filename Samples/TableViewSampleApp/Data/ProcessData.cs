@@ -525,7 +525,7 @@ public static class ProcessData
             IsHighCpu = true,
         });
 
-        // Windows process ids are multiples of 4.
+        // Windows process ids are multiples of 4; each child records its app's id.
         var pid = 1024;
         foreach (var process in processes)
         {
@@ -533,6 +533,7 @@ public static class ProcessData
             foreach (var child in process.Children)
             {
                 child.Pid = pid += 4;
+                child.ParentPid = process.Pid;
             }
         }
 

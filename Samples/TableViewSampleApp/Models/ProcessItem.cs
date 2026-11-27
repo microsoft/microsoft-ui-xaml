@@ -41,12 +41,15 @@ public sealed class ProcessItem : INotifyPropertyChanged
 
     public bool IsEfficiency { get; set; }
 
+    // Process id and parent process id: the key and parent key the Hierarchy page's CollectionViewSource nests by.
     public int Pid { get; set; }
+
+    public int? ParentPid { get; set; }
 
     public bool IsSuspended => StatusText == Suspended;
 
     // Child processes (browser tabs, WebView2 helpers): their values are summed into the parent's
-    // metrics on every tick. They are not rows.
+    // metrics on every tick. They are rows only on the Hierarchy page, nested by ParentPid.
     public ObservableCollection<ProcessItem> Children { get; set; } = new();
 
     // Behaviour hints for the simulation.
