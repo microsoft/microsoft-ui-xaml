@@ -42,7 +42,7 @@
         Snippet="CollectionViewShaping"
         StretchExample="True"
         TryIt="Click the CPU header: the view's SortDescriptions change and the arrow follows them. Type web in Filter. Collapse a category, then choose Update CPU and refresh: the view recomputes its groups and the category stays collapsed."
-        WhatToLookFor="The ItemsSource is CollectionViewSource.View. The rows, their order and the groups all come from that view; TableView reads them. A sort applied to the view by code (Sort by memory) moves the header arrow too. A property edit is not a collection change, so the page calls Refresh() after changing values. Groups are keyed by their value, so expansion state survives every recompute. Hierarchy comes from TableView.ItemKeyPath and ParentKeyPath, not the CollectionViewSource, so this page is flat or grouped only.">
+        WhatToLookFor="The ItemsSource is CollectionViewSource.View. The rows, their order and the groups all come from that view; TableView reads them. A sort applied to the view by code (Sort by memory) moves the header arrow too. A property edit is not a collection change, so the page calls Refresh() after changing values. Groups are keyed by their value, so expansion state survives every recompute.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->

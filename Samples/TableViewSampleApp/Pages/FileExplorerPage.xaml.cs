@@ -31,13 +31,8 @@ namespace TableViewSampleApp.Pages;
 /// </summary>
 public sealed partial class FileExplorerPage : SamplePageBase
 {
-    // Nested listings read this deep and this many rows; every Add reshapes the nested rows.
-    private const int SubfolderLevels = 2;
-    private const int MaxNestedEntries = 500;
-
     private readonly Stack<string> _history = new();
     private string _currentDir = string.Empty;
-    private bool _listedNested;
     private int _navigationVersion;
 
     public FileExplorerPage()
@@ -56,7 +51,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
         FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
         // </snippet>
 
-        InitializeSample(Status, Shaping.Attach(FileTable, Source, GroupPathOf, FileSystemBrowser.ParentFolder));
+        InitializeSample(Status, Shaping.Attach(FileTable, Source, GroupPathOf));
         TrackLifetime(OpenInitialFolder);
     }
 
@@ -82,11 +77,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
     private async Task NavigateAsync(string path, bool addToHistory, string verb)
     {
         var version = ++_navigationVersion;
-        // Nested (Hierarchy modes): subfolder contents too, so ParentKeyPath has folders to nest under.
-        var nested = IsHierarchical;
-        var listing = await Task.Run(() => nested
-            ? FileSystemBrowser.Read(path, SubfolderLevels, MaxNestedEntries)
-            : FileSystemBrowser.Read(path));
+        var listing = await Task.Run(() => FileSystemBrowser.Read(path));
 
         // A newer navigation started while this one was reading; drop the stale result.
         if (version != _navigationVersion)
@@ -107,7 +98,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
         }
 
         _currentDir = listing.FullPath;
-        _listedNested = nested;
         var focusState = TableFocusState();
         Entries.Clear();
         foreach (var entry in listing.Entries)
@@ -304,7 +294,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
     }
     // </snippet>
 
-    // Nested, a filter also keeps each match's folders.
     private int VisibleCount() => SampleShaping.SelectedTag(FilterSelector, "all") switch
     {
         "folders" => CountShown(Entries, entry => entry.IsFolder),
@@ -325,13 +314,8 @@ public sealed partial class FileExplorerPage : SamplePageBase
             return;
         }
 
-        // Listing only: nothing is deleted on disk, and Refresh brings the row back. A nested folder
-        // takes its listed contents with it.
-        var prefix = entry.FullPath + Path.DirectorySeparatorChar;
-        foreach (var row in Entries.Where(row => row == entry || (entry.IsFolder && row.FullPath.StartsWith(prefix, StringComparison.Ordinal))).ToList())
-        {
-            Entries.Remove(row);
-        }
+        // Listing only: nothing is deleted on disk, and Refresh brings the row back.
+        Entries.Remove(entry);
 
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0} from the listing (not from disk)", entry.Name));
     }
@@ -359,19 +343,9 @@ public sealed partial class FileExplorerPage : SamplePageBase
     // Grouped by date, sort newest first: groups follow their first row, so they read Today, Yesterday, ...
     protected override void OnShapingApplying(ShapingApplyingEventArgs e)
     {
-        if (e.Mode is "grouped" or "groupedHierarchy" && e.Key == nameof(FileSystemEntry.DateModified))
+        if (e.Mode is "grouped" && e.Key == nameof(FileSystemEntry.DateModified))
         {
             FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
-        }
-    }
-
-    // A nested listing needs the subfolder contents, so switching in or out of the Hierarchy modes
-    // re-reads the folder.
-    protected override void OnShapingApplied(ShapingAppliedEventArgs e)
-    {
-        if (e.IsHierarchical != _listedNested && _currentDir.Length > 0)
-        {
-            _ = NavigateAsync(_currentDir, addToHistory: false, verb: e.IsHierarchical ? "Re-read with subfolders" : "Re-read");
         }
     }
 

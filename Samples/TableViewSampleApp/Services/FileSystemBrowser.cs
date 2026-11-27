@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Services;
@@ -25,20 +24,8 @@ public static class FileSystemBrowser
     public static string InitialDirectory =>
         Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
 
-    /// <summary>An entry under the folder that contains it (TableView.ItemKeyPath and ParentKeyPath).</summary>
-    public static ParentRelation ParentFolder { get; } = new(
-        "Folder",
-        nameof(FileSystemEntry.FullPath),
-        nameof(FileSystemEntry.ParentFolderPath),
-        row => (row as FileSystemEntry)?.FullPath,
-        row => row is FileSystemEntry entry ? Path.GetDirectoryName(entry.FullPath) : null);
-
-    /// <summary>
-    /// Reads a folder. With <paramref name="subfolderLevels"/> above 0 the entries of its subfolders
-    /// follow too, that many levels deep, up to <paramref name="maxEntries"/> in total; unreadable
-    /// subfolders are skipped.
-    /// </summary>
-    public static DirectoryListing Read(string directoryPath, int subfolderLevels = 0, int maxEntries = int.MaxValue)
+    /// <summary>Reads a folder.</summary>
+    public static DirectoryListing Read(string directoryPath)
     {
         string fullPath;
         try
@@ -59,26 +46,7 @@ public static class FileSystemBrowser
         var entries = new List<FileSystemEntry>();
         try
         {
-            ReadInto(new DirectoryInfo(fullPath), entries, maxEntries);
-            for (int level = 0, start = 0; level < subfolderLevels && entries.Count < maxEntries; level++)
-            {
-                var end = entries.Count;
-                for (var i = start; i < end && entries.Count < maxEntries; i++)
-                {
-                    if (entries[i].IsFolder)
-                    {
-                        try
-                        {
-                            ReadInto(new DirectoryInfo(entries[i].FullPath), entries, maxEntries);
-                        }
-                        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
-                        {
-                        }
-                    }
-                }
-
-                start = end;
-            }
+            ReadInto(new DirectoryInfo(fullPath), entries);
         }
         catch (UnauthorizedAccessException)
         {
@@ -92,15 +60,10 @@ public static class FileSystemBrowser
         return new DirectoryListing(fullPath, entries, null);
     }
 
-    private static void ReadInto(DirectoryInfo folder, List<FileSystemEntry> entries, int maxEntries)
+    private static void ReadInto(DirectoryInfo folder, List<FileSystemEntry> entries)
     {
         foreach (var info in folder.EnumerateFileSystemInfos())
         {
-            if (entries.Count >= maxEntries)
-            {
-                return;
-            }
-
             // Skip hidden and system items, as File Explorer does by default.
             if ((info.Attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0)
             {

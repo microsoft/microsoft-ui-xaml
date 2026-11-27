@@ -78,7 +78,7 @@
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
-                <!-- Auto: when Photo is the first column, it widens to fit the indent and the expander chevron. -->
+                <!-- Auto: when Photo is the first column, it widens to fit the indent. -->
                 <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="Auto" MinWidth="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
                 <tv:TableViewColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="150" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department" HeaderToolTip="The grouped-on value when the group key is Department. Picking another one moves the row to that group."/>
@@ -109,7 +109,7 @@
 
                 <controls:RailSection
                     Header="First column"
-                    Description="The first column hosts the group indent and, under Hierarchy, the expander chevron. Compare an image column with a text column there.">
+                    Description="The first column hosts the group indent. Compare an image column with a text column there.">
                     <ComboBox
                         x:Name="FirstColumnSelector"
                         AutomationProperties.AutomationId="GroupsFirstColumnSelector"
@@ -125,7 +125,6 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Groups"
-                    ArrangesHierarchyColumn="False"
                     InitialMode="grouped"
                     Description="This page starts Grouped. Each group key buckets the people a different way, and the headers count them. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>

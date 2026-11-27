@@ -101,7 +101,6 @@
 
                 <controls:ShapingOptions
                     x:Name="Shaping"
-                    HierarchyColumnHeader="Property"
                     AutomationIdPrefix="FileProperties"
                     InitialMode="grouped"
                     Description="Grouped by Section is this page's natural shape, so it opens that way; Source splits the version resource from the file system. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">

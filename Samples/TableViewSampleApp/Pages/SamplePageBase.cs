@@ -27,19 +27,11 @@ public partial class SamplePageBase : Page
 
     protected bool IsGrouped => _shaping?.IsGrouped ?? false;
 
-    protected bool IsHierarchical => _shaping?.IsHierarchical ?? false;
-
     protected string AppliedGroupKey => _shaping?.AppliedKey ?? string.Empty;
 
     protected bool IsBulkUpdating => _bulkUpdateDepth > 0;
 
-    // Under Grouped hierarchy the grouping buckets only the roots: a nested row is shown in its root's group.
-    protected Func<T, T> GroupingRowOf<T>(IEnumerable<T> rows)
-        where T : class =>
-        IsHierarchical && _shaping?.Relation is { } relation ? relation.RootMap(rows) : row => row;
-
-    // Rows a filter leaves in the projection. The CollectionViewSource filters before the rows are
-    // nested, so a match whose parent is filtered out is shown as a root.
+    // Rows a filter leaves in the projection.
     protected int CountShown<T>(IEnumerable<T> rows, Func<T, bool> matches)
         where T : class => rows.Count(matches);
 

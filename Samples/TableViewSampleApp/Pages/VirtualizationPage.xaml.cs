@@ -167,12 +167,6 @@ public sealed partial class VirtualizationPage : SamplePageBase
             PeopleTable.ExpandAllGroups();
         }
 
-        if (IsHierarchical)
-        {
-            // There is no per-row expand: expanding every row is the only way to reveal a nested row.
-            PeopleTable.ExpandAllRows();
-        }
-
         var indexes = DisplayIndexes();
         var targetIndex = indexes[target];
         PeopleTable.Select(targetIndex);
@@ -211,15 +205,13 @@ public sealed partial class VirtualizationPage : SamplePageBase
         SetLastAction(message + (ReferenceEquals(PeopleTable.SelectedItem, target) ? "; it is selected" : string.Empty));
     }
 
-    // Display index of every row. Flat: the source index. Hierarchy (all expanded): tree order.
-    // Grouped: groups appear in first-encountered order and keep that order inside, and each group
-    // header takes one index before its rows (the same indexes Select uses); under Grouped
-    // hierarchy a row is in its root's group.
+    // Display index of every row. Flat: the source index. Grouped: groups appear in first-encountered
+    // order and keep that order inside, and each group header takes one index before its rows (the
+    // same indexes Select uses).
     private Dictionary<Person, int> DisplayIndexes()
     {
         var map = new Dictionary<Person, int>(_people.Count);
-        var relation = IsHierarchical ? Shaping.Relation : null;
-        IReadOnlyList<Person> rows = relation is null ? _people : relation.TreeOrder(_people);
+        IReadOnlyList<Person> rows = _people;
         if (!IsGrouped)
         {
             for (var i = 0; i < rows.Count; i++)
@@ -230,12 +222,11 @@ public sealed partial class VirtualizationPage : SamplePageBase
             return map;
         }
 
-        Func<Person, Person> rootOf = relation is null ? person => person : relation.RootMap(_people);
         var groups = new Dictionary<string, List<Person>>(StringComparer.Ordinal);
         var order = new List<List<Person>>();
         foreach (var person in rows)
         {
-            var identity = SampleShaping.GroupIdentity(SampleShaping.KeyOf(rootOf(person), AppliedGroupKey));
+            var identity = SampleShaping.GroupIdentity(SampleShaping.KeyOf(person, AppliedGroupKey));
             if (!groups.TryGetValue(identity, out var members))
             {
                 members = new List<Person>();

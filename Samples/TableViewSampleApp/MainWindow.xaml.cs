@@ -46,7 +46,6 @@ public sealed partial class MainWindow : Window
         ["Virtualization"] = typeof(VirtualizationPage),
         ["Performance"] = typeof(PerformancePage),
         ["KeyboardNav"] = typeof(KeyboardNavPage),
-        ["Hierarchy"] = typeof(HierarchyPage),
         ["TextWrap"] = typeof(TextWrapPage),
         ["CellTemplating"] = typeof(CellTemplatingPage),
         ["EmptyState"] = typeof(EmptyStatePage),

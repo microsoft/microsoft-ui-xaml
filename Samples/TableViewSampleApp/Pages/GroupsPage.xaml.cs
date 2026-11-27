@@ -355,7 +355,7 @@ public sealed partial class GroupsPage : SamplePageBase
 
     // <snippet>
     // TableView.Columns is the live column collection: moving an entry moves the column. The first
-    // visible column hosts the group indent and the expander chevron.
+    // visible column hosts the group indent.
     private void SetFirstColumn(bool photoFirst)
     {
         var columns = PeopleTable.Columns;

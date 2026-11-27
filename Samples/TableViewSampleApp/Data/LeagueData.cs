@@ -36,7 +36,7 @@ namespace TableViewSampleApp.Data;
 /// Each group's seed also fields a reserve side (B) and an academy side (U21), listed after
 /// the group's four clubs. They share the club's Group and Country but play their own
 /// reserve and youth leagues, so the group-stage sums above hold over the senior clubs only.
-/// ParentId names the club, which gives the Hierarchy shaping modes a parent relation.
+/// ParentId names the club.
 /// </summary>
 public static class LeagueData
 {
@@ -67,14 +67,6 @@ public static class LeagueData
     {
         "Copper Herons", "Jade Lynxes", "Opal Badgers", "Bronze Kestrels", "Silver Ibis", "Umber Jackals",
     };
-
-    /// <summary>A reserve or academy side under its senior club (TableView.ItemKeyPath and ParentKeyPath).</summary>
-    public static ParentRelation ParentClub { get; } = new(
-        "Parent club",
-        nameof(LeagueTeam.Id),
-        nameof(LeagueTeam.ParentId),
-        row => (row as LeagueTeam)?.Id,
-        row => (row as LeagueTeam)?.ParentId);
 
     /// <summary>Returns a fresh ObservableCollection so each consumer can
     /// mutate its own copy without disturbing shared state.</summary>

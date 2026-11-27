@@ -70,7 +70,6 @@
 
                 <controls:ShapingOptions
                     x:Name="Shaping"
-                    HierarchyColumnHeader="First name"
                     AutomationIdPrefix="RightToLeft"
                     Description="Grouped shows group headers indented from the right edge, with the chevron mirrored. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>

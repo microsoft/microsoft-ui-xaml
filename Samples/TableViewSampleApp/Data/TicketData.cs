@@ -51,14 +51,6 @@ public static class TicketData
         [1] = 0, [5] = 4, [7] = 6, [8] = 6, [12] = 11, [14] = 13, [19] = 16,
     };
 
-    /// <summary>A ticket under the ticket it is a sub-task of (TableView.ItemKeyPath and ParentKeyPath).</summary>
-    public static ParentRelation ParentTicket { get; } = new(
-        "Parent ticket",
-        nameof(SupportTicket.TicketId),
-        nameof(SupportTicket.ParentTicketId),
-        row => (row as SupportTicket)?.TicketId,
-        row => (row as SupportTicket)?.ParentTicketId);
-
     // Tickets the "File a new ticket" action adds, in turn.
     private static readonly (string Queue, string Summary, string Assignee)[] s_incoming =
     {

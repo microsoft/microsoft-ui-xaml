@@ -29,14 +29,6 @@ public sealed partial class FilePropertiesPage : SamplePageBase
 {
     private static readonly string[] s_sections = { "Description", "Origin", "File" };
 
-    // A detail property under the one it refines: Size on disk under Size, the Build flags under Build.
-    private static readonly ParentRelation s_parentProperty = new(
-        "Parent property",
-        nameof(FilePropertyEntry.Property),
-        nameof(FilePropertyEntry.ParentProperty),
-        row => (row as FilePropertyEntry)?.Property,
-        row => (row as FilePropertyEntry)?.ParentProperty);
-
     private FileInfo? _currentFile;
 
     public FilePropertiesPage()
@@ -51,7 +43,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         PropTable.Density = TableViewDensity.Compact;
         // </snippet>
 
-        InitializeSample(Status, Shaping.Attach(PropTable, Source, GroupPathOf, s_parentProperty));
+        InitializeSample(Status, Shaping.Attach(PropTable, Source, GroupPathOf));
         TrackLifetime(ListFilesOnce);
     }
 
@@ -246,11 +238,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
 
         // Grouping reads the value when the view refreshes, so refresh it to re-bucket the row.
         ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
-        // A nested row stays in its parent property's group.
-        var shownIn = GroupingRowOf(Entries)(entry);
-        SetLastAction(ReferenceEquals(shownIn, entry) || !IsGrouped
-            ? string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", entry.Property, from, entry.Section)
-            : string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}; it stays under {3} in the {4} group", entry.Property, from, entry.Section, shownIn.Property, KeyOf(shownIn, AppliedGroupKey)));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", entry.Property, from, entry.Section));
     }
 
     private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
@@ -298,11 +286,4 @@ public sealed partial class FilePropertiesPage : SamplePageBase
 
     private static string GroupPathOf(string key) =>
         key == nameof(FilePropertyEntry.Source) ? nameof(FilePropertyEntry.Source) : nameof(FilePropertyEntry.Section);
-
-    // Never blank, so the readouts name every group.
-    private static object KeyOf(FilePropertyEntry? entry, string key)
-    {
-        var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;
-        return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
-    }
 }

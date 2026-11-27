@@ -33,9 +33,8 @@ public sealed partial class SortPage
         TopRowsText.Text = top.Count > 0 ? string.Join(Environment.NewLine, top) : "(no rows)";
     }
 
-    // Under a Hierarchy mode the rows start collapsed, so the readout ranks the senior clubs.
     private IEnumerable<LeagueTeam> InViewOrder() =>
-        SampleShaping.InViewOrder(TeamsTable, IsHierarchical ? Teams.Where(t => t.ParentId is null) : Teams, SortKey, IsGrouped ? t => LeagueData.GroupKeyOf(t, AppliedGroupKey) : null);
+        SampleShaping.InViewOrder(TeamsTable, Teams, SortKey, IsGrouped ? t => LeagueData.GroupKeyOf(t, AppliedGroupKey) : null);
 
     private static IComparable? SortKey(LeagueTeam team, string path) => path switch
     {

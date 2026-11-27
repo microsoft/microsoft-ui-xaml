@@ -127,7 +127,6 @@
 
                 <controls:ShapingOptions
                     x:Name="Shaping"
-                    HierarchyColumnHeader="Ticket"
                     AutomationIdPrefix="HeadersVisibility"
                     Description="Grouped shows that group headers are not column headers: HeadersVisibility None leaves them in place. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Queue" Tag="Queue"/>

@@ -14,7 +14,7 @@ private void ApplyGroupHeaderTemplate()
 }
 
 // TableView.Columns is the live column collection: moving an entry moves the column. The first
-// visible column hosts the group indent and the expander chevron.
+// visible column hosts the group indent.
 private void SetFirstColumn(bool photoFirst)
 {
     var columns = PeopleTable.Columns;
@@ -56,33 +56,10 @@ private static void ShowView(TableView table, CollectionViewSource source)
 }
 
 // From Controls\ShapingOptions.xaml.cs
-// Under grouping plus key paths, ExpandAllGroups affects only the group headers and ExpandAllRows only
-// the tree rows, so Grouped hierarchy calls both.
-private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)
-{
-    if (grouped)
-    {
-        table.ExpandAllGroups();
-    }
+// ExpandAllGroups and CollapseAllGroups set every group, and groups that appear later start that way too.
+private static void ExpandEvery(TableView table) => table.ExpandAllGroups();
 
-    if (hierarchical)
-    {
-        table.ExpandAllRows();
-    }
-}
-
-private static void CollapseEvery(TableView table, bool grouped, bool hierarchical)
-{
-    if (grouped)
-    {
-        table.CollapseAllGroups();
-    }
-
-    if (hierarchical)
-    {
-        table.CollapseAllRows();
-    }
-}
+private static void CollapseEvery(TableView table) => table.CollapseAllGroups();
 
 // From Helpers\SampleShaping.cs
 // Bucket label for a null or blank group key.

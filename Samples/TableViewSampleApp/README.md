@@ -101,11 +101,6 @@ visible on purpose.
   lifecycle (add, remove, reorder at runtime), plus header visibility
 - Tooltips, context menus, grid lines (including hiding the header lines), cell templating,
   text wrapping, row height, empty state, density, and grouped rows
-- Hierarchical rows (`TableView.ItemKeyPath` and `ParentKeyPath`): one flat list of people, by manager
-  or by mentor, composed with the CollectionViewSource filter, sort and grouping.
-  The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (the key paths, plus
-  a GroupDescription on the roots) over their own data: people by manager, files by folder, processes by app;
-  pages whose rows have no parent relation show those modes disabled with the reason
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTemplateColumn` usage (text and richer cells) with source snippets embedded in the
   sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
@@ -128,7 +123,7 @@ final fallback. The rail switches the cell, row and header menus off.
 
 The row menu varies per row kind: its `Opening` handler reads `MenuFlyout.Target`
 (the row, also for a cell request) and keeps the items tagged for that kind, so
-under Hierarchy shaping managers (expandable rows) also get **Email team**.
+managers (people with reports) also get **Email team**.
 **Deactivate** / **Reactivate** bind `Visibility` to the person's `IsActive`.
 
 There is no row menu property: rows get their menu from their own `ContextFlyout`,

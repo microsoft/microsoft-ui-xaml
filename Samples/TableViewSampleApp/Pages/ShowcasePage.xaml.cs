@@ -209,7 +209,7 @@ public sealed partial class ShowcasePage : SamplePageBase
         var count = int.Parse(SampleShaping.SelectedTag(RowCountSelector, "100"), NumberStyles.Integer, CultureInfo.InvariantCulture);
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-        // Grouped or nested, every Add reshapes the projection; refill flat and shape once at the end.
+        // Grouped, every Add reshapes the projection; refill flat and shape once at the end.
         var shaped = Shaping.IsShaped;
         if (shaped)
         {

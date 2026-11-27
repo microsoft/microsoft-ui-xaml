@@ -15,9 +15,6 @@ public class FileSystemEntry
 
     public string FullPath { get; set; } = string.Empty;
 
-    /// <summary>The containing folder's FullPath: the ParentKeyPath of the folder hierarchy.</summary>
-    public string? ParentFolderPath => System.IO.Path.GetDirectoryName(FullPath);
-
     /// <summary>Group key for the Folders/Files grouping.</summary>
     public string Kind => IsFolder ? "Folders" : "Files";
 

@@ -42,7 +42,7 @@ public sealed partial class SortPage : SamplePageBase
         InitializeComponent();
         // </snippet>
         TeamsTable.SelectionChanged += OnTeamsSelectionChanged;
-        InitializeSample(Status, Shaping.Attach(TeamsTable, Source, LeagueData.GroupPathOf, LeagueData.ParentClub));
+        InitializeSample(Status, Shaping.Attach(TeamsTable, Source, LeagueData.GroupPathOf));
         TrackItems(Teams, OnTeamChanged);
 
         // A callback queued just before the page unloaded never runs; start clean on the next Loaded.

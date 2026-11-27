@@ -52,12 +52,7 @@ public sealed partial class GroupsPage
         ExpansionText.Text = ExpansionSummary();
     }
 
-    // Under Grouped hierarchy the grouping buckets only the roots: a nested row is in its root's group.
-    private Func<Person, object> GroupInView(string key)
-    {
-        var rowOf = GroupingRowOf(People);
-        return person => SampleShaping.KeyOf(rowOf(person), key);
-    }
+    private static Func<Person, object> GroupInView(string key) => person => SampleShaping.KeyOf(person, key);
 
     private IEnumerable<Person> InViewOrder() =>
         SampleShaping.InViewOrder(PeopleTable, People, SortKey, IsGrouped ? GroupInView(AppliedGroupKey) : null);

@@ -281,14 +281,12 @@ public sealed partial class PerformancePage : SamplePageBase
         }
     }
 
-    // While grouped or nested every Add reshapes all rows so far (O(n^2)): time per-row Adds only up
-    // to a cap, then do the real Adds with the source detached and shape once.
+    // While grouped every Add reshapes all rows so far (O(n^2)): time per-row Adds only up to a cap,
+    // then do the real Adds with the source detached and shape once.
     private async Task RunPerItemAddShapedAsync(IReadOnlyList<Person> rows)
     {
         var shapingText = Shaping.AppliedText;
-        var grouped = IsGrouped;
-        var relation = IsHierarchical ? Shaping.Relation : null;
-        var verbs = grouped && relation is not null ? "grouping and nesting" : grouped ? "grouping" : "nesting";
+        const string verbs = "grouping";
         var source = _source;
         var people = _people;
         Shaping.SetBusy(true);
@@ -369,13 +367,9 @@ public sealed partial class PerformancePage : SamplePageBase
     protected override void OnShapingApplied(ShapingAppliedEventArgs e)
     {
         var ms = e.ElapsedMilliseconds;
-        GroupText.Text = (e.IsGrouped, e.IsHierarchical) switch
-        {
-            (true, true) => string.Format(CultureInfo.CurrentCulture, "Grouped by {0} + nested: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count),
-            (false, true) => string.Format(CultureInfo.CurrentCulture, "Nested: {0:N0} ms, {1:N0} rows", ms, _people.Count),
-            (true, false) => string.Format(CultureInfo.CurrentCulture, "Grouped by {0}: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count),
-            _ => string.Format(CultureInfo.CurrentCulture, "Flat: {0:N0} ms, {1:N0} rows", ms, _people.Count),
-        };
+        GroupText.Text = e.IsGrouped
+            ? string.Format(CultureInfo.CurrentCulture, "Grouped by {0}: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count)
+            : string.Format(CultureInfo.CurrentCulture, "Flat: {0:N0} ms, {1:N0} rows", ms, _people.Count);
         e.Message += string.Format(CultureInfo.CurrentCulture, " in {0:N0} ms", ms);
     }
 

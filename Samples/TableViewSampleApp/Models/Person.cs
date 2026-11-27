@@ -49,7 +49,7 @@ public sealed class Person : INotifyPropertyChanged
         set => Set(ref _lastName, value);
     }
 
-    // <snippet Groups Hierarchy>
+    // <snippet Groups>
     // The Name column binds FullName. Its setter lets page actions rename a person: the first word
     // becomes FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
     public string FullName
