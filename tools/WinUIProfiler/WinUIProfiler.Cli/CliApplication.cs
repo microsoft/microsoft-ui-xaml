@@ -471,8 +471,9 @@ internal static partial class CliApplication
         // has its process's launcher's events too.
         var launcherProcessId = options.IsSessionFile ? SessionFile.ReadInfo(options.InputPath).LauncherProcessId : null;
         var selected = counts
-            .Where(entry => options.IsSessionFile || entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl] +
-                entry.Value[(int)XamlProvider.Direct3D11] + entry.Value[(int)XamlProvider.Win32k] + entry.Value[(int)XamlProvider.Marker])
+            .Where(entry => options.IsSessionFile || providers.Any(provider =>
+                entry.Value[(int)provider] > 0 && provider is (XamlProvider.Xaml or XamlProvider.XamlDiagnostics or
+                    XamlProvider.XamlProfiler or XamlProvider.MicrosoftUIXaml or XamlProvider.MicrosoftUIXamlControls)))
             .OrderByDescending(entry => entry.Value.Sum()).ToList();
         if (options.Json)
         {
@@ -703,7 +704,7 @@ internal static partial class CliApplication
                 }
 
                 writer.Process(++sequence, profilerEvent);
-            }, writer.SetProcessStart, cancellationToken, cpuSamples ? writer : null);
+            }, writer.SetProcessStart, cancellationToken, cpuSamples ? writer : null, dllEvents: true);
         }
         finally
         {
@@ -1224,6 +1225,9 @@ internal static partial class CliApplication
         XamlProvider.Win32k => "Win32k",
         XamlProvider.Marker => "Marker",
         XamlProvider.Direct3D11 => "Direct3D11",
+        XamlProvider.KernelProcess => "KernelProc",
+        XamlProvider.KernelImage => "KernelImage",
+        XamlProvider.KernelMemory => "KernelMem",
         _ => "DxgKrnl"
     };
 

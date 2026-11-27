@@ -93,6 +93,7 @@ public sealed class TraceReplay : IAsyncDisposable
             XamlEventSubscription.Match(source, processId, markers, OnEvent, OnOtherProcessEvent);
             // The process's sampled CPU stacks, when the trace has them (a WPR CPU profile).
             stacks = new(source, (id, _) => id == processId, OnSample);
+            DllEventSubscription.SubscribeKernel(source, (id, _) => id == processId, OnCapturedEvent, includeImages: true);
             changed = new(_ => OnInterval(), null, ChangedInterval, ChangedInterval);
             new Thread(Read) { IsBackground = true, Name = "WinUIProfiler trace reader" }.Start();
         }
@@ -285,15 +286,9 @@ public sealed class TraceReplay : IAsyncDisposable
         try
         {
             var profilerEvent = XamlEventSubscription.Capture(data, provider, marker, processId);
-            if (profilerEvent.TimestampQpc < lastQpc)
-            {
-                Interlocked.Increment(ref outOfOrderEvents);
-            }
-
-            lastQpc = profilerEvent.TimestampQpc;
-            Post(profilerEvent);
+            PostInTimeOrder(profilerEvent);
             // Not an event another process wrote about it, such as the System process's GPU memory event.
-            if (data.ProcessID == ProcessId)
+            if (!halted && data.ProcessID == ProcessId && provider != XamlProvider.KernelProcess)
             {
                 launch.ProcessEvent(data.TimeStampRelativeMSec);
             }
@@ -303,6 +298,33 @@ public sealed class TraceReplay : IAsyncDisposable
             failure ??= error;
             Halt();
         }
+    }
+
+    // DLL events go straight to the pipeline: a hard fault held until its thread's process was known arrives after later
+    // events, and the DLLs tab orders them by Qpc, so they are not counted as out of order.
+    private void OnCapturedEvent(ProfilerEvent profilerEvent)
+    {
+        if (halted) return;
+        try
+        {
+            Post(profilerEvent);
+        }
+        catch (Exception error)
+        {
+            failure ??= error;
+            Halt();
+        }
+    }
+
+    private void PostInTimeOrder(ProfilerEvent profilerEvent)
+    {
+        if (profilerEvent.TimestampQpc < lastQpc)
+        {
+            Interlocked.Increment(ref outOfOrderEvents);
+        }
+
+        lastQpc = profilerEvent.TimestampQpc;
+        Post(profilerEvent);
     }
 
     // An event of a launcher provider from another process: LaunchWatcher delivers it if it's the launcher's and part of

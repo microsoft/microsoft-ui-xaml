@@ -90,6 +90,7 @@ public:
         return m_selectionInvalidatedDueToCollectionChange;
     }
 
+    bool IsSelectedItem(const winrt::IInspectable& item);
     winrt::IInspectable ResolvePath(const winrt::IInspectable& data, const winrt::IndexPath& dataIndexPath);
     void OnSelectionInvalidatedDueToCollectionChange();
     std::shared_ptr<SelectionNode> SharedLeafNode() { return m_leafNode; }

@@ -14,7 +14,9 @@ internal static class SurfaceTextureTraceIntegration
         var disabled = Read(disabledTrace, disabledPid);
         var matched = Validate(enabled, disabled);
         Console.WriteLine($"Passed: {enabled.Observations.Count} opt-in surface observations; " +
-            $"{matched} matched Direct3D11 texture observations; disabled-provider control.");
+            $"{matched} matched Direct3D11 texture observations; " +
+            $"{enabled.Bindings.Count(binding => binding.Surface != 0)} element-attributed visual/surface bindings; " +
+            "disabled-provider control.");
     }
 
     internal static void RunRegressionTests()
@@ -23,6 +25,15 @@ internal static class SurfaceTextureTraceIntegration
         enabled.Surfaces.UnionWith([1, 2, 3]);
         enabled.Resources.UnionWith([10, 20]);
         enabled.Observations.AddRange([(1, 10), (2, 10), (3, 20)]);
+        RecordVisualSurface(enabled, Binding(100, 1, 0, ulong.MaxValue));
+        RecordVisualSurface(enabled, Binding(100, 2, 1, ulong.MaxValue));
+        RecordVisualSurface(enabled, Binding(100, 3, 0, 2000));
+        RecordVisualSurface(enabled, Binding(100, 0, 1, 2000));
+        RecordVisualSurface(enabled, Binding(100, 0, 0, 0));
+        RecordVisualSurface(enabled, Binding(100, 0, 1, 0));
+        Expect(enabled.Bindings.Select(binding => binding.Element).SequenceEqual(new ulong[]
+            { ulong.MaxValue, ulong.MaxValue, 2000, 2000, 0, 0 }),
+            "Visual bindings must retain full-width element IDs through reuse, surface clearing and unlinking.");
         var disabled = new Capture { XamlEvents = 1 };
         disabled.Resources.Add(30);
         Expect(Validate(enabled, disabled) == 3,
@@ -39,7 +50,16 @@ internal static class SurfaceTextureTraceIntegration
             rejected = true;
         }
         Expect(rejected, "Matching texture observations must not hide an unmatched resource identity.");
+        ExpectRejected(() => RecordVisualSurface(enabled, Binding(100, 1, 0, 1000)[..3]),
+            "Fresh visual/surface observations must include UIElementId.");
+        var wrongType = Binding(100, 1, 0, 1000);
+        wrongType[3] = new("UIElementId", 1000u);
+        ExpectRejected(() => RecordVisualSurface(enabled, wrongType),
+            "A 32-bit value must not masquerade as a core element address.");
+        ExpectRejected(() => RecordVisualSurface(enabled, Binding(100, 1, 0, 0)),
+            "A surface binding without an element must not pass attribution validation.");
         Console.WriteLine("Passed: surface-to-texture validation accepts shared textures and rejects partial resource joins.");
+        Console.WriteLine("Passed: visual/surface bindings carry core element IDs through brush/mask reuse and clearing.");
     }
 
     private static int Validate(Capture enabled, Capture disabled)
@@ -50,6 +70,11 @@ internal static class SurfaceTextureTraceIntegration
         var matched = enabled.Observations.Count(item => enabled.Resources.Contains(item.Resource));
         Expect(matched == enabled.Observations.Count,
             $"Every observed resource ID must match a real Direct3D11 texture resource identity ({matched}/{enabled.Observations.Count} matched).");
+        var bindings = enabled.Bindings.Where(binding => binding.Surface != 0).ToArray();
+        Expect(bindings.Length > 0 && bindings.All(binding => enabled.Surfaces.Contains(binding.Surface)),
+            "Primitive visual/surface bindings must identify an element and join initialized surfaces.");
+        Expect(enabled.Observations.Any(observation => bindings.Any(binding => binding.Surface == observation.Surface)),
+            "A fresh capture must link an element-attributed primitive to an observed texture.");
         Expect(disabled.XamlEvents > 0 && disabled.Resources.Count > 0,
             "The disabled-provider control must still record an app that renders XAML and creates textures.");
         Expect(disabled.ProfilerEvents == 0,
@@ -78,6 +103,8 @@ internal static class SurfaceTextureTraceIntegration
             capture.ProfilerEvents++;
             if (data.EventName == "DCompSurfaceInit")
                 capture.Surfaces.Add(Handle(data.PayloadByName("SurfaceId")));
+            if (data.EventName == "VisualSurfaceChanged")
+                RecordVisualSurface(capture, data.PayloadNames.Select(name => new EventField(name, data.PayloadByName(name))).ToArray());
             if (data.EventName != "DCompSurfaceTextureObserved") return;
             Expect(data.PayloadNames.SequenceEqual(new[]
             {
@@ -101,6 +128,44 @@ internal static class SurfaceTextureTraceIntegration
         return capture;
     }
 
+    private static EventField[] Binding(ulong visual, ulong surface, uint role, ulong element) =>
+    [
+        new("VisualId", visual), new("SurfaceId", surface), new("Role", role), new("UIElementId", element)
+    ];
+
+    private static void RecordVisualSurface(Capture capture, IReadOnlyList<EventField> fields)
+    {
+        Expect(fields.Select(field => field.Name).SequenceEqual(new[] { "VisualId", "SurfaceId", "Role", "UIElementId" }),
+            "Fresh VisualSurfaceChanged events must carry VisualId, SurfaceId, Role and UIElementId in order.");
+        Expect(fields[0].Value is ulong or long && fields[1].Value is ulong or long && fields[3].Value is ulong or long,
+            "Visual, surface and core element identities must retain their 64-bit representation.");
+        var visual = Handle(fields[0].Value);
+        var surface = Handle(fields[1].Value);
+        var element = Handle(fields[3].Value);
+        var role = fields[2].Value switch
+        {
+            uint value => value,
+            int value when value >= 0 => (uint)value,
+            _ => throw new InvalidOperationException("The surface role must be an unsigned 32-bit value.")
+        };
+        Expect(visual != 0 && role is 0 or 1, "A visual/surface binding must identify a primitive and a brush/mask role.");
+        Expect(surface == 0 || element != 0, "A nonempty primitive surface binding must identify its core UI element.");
+        capture.Bindings.Add((visual, surface, role, element));
+    }
+
+    private static void ExpectRejected(Action action, string message)
+    {
+        try
+        {
+            action();
+        }
+        catch (InvalidOperationException)
+        {
+            return;
+        }
+        throw new InvalidOperationException(message);
+    }
+
     private static ulong Handle(object? value) => value switch
     {
         ulong handle => handle,
@@ -121,5 +186,6 @@ internal static class SurfaceTextureTraceIntegration
         internal readonly HashSet<ulong> Surfaces = [];
         internal readonly HashSet<ulong> Resources = [];
         internal readonly List<(ulong Surface, ulong Resource)> Observations = [];
+        internal readonly List<(ulong Visual, ulong Surface, uint Role, ulong Element)> Bindings = [];
     }
 }

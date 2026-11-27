@@ -175,6 +175,11 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(ScrollViewerContentOnPixelGridWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"At scale 1.25 and 1, verifies RenderTargetBitmap of text inside a ScrollViewer matches the same text at the same offset inside a Border.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
     // FontIcon RTB tests
     BEGIN_TEST_METHOD(FontIconSizeToContentRTBWUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a FontIcon that sizes to content.")
@@ -228,6 +233,7 @@ private:
     void FontIconEllipsisInternal();
     void BitmapIconSizeToContentInternal();
     void BitmapIconLargerThanIconInternal();
+    void ScrollViewerContentOnPixelGridInternal(float scale);
 
     // TODO: Should add the following tests in the future:
     //                 - TiledImages
