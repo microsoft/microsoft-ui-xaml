@@ -180,8 +180,9 @@ bool TableView::RunSortTransition(F&& transition)
 // Posted rather than run inline so a follow-up re-sort never runs inside, or recurses from, the
 // sort whose handler changed the key. A handler that changes the key on every Sorted keeps
 // re-sorting once per turn; that is an app error. Both passes run app Sorting/Sorted handlers that
-// can throw: the synchronous pass throws to the caller, and the posted one through the dispatcher
-// to Application.UnhandledException, as any posted sort does (the spec's Sorting/Sorted section).
+// can throw: the synchronous pass throws to the caller, and the posted one out of the DispatcherQueue
+// callback, which ends the app as any DispatcherQueue callback's exception does (it does not reach
+// Application.UnhandledException; the spec's Sorting/Sorted section).
 void TableView::ScheduleSortKeyReconcile(bool allowSynchronous)
 {
     if (!m_sortKeysDirty || m_sortTransitionDepth || m_reconcilingSortKeys || m_sortKeyReconcileQueued)

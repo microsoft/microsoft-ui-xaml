@@ -265,13 +265,28 @@ void TableViewRowFlattener::RunPendingAttachViewGroups()
     }
     m_runningPendingAttach = true;
     auto const done = wil::scope_exit([this]() noexcept { m_runningPendingAttach = false; });
-    while (m_attachViewGroupsPending && !IsBusyWithGroups())
+    int reattaches = 0;
+    while (m_attachViewGroupsPending && !IsBusyWithGroups() && WithinReattachCap(reattaches))
     {
+        ++reattaches;
         if (AttachViewGroupsNow())
         {
             Update();
         }
     }
+}
+
+bool TableViewRowFlattener::WithinReattachCap(int reattaches) noexcept
+{
+    if (reattaches < c_maxReattachesPerLoop)
+    {
+        return true;
+    }
+    // Cleared, not left set: a request still pending would be retried by the next caller and spin again.
+    m_attachViewGroupsPending = false;
+    TVDiag::LogRetailF(L"[TableView] The ICollectionView changed CollectionGroups on each of %d consecutive reads; keeping the groups read last.",
+        c_maxReattachesPerLoop);
+    return false;
 }
 
 bool TableViewRowFlattener::AttachViewGroupsNow()
@@ -377,18 +392,20 @@ void TableViewRowFlattener::Update()
     {
         m_updating = true;
         auto const done = wil::scope_exit([this]() noexcept { m_updating = false; });
+        int reattaches = 0;
         do
         {
             m_updatePending = false;
             // A rebuild reads every item, so it covers any tree change still waiting for the next turn.
             m_treeUpdatePending = false;
             // A CollectionGroups change raised by app code during the last pass: attached here, between passes.
-            if (CanAttachViewGroupsInUpdate())
+            if (CanAttachViewGroupsInUpdate() && WithinReattachCap(reattaches))
             {
+                ++reattaches;
                 AttachViewGroupsNow();
             }
             UpdateCore();
-        } while (m_updatePending || CanAttachViewGroupsInUpdate());
+        } while (m_updatePending || (CanAttachViewGroupsInUpdate() && WithinReattachCap(reattaches)));
     }
 
     RaiseRowsChanged();

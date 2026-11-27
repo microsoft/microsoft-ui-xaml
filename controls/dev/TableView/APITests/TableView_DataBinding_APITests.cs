@@ -1663,6 +1663,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies an app's ICollectionView that returns new CollectionGroups on every read and raises PropertyChanged(\"CollectionGroups\") during each read does not hang the UI thread: TableView stops re-reading the groups after a bounded number of attempts and the rows show the groups it read last.")]
+        public void VerifyAppViewWhoseGroupsNeverSettleDoesNotHang()
+        {
+            TableView tableView = null;
+            AppCollectionView view = null;
+            List<object> people = null;
+            var reads = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeShapedPeople().Cast<object>().ToList();
+                view = new AppCollectionView(people);
+                view.OnCollectionGroupsRead = () =>
+                {
+                    reads++;
+                    var groups = new AppObservableVector<object>();
+                    foreach (var department in people.GroupBy(person => ((ShapedPerson)person).DepartmentName))
+                    {
+                        groups.Add(AppViewGroup.WithItems(department.Key, department));
+                    }
+                    return groups;
+                };
+                tableView = CreateBindingTable(view);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Each re-attach loop stops after 8; nested loops (an attach's Update attaching again) stay well under this.
+                Verify.IsTrue(reads > 1 && reads < 200, $"The groups were read a bounded number of times ({reads}).");
+                Verify.AreEqual(3, GroupHeaderCount(tableView), "The rows show one consistent set of groups: one header per department.");
+                Verify.AreEqual(people.Count, GetProjectedItems(tableView).OfType<ShapedPerson>().Count(), "Every person is shown once under the groups read last.");
+                view.OnCollectionGroupsRead = null;
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a header click on an app's own ICollectionView, which has no ICollectionViewShaping, raises Sorting for the app to sort, and neither reorders the rows nor lights the arrow.")]
         public void VerifyHeaderSortOnAppCollectionViewRaisesSortingWithoutReordering()
         {
@@ -2480,6 +2519,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
 
+        // When set, each CollectionGroups read replaces the groups with what it returns and raises
+        // PropertyChanged("CollectionGroups") before returning them (a view whose groups never settle).
+        public Func<global::Windows.Foundation.Collections.IObservableVector<object>> OnCollectionGroupsRead { get; set; }
+
         public void ReplaceGroups(global::Windows.Foundation.Collections.IObservableVector<object> groups)
         {
             m_groups = groups;
@@ -2490,7 +2533,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public event CurrentChangingEventHandler CurrentChanging { add { } remove { } }
         public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged { add { } remove { } }
 
-        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionGroups => m_groups;
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionGroups
+        {
+            get
+            {
+                if (OnCollectionGroupsRead is { } onRead)
+                {
+                    ReplaceGroups(onRead());
+                }
+                return m_groups;
+            }
+        }
         public object CurrentItem => m_current >= 0 && m_current < m_items.Count ? m_items[m_current] : null;
         public int CurrentPosition => m_current;
         public bool HasMoreItems => false;

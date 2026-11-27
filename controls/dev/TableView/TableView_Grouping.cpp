@@ -1188,8 +1188,9 @@ void TableView::RaiseGroupExpandingFor(winrt::hstring const& identity, winrt::II
     RaiseGroupExpanding(groupKey);
 }
 
-// A handler's exception propagates to the caller, as Sorting's and Sorted's do (a request posted from layout reports it
-// through Application.UnhandledException). GroupExpanding is raised before the change, so a throwing handler stops
+// A handler's exception propagates to the caller, as Sorting's and Sorted's do. A request posted to the DispatcherQueue
+// (from layout or UI Automation) has no caller: the exception leaves the dispatcher callback and ends the app, as any
+// DispatcherQueue callback's does (it does not reach Application.UnhandledException). GroupExpanding is raised before the change, so a throwing handler stops
 // the expansion; the callers' scope guards restore focus and end the deferral.
 void TableView::RaiseGroupExpanding(winrt::IInspectable const& groupKey)
 {

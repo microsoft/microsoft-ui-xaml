@@ -378,8 +378,9 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   - A source change: the view is one of the source's listeners, so the failure is not returned to the source (that
     would stop its other listeners and throw from the app's `Add`): the change the app code failed on is applied by a
     recompute (one `Reset`); if that fails too, the view keeps its output and recomputes on the next change. The
-    failure is reported to `Application.UnhandledException` with the app's error info (its message and stack), as
-    for app code a dispatcher callback runs; unhandled, it ends the app. WPF lets it propagate from
+    failure is reported to `Application.UnhandledException` with the app's error info (its message and stack),
+    through XAML's own error reporting (unlike an exception leaving a `DispatcherQueue` callback, which is not raised
+    there and ends the app); unhandled, it ends the app. WPF lets it propagate from
     `CollectionChanged`. Only a failure that carries error info (an exception app code threw) is reported; a bare
     `HRESULT` from a framework listener of the view is contained without a report (a `CollectionViewContainedFailure`
     TraceLogging event records it: a local diagnostic event at warning level, with no Microsoft telemetry keyword or

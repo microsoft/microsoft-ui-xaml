@@ -170,6 +170,12 @@ private:
     bool CanAttachViewGroupsInUpdate() const noexcept;
     // Runs a deferred AttachViewGroups (and its Update) once nothing that defers it is on the stack.
     void RunPendingAttachViewGroups();
+    // A view that returns a new CollectionGroups on every read and raises PropertyChanged("CollectionGroups") during
+    // each read would re-attach forever. Each loop re-attaches at most this many times, then drops the request and keeps
+    // the rows of the groups attached last.
+    static constexpr int c_maxReattachesPerLoop = 8;
+    // False (and the pending re-attach dropped and logged) once 'reattaches' reached c_maxReattachesPerLoop.
+    bool WithinReattachCap(int reattaches) noexcept;
     void OnViewGroupsChanged(winrt::Windows::Foundation::Collections::CollectionChange change);
     void ReadViewGroupsNow() noexcept;
     void ReadViewGroups();
