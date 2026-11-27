@@ -380,10 +380,12 @@ void NavigationViewItem::UpdateCompactPaneLength()
     {
         SetValue(s_CompactPaneLengthProperty, winrt::PropertyValue::CreateDouble(splitView.CompactPaneLength()));
 
-        // Only update when on left
-        if (const auto presenter = GetPresenter())
+        // Only update when on left. The presenter only stores the value in its template settings, so it does not need
+        // its template yet: GetPresenter() would apply it, and before the item's visual state sets the presenter's style
+        // that builds a throwaway default ContentControl template (parsed from a XAML string).
+        if (const auto presenter = m_navigationViewItemPresenter.get())
         {
-            presenter->UpdateCompactPaneLength(splitView.CompactPaneLength(), IsOnLeftNav());
+            winrt::get_self<NavigationViewItemPresenter>(presenter)->UpdateCompactPaneLength(splitView.CompactPaneLength(), IsOnLeftNav());
         }
     }
 }
