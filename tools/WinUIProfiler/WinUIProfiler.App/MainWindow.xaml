@@ -165,6 +165,9 @@
             <TabViewItem x:Name="FramesTab" x:Uid="FramesTab" IsClosable="False">
                 <views:FramesView x:Name="FramesPanel" />
             </TabViewItem>
+            <TabViewItem x:Uid="DllsTab" IsClosable="False">
+                <views:DllsView x:Name="DllsPanel" />
+            </TabViewItem>
             <TabViewItem x:Name="ObjectsTab" x:Uid="ObjectsTab" IsClosable="False">
                 <views:ObjectsView x:Name="ObjectsPanel" />
             </TabViewItem>

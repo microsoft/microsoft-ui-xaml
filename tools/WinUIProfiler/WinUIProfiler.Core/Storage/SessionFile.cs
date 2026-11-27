@@ -506,7 +506,8 @@ public static partial class SessionFile
     private static EventScope FrameScope(long frameId) => new("TickEvents d", "d.TickId = $id", [("$id", frameId)]);
 
     private static EventScope SpanScope(int threadId, long firstSeq, long lastSeq) =>
-        new("EventDetails d", "d.Seq BETWEEN $first AND $last AND d.ThreadId = $thread",
+        // Kernel DLL events come from a separate reader and can be stored after later regions' events; see DllLoads.
+        new("EventDetails d", "d.Seq BETWEEN $first AND $last AND d.ThreadId = $thread AND d.Provider NOT IN ('KernelProcess', 'KernelImage', 'KernelMemory')",
             [("$first", firstSeq), ("$last", lastSeq), ("$thread", threadId)]);
 
     private static long ReadScopedEvents(string path, EventScope scope, string? bucket, string? filter, int offset, int count,

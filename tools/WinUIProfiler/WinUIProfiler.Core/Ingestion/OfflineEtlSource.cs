@@ -164,9 +164,10 @@ public static class OfflineEtlSource
     // providers (MarkerProviderSettings.Launcher) of the process that created it are read too, those that are part of the
     // launch (LaunchWatcher); they come after the process's first event, and some after later ones. With cpuSamples, the
     // process's CPU samples and their stacks are stored there too, with what the sampling recorded (it needs a processId).
+    // With dllEvents, the process's kernel image loads, unloads and hard page faults are delivered too (it needs a processId).
     public static EtlReadResult Read(string path, int? processId, IReadOnlyCollection<MarkerProviderSettings> markers,
         Action<ProfilerEvent> sink, Action<TraceProcessStart>? processStarted = null, CancellationToken cancellationToken = default,
-        SessionWriter? cpuSamples = null)
+        SessionWriter? cpuSamples = null, bool dllEvents = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         ArgumentNullException.ThrowIfNull(markers);
@@ -193,13 +194,19 @@ public static class OfflineEtlSource
             XamlEventSubscription.Match(source, id, markers, (data, provider, marker, owner) =>
                 {
                     Deliver(XamlEventSubscription.Capture(data, provider, marker, owner));
-                    // Not an event another process wrote about it, such as the System process's GPU memory event.
-                    if (data.ProcessID == id)
+                    // Not an event another process wrote about it, such as the System process's GPU memory event, or
+                    // the kernel's image events, which it writes from other processes too.
+                    if (data.ProcessID == id && provider != XamlProvider.KernelProcess)
                     {
                         launch.ProcessEvent(data.TimeStampRelativeMSec);
                     }
                 },
                 launch.OtherProcessEvent);
+            // The process's DLL mappings and hard page faults, for the DLLs tab of a recording.
+            if (dllEvents)
+            {
+                DllEventSubscription.SubscribeKernel(source, (pid, _) => pid == id, Deliver, includeImages: true);
+            }
             if (cpuSamples is not null)
             {
                 stacks = new(source, (pid, _) => pid == id, sample => cpuSamples.PostSample(sample, wait: true));
@@ -249,6 +256,7 @@ public static class OfflineEtlSource
                     if (eventId is not (>= 33 and <= 38)) GpuMemoryEvents++;
                     break;
                 case XamlProvider.Win32k:
+                case XamlProvider.KernelProcess:
                     return;
                 case XamlProvider.Direct3D11:
                     // Track time without making graphics-only processes eligible for the XAML process list.

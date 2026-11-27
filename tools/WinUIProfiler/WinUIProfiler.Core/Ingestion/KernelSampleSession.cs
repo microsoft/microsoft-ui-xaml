@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
+using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
@@ -63,7 +64,8 @@ internal sealed class KernelSampleSession : IDisposable
             // session. Stack compression stays off: the collector doesn't read stack keys.
             session.EnableKernelProvider(
                 KernelTraceEventParser.Keywords.Process | KernelTraceEventParser.Keywords.Thread |
-                KernelTraceEventParser.Keywords.ImageLoad | KernelTraceEventParser.Keywords.Profile,
+                KernelTraceEventParser.Keywords.ImageLoad | KernelTraceEventParser.Keywords.Profile |
+                KernelTraceEventParser.Keywords.MemoryHardFaults,
                 KernelTraceEventParser.Keywords.Profile);
             _ = session.Source;
             return new(session);
@@ -78,7 +80,8 @@ internal sealed class KernelSampleSession : IDisposable
     // Reads the session on its own thread, from the events it kept. IsTarget (given a process ID and the event's time as a
     // UTC FILETIME) and sink are called on that thread, and sink in Stop for the samples still waiting; both must be safe
     // to call there.
-    public void StartReading(Func<int, long, bool> isTarget, Action<CompletedSample> sink)
+    public void StartReading(Func<int, long, bool> isTarget, Action<CompletedSample> sink,
+        Action<ProfilerEvent>? hardFault = null)
     {
         lock (gate)
         {
@@ -89,6 +92,10 @@ internal sealed class KernelSampleSession : IDisposable
             }
 
             collector = new(session.Source, isTarget, sink, ReorderWindow);
+            if (hardFault is not null)
+            {
+                DllEventSubscription.SubscribeKernel(session.Source, isTarget, hardFault, includeImages: false);
+            }
             reading = true;
             reader.Start();
         }

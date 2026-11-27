@@ -49,6 +49,18 @@ if (args is ["--graphics-probe"])
     return;
 }
 
+if (args is ["--dll-tests"])
+{
+    DllRecordingTests.Run();
+    return;
+}
+
+if (args is ["--dll-integration"])
+{
+    await DllRecordingTests.CaptureAsync();
+    return;
+}
+
 if (args is ["--surface-texture-integration", var enabledTrace, var enabledPid, var disabledTrace, var disabledPid])
 {
     if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Surface texture integration requires Windows.");
@@ -58,6 +70,7 @@ if (args is ["--surface-texture-integration", var enabledTrace, var enabledPid, 
 }
 
 const long element = 0x1234;
+DllRecordingTests.Run();
 var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-EventCompatibility-{Guid.NewGuid():N}.sqlite");
 var visualPath = Path.ChangeExtension(path, "visuals.sqlite");
 var typePath = Path.ChangeExtension(path, "types.sqlite");
