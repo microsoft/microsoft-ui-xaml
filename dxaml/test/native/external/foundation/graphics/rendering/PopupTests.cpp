@@ -1313,6 +1313,63 @@ void PopupTests::WindowedPopupInputScaleAtOrigin()
     VERIFY_IS_TRUE(std::abs(pointerPosition.Y - 50) < 1.5f, L"Popup input should compensate for the root scale.");
 }
 
+void PopupTests::ComboBoxDropDownUnderFractionalScroll()
+{
+    const auto& wh = TestServices::WindowHelper;
+    const auto& u = TestServices::Utilities;
+    TestCleanupWrapper cleanupWrapper;
+
+    WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    ScrollViewer^ scrollViewer;
+    ComboBox^ comboBox;
+
+    RunOnUIThread([&]()
+    {
+        // A ComboBox's dropdown is a windowed popup.
+        comboBox = ref new ComboBox();
+        comboBox->Width = 200;
+        comboBox->Items->Append(ref new Platform::String(L"Item one"));
+        comboBox->Items->Append(ref new Platform::String(L"Item two"));
+        comboBox->Items->Append(ref new Platform::String(L"Item three"));
+        comboBox->SelectedIndex = 0;
+
+        Canvas^ content = ref new Canvas();
+        content->Width = 300;
+        content->Height = 600;
+        content->Children->Append(comboBox);
+        Canvas::SetLeft(comboBox, 20);
+        Canvas::SetTop(comboBox, 100);
+
+        scrollViewer = ref new ScrollViewer();
+        scrollViewer->Width = 300;
+        scrollViewer->Height = 200;
+        scrollViewer->Content = content;
+
+        Canvas^ root = ref new Canvas();
+        root->Children->Append(scrollViewer);
+        wh->WindowContent = root;
+    });
+    wh->WaitForIdle();
+
+    LOG_OUTPUT(L"> Scrolling by a fraction of a pixel, then opening the ComboBox dropdown.");
+    RunOnUIThread([&]()
+    {
+        VERIFY_IS_TRUE(scrollViewer->ChangeView(nullptr, 0.4, nullptr, true /* disableAnimation */));
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        comboBox->IsDropDownOpen = true;
+    });
+    wh->WaitForIdle();
+
+    // The dropdown's window sits on whole pixels, so its text visuals must be placed on whole-pixel offsets and not on the
+    // fractional offset caused by the scroll. The master XML holds those offsets.
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+}
+
 void PopupTests::NoXamlRoot()
 {
     const auto& wh = TestServices::WindowHelper;

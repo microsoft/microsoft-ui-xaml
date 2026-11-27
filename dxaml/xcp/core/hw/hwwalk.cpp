@@ -864,7 +864,13 @@ HWWalk::RenderProperties(
             // Here we pixel snap the transform-to-root to match our notion of the transform
             // to DComp's actual transform used while compositing.  This allows us to more
             // accurately pixel snap our content, most notably text.
-            if (pUIElement->IsManipulatable())
+            // A windowed Popup's window sits on whole pixels, so snap its transform-to-root too. Otherwise its text is
+            // rasterized for a fractional offset (e.g. under a ScrollViewer scrolled by a fraction of a pixel) and blurs.
+            // Non-windowed popups composite at the fractional redirection offset, so they stay unsnapped.
+            if (pUIElement->IsManipulatable() ||
+                (pUIElement->OfTypeByIndex<KnownTypeIndex::Popup>()
+                    && static_cast<CPopup*>(pUIElement)->IsWindowed()
+                    && !myRP.isTransformAnimating))
             {
                 combinedTransformToRoot.PixelSnap();
             }
