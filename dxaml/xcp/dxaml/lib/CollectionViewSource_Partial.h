@@ -94,6 +94,7 @@ namespace DirectUI
         _Check_return_ HRESULT EnsureLiveShapingProperties();
         _Check_return_ HRESULT ApplyLiveShapingToView();
         _Check_return_ HRESULT OnCultureChanged(_In_ const PropertyChangedParams& args);
+        _Check_return_ HRESULT OnHierarchyDescriptionChanged();
         _Check_return_ HRESULT GetLiveShapingRequests(_Out_ bool* pIsLiveSorting, _Out_ bool* pIsLiveFiltering, _Out_ bool* pIsLiveGrouping);
 
     protected:

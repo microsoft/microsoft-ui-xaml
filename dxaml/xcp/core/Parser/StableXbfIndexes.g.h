@@ -1004,6 +1004,8 @@ namespace Parser
         PropertyGroupDescription = 986,
         CollectionViewSortDirection = 987,
         CollectionViewStringComparison = 988,
+        HierarchyDescription = 989,
+        PropertyHierarchyDescription = 990,
     };
 
     enum class StableXbfPropertyIndex: UINT16
@@ -3500,6 +3502,9 @@ namespace Parser
         PropertyGroupDescription_StringComparison = 2489,
         GroupDescription_GroupNames = 2490,
         CollectionViewSource_Culture = 2491,
+        CollectionViewSource_HierarchyDescription = 2492,
+        PropertyHierarchyDescription_ItemKeyPath = 2493,
+        PropertyHierarchyDescription_ParentKeyPath = 2494,
     };
 
     enum class StableEventIndex: UINT16
@@ -3847,7 +3852,7 @@ namespace Parser
         CollectionViewSource_Filter = 340,
     };
 
-    static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::CollectionViewStringComparison) + 1;
-    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::CollectionViewSource_Culture) + 1;
+    static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::PropertyHierarchyDescription) + 1;
+    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::PropertyHierarchyDescription_ParentKeyPath) + 1;
     static const UINT16 StableEventCount = static_cast<UINT16>(StableEventIndex::CollectionViewSource_Filter) + 1;
 }

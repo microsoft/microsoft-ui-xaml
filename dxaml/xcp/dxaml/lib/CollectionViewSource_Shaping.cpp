@@ -669,7 +669,10 @@ _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCo
     IFC_RETURN(pView->ApplyLiveShaping(isLiveSorting, isLiveFiltering, isLiveGrouping,
         m_spLiveSortingProperties.Get(), m_spLiveFilteringProperties.Get(), m_spLiveGroupingProperties.Get()));
     wrl_wrappers::HString culture;
+    ctl::ComPtr<xaml_data::IHierarchyDescription> spHierarchy;
     IFC_RETURN(get_Culture(culture.GetAddressOf()));
+    IFC_RETURN(get_HierarchyDescription(spHierarchy.ReleaseAndGetAddressOf()));
+    IFC_RETURN(pView->SetHierarchyDescription(spHierarchy.Get()));
     IFC_RETURN(pView->ApplyShapingRules(m_tpSortDescriptions.Get(), m_tpGroupDescriptions.Get(), nullptr /* pFilter */, spCustomSort.Get(), culture.Get()));
     return S_OK;
 }
@@ -795,6 +798,21 @@ _Check_return_ HRESULT CollectionViewSource::OnCultureChanged(_In_ const Propert
     {
         IFC_RETURN(AsShapingView(m_tpShapingView.Get())->put_Culture(culture.Get()));
     }
+    return S_OK;
+}
+
+// Like Culture, the CollectionViewSource's own value, applied to each view it creates and to View when it changes.
+_Check_return_ HRESULT CollectionViewSource::OnHierarchyDescriptionChanged()
+{
+    ctl::ComPtr<xaml_data::IHierarchyDescription> spHierarchy;
+    IFC_RETURN(get_HierarchyDescription(spHierarchy.ReleaseAndGetAddressOf()));
+    if (m_tpShapingView)
+    {
+        IFC_RETURN(AsShapingView(m_tpShapingView.Get())->put_HierarchyDescription(spHierarchy.Get()));
+        return S_OK;
+    }
+
+    IFC_RETURN(OnShapingDescriptionsChanged());
     return S_OK;
 }
 
@@ -1119,7 +1137,9 @@ _Check_return_ HRESULT CollectionViewSource::HasShapingRules(_Out_ bool* pHasRul
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
 
-    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpCustomSort || HasFilterEventHandlers();
+    ctl::ComPtr<xaml_data::IHierarchyDescription> spHierarchy;
+    IFC_RETURN(get_HierarchyDescription(spHierarchy.ReleaseAndGetAddressOf()));
+    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpCustomSort || HasFilterEventHandlers() || spHierarchy;
     return S_OK;
 }
 
@@ -1160,7 +1180,7 @@ _Check_return_ HRESULT CollectionViewSource::CheckShapingSupported(_In_ IInspect
 
     if (!isShapeable)
     {
-        static constexpr WCHAR c_message[] = L"A CollectionViewSource with IsSourceGrouped set, or over an ICollectionViewFactory, cannot sort, filter or group its View.";
+        static constexpr WCHAR c_message[] = L"A CollectionViewSource with IsSourceGrouped set, or over an ICollectionViewFactory, cannot sort, filter, group or build a hierarchy in its View.";
         IFC_RETURN(ErrorHelper::OriginateError(E_ILLEGAL_METHOD_CALL, ARRAYSIZE(c_message) - 1, c_message));
     }
     return S_OK;

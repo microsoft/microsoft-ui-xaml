@@ -541,6 +541,7 @@ HRESULT OnCoreCreateGroupDescription(_Outptr_ CDependencyObject **ppObject, _In_
 HRESULT OnCoreCreateGroupedDataCollectionView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateIterableCollectionView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreatePropertyGroupDescription(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreatePropertyHierarchyDescription(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateRelativeSource(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSortDescription(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateTemplateBinding(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);

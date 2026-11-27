@@ -658,6 +658,16 @@ namespace Microsoft.UI.Xaml.Data
             get;
         }
 
+        // Builds a tree from the flat source (ICollectionViewHierarchy on View). Like Culture, the CollectionViewSource's
+        // own value, applied to each view it creates and to View when it changes.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [TypeTable(IsExcludedFromCore = true)]
+        public Microsoft.UI.Xaml.Data.HierarchyDescription HierarchyDescription
+        {
+            get;
+            set;
+        }
+
         // WPF's CollectionViewSource.Filter event. As in WPF the delegate form is the view's Filter
         // (ICollectionViewShaping.Filter); the CollectionViewSource has only the event.
         [VelocityFeature("Feature_ExperimentalApi")]
@@ -1028,6 +1038,105 @@ namespace Microsoft.UI.Xaml.Data
 
         [FactoryMethodName("CreateInstanceWithConverterAndStringComparison")]
         public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName, [Optional] Microsoft.UI.Xaml.Data.IValueConverter converter, Microsoft.UI.Xaml.Data.CollectionViewStringComparison stringComparison) { }
+    }
+
+    // How a view builds a tree from a flat source (ICollectionViewHierarchy). Not activatable or derivable yet, so key
+    // functions and a children-path form can be added later.
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(partial: true)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Guids(ClassGuid = "ff0d100e-f6ce-4c27-a75e-17bd1d3dd575")]
+    public abstract class HierarchyDescription
+        : Microsoft.UI.Xaml.DependencyObject
+    {
+        internal HierarchyDescription() { }
+    }
+
+    // A tree by key and parent key: an item whose ParentKeyPath value equals another item's ItemKeyPath value is that
+    // item's child. Both are property paths, as SortDescription.PropertyName.
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(partial: true)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Guids(ClassGuid = "33f6a589-0873-47e5-90cf-c0051f0a8ab2")]
+    public sealed class PropertyHierarchyDescription
+        : Microsoft.UI.Xaml.Data.HierarchyDescription
+    {
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        public Windows.Foundation.String ItemKeyPath
+        {
+            get;
+            set;
+        }
+
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        public Windows.Foundation.String ParentKeyPath
+        {
+            get;
+            set;
+        }
+
+        public PropertyHierarchyDescription() { }
+
+        [FactoryMethodName("CreateInstanceWithKeyPaths")]
+        public PropertyHierarchyDescription([Optional] Windows.Foundation.String itemKeyPath, [Optional] Windows.Foundation.String parentKeyPath) { }
+    }
+
+    // Optional capability of an ICollectionView (like ICollectionViewLiveShaping): the view shows a tree. Its own list
+    // is every node depth-first (parent, then its children); CollectionNodes is the roots.
+    [DXamlIdlGroup("coretypes2")]
+    [HideFromOldCodeGen]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public interface ICollectionViewHierarchy
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(0)]
+        Microsoft.UI.Xaml.Data.HierarchyDescription HierarchyDescription { get; set; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(1)]
+        Windows.Foundation.Boolean CanBuildHierarchy { get; }
+
+        // The roots (ICollectionViewNode), in sort order; null while the view is flat.
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(2)]
+        Windows.Foundation.Collections.IObservableVector<Windows.Foundation.Object> CollectionNodes { get; }
+
+        [OrderHint(3)]
+        Microsoft.UI.Xaml.Data.ICollectionViewNode NodeFromItem([Optional] Windows.Foundation.Object item);
+    }
+
+    // A node of a hierarchical view: an item the view shows and its children (ICollectionViewNode), in sort order.
+    [DXamlIdlGroup("coretypes2")]
+    [HideFromOldCodeGen]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public interface ICollectionViewNode
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(0)]
+        Windows.Foundation.Object Item { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(1)]
+        Windows.Foundation.Object Key { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(2)]
+        Microsoft.UI.Xaml.Data.ICollectionViewNode Parent { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(3)]
+        Windows.Foundation.Collections.IObservableVector<Windows.Foundation.Object> Children { get; }
+
+        // Shown only because a descendant passes the filter.
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(4)]
+        Windows.Foundation.Boolean IsContext { get; }
     }
 
     [CodeGen(CodeGenLevel.CoreOnly)]

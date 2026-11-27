@@ -78,6 +78,10 @@ DirectUI::CollectionViewSource::OnPropertyChanged2(
     case KnownPropertyIndex::CollectionViewSource_Culture:
         IFC(OnCultureChanged(args));
         break;
+
+    case KnownPropertyIndex::CollectionViewSource_HierarchyDescription:
+        IFC(OnHierarchyDescriptionChanged());
+        break;
     }
 
 Cleanup:

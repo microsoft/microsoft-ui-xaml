@@ -336,6 +336,8 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 140737488355331, 140737488355331 },
     // Microsoft.UI.Xaml.Controls.HasValidationErrorsChangedEventArgs
     { 0, 0 },
+    // Microsoft.UI.Xaml.Data.HierarchyDescription
+    { 255, 131 },
     // Microsoft.UI.Xaml.Controls.HubSectionHeaderClickEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.Internal.HWCompNode
@@ -487,9 +489,9 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Controls.SemanticZoomViewChangedEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.SetterBase
-    { 255, 135 },
+    { 255, 139 },
     // Microsoft.UI.Xaml.Media.Shadow
-    { 255, 147 },
+    { 255, 151 },
     // Windows.Foundation.Size
     { 140737488355331, 140737488355331 },
     // Microsoft.UI.Xaml.Data.SortDescription
@@ -499,7 +501,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Controls.Primitives.SplitViewTemplateSettings
     { 140737488355331, 140737488355331 },
     // Microsoft.UI.Xaml.StaggerFunctionBase
-    { 255, 131 },
+    { 255, 135 },
     // Microsoft.UI.Xaml.StartupEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.StateTriggerBase
@@ -541,7 +543,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Documents.TextElement
     { 255, 47 },
     // Microsoft.UI.Xaml.Documents.TextHighlighterBase
-    { 255, 143 },
+    { 255, 147 },
     // Microsoft.UI.Xaml.Internal.TextPointerWrapper
     { 140737488355331, 140737488355331 },
     // MS.Internal.Automation.TextProvider
@@ -603,7 +605,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.XamlRootChangedEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.Input.XamlUICommand
-    { 255, 139 },
+    { 255, 143 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
     { 32767, 14343 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
@@ -924,8 +926,10 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 140737488355351, 140737488355351 },
     // Microsoft.UI.Xaml.Data.PropertyGroupDescription
     { 140737488355455, 140737488355455 },
-    // Microsoft.UI.Xaml.PVLStaggerFunction
+    // Microsoft.UI.Xaml.Data.PropertyHierarchyDescription
     { 140737488355459, 140737488355459 },
+    // Microsoft.UI.Xaml.PVLStaggerFunction
+    { 140737488355463, 140737488355463 },
     // Microsoft.UI.Xaml.Media.QuadraticBezierSegment
     { 140737488355347, 140737488355347 },
     // Microsoft.UI.Xaml.Media.Animation.QuadraticEase
@@ -953,7 +957,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.Setter
-    { 140737488355463, 140737488355463 },
+    { 140737488355467, 140737488355467 },
     // Microsoft.UI.Xaml.Media.Animation.SineEase
     { 140737488355351, 140737488355351 },
     // Microsoft.UI.Xaml.SizeChangedEventArgs
@@ -969,7 +973,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame
     { 140737488355407, 140737488355407 },
     // Microsoft.UI.Xaml.Input.StandardUICommand
-    { 140737488355467, 140737488355467 },
+    { 140737488355471, 140737488355471 },
     // Microsoft.UI.Xaml.StateTrigger
     { 140737488355339, 140737488355339 },
     // Microsoft.UI.Xaml.StaticResource
@@ -989,11 +993,11 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Controls.TextChangedEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.Documents.TextHighlighter
-    { 140737488355471, 140737488355471 },
+    { 140737488355475, 140737488355475 },
     // Microsoft.UI.Xaml.ThemeResource
     { 140737488355359, 140737488355359 },
     // Microsoft.UI.Xaml.Media.ThemeShadow
-    { 140737488355475, 140737488355475 },
+    { 140737488355479, 140737488355479 },
     // Microsoft.UI.Xaml.Media.TileBrush
     { 32767, 5991 },
     // Microsoft.UI.Xaml.Media.Transform

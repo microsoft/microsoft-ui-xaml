@@ -888,6 +888,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "GroupDescription_Partial.h"
 #include "GroupStyle_Partial.h"
 #include "HasValidationErrorsChangedEventArgs.g.h"
+#include "HierarchyDescription_Partial.h"
 #include "HubSectionHeaderClickEventArgs.g.h"
 #include "HWCompNode.g.h"
 #include "IconSource_Partial.h"
@@ -1131,6 +1132,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "PopupThemeTransition_Partial.h"
 #include "PowerEase.g.h"
 #include "PropertyGroupDescription_Partial.h"
+#include "PropertyHierarchyDescription_Partial.h"
 #include "PVLStaggerFunction_Partial.h"
 #include "QuadraticBezierSegment.g.h"
 #include "QuadraticEase.g.h"
@@ -2289,6 +2291,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         &ctl::CreateComObjectInstanceNoInit<DirectUI::GroupStyle>, // Framework constructor
     },
     // Microsoft.UI.Xaml.Controls.HasValidationErrorsChangedEventArgs
+    {
+        nullptr, // Core constructor
+        nullptr, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.Data.HierarchyDescription
     {
         nullptr, // Core constructor
         nullptr, // Framework constructor
@@ -3762,6 +3769,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
     {
         &OnCoreCreatePropertyGroupDescription, // Core constructor
         &ctl::CreateComObjectInstanceNoInit<DirectUI::PropertyGroupDescription>, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.Data.PropertyHierarchyDescription
+    {
+        &OnCoreCreatePropertyHierarchyDescription, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::PropertyHierarchyDescription>, // Framework constructor
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction
     {
@@ -7560,6 +7572,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Data.CollectionViewSource.GroupDescriptions
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.HierarchyDescription
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
@@ -11550,6 +11569,20 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Data.PropertyGroupDescription.StringComparison
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.PropertyHierarchyDescription.ItemKeyPath
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.PropertyHierarchyDescription.ParentKeyPath
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback

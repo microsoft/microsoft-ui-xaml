@@ -10,6 +10,7 @@
 //------------------------------------------------------------------------
 
 #include "CollectionViewSource.g.h"
+#include "HierarchyDescription.g.h"
 #include "PropertyPath.g.h"
 #include "XamlTelemetry.h"
 
@@ -97,6 +98,15 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated
     IFC(static_cast<CollectionViewSource*>(this)->get_GroupDescriptionsImpl(ppValue));
 Cleanup:
     RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_HierarchyDescription(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IHierarchyDescription** ppValue)
+{
+    RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_HierarchyDescription, ppValue));
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::put_HierarchyDescription(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IHierarchyDescription* pValue)
+{
+    IFC_RETURN(DefaultStrictApiCheck(this));
+    RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_HierarchyDescription, pValue));
 }
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_IsLiveFilteringRequested(_Out_ BOOLEAN* pValue)
 {
@@ -304,6 +314,10 @@ IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::get_IsLiveGroupingRequeste
 
 
 
+IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::get_HierarchyDescriptionProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
+{
+    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::CollectionViewSource_HierarchyDescription, ppValue));
+}
 
 // Attached properties.
 

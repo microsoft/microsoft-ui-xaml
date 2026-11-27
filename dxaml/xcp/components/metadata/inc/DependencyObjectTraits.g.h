@@ -299,6 +299,12 @@ struct DependencyObjectTraits<CGroupStyle>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::GroupStyle;
 };
+class CHierarchyDescription;
+template<>
+struct DependencyObjectTraits<CHierarchyDescription>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::HierarchyDescription;
+};
 class HWCompNode;
 template<>
 struct DependencyObjectTraits<HWCompNode>
@@ -1378,6 +1384,12 @@ template<>
 struct DependencyObjectTraits<CPropertyGroupDescription>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::PropertyGroupDescription;
+};
+class CPropertyHierarchyDescription;
+template<>
+struct DependencyObjectTraits<CPropertyHierarchyDescription>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::PropertyHierarchyDescription;
 };
 class CPVLStaggerFunction;
 template<>

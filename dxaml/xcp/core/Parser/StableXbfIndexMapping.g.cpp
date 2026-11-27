@@ -1007,6 +1007,8 @@ namespace Parser
         KnownTypeIndex::PropertyGroupDescription,
         KnownTypeIndex::CollectionViewSortDirection,
         KnownTypeIndex::CollectionViewStringComparison,
+        KnownTypeIndex::HierarchyDescription,
+        KnownTypeIndex::PropertyHierarchyDescription,
     };
 
     // Map known type indexes to stable Xbf type indexes
@@ -1172,6 +1174,7 @@ namespace Parser
         StableXbfTypeIndex::GroupDescription,
         StableXbfTypeIndex::GroupStyle,
         StableXbfTypeIndex::UnknownType,
+        StableXbfTypeIndex::HierarchyDescription,
         StableXbfTypeIndex::UnknownType,
         StableXbfTypeIndex::HWCompNode,
         StableXbfTypeIndex::IconSource,
@@ -1466,6 +1469,7 @@ namespace Parser
         StableXbfTypeIndex::PopupThemeTransition,
         StableXbfTypeIndex::PowerEase,
         StableXbfTypeIndex::PropertyGroupDescription,
+        StableXbfTypeIndex::PropertyHierarchyDescription,
         StableXbfTypeIndex::PVLStaggerFunction,
         StableXbfTypeIndex::QuadraticBezierSegment,
         StableXbfTypeIndex::QuadraticEase,
@@ -4514,6 +4518,9 @@ namespace Parser
         KnownPropertyIndex::PropertyGroupDescription_StringComparison,
         KnownPropertyIndex::GroupDescription_GroupNames,
         KnownPropertyIndex::CollectionViewSource_Culture,
+        KnownPropertyIndex::CollectionViewSource_HierarchyDescription,
+        KnownPropertyIndex::PropertyHierarchyDescription_ItemKeyPath,
+        KnownPropertyIndex::PropertyHierarchyDescription_ParentKeyPath,
     };
 
     // Map known property indexes to stable Xbf property indexes
@@ -4668,6 +4675,7 @@ namespace Parser
         StableXbfPropertyIndex::CalendarViewTemplateSettings_WeekDay7,
         StableXbfPropertyIndex::CollectionViewSource_Culture,
         StableXbfPropertyIndex::CollectionViewSource_GroupDescriptions,
+        StableXbfPropertyIndex::CollectionViewSource_HierarchyDescription,
         StableXbfPropertyIndex::CollectionViewSource_IsLiveFilteringRequested,
         StableXbfPropertyIndex::CollectionViewSource_IsLiveGroupingRequested,
         StableXbfPropertyIndex::CollectionViewSource_IsLiveSortingRequested,
@@ -5238,6 +5246,8 @@ namespace Parser
         StableXbfPropertyIndex::PropertyGroupDescription_Converter,
         StableXbfPropertyIndex::PropertyGroupDescription_PropertyName,
         StableXbfPropertyIndex::PropertyGroupDescription_StringComparison,
+        StableXbfPropertyIndex::PropertyHierarchyDescription_ItemKeyPath,
+        StableXbfPropertyIndex::PropertyHierarchyDescription_ParentKeyPath,
         StableXbfPropertyIndex::PVLStaggerFunction_Delay,
         StableXbfPropertyIndex::PVLStaggerFunction_DelayReduce,
         StableXbfPropertyIndex::PVLStaggerFunction_Maximum,

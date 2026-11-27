@@ -42,6 +42,13 @@ HRESULT VectorCollectionView::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void*
         return S_OK;
     }
 
+    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewHierarchy)) && m_isShapingEnabled)
+    {
+        *ppObject = static_cast<xaml_data::ICollectionViewHierarchy*>(this);
+        AddRefOuter();
+        return S_OK;
+    }
+
     return VectorCollectionViewGenerated::QueryInterfaceImpl(iid, ppObject);
 }
 
@@ -366,7 +373,7 @@ _Check_return_ HRESULT VectorCollectionView::HasShapingRules(_Out_ bool* pHasRul
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
 
-    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort || m_spFilterEvents;
+    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort || m_spFilterEvents || m_tpHierarchyDescription;
     return S_OK;
 }
 
@@ -406,6 +413,10 @@ _Check_return_ HRESULT VectorCollectionView::ApplyShapingRules()
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
     const bool isGrouping = (groupCount > 0);
+    if (m_tpHierarchyDescription)
+    {
+        IFC_RETURN(CheckHierarchyWithoutGrouping(groupCount));
+    }
 
     // Reshaped in place, so a consumer holding the view keeps a live view.
     if (m_tpInternalList && isGrouping == m_isGrouping)
@@ -578,6 +589,13 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
         UINT sourceIndex = 0;
         UINT slot = 0;
     };
+
+    if (m_tpHierarchyDescription && !m_isGrouping)
+    {
+        IFC_RETURN(RefreshHierarchy());
+        return S_OK;
+    }
+    IFC_RETURN(LeaveHierarchy());
 
     auto spSort = std::make_shared<ShapingSortState>();
     ctl::ComPtr<CollectionViewGroupRoot> spRoot;
