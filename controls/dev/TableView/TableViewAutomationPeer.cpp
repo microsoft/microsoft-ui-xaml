@@ -1240,6 +1240,11 @@ static bool TryGetControlTypePropertyValue(winrt::IInspectable const& value, win
             controlType = static_cast<winrt::AutomationControlType>(propValue.GetInt32());
             return true;
         }
+        else if (propValue.Type() == winrt::PropertyType::UInt32)
+        {
+            controlType = static_cast<winrt::AutomationControlType>(propValue.GetUInt32());
+            return true;
+        }
     }
 
     return false;
@@ -1365,12 +1370,14 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
         bool isMatch = matchAny;
         if (!matchAny)
         {
+            const bool isGroupHeader = (TryGetGroupedEntry(item) != nullptr);
+
             // Realized row peer names override item text for custom AutomationProperties.Name.
             if (property == winrt::AutomationElementIdentifiers::NameProperty())
             {
                 isMatch = MatchesItemName(*impl, item, repeater.TryGetElement(i), StringPropertyValue(value));
             }
-            // ValueValue — match by cell value (text content).
+            // Value - match by cell value (text content).
             else if (property == winrt::ValuePatternIdentifiers::ValueProperty())
             {
                 hstring requested = StringPropertyValue(value);
@@ -1392,11 +1399,11 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                 }
                 isMatch = (candidate == requested);
             }
-            // ClassName — match by the row peer class name.
+            // ClassName - match by the row peer class name.
             else if (property == winrt::AutomationElementIdentifiers::ClassNameProperty())
             {
                 hstring requested = StringPropertyValue(value);
-                hstring candidate = winrt::hstring_name_of<winrt::TableViewRow>();
+                hstring candidate = isGroupHeader ? L"TableViewGroupHeader" : winrt::hstring_name_of<winrt::TableViewRow>();
                 if (auto rowElement = repeater.TryGetElement(i))
                 {
                     if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
@@ -1406,13 +1413,13 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                 }
                 isMatch = (candidate == requested);
             }
-            // ControlType — match by the row peer control type.
+            // ControlType - match by the row peer control type.
             else if (property == winrt::AutomationElementIdentifiers::ControlTypeProperty())
             {
                 winrt::AutomationControlType requested{};
                 if (TryGetControlTypePropertyValue(value, requested))
                 {
-                    auto candidate = winrt::AutomationControlType::DataItem;
+                    auto candidate = isGroupHeader ? winrt::AutomationControlType::Group : winrt::AutomationControlType::DataItem;
                     if (auto rowElement = repeater.TryGetElement(i))
                     {
                         if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
@@ -1423,7 +1430,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                     isMatch = (candidate == requested);
                 }
             }
-            // ItemType — match by item type string (e.g., "DataRow").
+            // ItemType - match by item type string (e.g., "DataRow" or "GroupHeader").
             else if (property == winrt::AutomationElementIdentifiers::ItemTypeProperty())
             {
                 hstring requested;
@@ -1435,7 +1442,17 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                     }
                 }
 
-                hstring candidate = L"DataRow";
+                hstring candidate = isGroupHeader ? L"GroupHeader" : L"DataRow";
+                if (auto rowElement = repeater.TryGetElement(i))
+                {
+                    if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
+                    {
+                        if (auto itemType = rowPeer.GetItemType(); !itemType.empty())
+                        {
+                            candidate = itemType;
+                        }
+                    }
+                }
                 isMatch = (candidate == requested);
             }
             // Unsupported properties stop the scan rather than looping indefinitely.
@@ -1459,7 +1476,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
             }
             catch (...)
             {
-                return nullptr;
+                continue;
             }
         }
 
@@ -1473,10 +1490,34 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
 
             if (auto rowPeer = ElementItemPeer(rowElement))
             {
+                if (property == winrt::AutomationElementIdentifiers::ControlTypeProperty())
+                {
+                    winrt::AutomationControlType requested{};
+                    if (TryGetControlTypePropertyValue(value, requested) &&
+                        rowPeer.GetAutomationControlType() != requested)
+                    {
+                        continue;
+                    }
+                }
+                else if (property == winrt::AutomationElementIdentifiers::ClassNameProperty())
+                {
+                    if (rowPeer.GetClassName() != StringPropertyValue(value))
+                    {
+                        continue;
+                    }
+                }
+                else if (property == winrt::AutomationElementIdentifiers::AutomationIdProperty())
+                {
+                    if (rowPeer.GetAutomationId() != StringPropertyValue(value))
+                    {
+                        continue;
+                    }
+                }
+
                 return ProviderFromPeer(rowPeer);
             }
         }
-        return nullptr;
+        continue;
     }
 
     return nullptr;
