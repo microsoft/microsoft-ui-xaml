@@ -1180,7 +1180,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var (width, height, ink) = RenderAndLogInk(host, label, 8.0);
 
             // RenderTargetBitmap also applies the display's rasterization scale, so measure in rendered pixels per DIP.
-            double scale = height / host.ActualHeight;
+            double hostHeight = 0;
+            RunOnUIThread.Execute(() => hostHeight = host.ActualHeight);
+            double scale = height / hostHeight;
 
             // Coverage (0..1) of each row, averaged over the middle columns.
             var coverage = new double[height];
