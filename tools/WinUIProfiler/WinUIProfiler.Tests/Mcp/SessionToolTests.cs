@@ -346,7 +346,7 @@ internal static class SessionToolTests
             "A summary without the frame views gives no UI threads or launch frames.");
         Contains(summary.Text("computed"), "What a summary without the frame views computed", "couldn't all be read");
         var ran = QueryTests.CheckQueries(summary, "The summary of a file whose launch view is gone");
-        Expect.Equal(3, ran.Count, "Statements of the session record, the ticks and the interesting rows");
+        Expect.Equal(4, ran.Count, "Statements of the session record, the ticks, the interesting rows and GPU memory coverage");
         Expect.True(ran.All(query => !query.Text("sql")!.Contains("LaunchSummary", StringComparison.Ordinal)),
             "The statement that failed isn't listed.");
     }

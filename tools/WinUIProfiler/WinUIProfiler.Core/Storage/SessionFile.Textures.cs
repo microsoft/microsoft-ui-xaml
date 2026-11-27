@@ -66,6 +66,12 @@ public static partial class SessionFile
         }
         if (!capture.Available) return capture;
 
+        return capture with { Textures = ReadTexturesAt(connection, transaction, snapshot.EndQpc, token) };
+    }
+
+    private static IReadOnlyList<SnapshotTexture> ReadTexturesAt(SqliteConnection connection, SqliteTransaction transaction,
+        long atQpc, CancellationToken token)
+    {
         var resources = new Dictionary<long, bool>();
         var textures = new Dictionary<long, SnapshotTexture>();
         using (var command = Command(connection, transaction, """
@@ -78,12 +84,12 @@ public static partial class SessionFile
                         ORDER BY value) n)
                  FROM GraphicsObjectEvents ge JOIN Events e ON e.Seq = ge.Seq JOIN EventTypes t ON t.TypeId = e.TypeId
                  WHERE ge.GraphicsObjectId = g.GraphicsObjectId AND ge.Role IN ('Start', 'Rundown') AND e.Qpc <= $qpc
-                 ORDER BY e.Qpc DESC, e.Seq DESC LIMIT 1) END
+                 ORDER BY e.Qpc DESC, e.Seq DESC LIMIT 1) END, g.KnownFromQpc
             FROM GraphicsObjects g
             WHERE g.Kind IN ('Buffer', 'Texture1D', 'Texture2D', 'Texture3D')
                 AND COALESCE(g.StartQpc, g.KnownFromQpc) <= $qpc AND (g.EndQpc IS NULL OR g.EndQpc > $qpc)
             ORDER BY g.GraphicsObjectId
-            """, ("$qpc", snapshot.EndQpc)))
+            """, ("$qpc", atQpc)))
         {
             using var reader = command.ExecuteReader();
             while (reader.Read())
@@ -93,7 +99,10 @@ public static partial class SessionFile
                 if (reader.GetString(1) == "Buffer") continue;
                 var texture = new SnapshotTexture(reader.GetInt64(0), reader.GetString(1), reader.GetString(2),
                     null, NullableInt64(reader, 3), NullableInt64(reader, 4),
-                    NullableString(reader, 5), reader.GetBoolean(6), NullableString(reader, 7) ?? "{}", []);
+                    NullableString(reader, 5), reader.GetBoolean(6), NullableString(reader, 7) ?? "{}", [])
+                {
+                    KnownFromQpc = reader.GetInt64(8)
+                };
                 textures.Add(texture.Id, texture);
             }
             SessionQueries.Report(command, resources.Count);
@@ -120,7 +129,7 @@ public static partial class SessionFile
                 AND COALESCE(r.StartQpc, r.KnownFromQpc) <= $qpc AND (r.EndQpc IS NULL OR r.EndQpc > $qpc)
                 AND COALESCE(d.StartQpc, d.KnownFromQpc) <= $qpc AND (d.EndQpc IS NULL OR d.EndQpc > $qpc)
             ORDER BY r.GraphicsObjectId, d.GraphicsObjectId, da.TargetId
-            """, ("$qpc", snapshot.EndQpc)))
+            """, ("$qpc", atQpc)))
         {
             using var reader = command.ExecuteReader();
             long rows = 0;
@@ -142,7 +151,7 @@ public static partial class SessionFile
             ids.Add(allocation.DeviceAllocationId);
             if (allocation.AdapterAllocationId is { } adapterId) ids.Add(adapterId);
         }
-        var fields = ReadTextureFields(connection, transaction, ids, snapshot.EndQpc, token);
+        var fields = ReadTextureFields(connection, transaction, ids, atQpc, token);
         string? HandleAtSnapshot(long id, string field) =>
             fields.TryGetValue((id, field), out var value) && value != 0 ? $"0x{value:x16}" : null;
 
@@ -202,7 +211,7 @@ public static partial class SessionFile
                 Allocations = links.Distinct().ToArray()
             });
         }
-        return capture with { Textures = result };
+        return result;
     }
 
     private static Dictionary<(long Id, string Field), ulong> ReadTextureFields(SqliteConnection connection,

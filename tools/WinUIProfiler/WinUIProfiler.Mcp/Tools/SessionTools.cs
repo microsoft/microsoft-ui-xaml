@@ -124,8 +124,10 @@ internal static class SessionTools
         var info = SessionFile.ReadInfo(path);
         var (ticks, rows, launch, error) = SessionCatalog.ReadViews(path);
         var regions = rows.Count(row => row.Type == InterestingRowType.Region);
+        var memory = SessionFile.ReadGpuMemoryCoverage(path);
         var contents = new SessionContents(ticks.Count, regions, rows.Count - regions, launch.Count,
-            LaunchTools.ObservedMilestones(info, launch, ticks, rows), error);
+            LaunchTools.ObservedMilestones(info, launch, ticks, rows), error,
+            memory.Direct3D || memory.ElementVisuals || memory.VisualSurfaces || memory.SurfaceTextures);
         var notes = new List<string>(SessionCatalog.Notes(info));
         if (SessionCatalog.IsTrace(info))
         {
@@ -147,6 +149,7 @@ internal static class SessionTools
                 $"{EventJson.Count(launch.Count, "launch frame", "launch frames")}; and from those, said which analyses have data."
             : Record + "The frame views couldn't all be read (see the notes), so the summary gives no UI threads, regions or " +
                 "launch frames, and the analyses that need them say why.";
+        computed += " Checked retained Direct3D11 and explicit element/visual/surface/texture events for GPU memory analysis coverage.";
         return new(new
         {
             session = SessionCatalog.Header(path, info),

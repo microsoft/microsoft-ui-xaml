@@ -13,6 +13,8 @@ public sealed record SnapshotTexture(long Id, string Kind, string Handle, string
     long? StartQpc, long? EndQpc, string? EndReason, bool Trimmed, string Descriptor,
     IReadOnlyList<SnapshotTextureAllocation> Allocations)
 {
+    public long KnownFromQpc { get; init; }
+
     public decimal? LinkedBytes => Allocations.Count == 0 ||
         Allocations.Any(allocation => allocation.AdapterAllocationId is null || allocation.SizeBytes is null)
             ? null : Allocations.DistinctBy(allocation => allocation.AdapterAllocationId)

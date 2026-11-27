@@ -17,10 +17,11 @@ internal sealed record SessionFileEntry(string Path, DateTime LastWrittenUtc, lo
 /// <summary>
 /// What a session's processed data holds, for <see cref="SessionCatalog.Analyses"/>: its ticks, regions of interest,
 /// interesting rows outside regions, launch frames, and the launch milestones it observed (all but when the process was
-/// created and the recording started). ViewError says why the shared views couldn't be read, if they couldn't.
+/// created and the recording started), and whether GPU memory events were retained.
+/// ViewError says why the shared views couldn't be read, if they couldn't.
 /// </summary>
 internal sealed record SessionContents(int Ticks, int Regions, int Rows, int LaunchFrames, int LaunchMilestones,
-    string? ViewError);
+    string? ViewError, bool GpuMemory = false);
 
 /// <summary>
 /// Finds the session files the tools read, describes what one holds, and turns the ways reading one can fail into
@@ -308,6 +309,7 @@ internal static class SessionCatalog
         Analysis("launchFrames", contents.LaunchFrames > 0, "launch", ["frames"],
             contents.ViewError ?? LaunchTools.NoLaunch(info, contents.Ticks)),
         Analysis("objects", info.UIElements + info.Visuals > 0, "objects", ["types", "list", "history"], ObjectTools.NoObjects),
+        Analysis("memory", contents.GpuMemory, "memory", MemoryTools.Views, MemoryTools.NoMemory),
     ];
 
     /// <summary>What a reader of a session's results should know: what's missing from it, and why.</summary>
