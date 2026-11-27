@@ -924,7 +924,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                RunOnUIThread.Execute(() => TableViewTestHooks.RowCellRebuilt -= onRebuild);
+                RunOnUIThread.Execute(() => { if (onRebuild != null) { TableViewTestHooks.RowCellRebuilt -= onRebuild; } });
             }
 
             RunOnUIThread.Execute(() =>
@@ -1123,7 +1123,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                RunOnUIThread.Execute(() => TableViewTestHooks.RowCellRebuilt -= onRebuild);
+                RunOnUIThread.Execute(() => { if (onRebuild != null) { TableViewTestHooks.RowCellRebuilt -= onRebuild; } });
             }
 
             RunOnUIThread.Execute(() =>

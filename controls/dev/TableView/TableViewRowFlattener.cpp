@@ -530,13 +530,13 @@ void TableViewRowFlattener::ReadViewGroups()
     bool changed = false;
     do
     {
+        m_readingGroups = true;
+        m_readGroupsPending = false;
+        auto const done = wil::scope_exit([this]() noexcept { m_readingGroups = false; });
         if (!m_viewGroups)
         {
             break;
         }
-        m_readingGroups = true;
-        m_readGroupsPending = false;
-        auto const done = wil::scope_exit([this]() noexcept { m_readingGroups = false; });
 
         std::vector<ViewGroup> groups;
         std::unordered_set<winrt::hstring> identities;
