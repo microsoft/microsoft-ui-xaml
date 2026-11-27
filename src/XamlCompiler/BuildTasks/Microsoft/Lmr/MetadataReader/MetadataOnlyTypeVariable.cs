@@ -122,54 +122,54 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             get { return MetadataTokens.GetToken(m_handle); }
         }
 
-        public override MethodInfo[] GetMethods(BindingFlags flags)
+        internal override MethodInfo[] GetMethodsCore(BindingFlags flags)
         {
             return new MethodInfo[0];
         }
 
-        public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
+        internal override ConstructorInfo[] GetConstructorsCore(BindingFlags bindingAttr)
         {
             return new ConstructorInfo[0];
         }
 
-        public override FieldInfo[] GetFields(BindingFlags flags)
+        internal override FieldInfo[] GetFieldsCore(BindingFlags flags)
         {
             return new FieldInfo[0];
         }
 
-        public override FieldInfo GetField(string name, BindingFlags flags)
+        internal override FieldInfo GetFieldCore(string name, BindingFlags flags)
         {
             return null;
         }
 
-        public override PropertyInfo[] GetProperties(BindingFlags flags)
+        internal override PropertyInfo[] GetPropertiesCore(BindingFlags flags)
         {
             return new PropertyInfo[0];
         }
 
-        public override EventInfo[] GetEvents(System.Reflection.BindingFlags flags)
+        internal override EventInfo[] GetEventsCore(System.Reflection.BindingFlags flags)
         {
             return new EventInfo[0];
         }
 
-        public override EventInfo GetEvent(string name, System.Reflection.BindingFlags flags)
+        internal override EventInfo GetEventCore(string name, System.Reflection.BindingFlags flags)
         {
             return null;
         }
 
-        public override Type MakeGenericType(Type[] argTypes)
+        internal override Type MakeGenericTypeCore(Type[] argTypes)
         {
             // You can't make a generic type around a Type variable 
             throw new InvalidOperationException();
         }
 
 
-        public override Type GetNestedType(string name, BindingFlags bindingAttr)
+        internal override Type GetNestedTypeCore(string name, BindingFlags bindingAttr)
         {
             return null;
         }
 
-        public override Type[] GetNestedTypes(BindingFlags bindingAttr)
+        internal override Type[] GetNestedTypesCore(BindingFlags bindingAttr)
         {
             return Type.EmptyTypes;
         }
@@ -185,12 +185,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return TypeAttributes.Public;
         }
 
-        protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        internal override MethodInfo GetMethodImplCore(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
             return null;
         }
 
-        protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
+        internal override PropertyInfo GetPropertyImplCore(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
         {
             return null;
         }
@@ -217,22 +217,22 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             throw new InvalidOperationException();
         }
 
-        protected override ConstructorInfo GetConstructorImpl(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        internal override ConstructorInfo GetConstructorImplCore(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
             return null;
         }
 
-        public override Type[] GetInterfaces()
+        internal override Type[] GetInterfacesCore()
         {
             return MetadataOnlyTypeDef.GetAllInterfacesHelper(this);
         }
 
-        public override Type GetInterface(string name, bool ignoreCase)
+        internal override Type GetInterfaceCore(string name, bool ignoreCase)
         {
-            return MetadataOnlyModule.GetInterfaceHelper(GetInterfaces(), name, ignoreCase);
+            return MetadataOnlyModule.GetInterfaceHelper(GetInterfacesCore(), name, ignoreCase);
         }
 
-        public override MemberInfo[] GetMembers(BindingFlags bindingAttr)
+        internal override MemberInfo[] GetMembersCore(BindingFlags bindingAttr)
         {
             return MetadataOnlyTypeDef.GetMembersHelper(this, bindingAttr);
         }
@@ -247,7 +247,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return false;
         }
 
-        public override object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
+        internal override object InvokeMemberCore(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
         {
             throw new NotSupportedException();
         }
@@ -289,7 +289,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             {
                 if (!m_ownerType.IsNil)
                 {
-                    return m_resolver.ResolveType(MetadataTokens.GetToken(m_ownerType));
+                    return m_resolver.ResolveTypeLmr(MetadataTokens.GetToken(m_ownerType));
                 }
                 else if (DeclaringMethod != null)
                 {
@@ -306,7 +306,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             {
                 if (!m_ownerMethod.IsNil)
                 {
-                    return m_resolver.ResolveMethod(MetadataTokens.GetToken(m_ownerMethod));
+                    return m_resolver.ResolveMethodLmr(MetadataTokens.GetToken(m_ownerMethod));
                 }
                 return null;
             }

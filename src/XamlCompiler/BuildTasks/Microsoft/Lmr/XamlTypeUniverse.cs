@@ -59,7 +59,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             // our ResolveAssembly call, but can still be used to resolve types via the FindType method.
             while (_asmNameCache.TryGetValue(asmName, out loadedAsm))
             {
-                if (loadedAsm.Location.Equals(asm.Location))
+                if (loadedAsm.GetLocationLmr().Equals(asm.GetLocationLmr()))
                 {
                     return loadedAsm;
                 }
@@ -189,12 +189,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             Type type;
             if (!_resolvedTypes.TryGetValue(typeName, out type))
             {
-                type = GetSystemAssembly().GetType(typeName);
+                type = GetSystemAssembly().GetTypeLmr(typeName);
                 if (type == null)
                 {
                     foreach (Assembly asm in Assemblies)
                     {
-                        type = asm.GetType(typeName);
+                        type = asm.GetTypeLmr(typeName);
                         if (type != null)
                         {
                             break;

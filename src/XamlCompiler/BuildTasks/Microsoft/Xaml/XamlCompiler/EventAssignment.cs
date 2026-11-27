@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
+
 namespace Microsoft.UI.Xaml.Markup.Compiler
 {
     using System;
@@ -50,7 +52,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 return null;
             }
 
-            MethodInfo handler = d.GetMethod(KnownMembers.Invoke);
+            MethodInfo handler = d.GetMethodLmr(KnownMembers.Invoke);
             if (handler == null)
             {
                 return null;

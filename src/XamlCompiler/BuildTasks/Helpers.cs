@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
 {
@@ -188,7 +189,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
             {
                 return cachedPlatformAssemblyName.Equals(assembly.GetName().FullName, StringComparison.OrdinalIgnoreCase);
             }
-            else if (assembly.GetType(KnownStrings.PlatformAssemblySentinelType) != null)
+            else if (assembly.GetTypeLmr(KnownStrings.PlatformAssemblySentinelType) != null)
             {
                 _platformAssemblyNameCache[KnownStrings.PlatformAssemblySentinelType] = assembly.GetName().FullName;
                 return true;
@@ -203,7 +204,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
             {
                 return cachedPlatformAssemblyName.Equals(assembly.GetName().FullName, StringComparison.OrdinalIgnoreCase);
             }
-            else if (assembly.GetType(KnownStrings.WinUIAssemblySentinelType) != null)
+            else if (assembly.GetTypeLmr(KnownStrings.WinUIAssemblySentinelType) != null)
             {
                 _platformAssemblyNameCache[KnownStrings.WinUIAssemblySentinelType] = assembly.GetName().FullName;
                 return true;
@@ -222,7 +223,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
             bool? ret = null;
             try
             {
-                ret = (asm as DirectUIAssembly)?.Location?.StartsWith(Path.Combine(windowsSdkPath, @"UnionMetadata\facade\Windows.winmd"), StringComparison.OrdinalIgnoreCase);
+                ret = (asm as DirectUIAssembly)?.LocationCore?.StartsWith(Path.Combine(windowsSdkPath, @"UnionMetadata\facade\Windows.winmd"), StringComparison.OrdinalIgnoreCase);
             }
             catch
             {

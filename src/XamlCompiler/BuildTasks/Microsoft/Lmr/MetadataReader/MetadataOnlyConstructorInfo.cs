@@ -22,7 +22,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// (which leads to a more natural implementation and significantly better sharing with methods)
     /// but wraps everything and expose sit as a ConstructorInfo.
     /// </summary>
-    internal class MetadataOnlyConstructorInfo : ConstructorInfo
+    internal class MetadataOnlyConstructorInfo : LmrConstructorInfoBase
     {
         // All constructors are actually a method. This is the underlying method. 
         readonly private MethodBase m_method;
@@ -115,9 +115,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
         }
 
-        public override MethodBody GetMethodBody()
+        internal override MethodBody GetMethodBodyCore()
         {
-            return m_method.GetMethodBody();
+            return m_method.GetMethodBodyLmr();
         }
 
         public override object Invoke(BindingFlags invokeAttr, Binder binder, object[] parameters, System.Globalization.CultureInfo culture)

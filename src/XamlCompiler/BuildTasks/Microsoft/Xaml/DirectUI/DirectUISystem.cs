@@ -173,7 +173,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             Type type = null;
             foreach (DirectUIAssembly asm in this.DirectUIBaseAssemblies)
             {
-                type = asm.GetType(typeName);
+                type = asm.GetTypeLmr(typeName);
                 if (type != null && type.IsPublic)
                 {
                     break;

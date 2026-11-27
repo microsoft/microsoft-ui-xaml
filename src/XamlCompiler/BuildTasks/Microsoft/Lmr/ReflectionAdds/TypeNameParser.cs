@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 // Type Name parser.
 // This is like a Type.GetType(string) that takes in an ITypeUniverse to work across Universes.
-// Delegates to Type.GetType(string, assemblyResolver, typeResolver) for actual parsing;
+// Delegates to Type.GetType(string, assemblyResolver, typeResolver) for actual parsing (see LmrTypeNameResolver);
 // the value here is the custom resolution callbacks that search across the ITypeUniverse.
 //
 using System;
@@ -14,6 +14,7 @@ namespace System.Reflection.Adds
     // Usings need to be declared within the namespace so that they take precedence over binding based off
     // the containing namespace name. 
     using System.Reflection;  
+    using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
     internal static class TypeNameParser
     {
@@ -103,7 +104,7 @@ namespace System.Reflection.Adds
                 if(assembly != null)
                 {
                     // Try to get the type from the assembly returned from the assembly resolver
-                    result = assembly.GetType(simpleTypeName, throwOnErrorInCallback, ignoreCase);
+                    result = assembly.GetTypeLmr(simpleTypeName, throwOnErrorInCallback, ignoreCase);
                 }
                 else
                 {
@@ -112,14 +113,14 @@ namespace System.Reflection.Adds
                     {
                         // Try to get the type from the module containing the typename
                         Debug.Assert(module != null);
-                        result = module.GetType(simpleTypeName, throwOnErrorInCallback, ignoreCase);
+                        result = module.GetTypeLmr(simpleTypeName, throwOnErrorInCallback, ignoreCase);
                     }
 
                     if(null == result && useSystemAssemblyToResolveTypes) 
                     {
                         // Try to get the type from the system module(mscorlib)
                         Debug.Assert(systemModule != null);
-                        result = systemModule.GetType(simpleTypeName, throwOnErrorInCallback, ignoreCase);
+                        result = systemModule.GetTypeLmr(simpleTypeName, throwOnErrorInCallback, ignoreCase);
                     }
 
                     if(null == result && useWindowsRuntimeResolution) 
@@ -132,7 +133,7 @@ namespace System.Reflection.Adds
                 return result;
             };
 
-            return Type.GetType(input, assemblyResolver, typeResolver, throwOnError);
+            return LmrTypeNameResolver.GetType(input, assemblyResolver, typeResolver, throwOnError);
         }
 
         // Determine which assembly to do a lookup in.
