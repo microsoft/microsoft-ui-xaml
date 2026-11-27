@@ -783,8 +783,44 @@ the same view code on a header click (see "One engine").
 
 ### Hierarchy
 
-TableView shows no tree rows in this change. Hierarchy moves to a follow-up PR, as a hierarchy description in the
-`CollectionViewSource` view (`CollectionViewSource.HierarchyDescription`).
+The view builds trees; TableView has no hierarchy of its own. A `CollectionViewSource.HierarchyDescription`
+(`PropertyHierarchyDescription { ItemKeyPath, ParentKeyPath }`) turns the flat source into a tree: an item whose
+`ParentKeyPath` value equals another item's `ItemKeyPath` value is its child. The view answers the experimental
+`ICollectionViewHierarchy` (`HierarchyDescription`, `CanBuildHierarchy`, `CollectionNodes`, `NodeFromItem`); a node is
+an `ICollectionViewNode` (`Item`, `Key`, `Parent`, `Children`, `IsContext`).
+
+```xml
+<CollectionViewSource x:Name="Processes" IsLiveSortingRequested="True">
+  <CollectionViewSource.HierarchyDescription>
+    <PropertyHierarchyDescription ItemKeyPath="Pid" ParentKeyPath="ParentPid"/>
+  </CollectionViewSource.HierarchyDescription>
+</CollectionViewSource>
+<tv:TableView ItemsSource="{x:Bind Processes.View}"/>   <!-- tree rows -->
+<ListView ItemsSource="{x:Bind Processes.View}"/>       <!-- the same nodes, depth first -->
+```
+
+| Rule | Behavior |
+|---|---|
+| Keys | Read once per item with the view's property path reader. Typed: `Int32` 5 ≠ `Int64` 5, strings ordinal, `Guid` by value, other objects by identity. A null or empty parent key, or one no item has, makes a root. |
+| Filter | A node is kept if it matches or a descendant matches; kept non-matching ancestors are `IsContext`. The key index covers the unfiltered source, so a filtered-out parent never orphans its children. |
+| Sort | `SortDescriptions`/`CustomSort` order every sibling list, roots included; ties in source order. |
+| Grouping | Not with a hierarchy (V1): adding the second rule throws `InvalidOperationException`. |
+| The view's list | Every kept node, depth first (pre-order), context nodes included; read-only. |
+| Source changes | Add, Remove and Replace update the tree in place: a node and its subtree move as one; a removed parent's children become roots and are adopted again when the key returns. A Replace with the same keys updates in place. Changes are published per vector (node lists first, then the flat list; a node arrives with its subtree complete). Over 64 rows of one change, the flat list raises one `Reset`. |
+| Live shaping | A live sort moves the node (with its subtree) among its siblings; a live filter change brings context ancestors in or out. Key changes are seen on `Replace`/`Refresh()`, not live (V1). |
+| Bad data | Never throws: a later duplicate key is a root that cannot be a parent; the member of a cycle that comes first in the source becomes a root. Logged once per recompute (binding debug output and a `CollectionViewHierarchyDataError` trace). A change that touches a duplicate owner or a cycle recomputes. |
+| Recompute | `Refresh()`, a rule or description change, or a source `Reset`: one `Reset` on the flat list and on `CollectionNodes`; node objects are new. `CollectionNodes` is one object for the view's lifetime (null while flat), and `PropertyChanged("CollectionNodes")` precedes the `Reset` when the hierarchy is turned on or off. |
+
+Engine: one native node per source item (`VectorCollectionView_Hierarchy.cpp`, `_HierarchyInternal.h`): key and
+parent-key maps, waiting orphans by parent key, sorted kept-children lists, kept-subtree counts for pre-order index
+math, and filter counts for context. Public nodes and their `Children` lists are created on first read; `Children.Size`
+reads the store, so a consumer can ask for a child count without creating child nodes.
+
+TableView (`TableViewRowFlattener_Tree.cpp`) shows `CollectionNodes` and the children of each expanded node, follows
+those lists' changes as row splices, and keeps expansion intent keyed by the node's `Key` (collapsed baseline; context
+rows start expanded). New TableView API: `ExpandRow`/`CollapseRow` (expanding also expands the ancestors),
+`ExpandAllRows`/`CollapseAllRows`, `TableViewRow.Level`/`IsExpandable`/`IsExpanded`, and the row peer's
+`IExpandCollapseProvider`. Two tables over one view keep their own expansion.
 
 ### One engine: every ItemsSource goes through a view
 
@@ -858,7 +894,7 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 
 #### Follow-ups (not in this change)
 
-- Hierarchy, in the `CollectionViewSource` view (see "Hierarchy").
+- Hierarchy V2: grouping of roots, a children-path description, live reparenting, delegate key selectors (see "Hierarchy").
 
 ## Performance
 
@@ -981,7 +1017,7 @@ and `BenchTeardown` on fre and chk):
 - `GroupNames` in markup is supported; nested groups in ListView / GridView (they show the first level) are not.
 - A public composable `ListCollectionView` (see "Extensibility") and editing (`IEditableCollectionView`, see "WPF
   parity pass").
-- Hierarchy on CVS (see "Hierarchy").
+- Hierarchy on CVS (see "Hierarchy"): `CollectionViewHierarchyTests` (view, incremental replay and fuzz against a recompute) and `TableViewHierarchyTests`.
 - `Move` as a single change (a live move is a remove and an insert), and coalescing a burst of source changes (live
   property changes are coalesced per dispatcher turn, as in WPF).
 - WPF's insertion-sort path for a restore where most items are marked: the cost-based restore replaces it (see
