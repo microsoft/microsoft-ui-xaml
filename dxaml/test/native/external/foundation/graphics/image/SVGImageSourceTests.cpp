@@ -1400,8 +1400,11 @@ void SvgImageSourceTests::SvgWithoutDevice()
 
     Canvas^ root;
     xaml_controls::Image^ testImage_UIA = nullptr;
+    SvgImageSource^ svgImageSource2 = nullptr;
     auto openedRegistration = CreateSafeEventRegistration(SvgImageSource, Opened);
     auto svgImageOpenedEvent = std::make_shared<Event>();
+    auto pendingOpenedRegistration = CreateSafeEventRegistration(SvgImageSource, Opened);
+    auto pendingSvgOpenedEvent = std::make_shared<Event>();
 
     // Ensure that we don't leave the image task dispatcher in throttled mode if something fails
     StopThrottlingImageTaskDispatcherScopeGuard stopThrottlingImageTaskDispatcher;
@@ -1432,16 +1435,22 @@ void SvgImageSourceTests::SvgWithoutDevice()
     wh->WaitForIdle();
     VERIFY_IS_TRUE(svgImageOpenedEvent->HasFired());
 
-    // There's another existing bug here, which is a crash that happens when Xaml dereferences a deleted pointer if a
-    // SVG finished downloading while we have no device. The fix for the crash is easy enough - use a weak pointer - but
-    // there's no code path to retry parsing that SVG's metadata and continuing with a decode. That SVG will just not
-    // show up in the tree. We're fixing the crash for now (it's a potential security problem) while leaving the
-    // rendering issue open.
+    // Regression for AB#43907022: completing the download without a device must still parse metadata and decode
+    // after the window becomes visible again.
     // Allow a single imaging task through for the download. Let it complete and queue up the decode before we trigger device lost.
     wh->ThrottleImageTaskDispatcher(true, 1);
     RunOnUIThread([&]()
     {
-        SvgImageSource^ svgImageSource2 = ref new SvgImageSource();
+        svgImageSource2 = ref new SvgImageSource();
+        pendingOpenedRegistration.Attach(
+            svgImageSource2,
+            ref new wf::TypedEventHandler<SvgImageSource^, SvgImageSourceOpenedEventArgs^>(
+                [pendingSvgOpenedEvent](SvgImageSource^, SvgImageSourceOpenedEventArgs^)
+        {
+            pendingSvgOpenedEvent->Set();
+        }));
+        // Explicit sizing exercises decoder creation before rendering resumes.
+        svgImageSource2->RasterizePixelWidth = 150;
         svgImageSource2->UriSource = ref new Uri(GetResourcesPath() + L"TestPattern_Large.svg");
 
         // This one doesn't get to decode or render. We trigger device lost before any of it can happen.
@@ -1479,6 +1488,16 @@ void SvgImageSourceTests::SvgWithoutDevice()
             spAutomationClientManager->GetCurrentUIAutomationElement(&imageUIAElement);
         });
     }
+    wh->SynchronouslyTickUIThread(2);
+    wh->WaitForIdle();
+
+    pendingSvgOpenedEvent->WaitForDefault();
+    VERIFY_IS_TRUE(pendingSvgOpenedEvent->HasFired());
+    // Keep the second image's empty sprite in the original master comparison.
+    RunOnUIThread([&]()
+    {
+        svgImageSource2->UriSource = nullptr;
+    });
     wh->SynchronouslyTickUIThread(2);
     wh->WaitForIdle();
 
