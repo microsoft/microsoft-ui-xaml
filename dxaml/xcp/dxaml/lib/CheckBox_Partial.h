@@ -16,6 +16,7 @@ namespace DirectUI
             ~CheckBox() override;
 
             IFACEMETHOD(OnApplyTemplate)() override;
+            IFACEMETHOD(ArrangeOverride)(_In_ wf::Size finalSize, _Out_ wf::Size* returnValue) override;
 
         protected:
             // Prepares object's state

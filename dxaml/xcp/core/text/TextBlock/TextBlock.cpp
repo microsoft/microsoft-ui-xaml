@@ -1001,6 +1001,28 @@ _Check_return_ HRESULT CTextBlock::CopySelectedText()
     return S_OK;
 }
 
+_Check_return_ HRESULT CTextBlock::GetFirstLineBounds(_Out_ float* top, _Out_ float* height)
+{
+    *top = 0;
+    *height = 0;
+    if (m_strText.GetCount() == 0 || (m_textMode == TextMode::Normal && !m_pPageNode))
+    {
+        return S_OK;
+    }
+
+    // Use the arranged text view directly, without creating the inline collection or a text pointer.
+    TextBlockView textView(this);
+    bool containsStart = false;
+    IFC_RETURN(textView.ContainsPosition(0, LineForwardCharacterForward, &containsStart));
+    if (containsStart)
+    {
+        float pixelOffset = 0;
+        IFC_RETURN(textView.TextPositionToPixelPosition(
+            0, LineForwardCharacterForward, &pixelOffset, nullptr, nullptr, top, height, nullptr, nullptr));
+    }
+    return S_OK;
+}
+
 _Check_return_ HRESULT CTextBlock::GetContentStart(
     _Outptr_ CTextPointerWrapper **ppTextPointerWrapper
     )
