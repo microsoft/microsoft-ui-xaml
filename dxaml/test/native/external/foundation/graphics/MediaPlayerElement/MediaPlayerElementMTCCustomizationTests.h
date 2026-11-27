@@ -193,6 +193,22 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"The seek bar is disabled while a media break plays and re-enabled afterwards.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(UnsupportedTrickRatesFallBackToSkipOrDisableOrHideButtons)
+                TEST_METHOD_PROPERTY(L"Description", L"Without trick play rates, fast forward and rewind skip 30 s forward and 10 s back, and FastPlayFallbackBehaviour Disable/Hide disable or hide the buttons.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(TrickModeButtonNamesFollowEveryRateUntilAppResetsRate)
+                TEST_METHOD_PROPERTY(L"Description", L"Each fast forward and rewind press steps the trick play rate (2x, 4x, 8x) and the button name follows it; the app setting the original rate leaves trick play.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(MediaStreamSourceDecodeErrorsShowLocalizedErrors)
+                TEST_METHOD_PROPERTY(L"Description", L"A decode error reported by a MediaStreamSource, for the player source and for a playback list item, shows the localized decode error.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(KeyboardScrubbingShowsThumbnailToolTipAndAcceptsDeferredThumbnails)
+                TEST_METHOD_PROPERTY(L"Description", L"Arrow keys on the seek bar show the thumbnail tooltip while the key is down and raise ThumbnailRequested, whose deferred thumbnail is applied when the deferral completes.")
+            END_TEST_METHOD()
+
         private:
             xaml_controls::MediaPlayerElement^ SetupMediaPlayerElementUI();
             

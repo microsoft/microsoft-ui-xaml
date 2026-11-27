@@ -1575,6 +1575,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             SeekAndWaitForCueAdded(mpe, 2000);
             colors = ReadRenderedCaptionColors(mpe, L"Alternate colors");
             VERIFY_ARE_EQUAL(0x00FFFFFFu, colors.regionBackground, L"A user window opacity alone overrides the cue region color (default white at 0%)");
+
+            LOG_OUTPUT(L"Caption text opacity 0%%; everything else default.");
+            SeekAndWaitForCueRemoved(mpe, 5500);
+            settings = CaptionSettings();
+            settings.fontOpacity = wmcc::ClosedCaptionOpacity::ZeroPercent;
+            captionSettings.Apply(settings);
+            SeekAndWaitForCueAdded(mpe, 2000);
+            colors = ReadRenderedCaptionColors(mpe, L"Alternate colors");
+            VERIFY_ARE_EQUAL(0.0f, colors.textOpacity, L"Caption text layer at 0%");
+            VERIFY_ARE_EQUAL(0xFFFFFFFFu, colors.foreground, L"A user text opacity alone overrides the cue text color (default white; the opacity is applied to the text layer)");
         }
 
         //------------------------------------------------------------------------
@@ -1698,6 +1708,32 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     });
                 }
             }
+        }
+
+        //------------------------------------------------------------------------
+        // Test case: depressed edge effect as the first edge effect of a new caption renderer
+        //------------------------------------------------------------------------
+        void MediaCCTestsMPE::UserCaptionDepressedEdgeEffectAsFirstEffect()
+        {
+            TestCleanupWrapper cleanup;
+            CaptionSettingsScope captionSettings;
+            CaptionSettings settings;
+            settings.edgeEffect = wmcc::ClosedCaptionEdgeEffect::Depressed;
+            captionSettings.Apply(settings);
+
+            // A new MediaPlayerElement, so no other edge effect has created the composition brushes yet.
+            MediaHelperMPE mediaHelper;
+            MediaPlayerElement^ mpe = mediaHelper.GetMediaPlayerElement();
+            SetupCaptionTracks(mediaHelper, GetResourcesPath(), { CreateCaptionTrack({ CreateTextCue(1000, 3000, L"Depressed first", CreateStyle(L"default", 20), nullptr) }) });
+            SeekAndWaitForCueAdded(mpe, 2000);
+
+            RunOnUIThread([&]()
+            {
+                auto caption = FindRenderedCaption(mpe, L"Depressed first");
+                VerifyEdgeEffectCopies({ {-2.0f, -2.0f}, {2.0f, 2.0f} }, GetEdgeEffectCopyOffsets(caption), L"Depressed copies at the default caption size");
+                // Dark copy (up-left) black, light copy (down-right) 20% black.
+                VerifyEdgeEffectCopyColors(caption, [](float x, float) -> unsigned int { return x < 0 ? 0xFF000000u : 0x33000000u; }, L"Depressed copies");
+            });
         }
 
         //------------------------------------------------------------------------

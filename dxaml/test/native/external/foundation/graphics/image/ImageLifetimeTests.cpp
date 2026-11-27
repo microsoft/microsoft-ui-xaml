@@ -247,5 +247,72 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             VERIFY_IS_FALSE(bitmapImageOpenedEvent->HasFired());
         }
 
+        //------------------------------------------------------------------------
+        // Test case: an Image that was asked for its casting source hands each new software image to the casting
+        //            engine, and keeps rendering its source and returning the same casting source.
+        //------------------------------------------------------------------------
+        void ImageLifetimeTests::CastingSourceFollowsWriteableBitmapSources()
+        {
+            TestCleanupWrapper cleanup;
+            TestServices::WindowHelper->SetWindowSizeOverride(::Windows::Foundation::Size(400, 300));
+
+            auto isSameObject = [](Platform::Object^ first, Platform::Object^ second)
+            {
+                Microsoft::WRL::ComPtr<IUnknown> firstIdentity;
+                Microsoft::WRL::ComPtr<IUnknown> secondIdentity;
+                VERIFY_SUCCEEDED(reinterpret_cast<IInspectable*>(first)->QueryInterface(IID_PPV_ARGS(&firstIdentity)));
+                VERIFY_SUCCEEDED(reinterpret_cast<IInspectable*>(second)->QueryInterface(IID_PPV_ARGS(&secondIdentity)));
+                return firstIdentity.Get() == secondIdentity.Get();
+            };
+
+            Microsoft::UI::Xaml::Controls::Image^ image = nullptr;
+            ::Windows::Media::Casting::CastingSource^ castingSource = nullptr;
+            RunOnUIThread([&]()
+            {
+                auto root = ref new Grid();
+                image = ref new Microsoft::UI::Xaml::Controls::Image();
+                image->Width = 64;
+                image->Height = 64;
+                root->Children->Append(image);
+                TestServices::WindowHelper->WindowContent = root;
+
+                // Creates the image sharing engine of the element.
+                castingSource = image->GetAsCastingSource();
+                VERIFY_IS_NOT_NULL(castingSource);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            // A WriteableBitmap keeps its pixels in a software surface from the start, so setting it as the source passes
+            // the pixels to the image sharing engine right away. The copy must leave the bitmap usable for rendering.
+            for (auto size : { std::make_pair(32, 16), std::make_pair(8, 8) })
+            {
+                LOG_OUTPUT(L"Source: %dx%d WriteableBitmap", size.first, size.second);
+                WriteableBitmap^ bitmap = nullptr;
+                RunOnUIThread([&]()
+                {
+                    bitmap = ref new WriteableBitmap(size.first, size.second);
+                    image->Source = bitmap;
+                    VERIFY_IS_TRUE(isSameObject(castingSource, image->GetAsCastingSource()), L"The casting source is kept when the source changes");
+                    bitmap->Invalidate();
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                RunOnUIThread([&]()
+                {
+                    VERIFY_IS_TRUE(isSameObject(bitmap, image->Source), L"The image keeps the WriteableBitmap source");
+                    VERIFY_ARE_EQUAL(size.first, bitmap->PixelWidth);
+                    VERIFY_ARE_EQUAL(size.second, bitmap->PixelHeight);
+                });
+            }
+
+            RunOnUIThread([&]()
+            {
+                image->Source = nullptr;
+                VERIFY_IS_TRUE(isSameObject(castingSource, image->GetAsCastingSource()), L"The casting source is kept without a source");
+                image = nullptr;
+                castingSource = nullptr;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+        }
+
     } } }
 } } } }

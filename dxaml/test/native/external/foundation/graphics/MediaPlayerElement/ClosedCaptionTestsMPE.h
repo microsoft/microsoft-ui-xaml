@@ -137,6 +137,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Raised and depressed caption edge effects render offset copies of the caption text under the TextBlock for every caption size.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(UserCaptionDepressedEdgeEffectAsFirstEffect)
+                TEST_METHOD_PROPERTY(L"Description", L"The depressed caption edge effect renders its black and 20% black copies when it is the first edge effect of a caption renderer.")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(UserCaptionUniformEdgeEffect)
                 TEST_METHOD_PROPERTY(L"Description", L"The uniform caption edge effect renders a ring of offset copies of the caption text for every caption size.")
             END_TEST_METHOD()

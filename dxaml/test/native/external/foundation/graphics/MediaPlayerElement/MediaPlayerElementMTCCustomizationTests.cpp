@@ -1724,9 +1724,20 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             void WaitForAutomationName(xaml::DependencyObject^ element, const wchar_t* name)
             {
                 std::wstring expected(name);
-                WaitForPropertyCondition(element, xaml_automation::AutomationProperties::NameProperty,
-                    [element, expected]() { return HasName(element, expected.c_str()); },
-                    WEX::Common::String().Format(L"automation name '%s'", name));
+                try
+                {
+                    WaitForPropertyCondition(element, xaml_automation::AutomationProperties::NameProperty,
+                        [element, expected]() { return HasName(element, expected.c_str()); },
+                        WEX::Common::String().Format(L"automation name '%s'", name));
+                }
+                catch (...)
+                {
+                    RunOnUIThread([&]()
+                    {
+                        LOG_OUTPUT(L"Automation name is '%s' instead of '%s'", xaml_automation::AutomationProperties::GetName(element)->Data(), name);
+                    });
+                    throw;
+                }
             }
 
             void WaitForIsEnabled(xaml_controls::Control^ control, bool isEnabled, const wchar_t* description)
@@ -3083,6 +3094,438 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             breakEnded->WaitFor(std::chrono::milliseconds(30000));
             WaitForIsEnabled(slider, true, L"seek bar enabled again after the break");
+        }
+
+        //------------------------------------------------------------------------
+        // Test case: without trick play rates, fast forward/rewind fall back to skipping, or FastPlayFallbackBehaviour
+        // disables or hides the buttons
+        //------------------------------------------------------------------------
+        void MediaPlayerElementMTCCustomizationTests::UnsupportedTrickRatesFallBackToSkipOrDisableOrHideButtons()
+        {
+            TestCleanupWrapper cleanup;
+            TransportControlsScene scene;
+            CreateTransportControlsScene(scene, [](xaml_controls::MediaTransportControls^ mtc)
+            {
+                mtc->IsFastForwardButtonVisible = true;
+                mtc->IsFastForwardEnabled = true;
+                mtc->IsFastRewindButtonVisible = true;
+                mtc->IsFastRewindEnabled = true;
+            });
+            // The in-memory MediaStreamSource supports no playback rate other than 1x.
+            const INT64 duration = 120 * c_hnsPerSecond;
+            SetSource(scene, [duration]()
+            {
+                return ref new wmpb::MediaPlaybackItem(wmcore::MediaSource::CreateFromMediaStreamSource(CreateSyntheticSource({}, duration)));
+            });
+
+            xaml_controls::Control^ fastForward = nullptr;
+            xaml_controls::Control^ rewind = nullptr;
+            RunOnUIThread([&]()
+            {
+                fastForward = FindPart<xaml_controls::Control>(scene.mpe, L"FastForwardButton");
+                rewind = FindPart<xaml_controls::Control>(scene.mpe, L"RewindButton");
+                auto session = scene.player->PlaybackSession;
+                VERIFY_IS_FALSE(session->IsSupportedPlaybackRateRange(2.0, 2.0), L"Precondition: the source has no 2x rate");
+                VERIFY_IS_FALSE(session->IsSupportedPlaybackRateRange(-2.0, -2.0), L"Precondition: the source has no -2x rate");
+                VERIFY_IS_TRUE(xaml_media::FastPlayFallbackBehaviour::Skip == scene.mtc->FastPlayFallbackBehaviour, L"Skip is the default fallback");
+            });
+            VERIFY_IS_NOT_NULL(fastForward, L"Precondition: the fast forward button was found");
+            VERIFY_IS_NOT_NULL(rewind, L"Precondition: the rewind button was found");
+
+            DoAndWaitForSeekCompleted(scene.player, [&]()
+            {
+                RunOnUIThread([&]()
+                {
+                    wf::TimeSpan position;
+                    position.Duration = 5 * c_hnsPerSecond;
+                    scene.player->PlaybackSession->Position = position;
+                });
+            });
+            PlayAndWaitForTransportControls(scene);
+            WaitForIsEnabled(fastForward, true, L"fast forward enabled while playing (Skip fallback)");
+            WaitForIsEnabled(rewind, true, L"rewind enabled while playing (Skip fallback)");
+
+            // Returns how far the press moved the playback position; the rate must stay at 1x.
+            auto pressAndMeasureSkip = [&](Platform::String^ buttonName) -> INT64
+            {
+                INT64 positionBefore = 0;
+                RunOnUIThread([&]() { positionBefore = scene.player->PlaybackSession->Position.Duration; });
+                DoAndWaitForSeekCompleted(scene.player, [&]() { InvokeButton(scene, buttonName); });
+                INT64 positionAfter = 0;
+                RunOnUIThread([&]()
+                {
+                    positionAfter = scene.player->PlaybackSession->Position.Duration;
+                    VERIFY_ARE_EQUAL(1.0, scene.player->PlaybackSession->PlaybackRate, L"The fallback does not change the playback rate");
+                });
+                LOG_OUTPUT(L"%s moved the position from %lld to %lld (100 ns units)", buttonName->Data(), positionBefore, positionAfter);
+                return positionAfter - positionBefore;
+            };
+
+            LOG_OUTPUT(L"Fast forward skips 30 s forward.");
+            const INT64 forward = pressAndMeasureSkip(L"FastForwardButton");
+            VERIFY_IS_TRUE(forward >= 30 * c_hnsPerSecond && forward <= 32 * c_hnsPerSecond,
+                WEX::Common::String().Format(L"Fast forward skipped 30 s forward (moved %lld)", forward));
+
+            LOG_OUTPUT(L"Rewind skips 10 s back.");
+            const INT64 backward = pressAndMeasureSkip(L"RewindButton");
+            VERIFY_IS_TRUE(backward <= -8 * c_hnsPerSecond && backward >= -10 * c_hnsPerSecond,
+                WEX::Common::String().Format(L"Rewind skipped 10 s back (moved %lld)", backward));
+
+            RunOnUIThread([&]()
+            {
+                LOG_OUTPUT(L"FastPlayFallbackBehaviour Disable disables rewind, which this source cannot play in reverse.");
+                // Fast forward is not checked here: it stays enabled under Disable (PC-7, missing 'else' in UpdateTrickModeFallbackUI).
+                scene.mtc->FastPlayFallbackBehaviour = xaml_media::FastPlayFallbackBehaviour::Disable;
+                VERIFY_IS_FALSE(rewind->IsEnabled, L"Disable: rewind is disabled");
+                VERIFY_ARE_EQUAL(xaml::Visibility::Visible, rewind->Visibility, L"Disable: rewind stays visible");
+
+                LOG_OUTPUT(L"FastPlayFallbackBehaviour Hide hides both buttons.");
+                scene.mtc->FastPlayFallbackBehaviour = xaml_media::FastPlayFallbackBehaviour::Hide;
+                VERIFY_ARE_EQUAL(xaml::Visibility::Collapsed, fastForward->Visibility, L"Hide: fast forward is collapsed");
+                VERIFY_ARE_EQUAL(xaml::Visibility::Collapsed, rewind->Visibility, L"Hide: rewind is collapsed");
+            });
+        }
+
+        //------------------------------------------------------------------------
+        // Test case: the trick play button names follow every rate step until the app resets the rate
+        //------------------------------------------------------------------------
+        void MediaPlayerElementMTCCustomizationTests::TrickModeButtonNamesFollowEveryRateUntilAppResetsRate()
+        {
+            TestCleanupWrapper cleanup;
+            TransportControlsScene scene;
+            CreateTransportControlsScene(scene, [](xaml_controls::MediaTransportControls^ mtc)
+            {
+                mtc->IsFastForwardButtonVisible = true;
+                mtc->IsFastForwardEnabled = true;
+                mtc->IsFastRewindButtonVisible = true;
+                mtc->IsFastRewindEnabled = true;
+            });
+            SetSource(scene, []() { return CreateMediaItem(L"blueframe_video.mp4"); });
+
+            xaml_primitives::ButtonBase^ fastForward = nullptr;
+            xaml_primitives::ButtonBase^ rewind = nullptr;
+            RunOnUIThread([&]()
+            {
+                scene.player->IsLoopingEnabled = true;
+                fastForward = FindPart<xaml_primitives::ButtonBase>(scene.mpe, L"FastForwardButton");
+                rewind = FindPart<xaml_primitives::ButtonBase>(scene.mpe, L"RewindButton");
+                for (double rate : { 2.0, 4.0, 8.0, -2.0, -4.0, -8.0 })
+                {
+                    VERIFY_IS_TRUE(scene.player->PlaybackSession->IsSupportedPlaybackRateRange(rate, rate),
+                        WEX::Common::String().Format(L"Precondition: blueframe_video.mp4 supports the rate %.0f", rate));
+                }
+            });
+            VERIFY_IS_NOT_NULL(fastForward, L"Precondition: the fast forward button was found");
+            VERIFY_IS_NOT_NULL(rewind, L"Precondition: the rewind button was found");
+            PlayAndWaitForTransportControls(scene);
+            WaitForIsEnabled(fastForward, true, L"fast forward enabled while playing");
+            WaitForIsEnabled(rewind, true, L"rewind enabled while playing");
+
+            auto seekTo = [&](INT64 positionHns)
+            {
+                DoAndWaitForSeekCompleted(scene.player, [&]()
+                {
+                    RunOnUIThread([&]()
+                    {
+                        wf::TimeSpan position;
+                        position.Duration = positionHns;
+                        scene.player->PlaybackSession->Position = position;
+                    });
+                });
+            };
+
+            // Each press of a trick play button steps the rate: 2x, 4x, 8x. (A further press at 8x leaves the rate at 8x on the test machine,
+            double currentRate = 1.0;
+            auto pressAndExpectRate = [&](Platform::String^ buttonName, double expectedRate)
+            {
+                const double previousRate = currentRate;
+                currentRate = DoAndWaitForPlaybackRate(scene.player, [previousRate](double rate) { return rate != previousRate; }, [&]() { InvokeButton(scene, buttonName); });
+                VERIFY_ARE_EQUAL(expectedRate, currentRate, WEX::Common::String().Format(L"%s steps the rate from %.0f", buttonName->Data(), previousRate));
+                RunOnUIThread([&]() { LOG_OUTPUT(L"Playback state %d at rate %.0f", static_cast<int>(scene.player->PlaybackSession->PlaybackState), scene.player->PlaybackSession->PlaybackRate); });
+            };
+
+            auto appResetsRate = [&]()
+            {
+                currentRate = DoAndWaitForPlaybackRate(scene.player, [](double rate) { return rate == 1.0; }, [&]()
+                {
+                    RunOnUIThread([&]() { scene.player->PlaybackSession->PlaybackRate = 1.0; });
+                });
+                WaitForAutomationName(fastForward, L"Fast forward");
+                WaitForAutomationName(rewind, L"Rewind");
+                RunOnUIThread([&]()
+                {
+                    VERIFY_IS_TRUE(wmpb::MediaPlaybackState::Playing == scene.player->PlaybackSession->PlaybackState, L"Leaving trick play keeps playing");
+                });
+            };
+
+            LOG_OUTPUT(L"Fast forward once, then the app returns to the original rate: trick play ends.");
+            seekTo(0);
+            pressAndExpectRate(L"FastForwardButton", 2.0);
+            WaitForAutomationName(fastForward, L"Fast forward in 2X");
+            appResetsRate();
+
+            // The short clip loops while playing fast: each press starts from the beginning so the clip does not end
+            // before the transport controls handle the new rate.
+            LOG_OUTPUT(L"Fast forward three times: 2x, 4x, 8x.");
+            for (double rate : { 2.0, 4.0, 8.0 })
+            {
+                seekTo(0);
+                pressAndExpectRate(L"FastForwardButton", rate);
+                WaitForAutomationName(fastForward, GetFastForwardName(rate));
+            }
+            appResetsRate();
+
+            LOG_OUTPUT(L"Rewind three times: -2x, -4x, -8x (each press from near the end, so reverse playback does not reach the start).");
+            INT64 nearEnd = 0;
+            RunOnUIThread([&]() { nearEnd = scene.player->PlaybackSession->NaturalDuration.Duration - c_hnsPerSecond / 2; });
+            for (double rate : { -2.0, -4.0, -8.0 })
+            {
+                seekTo(nearEnd);
+                pressAndExpectRate(L"RewindButton", rate);
+                WaitForAutomationName(rewind, GetRewindName(rate));
+            }
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(HasName(fastForward, L"Fast forward"), L"Reverse rates leave the fast forward button name unchanged");
+                // Leave trick play before the reverse playback reaches the start of the media.
+                scene.player->PlaybackSession->PlaybackRate = 1.0;
+            });
+            WaitForAutomationName(rewind, L"Rewind");
+        }
+
+        //------------------------------------------------------------------------
+        // Test case: decode errors reported by a MediaStreamSource show the localized decode error
+        //------------------------------------------------------------------------
+        void MediaPlayerElementMTCCustomizationTests::MediaStreamSourceDecodeErrorsShowLocalizedErrors()
+        {
+            TestCleanupWrapper cleanup;
+            const wchar_t* const decodeErrorText = L"Error: Video could not be decoded";
+
+            // A video MediaStreamSource that reports a decode error as soon as playback starts.
+            auto createFailingItem = []()
+            {
+                auto properties = ::Windows::Media::MediaProperties::VideoEncodingProperties::CreateUncompressed(
+                    ::Windows::Media::MediaProperties::MediaEncodingSubtypes::Nv12, c_videoWidth, c_videoHeight);
+                auto source = ref new wmcore::MediaStreamSource(ref new wmcore::VideoStreamDescriptor(properties));
+                wf::TimeSpan duration;
+                duration.Duration = 10 * c_hnsPerSecond;
+                source->Duration = duration;
+                source->Starting += ref new wf::TypedEventHandler<wmcore::MediaStreamSource^, wmcore::MediaStreamSourceStartingEventArgs^>(
+                    [](wmcore::MediaStreamSource^ sender, wmcore::MediaStreamSourceStartingEventArgs^)
+                {
+                    sender->NotifyError(wmcore::MediaStreamSourceErrorStatus::DecodeError);
+                });
+                return ref new wmpb::MediaPlaybackItem(wmcore::MediaSource::CreateFromMediaStreamSource(source));
+            };
+
+            auto findErrorParts = [](TransportControlsScene& scene, xaml_controls::TextBlock^& errorText, xaml::UIElement^& errorBorder)
+            {
+                RunOnUIThread([&]()
+                {
+                    errorText = FindPart<xaml_controls::TextBlock>(scene.mpe, L"ErrorTextBlock");
+                    errorBorder = FindPart<xaml::FrameworkElement>(scene.mpe, L"ErrorBorder");
+                });
+                VERIFY_IS_NOT_NULL(errorText, L"Precondition: the error text part was found");
+                VERIFY_IS_NOT_NULL(errorBorder, L"Precondition: the error border part was found");
+            };
+
+            {
+                LOG_OUTPUT(L"The player's source reports a decode error.");
+                TransportControlsScene scene;
+                CreateTransportControlsScene(scene);
+                xaml_controls::TextBlock^ errorText = nullptr;
+                xaml::UIElement^ errorBorder = nullptr;
+                findErrorParts(scene, errorText, errorBorder);
+
+                auto failed = std::make_shared<Event>();
+                auto error = std::make_shared<std::atomic<int>>(-1);
+                auto failedRegistration = CreateSafeEventRegistration(wmpb::MediaPlayer, MediaFailed);
+                RunOnUIThread([&]()
+                {
+                    failedRegistration.Attach(
+                        scene.player,
+                        ref new wf::TypedEventHandler<wmpb::MediaPlayer^, wmpb::MediaPlayerFailedEventArgs^>([failed, error](wmpb::MediaPlayer^, wmpb::MediaPlayerFailedEventArgs^ args)
+                    {
+                        error->store(static_cast<int>(args->Error));
+                        failed->Set();
+                    }));
+                });
+                SetSource(scene, createFailingItem, false /*waitForOpened*/);
+                failed->WaitFor(c_eventTimeout);
+                VERIFY_ARE_EQUAL(static_cast<int>(wmpb::MediaPlayerError::DecodingError), error->load(), L"Precondition: the player reports the decode error as DecodingError");
+
+                WaitForPropertyCondition(errorText, xaml_controls::TextBlock::TextProperty,
+                    [errorText, decodeErrorText]() { return wcscmp(errorText->Text->Data(), decodeErrorText) == 0; }, L"decode error text");
+                WaitForVisibility(errorBorder, xaml::Visibility::Visible, L"error border shown for the decode error");
+                RunOnUIThread([&]()
+                {
+                    VerifyText(decodeErrorText, xaml_automation::AutomationProperties::GetName(errorText), L"Decode error automation name");
+                });
+            }
+
+            {
+                LOG_OUTPUT(L"The only item of a playback list reports a decode error.");
+                TransportControlsScene scene;
+                CreateTransportControlsScene(scene);
+                xaml_controls::TextBlock^ errorText = nullptr;
+                xaml::UIElement^ errorBorder = nullptr;
+                findErrorParts(scene, errorText, errorBorder);
+
+                auto list = ref new wmpb::MediaPlaybackList();
+                auto itemFailed = std::make_shared<Event>();
+                auto itemError = std::make_shared<std::atomic<int>>(-1);
+                auto failedRegistration = CreateSafeEventRegistration(wmpb::MediaPlaybackList, ItemFailed);
+                RunOnUIThread([&]()
+                {
+                    failedRegistration.Attach(
+                        list,
+                        ref new wf::TypedEventHandler<wmpb::MediaPlaybackList^, wmpb::MediaPlaybackItemFailedEventArgs^>([itemFailed, itemError](wmpb::MediaPlaybackList^, wmpb::MediaPlaybackItemFailedEventArgs^ args)
+                    {
+                        itemError->store(static_cast<int>(args->Error->ErrorCode));
+                        itemFailed->Set();
+                    }));
+                });
+                // As in PlaybackListNextPreviousAndItemFailure: the list is set empty first so the transport controls
+                // subscribe to it before the item starts opening.
+                SetSource(scene, [list]() { return list; }, false /*waitForOpened*/);
+                RunOnUIThread([&]()
+                {
+                    list->Items->Append(createFailingItem());
+                    if (list->CurrentItem == nullptr)
+                    {
+                        list->MoveTo(0);
+                    }
+                    scene.player->Play();
+                });
+                itemFailed->WaitFor(c_eventTimeout);
+                VERIFY_ARE_EQUAL(static_cast<int>(wmpb::MediaPlaybackItemErrorCode::DecodeError), itemError->load(), L"Precondition: the list reports the item failure as DecodeError");
+
+                WaitForPropertyCondition(errorText, xaml_controls::TextBlock::TextProperty,
+                    [errorText, decodeErrorText]() { return wcscmp(errorText->Text->Data(), decodeErrorText) == 0; }, L"decode error text for the failed item");
+            }
+        }
+
+        //------------------------------------------------------------------------
+        // Test case: keyboard scrubbing shows the thumbnail tooltip and raises ThumbnailRequested with a deferral
+        //------------------------------------------------------------------------
+        void MediaPlayerElementMTCCustomizationTests::KeyboardScrubbingShowsThumbnailToolTipAndAcceptsDeferredThumbnails()
+        {
+            TestCleanupWrapper cleanup;
+            TransportControlsScene scene;
+            CreateTransportControlsScene(scene);
+            SetSource(scene, []() { return CreateMediaItem(L"blueframe_video.mp4"); });
+
+            auto file = concurrency::create_task(::Windows::Storage::StorageFile::GetFileFromPathAsync(MediaHelperMPE::GetDefaultResourcePath() + L"barcelona.jpg")).get();
+            ::Windows::Storage::Streams::IInputStream^ thumbnailStream = concurrency::create_task(file->OpenReadAsync()).get();
+
+            // Only used on the UI thread.
+            struct ThumbnailState
+            {
+                int requests = 0;
+                bool nullStreamRejected = false;
+                wf::Deferral^ deferral = nullptr;
+                // Kept with the deferral, as an app that completes the request later does (see PC-8).
+                xaml_media::MediaTransportControlsThumbnailRequestedEventArgs^ args = nullptr;
+                std::vector<bool> toolTipStates;
+            };
+            auto state = std::make_shared<ThumbnailState>();
+            auto thumbnailRegistration = CreateSafeEventRegistration(xaml_controls::MediaTransportControls, ThumbnailRequested);
+
+            xaml_controls::Slider^ slider = nullptr;
+            long long toolTipToken = 0;
+            RunOnUIThread([&]()
+            {
+                thumbnailRegistration.Attach(
+                    scene.mtc,
+                    ref new wf::TypedEventHandler<xaml_controls::MediaTransportControls^, xaml_media::MediaTransportControlsThumbnailRequestedEventArgs^>(
+                        [state, thumbnailStream](xaml_controls::MediaTransportControls^, xaml_media::MediaTransportControlsThumbnailRequestedEventArgs^ args)
+                {
+                    ++state->requests;
+                    if (state->deferral == nullptr)
+                    {
+                        try
+                        {
+                            args->SetThumbnailImage(nullptr);
+                        }
+                        catch (Platform::InvalidArgumentException^)
+                        {
+                            state->nullStreamRejected = true;
+                        }
+                        // The thumbnail is produced asynchronously: it is set now and applied when the deferral completes.
+                        state->args = args;
+                        state->deferral = args->GetDeferral();
+                        args->SetThumbnailImage(thumbnailStream);
+                    }
+                }));
+
+                scene.mtc->Show();
+                slider = FindPart<xaml_controls::Slider>(scene.mpe, L"ProgressSlider");
+                VERIFY_IS_FALSE(slider->IsThumbToolTipEnabled, L"The seek bar thumb tooltip is off while not scrubbing");
+                toolTipToken = slider->RegisterPropertyChangedCallback(xaml_controls::Slider::IsThumbToolTipEnabledProperty, ref new xaml::DependencyPropertyChangedCallback(
+                    [state](xaml::DependencyObject^ sender, xaml::DependencyProperty^)
+                {
+                    state->toolTipStates.push_back(safe_cast<xaml_controls::Slider^>(sender)->IsThumbToolTipEnabled);
+                }));
+            });
+            VERIFY_IS_NOT_NULL(slider, L"Precondition: the seek bar was found");
+            auto unregisterToolTip = wil::scope_exit([&]()
+            {
+                try
+                {
+                    RunOnUIThread([&]() { slider->UnregisterPropertyChangedCallback(xaml_controls::Slider::IsThumbToolTipEnabledProperty, toolTipToken); });
+                }
+                catch (...)
+                {
+                    WEX::Logging::Log::Warning(L"Failed to unregister the thumb tooltip callback");
+                }
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]() { VERIFY_IS_TRUE(slider->Focus(xaml::FocusState::Keyboard), L"Precondition: the seek bar takes keyboard focus"); });
+            TestServices::WindowHelper->WaitForIdle();
+
+            LOG_OUTPUT(L"Right arrow down on the seek bar.");
+            bool keyDown = true;
+            auto releaseKey = wil::scope_exit([&]()
+            {
+                if (keyDown)
+                {
+                    try
+                    {
+                        TestServices::KeyboardHelper->PressKeySequence(L"$u$_right");
+                    }
+                    catch (...)
+                    {
+                        WEX::Logging::Log::Warning(L"Failed to release the right arrow key");
+                    }
+                }
+            });
+            TestServices::KeyboardHelper->PressKeySequence(L"$d$_right");
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(slider->IsThumbToolTipEnabled, L"The thumb tooltip is on while the arrow key is down");
+                VERIFY_IS_TRUE(state->requests > 0, L"Moving the seek bar with the keyboard raises ThumbnailRequested");
+                VERIFY_IS_TRUE(state->nullStreamRejected, L"SetThumbnailImage rejects a null stream");
+                VERIFY_IS_NOT_NULL(state->deferral, L"The handler took a deferral");
+            });
+
+            LOG_OUTPUT(L"Right arrow up.");
+            TestServices::KeyboardHelper->PressKeySequence(L"$u$_right");
+            keyDown = false;
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_FALSE(slider->IsThumbToolTipEnabled, L"The thumb tooltip is off again when the arrow key is released");
+                VERIFY_ARE_EQUAL(2u, static_cast<unsigned int>(state->toolTipStates.size()), L"The thumb tooltip was turned on once and off once");
+                VERIFY_IS_TRUE(state->toolTipStates.size() == 2 && state->toolTipStates[0] && !state->toolTipStates[1], L"On, then off");
+
+                LOG_OUTPUT(L"Complete the deferral after the handler returned: the transport controls apply the thumbnail.");
+                state->deferral->Complete();
+                state->deferral = nullptr;
+                state->args = nullptr;
+            });
+            TestServices::WindowHelper->WaitForIdle();
         }
     } } }
 } } } }
