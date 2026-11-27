@@ -1010,6 +1010,9 @@ bool LinedFlowLayout::ComputeFrozenItemsAndLayout(
         if (!forceRelayout)
         {
             // m_firstFrozenItemIndex & m_lastFrozenItemIndex may still be -1 for example when scrollViewport==0.0.
+            const bool noFrozenLinesWithSizedRangeChange =
+                m_firstFrozenLineIndex == -1 &&
+                (m_firstSizedLineIndex < firstStillSizedLineIndex || m_lastSizedLineIndex > lastStillSizedLineIndex);
 
             if (m_itemsInfoFirstIndex == -1)
             {
@@ -1033,13 +1036,20 @@ bool LinedFlowLayout::ComputeFrozenItemsAndLayout(
                     std::tuple<bool /*preFrozenItemHasNewDesiredWidth*/, bool /*frozenItemHasNewDesiredWidth*/, bool /*postFrozenItemHasNewDesiredWidth*/> itemRangesHaveNewDesiredWidths =
                         ItemRangesHaveNewDesiredWidths(
                             oldElementDesiredWidths,
-                            std::min(firstStillSizedItemIndex, m_firstFrozenItemIndex),
-                            std::max(lastStillSizedItemIndex, m_lastFrozenItemIndex));
+                            m_firstFrozenItemIndex == -1 ? firstStillSizedItemIndex : std::min(firstStillSizedItemIndex, m_firstFrozenItemIndex),
+                            m_lastFrozenItemIndex == -1 ? lastStillSizedItemIndex : std::max(lastStillSizedItemIndex, m_lastFrozenItemIndex));
 
-                    // forceRelayout is set to True when a frozen item has a new or modified DesiredSize.
-                    forceRelayout = std::get<1>(itemRangesHaveNewDesiredWidths);
+                    itemHasNewDesiredWidth =
+                        std::get<0>(itemRangesHaveNewDesiredWidths) ||
+                        std::get<1>(itemRangesHaveNewDesiredWidths) ||
+                        std::get<2>(itemRangesHaveNewDesiredWidths);
 
-                    itemHasNewDesiredWidth = forceRelayout || std::get<0>(itemRangesHaveNewDesiredWidths) || std::get<2>(itemRangesHaveNewDesiredWidths);
+                    // forceRelayout is set to True when a frozen item has a new or modified DesiredSize, or when no lines are frozen
+                    // (for example when scrollViewport == 0.0) and any item width or sized-line bound changed.
+                    forceRelayout =
+                        std::get<1>(itemRangesHaveNewDesiredWidths) ||
+                        noFrozenLinesWithSizedRangeChange ||
+                        (m_firstFrozenLineIndex == -1 && itemHasNewDesiredWidth);
 
                     if (!forceRelayout)
                     {
@@ -1096,6 +1106,14 @@ bool LinedFlowLayout::ComputeFrozenItemsAndLayout(
                         }
                     }
                 }
+                else if (noFrozenLinesWithSizedRangeChange)
+                {
+                    forceRelayout = true;
+                }
+            }
+            else if (noFrozenLinesWithSizedRangeChange)
+            {
+                forceRelayout = true;
             }
             else
             {
@@ -1375,6 +1393,8 @@ bool LinedFlowLayout::ComputeFrozenItemsRange(
         m_lastFrozenLineIndex = -1;
         m_firstFrozenItemIndex = -1;
         m_lastFrozenItemIndex = -1;
+        adjustedBeginSizedItemIndex = beginSizedItemIndex;
+        adjustedEndSizedItemIndex = endSizedItemIndex;
         return false;
     }
 
@@ -5471,8 +5491,8 @@ std::tuple<bool, bool, bool> LinedFlowLayout::ItemRangesHaveNewDesiredWidths(
     MUX_ASSERT(m_elementDesiredWidths);
     MUX_ASSERT(oldElementDesiredWidths);
     MUX_ASSERT(beginRealizedItemIndex <= endRealizedItemIndex);
-    MUX_ASSERT(beginRealizedItemIndex <= m_firstFrozenItemIndex);
-    MUX_ASSERT(endRealizedItemIndex >= m_lastFrozenItemIndex);
+    MUX_ASSERT(m_firstFrozenItemIndex == -1 || beginRealizedItemIndex <= m_firstFrozenItemIndex);
+    MUX_ASSERT(m_lastFrozenItemIndex == -1 || endRealizedItemIndex >= m_lastFrozenItemIndex);
 
     bool preFrozenItemHasNewDesiredWidth = false;
     bool frozenItemHasNewDesiredWidth = false;
