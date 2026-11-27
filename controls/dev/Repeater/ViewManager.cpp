@@ -207,6 +207,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     }
 
     m_phaser.StopPhasing(element, virtInfo);
+    TryConsumePendingUnpinFocusedElement(element);
     if (m_lastFocusedElement == element)
     {
         // Focused element is going away. Remove the tracked last focused element
@@ -241,7 +242,10 @@ void ViewManager::MoveFocusFromClearedIndex(int clearedIndex)
 
         m_lastFocusedElement.set(focusedChild);
         // Add pin to hold the focused element.
-        UpdatePin(focusedChild, true /* addPin */);
+        if (!TryConsumePendingUnpinFocusedElement(focusedChild))
+        {
+            UpdatePin(focusedChild, true /* addPin */);
+        }
     }
     else
     {
@@ -576,6 +580,14 @@ void ViewManager::EnsureFirstLastRealizedIndices()
 
 void ViewManager::OnLayoutChanging()
 {
+    // FocusManager updates GetFocusedElement synchronously while GotFocus/LostFocus
+    // are delivered asynchronously. Subscribe to focus events and pin any newly
+    // synchronously focused realized child before OnLayoutChanged clears elements,
+    // while retaining m_lastFocusedElement's pin until queued focus work completes
+    // or UniqueIdResetPool reuse finishes.
+    EnsureEventSubscriptions();
+    PinFocusedElementForLayoutChange();
+
     if (m_owner->ItemsSourceView() &&
         m_owner->ItemsSourceView().HasKeyIndexMapping())
     {
@@ -670,6 +682,7 @@ winrt::UIElement ViewManager::GetElementFromUniqueIdResetPool(int index)
             UpdateElementIndex(element, virtInfo, index);
 
             UpdateRealizedIndicesHeldByLayout(index);
+            ReleasePendingUnpinFocusedElementAfterResetPool(element);
         }
     }
 
@@ -907,6 +920,7 @@ bool ViewManager::ClearElementToAnimator(const winrt::UIElement& element, const 
     {
         const int clearedIndex = virtInfo->Index();
         virtInfo->MoveOwnershipToAnimator();
+        TryConsumePendingUnpinFocusedElement(element);
         if (m_lastFocusedElement == element)
         {
             // Focused element is going away. Remove the tracked last focused element
@@ -950,10 +964,9 @@ bool ViewManager::ClearElementToPinnedPool(const winrt::UIElement& element, cons
 
 #pragma endregion
 
-void ViewManager::UpdateFocusedElement()
+winrt::UIElement ViewManager::GetFocusedElement() const
 {
     auto owner = static_cast<winrt::UIElement>(*m_owner);
-    winrt::UIElement focusedElement = nullptr;
     winrt::DependencyObject child = nullptr;
 
     auto xamlRoot = owner.XamlRoot();
@@ -974,9 +987,11 @@ void ViewManager::UpdateFocusedElement()
             if (repeater)
             {
                 auto element = child.as<winrt::UIElement>();
-                if (repeater == owner && ItemsRepeater::GetVirtualizationInfo(element)->IsRealized())
+                auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                if (repeater == owner &&
+                    (virtInfo->IsRealized() || (virtInfo->IsInUniqueIdResetPool() && m_lastFocusedElement == element)))
                 {
-                    focusedElement = element;
+                    return element;
                 }
 
                 break;
@@ -987,16 +1002,130 @@ void ViewManager::UpdateFocusedElement()
         }
     }
 
+    return nullptr;
+}
+
+void ViewManager::PinFocusedElementForLayoutChange()
+{
+    const auto focusedElement = GetFocusedElement();
+    if (!focusedElement || m_lastFocusedElement == focusedElement)
+    {
+        return;
+    }
+
+    // Retain the previous tracked element's pin until queued LostFocus/GotFocus runs
+    // so we do not drop a group pin before an inner repeater's GotFocus or clear a
+    // container's DataContext before a pending LostFocus binding commit.
+    if (m_lastFocusedElement)
+    {
+        m_pendingUnpinFocusedElements.push_back({ tracker_ref<winrt::UIElement>(m_owner, m_lastFocusedElement.get()), true /* AwaitingFocusEvent */ });
+    }
+
+    if (!TryConsumePendingUnpinFocusedElement(focusedElement))
+    {
+        UpdatePin(focusedElement, true /* addPin */);
+    }
+
+    m_lastFocusedElement.set(focusedElement);
+}
+
+void ViewManager::ReleasePendingUnpinFocusedElements(const winrt::UIElement& keepElement)
+{
+    for (auto it = m_pendingUnpinFocusedElements.begin(); it != m_pendingUnpinFocusedElements.end(); )
+    {
+        const auto pendingElement = it->Element.get();
+        if (pendingElement == keepElement)
+        {
+            ++it;
+            continue;
+        }
+
+        const auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(pendingElement);
+        if (virtInfo && virtInfo->IsInUniqueIdResetPool())
+        {
+            // Focus has left this element, but UpdatePin skips UniqueIdResetPool; mark it
+            // ready to unpin once it leaves the reset pool.
+            it->AwaitingFocusEvent = false;
+            ++it;
+            continue;
+        }
+
+        it = m_pendingUnpinFocusedElements.erase(it);
+        if (virtInfo && virtInfo->IsRealized())
+        {
+            UpdatePin(pendingElement, false /* addPin */);
+        }
+    }
+}
+
+void ViewManager::ReleasePendingUnpinFocusedElementAfterResetPool(const winrt::UIElement& element)
+{
+    for (auto it = m_pendingUnpinFocusedElements.begin(); it != m_pendingUnpinFocusedElements.end(); ++it)
+    {
+        if (it->Element.get() == element)
+        {
+            if (!it->AwaitingFocusEvent)
+            {
+                if (GetFocusedElement() == element)
+                {
+                    if (!m_lastFocusedElement)
+                    {
+                        m_pendingUnpinFocusedElements.erase(it);
+                        m_lastFocusedElement.set(element);
+                    }
+                }
+                else
+                {
+                    m_pendingUnpinFocusedElements.erase(it);
+                    UpdatePin(element, false /* addPin */);
+                }
+            }
+            break;
+        }
+    }
+}
+
+bool ViewManager::TryConsumePendingUnpinFocusedElement(const winrt::UIElement& element)
+{
+    for (auto it = m_pendingUnpinFocusedElements.begin(); it != m_pendingUnpinFocusedElements.end(); ++it)
+    {
+        if (it->Element.get() == element)
+        {
+            m_pendingUnpinFocusedElements.erase(it);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void ViewManager::UpdateFocusedElement()
+{
+    const auto focusedElement = GetFocusedElement();
+
+    ReleasePendingUnpinFocusedElements(focusedElement);
+
     // If the focused element has changed,
     // we need to unpin the old one and pin the new one.
     if (m_lastFocusedElement != focusedElement)
     {
         if (m_lastFocusedElement)
         {
-            UpdatePin(m_lastFocusedElement.get(), false /* addPin */);
+            const auto oldFocused = m_lastFocusedElement.get();
+            const auto oldVirtInfo = ItemsRepeater::TryGetVirtualizationInfo(oldFocused);
+            if (oldVirtInfo && oldVirtInfo->IsInUniqueIdResetPool())
+            {
+                // UpdatePin skips elements in UniqueIdResetPool; retain tracking until the
+                // element leaves the reset pool so keyed reuse cannot leak its focus pin.
+                m_pendingUnpinFocusedElements.push_back({ tracker_ref<winrt::UIElement>(m_owner, oldFocused), false /* AwaitingFocusEvent */ });
+            }
+            else
+            {
+                UpdatePin(oldFocused, false /* addPin */);
+            }
         }
 
-        if (focusedElement)
+        if (focusedElement && !TryConsumePendingUnpinFocusedElement(focusedElement))
         {
             UpdatePin(focusedElement, true /* addPin */);
         }

@@ -47,7 +47,12 @@ private:
 
 #pragma endregion
 
+    winrt::UIElement GetFocusedElement() const;
+    void PinFocusedElementForLayoutChange();
     void UpdateFocusedElement();
+    void ReleasePendingUnpinFocusedElements(const winrt::UIElement& keepElement);
+    void ReleasePendingUnpinFocusedElementAfterResetPool(const winrt::UIElement& element);
+    bool TryConsumePendingUnpinFocusedElement(const winrt::UIElement& element);
     void OnFocusChanged(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void MoveFocusFromClearedIndex(int clearedIndex);
     winrt::Control FindFocusCandidate(int clearedIndex, winrt::UIElement& focusedChild);
@@ -87,6 +92,17 @@ private:
     // _lastFocusedElement is listed in _pinnedPool.
     // It has to be an element we own (i.e. a direct child).
     tracker_ref<winrt::UIElement> m_lastFocusedElement;
+
+    // Focused elements whose focus pin was retained across a synchronous layout switch
+    // (awaiting queued LostFocus) or while in UniqueIdResetPool until the pin can be
+    // safely released. Entries are pairwise distinct and distinct from m_lastFocusedElement.
+    struct PendingUnpinFocusedElement
+    {
+        tracker_ref<winrt::UIElement> Element;
+        bool AwaitingFocusEvent{ true };
+    };
+    std::vector<PendingUnpinFocusedElement> m_pendingUnpinFocusedElements;
+
     bool m_isDataSourceStableResetPending{};
     bool m_recycleWithoutOwner{ false };
 
