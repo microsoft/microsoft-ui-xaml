@@ -125,6 +125,10 @@ public:
     BEGIN_TEST_METHOD(ValidateAddDeleteThemeTransitionOutsideItemsControl)
         TEST_METHOD_PROPERTY(L"Description", L"Validates AddDeleteThemeTransition storyboards and transition parents for an element that isn't in an ItemsControl.")
     END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateGridViewPortalAddDeleteThemeTransitionStoryboards)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the AddDeleteThemeTransition portal storyboards of a GridView item that moves to another row or column after a single delete or insert, with the distance taken from the ItemsWrapGrid clip.")
+    END_TEST_METHOD()
 private:
     void TestThemeTransitionXaml(Platform::String^ path);
 

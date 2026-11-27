@@ -47,6 +47,10 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"The child of an open Popup whose parent's Matrix3DProjection puts it behind the viewer (negative w) is not hit-testable, while the same position is hit with an identity projection.")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(ProjectedTextBlockAlphaMask)
+        TEST_METHOD_PROPERTY(L"Description", L"TextBlock.GetAlphaMask returns a mask for a TextBlock inside a translated parent that has a PlaneProjection.")
+    END_TEST_METHOD()
+
 private:
     inline Platform::String^ GetResourcesPath() const;
 };

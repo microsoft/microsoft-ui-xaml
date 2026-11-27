@@ -2233,4 +2233,193 @@ void RenderTargetBitmapTests::NestedAxisAlignedClipsRTBWUCFull()
     });
 }
 
+namespace
+{
+    // Loads the markup as the window content, waits for it to render and captures it (200 x 200 logical pixels).
+    CapturedPixels LoadAndCapture200(Platform::String^ markup)
+    {
+        Grid^ host = nullptr;
+        RunOnUIThread([&]()
+        {
+            host = safe_cast<Grid^>(XamlReader::Load(markup));
+            TestServices::WindowHelper->WindowContent = host;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        CapturedPixels captured = CaptureElementPixels(host, 200.0);
+        VERIFY_ARE_EQUAL(captured.pixelWidth, captured.pixelHeight);
+
+        RunOnUIThread([&]()
+        {
+            host = nullptr;
+        });
+        return captured;
+    }
+}
+
+//------------------------------------------------------------------------
+//
+// A red 100x100 Rectangle at (50,50) rotated by 45 degrees around its center (a diamond with its corners 70.7 px
+// from (100,100)), with a Clip of its own bounds, inside a Border with an axis-aligned Clip. The Border clip
+// contains the diamond, is contained in it, cuts it in half or misses it; only the intersection is red.
+// Then a 200x200 Rectangle that is layout-clipped to its 100x100 parent and has a Clip rotated by 45 degrees around
+// (60,60) (a diamond with corners 84.9 px from (60,60)): only the part of the diamond inside the parent is red.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::RotatedChildInClippedParentRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    TestCleanupWrapper cleanup;
+    TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 300));
+
+    struct PixelExpectation
+    {
+        int x;
+        int y;
+        uint32_t color;
+    };
+    struct ParentClipCase
+    {
+        const wchar_t* description;
+        const wchar_t* parentClip;
+        std::vector<PixelExpectation> pixels;
+    };
+    const ParentClipCase cases[] =
+    {
+        { L"parent clip contains the diamond", L"0,0,200,200", {
+            { 100, 100, c_redPixel }, { 60, 100, c_redPixel }, { 140, 100, c_redPixel }, { 100, 45, c_redPixel },
+            { 40, 40, c_greenPixel }, { 160, 160, c_greenPixel } } },
+        { L"parent clip inside the diamond", L"90,90,20,20", {
+            { 100, 100, c_redPixel }, { 93, 107, c_redPixel },
+            { 80, 100, c_greenPixel }, { 100, 120, c_greenPixel }, { 60, 100, c_greenPixel } } },
+        { L"parent clip cuts the diamond in half", L"0,0,100,200", {
+            { 60, 100, c_redPixel }, { 90, 50, c_redPixel },
+            { 130, 100, c_greenPixel }, { 110, 150, c_greenPixel }, { 40, 40, c_greenPixel } } },
+        { L"parent clip misses the diamond", L"0,0,20,20", {
+            { 100, 100, c_greenPixel }, { 60, 100, c_greenPixel }, { 10, 10, c_greenPixel } } },
+    };
+
+    for (const auto& parentClipCase : cases)
+    {
+        LOG_OUTPUT(L"Case: %s", parentClipCase.description);
+        const CapturedPixels captured = LoadAndCapture200(ref new Platform::String(
+            (std::wstring(
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"      Width='200' Height='200' HorizontalAlignment='Left' VerticalAlignment='Top' Background='#FF00FF00'>"
+                L"  <Border Width='200' Height='200'>"
+                L"    <Border.Clip><RectangleGeometry Rect='") + parentClipCase.parentClip + L"'/></Border.Clip>"
+                L"    <Rectangle Width='100' Height='100' Margin='50,50,0,0' HorizontalAlignment='Left' VerticalAlignment='Top' Fill='#FFFF0000'>"
+                L"      <Rectangle.RenderTransform><RotateTransform Angle='45' CenterX='50' CenterY='50'/></Rectangle.RenderTransform>"
+                L"      <Rectangle.Clip><RectangleGeometry Rect='0,0,100,100'/></Rectangle.Clip>"
+                L"    </Rectangle>"
+                L"  </Border>"
+                L"</Grid>").c_str()));
+
+        for (const auto& pixel : parentClipCase.pixels)
+        {
+            VERIFY_ARE_EQUAL(pixel.color, captured.At(pixel.x, pixel.y));
+        }
+    }
+
+    LOG_OUTPUT(L"Case: rotated clip on a layout-clipped element");
+    const CapturedPixels captured = LoadAndCapture200(
+        L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+        L"      Width='200' Height='200' HorizontalAlignment='Left' VerticalAlignment='Top' Background='#FF00FF00'>"
+        L"  <Grid Width='100' Height='100' HorizontalAlignment='Left' VerticalAlignment='Top'>"
+        L"    <Rectangle Width='200' Height='200' HorizontalAlignment='Left' VerticalAlignment='Top' Fill='#FFFF0000'>"
+        L"      <Rectangle.Clip>"
+        L"        <RectangleGeometry Rect='0,0,120,120'>"
+        L"          <RectangleGeometry.Transform><RotateTransform Angle='45' CenterX='60' CenterY='60'/></RectangleGeometry.Transform>"
+        L"        </RectangleGeometry>"
+        L"      </Rectangle.Clip>"
+        L"    </Rectangle>"
+        L"  </Grid>"
+        L"</Grid>");
+
+    // Inside the rotated clip and the parent.
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(60, 60));
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(95, 60));
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(92, 92));
+
+    // Inside the parent, outside the rotated clip (the corners of the unrotated clip).
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(5, 5));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(95, 5));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(5, 95));
+
+    // Inside the rotated clip, outside the parent (layout clip).
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(110, 60));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(60, 130));
+}
+
+//------------------------------------------------------------------------
+//
+// Two red 100x100 Paths whose Data is a GeometryGroup of the square 0..100 and the square 25..75. With FillRule
+// EvenOdd the inner square is a hole (the green background shows through); with Nonzero it is filled.
+// Both Paths also provide an alpha mask.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::GeometryGroupFillRuleRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    TestCleanupWrapper cleanup;
+    TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 300));
+
+    const wchar_t* c_pathTemplate =
+        L"    <Path x:Name='%s' Width='100' Height='100' Fill='#FFFF0000'>"
+        L"      <Path.Data>"
+        L"        <GeometryGroup FillRule='%s'>"
+        L"          <RectangleGeometry Rect='0,0,100,100'/>"
+        L"          <RectangleGeometry Rect='25,25,50,50'/>"
+        L"        </GeometryGroup>"
+        L"      </Path.Data>"
+        L"    </Path>";
+    wchar_t evenOddPath[512] = {};
+    wchar_t nonzeroPath[512] = {};
+    VERIFY_IS_GREATER_THAN(swprintf_s(evenOddPath, c_pathTemplate, L"evenOdd", L"EvenOdd"), 0);
+    VERIFY_IS_GREATER_THAN(swprintf_s(nonzeroPath, c_pathTemplate, L"nonzero", L"Nonzero"), 0);
+
+    Grid^ host = nullptr;
+    RunOnUIThread([&]()
+    {
+        host = safe_cast<Grid^>(XamlReader::Load(ref new Platform::String((std::wstring(
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+            L"      Width='200' Height='200' HorizontalAlignment='Left' VerticalAlignment='Top' Background='#FF00FF00'>"
+            L"  <StackPanel Orientation='Horizontal' HorizontalAlignment='Left' VerticalAlignment='Top'>")
+            + evenOddPath + nonzeroPath +
+            L"  </StackPanel>"
+            L"</Grid>").c_str())));
+        TestServices::WindowHelper->WindowContent = host;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    const CapturedPixels captured = CaptureElementPixels(host, 200.0);
+    VERIFY_ARE_EQUAL(captured.pixelWidth, captured.pixelHeight);
+
+    // EvenOdd (left): the ring is filled, the inner square is a hole.
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(10, 10));
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(90, 50));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(50, 50));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(35, 65));
+
+    // Nonzero (right): both squares have the same winding, so everything is filled.
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(110, 10));
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(150, 50));
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(135, 65));
+
+    // Below the Paths.
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(50, 150));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(150, 150));
+
+    RunOnUIThread([&]()
+    {
+        // Each Path provides an alpha mask of its fill.
+        for (const wchar_t* name : { L"evenOdd", L"nonzero" })
+        {
+            auto path = safe_cast<Path^>(host->FindName(ref new Platform::String(name)));
+            VERIFY_IS_NOT_NULL(path->GetAlphaMask());
+        }
+        host = nullptr;
+    });
+}
+
 } } } } } }

@@ -2089,6 +2089,13 @@ void ThemeTransitionTests::ValidateInputPaneThemeTransitionStoryboards()
         const wf::Rect destination(10, 20, 120, 80);
 
         auto transition = LoadTransition(L"<InputPaneThemeTransition xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'/>");
+        auto transitionPrivate = safe_cast<xaml_animation::ITransitionPrivate^>(transition);
+
+        // The transition only participates while it is enabled by a showing input pane, which never happens here.
+        for (const auto trigger : { xaml::TransitionTrigger::Layout, xaml::TransitionTrigger::Load, xaml::TransitionTrigger::Unload, xaml::TransitionTrigger::Reparent })
+        {
+            VERIFY_IS_FALSE(transitionPrivate->ParticipatesInTransition(target, trigger));
+        }
 
         // Without a showing input pane, the element moves (hide-panel animation) from its old position to its new one,
         // relative to the root.
@@ -2097,6 +2104,9 @@ void ThemeTransitionTests::ValidateInputPaneThemeTransitionStoryboards()
         VERIFY_ARE_EQUAL(1u, layout->Size);
         VERIFY_ARE_EQUAL(xaml::TransitionParent::ParentToRoot, parent);
         VerifyTranslation(layout, start.X - destination.X, start.Y - destination.Y, 0.0, 0.0);
+
+        // Creating the storyboard doesn't make the transition participate either.
+        VERIFY_IS_FALSE(transitionPrivate->ParticipatesInTransition(target, xaml::TransitionTrigger::Layout));
 
         target = nullptr;
     });
@@ -2148,6 +2158,125 @@ void ThemeTransitionTests::ValidateAddDeleteThemeTransitionOutsideItemsControl()
         VerifyTranslation(layout, start.X - destination.X, start.Y - destination.Y, 0.0, 0.0);
 
         target = nullptr;
+    });
+}
+
+void ThemeTransitionTests::ValidateGridViewPortalAddDeleteThemeTransitionStoryboards()
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::GridView^ gridView = nullptr;
+    xaml_controls::Panel^ panel = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        gridView = safe_cast<xaml_controls::GridView^>(xaml_markup::XamlReader::Load(
+            L"<GridView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Width='400' Height='400'>"
+            L"  <GridView.ItemsPanel><ItemsPanelTemplate><ItemsWrapGrid MaximumRowsOrColumns='3'/></ItemsPanelTemplate></GridView.ItemsPanel>"
+            L"</GridView>"));
+        for (int i = 0; i < 9; ++i)
+        {
+            gridView->Items->Append(L"Item");
+        }
+        TestServices::WindowHelper->WindowContent = gridView;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        panel = safe_cast<xaml_controls::Panel^>(xaml_media::VisualTreeHelper::GetParent(gridView->ContainerFromIndex(4)));
+        VERIFY_IS_NOT_NULL(safe_cast<xaml_controls::ItemsWrapGrid^>(panel));
+    });
+
+    // An item that changes rows (or columns) after a single insert or delete in a GridView is animated out of its old
+    // row and into its new one (two storyboards). A clip on the ItemsWrapGrid gives the bounds it moves against: their
+    // width (with height 0) means rows, their height (with width 0) means columns. The distance is the larger of the
+    // distance to leave the bounds from the start and to enter them at the destination, 100 in every case below.
+    // The source offset is start - destination; the primary storyboard moves from it by the distance, the secondary one
+    // moves from the destination offset (0, 0) shifted back by the distance, to (0, 0).
+    struct PortalCase
+    {
+        const wchar_t* description;
+        bool isInsert;
+        wf::Rect panelClip;
+        wf::Rect start;
+        wf::Rect destination;
+        wf::Point primaryFrom;
+        wf::Point primaryTo;
+        wf::Point secondaryFrom;
+    };
+    const PortalCase cases[] =
+    {
+        // Delete: the first item of the second row moves up to the end of the first row.
+        { L"rows, delete", false, wf::Rect(0, 0, 300, 0), wf::Rect(0, 100, 100, 100), wf::Rect(200, 0, 100, 100),
+          wf::Point(-200, 100), wf::Point(-300, 100), wf::Point(100, 0) },
+        // Insert: the last item of the first row moves down to the start of the second row.
+        { L"rows, insert", true, wf::Rect(0, 0, 300, 0), wf::Rect(200, 0, 100, 100), wf::Rect(0, 100, 100, 100),
+          wf::Point(200, -100), wf::Point(300, -100), wf::Point(-100, 0) },
+        // Delete in columns: the first item of the second column moves to the end of the first column.
+        { L"columns, delete", false, wf::Rect(0, 0, 0, 300), wf::Rect(100, 0, 100, 100), wf::Rect(0, 200, 100, 100),
+          wf::Point(100, -200), wf::Point(100, -300), wf::Point(0, 100) },
+    };
+
+    xaml_animation::AddDeleteThemeTransition^ addDelete = nullptr;
+    RunOnUIThread([&]()
+    {
+        addDelete = ref new xaml_animation::AddDeleteThemeTransition();
+    });
+
+    for (const auto& portalCase : cases)
+    {
+        LOG_OUTPUT(L"Case: %s", portalCase.description);
+
+        // Collection changes less than a second after the previous one are treated as fast mutations, which aren't
+        // animated (ModernCollectionBasePanel fastmutationThreshold), so leave time after the previous case.
+        ::Sleep(1500);
+
+        RunOnUIThread([&]()
+        {
+            auto clip = ref new xaml_media::RectangleGeometry();
+            clip->Rect = portalCase.panelClip;
+            panel->Clip = clip;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto target = safe_cast<xaml::UIElement^>(gridView->ContainerFromIndex(4));
+            VERIFY_IS_NOT_NULL(target);
+
+            // The storyboard is created in the same tick as the collection change, so the item has its single
+            // add or delete context.
+            if (portalCase.isInsert)
+            {
+                gridView->Items->InsertAt(0, L"Inserted");
+            }
+            else
+            {
+                gridView->Items->RemoveAt(0);
+            }
+
+            auto storyboards = CreateTransitionStoryboards(addDelete, target, xaml::TransitionTrigger::Layout, portalCase.start, portalCase.destination);
+            VERIFY_ARE_EQUAL(2u, storyboards->Size);
+
+            auto primary = ref new StoryboardVector();
+            primary->Append(storyboards->GetAt(0));
+            VerifyTranslation(primary, portalCase.primaryFrom.X, portalCase.primaryFrom.Y, portalCase.primaryTo.X, portalCase.primaryTo.Y);
+
+            auto secondary = ref new StoryboardVector();
+            secondary->Append(storyboards->GetAt(1));
+            VerifyTranslation(secondary, portalCase.secondaryFrom.X, portalCase.secondaryFrom.Y, 0.0, 0.0);
+
+            // The panel has a clip of its own, so no clip animation is added.
+            VerifyNoClipTranslation(storyboards);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    RunOnUIThread([&]()
+    {
+        addDelete = nullptr;
+        panel = nullptr;
+        gridView = nullptr;
     });
 }
 } } } } } }

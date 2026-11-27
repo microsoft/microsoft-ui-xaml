@@ -5,6 +5,7 @@
 #include "ElementSoundPlayerTests.h"
 #include <XamlTailored.h>
 #include <TestCleanupWrapper.h>
+#include <mutex>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
@@ -422,6 +423,102 @@ void ElementSoundPlayerTests::InteractionSoundsForTextElementsAndFlyouts()
         owner = nullptr;
         root = nullptr;
         soundPlayerPrivate = nullptr;
+    });
+}
+
+void ElementSoundPlayerTests::SoundNodeCallbackAndShutdownWithActiveWorker()
+{
+    TestCleanupWrapper cleanup;
+    auto restoreDefaults = wil::scope_exit([]()
+    {
+        RunOnUIThread([]() { RestoreElementSoundPlayerDefaults(); });
+    });
+
+    // What the playing-sound hook reports. It only fires on machines with an audio endpoint (from the sound worker).
+    struct PlayedSounds
+    {
+        std::mutex lock;
+        int count = 0;
+        int nonFocusCount = 0;
+        int spatialCount = 0;
+        double lastVolume = 0.0;
+    };
+    auto played = std::make_shared<PlayedSounds>();
+
+    auto clearHook = wil::scope_exit([]()
+    {
+        TestServices::WindowHelper->SetPlayingSoundNodeCallback(nullptr);
+    });
+
+    // The hook is set before the sound worker exists, so the worker receives it when it is created.
+    TestServices::WindowHelper->SetPlayingSoundNodeCallback(ref new test_infra::PlayingSoundNodeCallback(
+        [played](xaml::ElementSoundKind sound, bool isSpatialAudio, float, float, float, double volume)
+    {
+        std::lock_guard<std::mutex> guard(played->lock);
+        ++played->count;
+        if (sound != xaml::ElementSoundKind::Focus)
+        {
+            ++played->nonFocusCount;
+        }
+        if (isSpatialAudio)
+        {
+            ++played->spatialCount;
+        }
+        played->lastVolume = volume;
+    }));
+
+    RunOnUIThread([]()
+    {
+        xaml::ElementSoundPlayer::State = xaml::ElementSoundPlayerState::On;
+        xaml::ElementSoundPlayer::Volume = 0.5;
+        xaml::ElementSoundPlayer::SpatialAudioMode = xaml::ElementSpatialAudioMode::Off;
+    });
+
+    // Play the Focus sound several times in the lifetime of one worker, pausing in between so that the worker
+    // finishes setting up its audio graph and loads (then reuses) the Focus sound.
+    for (int i = 0; i < 4; ++i)
+    {
+        RunOnUIThread([]()
+        {
+            xaml::ElementSoundPlayer::Play(xaml::ElementSoundKind::Focus);
+        });
+        ::Sleep(1500);
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    // Clearing the hook while the worker is running.
+    TestServices::WindowHelper->SetPlayingSoundNodeCallback(nullptr);
+    clearHook.release();
+
+    RunOnUIThread([]()
+    {
+        VERIFY_ARE_EQUAL(xaml::ElementSoundPlayerState::On, xaml::ElementSoundPlayer::State);
+        VERIFY_ARE_EQUAL(0.5, xaml::ElementSoundPlayer::Volume);
+        VERIFY_ARE_EQUAL(xaml::ElementSpatialAudioMode::Off, xaml::ElementSoundPlayer::SpatialAudioMode);
+    });
+
+    {
+        // Any sound that was played is the Focus sound at the player volume, without spatial positioning.
+        std::lock_guard<std::mutex> guard(played->lock);
+        LOG_OUTPUT(L"The playing-sound hook fired %d time(s).", played->count);
+        VERIFY_ARE_EQUAL(0, played->nonFocusCount);
+        VERIFY_ARE_EQUAL(0, played->spatialCount);
+        if (played->count > 0)
+        {
+            VERIFY_ARE_EQUAL(0.5, played->lastVolume);
+        }
+    }
+
+    // Shut XAML down while the sound worker is still running: the shutdown waits for the worker to tear down its
+    // audio graph. The next XAML core starts with the default player settings.
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->InitializeXaml();
+
+    RunOnUIThread([]()
+    {
+        VERIFY_ARE_EQUAL(xaml::ElementSoundPlayerState::Auto, xaml::ElementSoundPlayer::State);
+        VERIFY_ARE_EQUAL(1.0, xaml::ElementSoundPlayer::Volume);
+        VERIFY_ARE_EQUAL(xaml::ElementSpatialAudioMode::Auto, xaml::ElementSoundPlayer::SpatialAudioMode);
     });
 }
 

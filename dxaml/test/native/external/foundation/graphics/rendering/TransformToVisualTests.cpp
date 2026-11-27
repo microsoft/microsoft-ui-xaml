@@ -594,4 +594,60 @@ void TransformToVisualTests::PopupBehindViewerIsNotHitTested()
     });
 }
 
+namespace
+{
+    // Reports a failure from GetAlphaMask as a null mask (with the HRESULT logged) instead of an exception that would
+    // escape the UI-thread callback.
+    Microsoft::UI::Composition::CompositionBrush^ GetAlphaMaskOrLogError(TextBlock^ text)
+    {
+        try
+        {
+            return text->GetAlphaMask();
+        }
+        catch (Platform::Exception^ e)
+        {
+            LOG_OUTPUT(L"GetAlphaMask failed: 0x%08x", e->HResult);
+            return nullptr;
+        }
+    }
+}
+
+void TransformToVisualTests::ProjectedTextBlockAlphaMask()
+{
+    WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
+    TestCleanupWrapper cleanup;
+    const auto& wh = TestServices::WindowHelper;
+
+    TextBlock^ text = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        auto root = safe_cast<Grid^>(xaml_markup::XamlReader::Load(
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+            L"      Margin='20' HorizontalAlignment='Left' VerticalAlignment='Top'>"
+            L"  <Border Margin='10' Padding='5'>"
+            L"    <Border.Projection><PlaneProjection RotationY='40'/></Border.Projection>"
+            L"    <TextBlock x:Name='text' Text='Projected text' FontSize='20' Margin='3'/>"
+            L"  </Border>"
+            L"</Grid>"));
+        text = safe_cast<TextBlock^>(root->FindName(L"text"));
+        wh->WindowContent = root;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        // The mask is realized for the text under its projected, translated ancestors.
+        VERIFY_IS_NOT_NULL(GetAlphaMaskOrLogError(text));
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        // Asking again after the mask was rendered returns a mask as well.
+        VERIFY_IS_NOT_NULL(GetAlphaMaskOrLogError(text));
+        text = nullptr;
+    });
+}
+
 } } } } } }

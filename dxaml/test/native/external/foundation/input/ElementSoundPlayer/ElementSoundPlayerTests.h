@@ -44,6 +44,10 @@ public:
     BEGIN_TEST_METHOD(InteractionSoundsForTextElementsAndFlyouts)
         TEST_METHOD_PROPERTY(L"Description", L"Verifies effective sound modes and requests spatial interaction sounds for hyperlinks, flyouts with and without content and restricted elements.")
     END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(SoundNodeCallbackAndShutdownWithActiveWorker)
+        TEST_METHOD_PROPERTY(L"Description", L"Sets and clears the playing-sound test hook before and while the sound worker runs, replays the Focus sound, and shuts XAML down while the worker is running; the new XAML core has the default player settings.")
+    END_TEST_METHOD()
 };
 
 } } } } } }

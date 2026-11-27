@@ -217,6 +217,16 @@ public:
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(RotatedChildInClippedParentRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a rotated, clipped element inside a parent with an axis-aligned clip that contains, is contained in, partly overlaps or misses it, and for a rotated clip on an element that is also layout-clipped; only the intersections are rendered.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(GeometryGroupFillRuleRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for Paths whose Data is a GeometryGroup of nested rectangles with the EvenOdd and Nonzero fill rules, and gets their alpha masks.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
 private:
     void BasicRenderTargetBitmapInternal();
     void PopupChildRTBInternal();
