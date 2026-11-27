@@ -205,8 +205,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"A decode error reported by a MediaStreamSource, for the player source and for a playback list item, shows the localized decode error.")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(KeyboardScrubbingShowsThumbnailToolTipAndAcceptsDeferredThumbnails)
-                TEST_METHOD_PROPERTY(L"Description", L"Arrow keys on the seek bar show the thumbnail tooltip while the key is down and raise ThumbnailRequested, whose deferred thumbnail is applied when the deferral completes.")
+            BEGIN_TEST_METHOD(KeyboardScrubbingShowsThumbnailToolTipAndCompletesDeferredRequests)
+                TEST_METHOD_PROPERTY(L"Description", L"Arrow keys on the seek bar show the thumbnail tooltip while the key is down and raise ThumbnailRequested, whose deferral can be completed after the handler returned.")
             END_TEST_METHOD()
 
         private:

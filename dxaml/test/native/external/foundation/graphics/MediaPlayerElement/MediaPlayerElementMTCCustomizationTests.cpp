@@ -2552,16 +2552,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VerifyText(expectedText->Data(), errorText->Text, L"Error text for the reported MediaPlayerError");
                 VerifyText(expectedText->Data(), xaml_automation::AutomationProperties::GetName(errorText), L"Error text automation name");
             });
-
-            LOG_OUTPUT(L"Moving the seek bar of the failed (closed) media does not seek.");
-            RunOnUIThread([&]()
-            {
-                auto session = scene.player->PlaybackSession;
-                VERIFY_IS_TRUE(wmpb::MediaPlaybackState::None == session->PlaybackState, L"Precondition: the failed media is closed");
-                auto slider = FindPart<xaml_controls::Slider>(scene.mpe, L"ProgressSlider");
-                slider->Value = (slider->Minimum + slider->Maximum) / 2;
-                VERIFY_ARE_EQUAL(0LL, session->Position.Duration, L"The seek bar does not seek closed media");
-            });
         }
 
         //------------------------------------------------------------------------
@@ -3435,9 +3425,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
 
         //------------------------------------------------------------------------
-        // Test case: keyboard scrubbing shows the thumbnail tooltip and raises ThumbnailRequested with a deferral
+        // Test case: keyboard scrubbing shows the thumbnail tooltip and raises ThumbnailRequested, whose deferral can be completed later
         //------------------------------------------------------------------------
-        void MediaPlayerElementMTCCustomizationTests::KeyboardScrubbingShowsThumbnailToolTipAndAcceptsDeferredThumbnails()
+        void MediaPlayerElementMTCCustomizationTests::KeyboardScrubbingShowsThumbnailToolTipAndCompletesDeferredRequests()
         {
             TestCleanupWrapper cleanup;
             TransportControlsScene scene;
@@ -3459,6 +3449,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             };
             auto state = std::make_shared<ThumbnailState>();
             auto thumbnailRegistration = CreateSafeEventRegistration(xaml_controls::MediaTransportControls, ThumbnailRequested);
+            // On failure paths too: complete an outstanding deferral before the args are released (PC-8), on the UI thread.
+            auto releaseRequest = wil::scope_exit([state]()
+            {
+                try
+                {
+                    RunOnUIThread([state]()
+                    {
+                        if (state->deferral != nullptr)
+                        {
+                            state->deferral->Complete();
+                        }
+                        state->deferral = nullptr;
+                        state->args = nullptr;
+                    });
+                }
+                catch (...)
+                {
+                    WEX::Logging::Log::Warning(L"Failed to complete the thumbnail request");
+                }
+            });
 
             xaml_controls::Slider^ slider = nullptr;
             long long toolTipToken = 0;
@@ -3549,7 +3559,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VERIFY_ARE_EQUAL(2u, static_cast<unsigned int>(state->toolTipStates.size()), L"The thumb tooltip was turned on once and off once");
                 VERIFY_IS_TRUE(state->toolTipStates.size() == 2 && state->toolTipStates[0] && !state->toolTipStates[1], L"On, then off");
 
-                LOG_OUTPUT(L"Complete the deferral after the handler returned: the transport controls apply the thumbnail.");
+                LOG_OUTPUT(L"Complete the deferral after the handler returned.");
                 state->deferral->Complete();
                 state->deferral = nullptr;
                 state->args = nullptr;

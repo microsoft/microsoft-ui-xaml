@@ -248,8 +248,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
 
         //------------------------------------------------------------------------
-        // Test case: an Image that was asked for its casting source hands each new software image to the casting
-        //            engine, and keeps rendering its source and returning the same casting source.
+        // Test case: an Image that was asked for its casting source hands each new software image to its image sharing
+        //            engine without failing, and keeps returning the same casting source.
         //------------------------------------------------------------------------
         void ImageLifetimeTests::CastingSourceFollowsWriteableBitmapSources()
         {
@@ -283,7 +283,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
 
             // A WriteableBitmap keeps its pixels in a software surface from the start, so setting it as the source passes
-            // the pixels to the image sharing engine right away. The copy must leave the bitmap usable for rendering.
+            // the pixels to the image sharing engine right away. The engine is internal: the test checks that the hand-off
+            // keeps the element's casting source and that the element keeps rendering the bitmap (Invalidate + a UI tick).
             for (auto size : { std::make_pair(32, 16), std::make_pair(8, 8) })
             {
                 LOG_OUTPUT(L"Source: %dx%d WriteableBitmap", size.first, size.second);
