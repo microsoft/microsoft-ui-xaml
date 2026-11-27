@@ -49,6 +49,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // The OS raises UnprocessedInput on the ink thread and its PointerPoint can't be marshaled, so the
+        // args handed to the app on the UI thread must still be readable, including PointerDevice after release.
+        [TestMethod]
+        public void InkCanvasUnprocessedInputArgsAreReadable()
+        {
+            using (var setup = new TestSetupHelper("InkCanvas Tests"))
+            {
+                new Button(FindElement.ById("ListenForUnprocessedInputButton")).Invoke();
+                Wait.ForIdle();
+
+                InputHelper.MouseDragDistance(FindElement.ByName("TestInkCanvas"), 100, Direction.East);
+                Wait.ForIdle();
+
+                var status = new TextBlock(FindElement.ById("UnprocessedInputStatus")).DocumentText.Split(',');
+                Log.Comment($"UnprocessedInput pressed,moved,errors,released = {string.Join(",", status)}");
+                Verify.IsGreaterThan(int.Parse(status[0]), 0, "PointerPressed should have been read.");
+                Verify.IsGreaterThan(int.Parse(status[1]), 0, "PointerMoved should have been read.");
+                Verify.IsGreaterThan(int.Parse(status[3]), 0, "PointerReleased should have been read.");
+                Verify.AreEqual(0, int.Parse(status[2]), "Reading CurrentPoint/Properties/GetIntermediatePoints/PointerDevice must not throw.");
+            }
+        }
+
         // CoreWetStrokeUpdateSource raises the wet-stroke events for a real stroke (on the ink thread).
         [TestMethod]
         public void CoreWetStrokeUpdateSourceRaisesWetStrokeEvents()

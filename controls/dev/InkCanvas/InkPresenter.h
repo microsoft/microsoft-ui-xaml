@@ -21,8 +21,12 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.UI.Core.h>
+#include <winrt/Windows.UI.Input.h>
 #include <winrt/Windows.UI.Input.Inking.Core.h>
+#include <winrt/Windows.Devices.Input.h>
+#include <winrt/Windows.System.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
+#include <atomic>
 #include <functional>
 #include <mutex>
 #include <vector>
@@ -170,6 +174,213 @@ private:
     bool m_isEraserInputEnabled{ true };
 };
 
+// PointerPoint, PointerPointProperties and PointerDevice are marshaling_behavior(none), so the OS pointer args
+// raised on the ink thread can't be read from the UI thread (CurrentPoint() fails with 0x80004021). These agile
+// copies are taken on the ink thread while the OS args are live and handed to the app's StrokeInput /
+// UnprocessedInput handlers in their place, as the projected Windows.UI.Core.PointerEventArgs (UWP parity).
+struct InkPointerPointPropertiesSnapshot :
+    winrt::implements<InkPointerPointPropertiesSnapshot,
+        winrt::Windows::UI::Input::IPointerPointProperties,
+        winrt::Windows::UI::Input::IPointerPointProperties2>
+{
+    InkPointerPointPropertiesSnapshot(winrt::Windows::UI::Input::PointerPointProperties const& properties,
+        std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> const& deviceUsages);
+
+    float Pressure() const noexcept { return m_pressure; }
+    bool IsInverted() const noexcept { return m_isInverted; }
+    bool IsEraser() const noexcept { return m_isEraser; }
+    float Orientation() const noexcept { return m_orientation; }
+    float XTilt() const noexcept { return m_xTilt; }
+    float YTilt() const noexcept { return m_yTilt; }
+    float Twist() const noexcept { return m_twist; }
+    winrt::Windows::Foundation::Rect ContactRect() const noexcept { return m_contactRect; }
+    winrt::Windows::Foundation::Rect ContactRectRaw() const noexcept { return m_contactRectRaw; }
+    bool TouchConfidence() const noexcept { return m_touchConfidence; }
+    bool IsLeftButtonPressed() const noexcept { return m_isLeftButtonPressed; }
+    bool IsRightButtonPressed() const noexcept { return m_isRightButtonPressed; }
+    bool IsMiddleButtonPressed() const noexcept { return m_isMiddleButtonPressed; }
+    int32_t MouseWheelDelta() const noexcept { return m_mouseWheelDelta; }
+    bool IsHorizontalMouseWheel() const noexcept { return m_isHorizontalMouseWheel; }
+    bool IsPrimary() const noexcept { return m_isPrimary; }
+    bool IsInRange() const noexcept { return m_isInRange; }
+    bool IsCanceled() const noexcept { return m_isCanceled; }
+    bool IsBarrelButtonPressed() const noexcept { return m_isBarrelButtonPressed; }
+    bool IsXButton1Pressed() const noexcept { return m_isXButton1Pressed; }
+    bool IsXButton2Pressed() const noexcept { return m_isXButton2Pressed; }
+    winrt::Windows::UI::Input::PointerUpdateKind PointerUpdateKind() const noexcept { return m_pointerUpdateKind; }
+    // Raw HID usages: the values of every usage the device reports (PointerDevice.SupportedUsages), read from the live
+    // point on the ink thread. A usage the point did not report is absent (HasUsage false, GetUsageValue 0).
+    bool HasUsage(uint32_t usagePage, uint32_t usageId) const noexcept { return FindUsage(usagePage, usageId) != nullptr; }
+    int32_t GetUsageValue(uint32_t usagePage, uint32_t usageId) const noexcept
+    {
+        auto usage = FindUsage(usagePage, usageId);
+        return usage ? usage->value : 0;
+    }
+    winrt::Windows::Foundation::IReference<float> ZDistance() const noexcept { return m_zDistance; }
+    winrt::hstring GetRuntimeClassName() const { return L"Windows.UI.Input.PointerPointProperties"; }
+
+private:
+    float m_pressure{};
+    bool m_isInverted{};
+    bool m_isEraser{};
+    float m_orientation{};
+    float m_xTilt{};
+    float m_yTilt{};
+    float m_twist{};
+    winrt::Windows::Foundation::Rect m_contactRect{};
+    winrt::Windows::Foundation::Rect m_contactRectRaw{};
+    bool m_touchConfidence{};
+    bool m_isLeftButtonPressed{};
+    bool m_isRightButtonPressed{};
+    bool m_isMiddleButtonPressed{};
+    int32_t m_mouseWheelDelta{};
+    bool m_isHorizontalMouseWheel{};
+    bool m_isPrimary{};
+    bool m_isInRange{};
+    bool m_isCanceled{};
+    bool m_isBarrelButtonPressed{};
+    bool m_isXButton1Pressed{};
+    bool m_isXButton2Pressed{};
+    winrt::Windows::UI::Input::PointerUpdateKind m_pointerUpdateKind{};
+    winrt::Windows::Foundation::IReference<float> m_zDistance{ nullptr };
+
+    struct UsageValue
+    {
+        uint32_t usagePage;
+        uint32_t usageId;
+        int32_t value;
+    };
+    UsageValue const* FindUsage(uint32_t usagePage, uint32_t usageId) const noexcept
+    {
+        for (auto const& usage : m_usages)
+        {
+            if (usage.usagePage == usagePage && usage.usageId == usageId)
+            {
+                return &usage;
+            }
+        }
+        return nullptr;
+    }
+    std::vector<UsageValue> m_usages;
+};
+
+// Taken on the ink thread, so the device is still known when a queued event is handled after the pointer is gone.
+struct InkPointerDeviceSnapshot :
+    winrt::implements<InkPointerDeviceSnapshot,
+        winrt::Windows::Devices::Input::IPointerDevice,
+        winrt::Windows::Devices::Input::IPointerDevice2>
+{
+    explicit InkPointerDeviceSnapshot(winrt::Windows::Devices::Input::PointerDevice const& device);
+
+    winrt::Windows::Devices::Input::PointerDeviceType PointerDeviceType() const noexcept { return m_pointerDeviceType; }
+    bool IsIntegrated() const noexcept { return m_isIntegrated; }
+    uint32_t MaxContacts() const noexcept { return m_maxContacts; }
+    winrt::Windows::Foundation::Rect PhysicalDeviceRect() const noexcept { return m_physicalDeviceRect; }
+    winrt::Windows::Foundation::Rect ScreenRect() const noexcept { return m_screenRect; }
+    winrt::Windows::Foundation::Collections::IVectorView<winrt::Windows::Devices::Input::PointerDeviceUsage> SupportedUsages() const;
+    uint32_t MaxPointersWithZDistance() const noexcept { return m_maxPointersWithZDistance; }
+    winrt::hstring GetRuntimeClassName() const { return L"Windows.Devices.Input.PointerDevice"; }
+
+    // Internal: the copied usage list, shared with the points of the same event.
+    std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> const& Usages() const noexcept { return m_supportedUsages; }
+
+private:
+    winrt::Windows::Devices::Input::PointerDeviceType m_pointerDeviceType{};
+    bool m_isIntegrated{};
+    uint32_t m_maxContacts{};
+    winrt::Windows::Foundation::Rect m_physicalDeviceRect{};
+    winrt::Windows::Foundation::Rect m_screenRect{};
+    std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> m_supportedUsages;
+    uint32_t m_maxPointersWithZDistance{};
+};
+
+struct InkPointerPointSnapshot :
+    winrt::implements<InkPointerPointSnapshot, winrt::Windows::UI::Input::IPointerPoint>
+{
+    InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point,
+        winrt::Windows::Devices::Input::PointerDevice const& device,
+        std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> const& deviceUsages);
+
+    // The device snapshot taken with the event, or (if that failed) a lookup by id on the calling thread.
+    winrt::Windows::Devices::Input::PointerDevice PointerDevice() const;
+    winrt::Windows::Foundation::Point Position() const noexcept { return m_position; }
+    winrt::Windows::Foundation::Point RawPosition() const noexcept { return m_rawPosition; }
+    uint32_t PointerId() const noexcept { return m_pointerId; }
+    uint32_t FrameId() const noexcept { return m_frameId; }
+    uint64_t Timestamp() const noexcept { return m_timestamp; }
+    bool IsInContact() const noexcept { return m_isInContact; }
+    winrt::Windows::UI::Input::PointerPointProperties Properties() const noexcept { return m_properties; }
+    winrt::hstring GetRuntimeClassName() const { return L"Windows.UI.Input.PointerPoint"; }
+
+private:
+    winrt::Windows::Foundation::Point m_position{};
+    winrt::Windows::Foundation::Point m_rawPosition{};
+    uint32_t m_pointerId{};
+    uint32_t m_frameId{};
+    uint64_t m_timestamp{};
+    bool m_isInContact{};
+    winrt::Windows::UI::Input::PointerPointProperties m_properties{ nullptr };
+    winrt::Windows::Devices::Input::PointerDevice m_device{ nullptr };
+};
+
+struct InkPointerEventArgsSnapshot :
+    winrt::implements<InkPointerEventArgsSnapshot,
+        winrt::Windows::UI::Core::IPointerEventArgs,
+        winrt::Windows::UI::Core::ICoreWindowEventArgs>
+{
+    explicit InkPointerEventArgsSnapshot(winrt::Windows::UI::Core::PointerEventArgs const& args);
+
+    winrt::Windows::UI::Input::PointerPoint CurrentPoint() const noexcept { return m_currentPoint; }
+    winrt::Windows::System::VirtualKeyModifiers KeyModifiers() const noexcept { return m_keyModifiers; }
+    winrt::Windows::Foundation::Collections::IVector<winrt::Windows::UI::Input::PointerPoint> GetIntermediatePoints() const;
+    // Raised after the OS has already acted on the input, so Handled can't flow back to the OS presenter.
+    bool Handled() const noexcept { return m_handled; }
+    void Handled(bool value) noexcept { m_handled = value; }
+    winrt::hstring GetRuntimeClassName() const { return L"Windows.UI.Core.PointerEventArgs"; }
+
+private:
+    winrt::Windows::UI::Input::PointerPoint m_currentPoint{ nullptr };
+    winrt::Windows::System::VirtualKeyModifiers m_keyModifiers{};
+    std::vector<winrt::Windows::UI::Input::PointerPoint> m_intermediatePoints;
+    bool m_handled{};
+};
+
+// Must be called on the ink thread, inside the OS event handler, while 'args' is still live.
+winrt::Windows::UI::Core::PointerEventArgs SnapshotPointerEventArgs(winrt::Windows::UI::Core::PointerEventArgs const& args);
+
+// winrt::event plus a "has handlers" flag the ink thread can read without a data race. winrt::event's own
+// operator bool reads its handler list unsynchronized, while add/remove (from any thread) replace it. Here add and
+// remove run under m_lock and publish the result to an atomic, so HasHandlers never touches the handler list.
+template <typename Handler>
+class InkTrackedEvent
+{
+public:
+    winrt::event_token add(Handler const& handler)
+    {
+        winrt::slim_lock_guard const guard(m_lock);
+        auto token = m_event.add(handler);
+        m_hasHandlers.store(true, std::memory_order_release);
+        return token;
+    }
+
+    void remove(winrt::event_token const& token) noexcept
+    {
+        winrt::slim_lock_guard const guard(m_lock);
+        m_event.remove(token);
+        m_hasHandlers.store(static_cast<bool>(m_event), std::memory_order_release);
+    }
+
+    template <typename... Args>
+    void operator()(Args const&... args) { m_event(args...); }
+
+    bool HasHandlers() const noexcept { return m_hasHandlers.load(std::memory_order_acquire); }
+
+private:
+    winrt::event<Handler> m_event;
+    winrt::slim_mutex m_lock;
+    std::atomic<bool> m_hasHandlers{ false };
+};
+
 // Mirror of Windows.UI.Input.Inking.InkStrokeInput. Holds the app's handlers; the owning
 // InkPresenter proxy subscribes to the OS presenter's InkStrokeInput on the ink thread and calls
 // the Raise* helpers (marshaled to the UI thread) to fire these events. Agile (default), so the
@@ -195,6 +406,14 @@ public:
     void RaiseStrokeEnded(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_strokeEnded(*this, a); }
     void RaiseStrokeCanceled(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_strokeCanceled(*this, a); }
 
+    // Internal: whether the app has a handler for an event. Checked on the ink thread before an event is copied, so an
+    // event nobody listens to costs nothing. Reads an atomic flag (InkTrackedEvent); an add or remove that races with it
+    // decides only that one event.
+    bool HasStrokeStarted() const noexcept { return m_strokeStarted.HasHandlers(); }
+    bool HasStrokeContinued() const noexcept { return m_strokeContinued.HasHandlers(); }
+    bool HasStrokeEnded() const noexcept { return m_strokeEnded.HasHandlers(); }
+    bool HasStrokeCanceled() const noexcept { return m_strokeCanceled.HasHandlers(); }
+
     // Back-pointer to the owning presenter mirror (UWP parity). Weak, so it never keeps the owner
     // alive; returns null once the owner is gone. Set by InkPresenter::Start (post-construction).
     muxc::InkPresenter InkPresenter() { return m_owner.get(); }
@@ -202,10 +421,10 @@ public:
 
 private:
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
-    winrt::event<Handler> m_strokeStarted;
-    winrt::event<Handler> m_strokeContinued;
-    winrt::event<Handler> m_strokeEnded;
-    winrt::event<Handler> m_strokeCanceled;
+    InkTrackedEvent<Handler> m_strokeStarted;
+    InkTrackedEvent<Handler> m_strokeContinued;
+    InkTrackedEvent<Handler> m_strokeEnded;
+    InkTrackedEvent<Handler> m_strokeCanceled;
 };
 
 // Mirror of Windows.UI.Input.Inking.InkUnprocessedInput. Same marshaling model as InkStrokeInput.
@@ -239,6 +458,17 @@ public:
     void RaisePointerReleased(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerReleased(*this, a); }
     void RaisePointerLost(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerLost(*this, a); }
 
+    // Internal: whether the app has a handler for an event. Checked on the ink thread before an event is copied, so an
+    // event nobody listens to costs nothing. Reads an atomic flag (InkTrackedEvent); an add or remove that races with it
+    // decides only that one event.
+    bool HasPointerEntered() const noexcept { return m_pointerEntered.HasHandlers(); }
+    bool HasPointerHovered() const noexcept { return m_pointerHovered.HasHandlers(); }
+    bool HasPointerExited() const noexcept { return m_pointerExited.HasHandlers(); }
+    bool HasPointerPressed() const noexcept { return m_pointerPressed.HasHandlers(); }
+    bool HasPointerMoved() const noexcept { return m_pointerMoved.HasHandlers(); }
+    bool HasPointerReleased() const noexcept { return m_pointerReleased.HasHandlers(); }
+    bool HasPointerLost() const noexcept { return m_pointerLost.HasHandlers(); }
+
     // Back-pointer to the owning presenter mirror (UWP parity). Weak, so it never keeps the owner
     // alive; returns null once the owner is gone. Set by InkPresenter::Start (post-construction).
     muxc::InkPresenter InkPresenter() { return m_owner.get(); }
@@ -246,13 +476,13 @@ public:
 
 private:
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
-    winrt::event<Handler> m_pointerEntered;
-    winrt::event<Handler> m_pointerHovered;
-    winrt::event<Handler> m_pointerExited;
-    winrt::event<Handler> m_pointerPressed;
-    winrt::event<Handler> m_pointerMoved;
-    winrt::event<Handler> m_pointerReleased;
-    winrt::event<Handler> m_pointerLost;
+    InkTrackedEvent<Handler> m_pointerEntered;
+    InkTrackedEvent<Handler> m_pointerHovered;
+    InkTrackedEvent<Handler> m_pointerExited;
+    InkTrackedEvent<Handler> m_pointerPressed;
+    InkTrackedEvent<Handler> m_pointerMoved;
+    InkTrackedEvent<Handler> m_pointerReleased;
+    InkTrackedEvent<Handler> m_pointerLost;
 };
 
 // Mirror of Windows.UI.Input.Inking.InkSynchronizer, returned by InkPresenter.ActivateCustomDrying.
