@@ -12872,7 +12872,14 @@ CInputServices::BringIntoViewport(
             {
                 bounds.X += contentOffsetX;
                 bounds.Y += contentOffsetY;
-                IFC(pDirectManipulationService->BringIntoViewport(pViewport, bounds, fAnimate));
+                hr = pDirectManipulationService->BringIntoViewport(pViewport, bounds, fAnimate);
+                if (hr == HRESULT_FROM_WIN32(ERROR_INVALID_STATE))
+                {
+                    // The view could not be changed. Like the other early exits in this method, *pfHandled stays FALSE.
+                    hr = S_OK;
+                    goto Cleanup;
+                }
+                IFC(hr);
             }
 
             IFC(pDirectManipulationService->GetViewportStatus(pViewport, newStatus));

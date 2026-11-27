@@ -1915,7 +1915,16 @@ CDirectManipulationService::BringIntoViewport(
     IFC(GetDMViewportFromHandle(pViewport, &pDMViewport));
     ASSERT(pDMViewport);
 
-    IFC(pDMViewport->ZoomToRect(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height, fAnimate));
+    hr = pDMViewport->ZoomToRect(bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height, fAnimate);
+    if (hr == HRESULT_FROM_WIN32(ERROR_INVALID_STATE))
+    {
+        // DManip returns ERROR_INVALID_STATE when the viewport is not enabled or was abandoned.
+        IFC_NOTRACE(hr);
+    }
+    else
+    {
+        IFC(hr);
+    }
 
 #ifdef DM_DEBUG
     if (DMS_TraceDbg())
