@@ -4,8 +4,9 @@ The `Animated*VisualSource` classes in this folder are C++/WinRT code generated 
 [LottieGen](https://github.com/CommunityToolkit/Lottie-Windows) from Lottie (`.json`) animations.
 
 Only `AnimatedGlobalNavigationButtonVisualSource.json` (the NavigationView hamburger) is checked in. Its 2021 source was
-not, so it was rebuilt from the generated code in 2026 (#7048). It differs from the 2021 animation only in the bar
-layers' vertical transforms; with the 2021 values put back (scale 275% instead of 300% for the caps and the bars' Y,
+not, so it was rebuilt from the generated code in 2026 (#7048). It differs from the 2021 animation only in the scale of
+the bar and cap layers (the caps scale on both axes, so the bar ends stay half discs) and the bars' vertical position;
+with the 2021 values put back (scale 275% instead of 300% for the caps and the bars' Y,
 including 273.295% instead of 298.14% in the PressedTo* squash keyframes, layer position y 24 instead of 22.5, and
 "Group 2" offset y -4.85 instead of -5.013), LottieGen gives the checked-in 2021 `.cpp`/`.h` byte for byte, apart from
 the input file size and date in the header. (The size in the header depends on the file's line endings.)
