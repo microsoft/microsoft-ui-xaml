@@ -227,6 +227,11 @@ public:
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(RotatedAndProjectedClipsRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a rotated, layout-clipped element with its own Clip, and for an element with both a PlaneProjection and a Clip; only the clipped content is rendered, transformed with the element.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
 private:
     void BasicRenderTargetBitmapInternal();
     void PopupChildRTBInternal();

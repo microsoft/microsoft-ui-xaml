@@ -2422,4 +2422,70 @@ void RenderTargetBitmapTests::GeometryGroupFillRuleRTBWUCFull()
     });
 }
 
+//------------------------------------------------------------------------
+//
+// 1) An 80x80 red Rectangle in a 60x60 Grid at (70,70) (so it is layout-clipped to its 60x60 slot), with its own
+//    Clip 0..70, rotated by 30 degrees around the slot center (100,100). A point is red only if it is inside both
+//    the rotated slot and the rotated clip; the sample points are chosen so that the expected color doesn't depend
+//    on whether the layout clip is applied before or after the rotation.
+// 2) A red 100x100 Border at (50,50) with a PlaneProjection (rotated by 30 degrees around the vertical axis through
+//    its center) and a Clip of its left half: only the projected left half is red.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::RotatedAndProjectedClipsRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    TestCleanupWrapper cleanup;
+    TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 300));
+
+    {
+        LOG_OUTPUT(L"Case: rotated element with a layout clip and a clip");
+        const CapturedPixels captured = LoadAndCapture200(
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+            L"      Width='200' Height='200' HorizontalAlignment='Left' VerticalAlignment='Top' Background='#FF00FF00'>"
+            L"  <Grid Width='60' Height='60' Margin='70,70,0,0' HorizontalAlignment='Left' VerticalAlignment='Top'>"
+            L"    <Rectangle Width='80' Height='80' HorizontalAlignment='Left' VerticalAlignment='Top' Fill='#FFFF0000'>"
+            L"      <Rectangle.RenderTransform><RotateTransform Angle='30' CenterX='30' CenterY='30'/></Rectangle.RenderTransform>"
+            L"      <Rectangle.Clip><RectangleGeometry Rect='0,0,70,70'/></Rectangle.Clip>"
+            L"    </Rectangle>"
+            L"  </Grid>"
+            L"</Grid>");
+
+        // Inside the rotated slot (and clip) and inside the unrotated slot 70..130.
+        VERIFY_ARE_EQUAL(c_redPixel, captured.At(100, 100));
+        VERIFY_ARE_EQUAL(c_redPixel, captured.At(100, 80));
+        VERIFY_ARE_EQUAL(c_redPixel, captured.At(80, 118));
+
+        // In the unrotated slot, but outside the rotated slot and clip (above their rotated top edge).
+        VERIFY_ARE_EQUAL(c_greenPixel, captured.At(127, 73));
+
+        // Outside the slot, but inside the rotated clip and Rectangle: the layout clip cuts it off.
+        VERIFY_ARE_EQUAL(c_greenPixel, captured.At(100, 140));
+
+        // Outside everything.
+        VERIFY_ARE_EQUAL(c_greenPixel, captured.At(150, 100));
+        VERIFY_ARE_EQUAL(c_greenPixel, captured.At(20, 20));
+    }
+
+    {
+        LOG_OUTPUT(L"Case: projected element with a clip");
+        const CapturedPixels captured = LoadAndCapture200(
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+            L"      Width='200' Height='200' HorizontalAlignment='Left' VerticalAlignment='Top' Background='#FF00FF00'>"
+            L"  <Border Width='100' Height='100' Margin='50,50,0,0' HorizontalAlignment='Left' VerticalAlignment='Top' Background='#FFFF0000'>"
+            L"    <Border.Projection><PlaneProjection RotationY='30'/></Border.Projection>"
+            L"    <Border.Clip><RectangleGeometry Rect='0,0,50,100'/></Border.Clip>"
+            L"  </Border>"
+            L"</Grid>");
+
+        // The rotation shortens the element horizontally around its center (x = 100): the left half covers about
+        // 57..100 and the clipped-away right half would cover about 100..143.
+        VERIFY_ARE_EQUAL(c_redPixel, captured.At(70, 100));
+        VERIFY_ARE_EQUAL(c_redPixel, captured.At(90, 80));
+        VERIFY_ARE_EQUAL(c_greenPixel, captured.At(115, 100));
+        VERIFY_ARE_EQUAL(c_greenPixel, captured.At(130, 120));
+        VERIFY_ARE_EQUAL(c_greenPixel, captured.At(20, 20));
+    }
+}
+
 } } } } } }
