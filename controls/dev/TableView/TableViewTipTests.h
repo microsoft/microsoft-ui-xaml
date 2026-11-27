@@ -11,22 +11,23 @@
 
 namespace TableViewTip
 {
-    // 17 was internal_failure under 64477764 and 64477774; 21 and 22 were the editing reasons. Do not reuse them.
+    // 17 was internal_failure under 64477764 and 64477774; 21 and 22 were the editing reasons; 25 was
+    // hierarchy_expansion_failed. Do not reuse them.
     enum class TableViewTipReason : unsigned short
     {
         scenario_completed = 1, scenario_not_completed = 2,
         template_setup_failed = 18, source_attach_failed = 19,
         sort_failed = 20,
-        filter_failed = 23, group_expansion_failed = 24, hierarchy_expansion_failed = 25
+        filter_failed = 23, group_expansion_failed = 24
     };
 
-    // The operation tests' measure IDs. 64745034 and 64745035 were the editing tests; do not reuse them.
+    // The operation tests' measure IDs. 64745034 and 64745035 were the editing tests and 64745038 the hierarchy
+    // expansion test; do not reuse them.
     namespace OperationMeasure
     {
         constexpr unsigned int Sort = 64745033;
         constexpr unsigned int Filter = 64745036;
         constexpr unsigned int GroupExpansion = 64745037;
-        constexpr unsigned int HierarchyExpansion = 64745038;
     }
 
     // What an operation's TiP test reports under, and the flag its failure sets (TIP_reason: TiP names a flag after its
@@ -53,9 +54,6 @@ namespace TableViewTip
         case Operation::GroupExpansion:
             return TestIdentity{ OperationMeasure::GroupExpansion, "TableViewGroupExpansionTest",
                 TIP_reason(TableViewTipReason::group_expansion_failed) };
-        case Operation::HierarchyExpansion:
-            return TestIdentity{ OperationMeasure::HierarchyExpansion, "TableViewHierarchyExpansionTest",
-                TIP_reason(TableViewTipReason::hierarchy_expansion_failed) };
         default: return std::nullopt;
         }
     }
@@ -154,7 +152,7 @@ namespace TableViewTip
         uint8_t sourceRowsBucket{};
         uint8_t dataRowsBucket{};
 
-        TIP_require_all_flags_clear(reason::sort_failed, reason::filter_failed, reason::group_expansion_failed, reason::hierarchy_expansion_failed);
+        TIP_require_all_flags_clear(reason::sort_failed, reason::filter_failed, reason::group_expansion_failed);
 
         void evaluate()
         {

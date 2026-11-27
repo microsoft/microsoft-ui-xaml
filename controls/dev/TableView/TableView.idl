@@ -232,19 +232,7 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsSelected { get; };
 
-    [MUX_DEFAULT_VALUE("0")]
-    Int32 Level { get; };
-
-    [MUX_DEFAULT_VALUE("false")]
-    Boolean IsExpandable { get; };
-
-    [MUX_DEFAULT_VALUE("false")]
-    Boolean IsExpanded { get; };
-
     static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty LevelProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
 }
 
 [MUX_INTERNAL]
@@ -294,12 +282,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object ItemsSource { get; set; };
-
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    String ItemKeyPath { get; set; };
-
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    String ParentKeyPath { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Windows.Foundation.Collections.IVector<TableViewColumn> Columns { get; };
@@ -362,8 +344,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     void CollapseGroup(Object groupKey);
     void ExpandAllGroups();
     void CollapseAllGroups();
-    void ExpandAllRows();
-    void CollapseAllRows();
     Boolean SortByColumn(MU_XC_NAMESPACE.TableViewColumn column, SortDirection direction);
     Boolean ToggleSortDirection(MU_XC_NAMESPACE.TableViewColumn column);
     Boolean ClearSort();
@@ -376,8 +356,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewColumnReorderedEventArgs> ColumnReordered;
 
     static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty ItemKeyPathProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty ParentKeyPathProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
@@ -430,8 +408,7 @@ unsealed runtimeclass TableViewColumnHeaderAutomationPeer
 [webhosthidden]
 unsealed runtimeclass TableViewRowAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider,
-      Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
 {
     TableViewRowAutomationPeer(MU_XC_NAMESPACE.TableViewRow owner);
 }

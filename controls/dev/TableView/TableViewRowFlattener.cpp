@@ -13,9 +13,8 @@
 
 #include <algorithm>
 #include <cwchar>
-#include <numeric>
+#include <limits>
 #include <string>
-#include <string_view>
 #include <utility>
 
 #include <winrt/Microsoft.UI.Dispatching.h>
@@ -23,12 +22,6 @@
 namespace
 {
     namespace tabularPrimitives = winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation;
-
-    constexpr wchar_t c_ungroupedIdentity[] = L"cvgroup:ungrouped";
-    // Every node key ParentKeyIndex mints starts with this. A bare prefix is not a key.
-    constexpr std::wstring_view c_nodeKeyPrefix{ L"node:" };
-    // Above this run length, one Rebuild + Reset beats per-row splice notifications.
-    constexpr int32_t c_maxSpliceRows{ 64 };
 
     TableViewRowItemKeySelector MakeIdentitySelector()
     {
@@ -140,34 +133,16 @@ TableViewRowFlattener::TableViewRowFlattener(winrt::Microsoft::UI::Xaml::Data::I
     }
 
     m_groupRowsView = winrt::ItemsSourceView{ m_groupRows };
-    m_treeRowsView = winrt::ItemsSourceView{ m_treeRows };
 
     m_groupExpansion.SetChangedHandler(
         [this](ShapingHelpers::RowExpansionModel::Change const& change)
         {
             OnGroupExpansionChanged(change);
         });
-
-    // Set before attaching the handler so it raises no Change into a half-constructed flattener.
-    m_nodeExpansion.SetAllExpanded(false);
-    m_nodeExpansion.SetChangedHandler(
-        [this](ShapingHelpers::RowExpansionModel::Change const& change)
-        {
-            if (m_suppressNodeExpansionChanged)
-            {
-                m_nodeExpansionChangedWhileSuppressed = true;
-                return;
-            }
-            OnNodeExpansionChanged(change);
-        });
 }
 
 TableViewRowFlattener::~TableViewRowFlattener()
 {
-    if (m_viewChangedToken.value)
-    {
-        ShapingHelpers::SafeRevokeWith([&] { m_view.VectorChanged(m_viewChangedToken); });
-    }
     if (m_viewNotify && m_viewPropertyChangedToken.value)
     {
         ShapingHelpers::SafeRevokeWith([&] { m_viewNotify.PropertyChanged(m_viewPropertyChangedToken); });
@@ -190,12 +165,6 @@ winrt::hstring TableViewRowFlattener::ObjectIdentity(winrt::IInspectable const& 
     wchar_t buffer[2 + (sizeof(uintptr_t) * 2) + 1]{};
     swprintf_s(buffer, L"0x%zx", reinterpret_cast<size_t>(winrt::get_abi(unknown)));
     return winrt::hstring{ buffer };
-}
-
-bool TableViewRowFlattener::IsNodeKey(winrt::hstring const& key)
-{
-    const std::wstring_view view{ key.c_str(), key.size() };
-    return view.size() > c_nodeKeyPrefix.size() && view.starts_with(c_nodeKeyPrefix);
 }
 
 void TableViewRowFlattener::AssertOnUiThread() const
@@ -223,16 +192,6 @@ void TableViewRowFlattener::Start()
                 }
             });
     }
-
-    m_viewChangedToken = m_view.VectorChanged(
-        [weakThis](winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const&,
-            winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
-        {
-            if (auto strongThis = weakThis.lock())
-            {
-                strongThis->OnViewChanged(args.CollectionChange(), args.CollectionChange() == winrt::Windows::Foundation::Collections::CollectionChange::Reset ? 0 : args.Index());
-            }
-        });
 
     Update();
 }
@@ -337,46 +296,6 @@ bool TableViewRowFlattener::AttachViewGroupsNow()
     return true;
 }
 
-void TableViewRowFlattener::SetHierarchy(ShapingHelpers::KeySelector const& keySelector, ShapingHelpers::KeySelector const& parentKeySelector)
-{
-    if (!keySelector || !parentKeySelector)
-    {
-        throw winrt::hresult_invalid_argument(L"keySelector and parentKeySelector are required.");
-    }
-
-    // Validated before anything changes, so a relation the rows cannot satisfy leaves the current rows.
-    ShapingHelpers::ParentStructure probe;
-    ShapingHelpers::NodeKeyCache probeKeys;
-    winrt::hstring error;
-    if (!ShapingHelpers::BuildParentStructure(ReadViewItems(), keySelector, parentKeySelector, probe, error, &probeKeys))
-    {
-        throw winrt::hresult_invalid_argument(L"TableView: " + error);
-    }
-
-    m_keySelector = keySelector;
-    m_parentKeySelector = parentKeySelector;
-    ++m_declarationGeneration;
-    // The keys the probe just read through these selectors: the build below reads none of them again (every row's
-    // keys are read through a binding, which dominated a tree's load).
-    m_treeKeyCache = std::move(probeKeys);
-    // A different relation is a different tree: its rows start collapsed.
-    m_resetTreeIntent = true;
-    Update();
-}
-
-void TableViewRowFlattener::ClearHierarchy()
-{
-    if (!m_keySelector)
-    {
-        return;
-    }
-    m_keySelector = nullptr;
-    m_parentKeySelector = nullptr;
-    ++m_declarationGeneration;
-    m_treeKeyCache.clear();
-    Update();
-}
-
 void TableViewRowFlattener::Update()
 {
     // A request raised while the rows are being published (an app handler of the change) runs once
@@ -388,7 +307,6 @@ void TableViewRowFlattener::Update()
     }
 
     auto const keepAlive = shared_from_this();
-    ++m_updateCount;
     {
         m_updating = true;
         auto const done = wil::scope_exit([this]() noexcept { m_updating = false; });
@@ -396,8 +314,6 @@ void TableViewRowFlattener::Update()
         do
         {
             m_updatePending = false;
-            // A rebuild reads every item, so it covers any tree change still waiting for the next turn.
-            m_treeUpdatePending = false;
             // A CollectionGroups change raised by app code during the last pass: attached here, between passes.
             if (CanAttachViewGroupsInUpdate() && WithinReattachCap(reattaches))
             {
@@ -429,14 +345,8 @@ void TableViewRowFlattener::SetKind(Kind kind, winrt::ItemsSourceView const& row
 
 void TableViewRowFlattener::UpdateCore()
 {
-    Kind const desired = m_keySelector
-        ? (m_viewGroups ? Kind::GroupedTree : Kind::Tree)
-        : (m_viewGroups ? Kind::Grouped : Kind::Flat);
-
-    switch (desired)
+    if (!m_viewGroups)
     {
-    case Kind::Flat:
-        ReleaseTree();
         DetachGroupRows();
         if (!m_flatView)
         {
@@ -444,45 +354,18 @@ void TableViewRowFlattener::UpdateCore()
         }
         // The view itself: its fine-grained changes reach the repeater as they are.
         SetKind(Kind::Flat, m_flatView);
-        break;
-
-    case Kind::Grouped:
-        ReleaseTree();
-        if (m_kind != Kind::Grouped)
-        {
-            DetachGroupRows();
-            AttachGroupRows(GroupSource::ViewGroups);
-            SetKind(Kind::Grouped, m_groupRowsView);
-        }
-        break;
-
-    case Kind::Tree:
-    case Kind::GroupedTree:
-        try
-        {
-            UpdateTree(desired);
-        }
-        catch (...)
-        {
-            // The rows changed into something that is not a tree (a duplicate key, a cycle): keep showing the
-            // last tree until they are a tree again.
-            TVDiag::LogRetailF(L"[TableView] ItemKeyPath/ParentKeyPath could not build a tree over the rows (HRESULT 0x%08X); keeping the previous rows.",
-                static_cast<unsigned int>(winrt::to_hresult()));
-            if (m_kind != Kind::Tree && m_kind != Kind::GroupedTree)
-            {
-                throw;
-            }
-        }
-        break;
-
-    case Kind::None:
-        break;
+    }
+    else if (m_kind != Kind::Grouped)
+    {
+        DetachGroupRows();
+        AttachGroupRows();
+        SetKind(Kind::Grouped, m_groupRowsView);
     }
 }
 
 TableViewRowMetadataProvider TableViewRowFlattener::RowMetadata()
 {
-    if (m_kind != Kind::Grouped && m_kind != Kind::Tree && m_kind != Kind::GroupedTree)
+    if (m_kind != Kind::Grouped)
     {
         return nullptr;
     }
@@ -494,403 +377,10 @@ TableViewRowMetadataProvider TableViewRowFlattener::RowMetadata()
         }
     }
 
-    auto const self = shared_from_this();
-    TableViewRowMetadataProvider created;
-    switch (m_kind)
-    {
-    case Kind::Grouped:
-        created = tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(self, MakeIdentitySelector());
-        break;
-    case Kind::Tree:
-        created = tabularPrimitives::RowMetadataProvider::CreateForHierarchicalRows(self, MakeIdentitySelector());
-        break;
-    case Kind::GroupedTree:
-        created = tabularPrimitives::RowMetadataProvider::CreateForGroupedHierarchicalRows(self, MakeIdentitySelector());
-        break;
-    default:
-        break;
-    }
+    auto const created = tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(shared_from_this(), MakeIdentitySelector());
     m_rowMetadata = created;
     m_rowMetadataStale = false;
     return created;
-}
-
-std::vector<winrt::IInspectable> TableViewRowFlattener::ReadViewItems() const
-{
-    std::vector<winrt::IInspectable> rows;
-    uint32_t const count = m_view.Size();
-    rows.reserve(count);
-    for (uint32_t i = 0; i < count; ++i)
-    {
-        rows.push_back(m_view.GetAt(i));
-    }
-    return rows;
-}
-
-void TableViewRowFlattener::UpdateTree(Kind kind)
-{
-    // Selectors and getters are app code that can re-declare the relation; a stale build is dropped and
-    // Update runs again for the new declaration.
-    auto const generation = m_declarationGeneration;
-    auto const keySelector = m_keySelector;
-    auto const parentKeySelector = m_parentKeySelector;
-    m_treeIndexIsCurrent = false;
-
-    auto structure = std::make_shared<ShapingHelpers::ParentStructure>();
-    winrt::hstring error;
-    const bool valid = ShapingHelpers::BuildParentStructure(ReadViewItems(), keySelector, parentKeySelector, *structure, error, &m_treeKeyCache);
-    if (generation != m_declarationGeneration)
-    {
-        m_treeKeyCache.clear();
-        m_updatePending = true;
-        return;
-    }
-    if (!valid)
-    {
-        throw winrt::hresult_invalid_argument(L"TableView: " + error);
-    }
-
-    // The view already filtered and sorted: siblings and roots keep its order.
-    auto index = std::make_shared<ShapingHelpers::ParentKeyIndex>();
-    ShapingHelpers::BuildParentKeyIndex(structure, {}, {}, false /* sortRoots */, *index);
-
-    if (m_kind != Kind::Tree && m_kind != Kind::GroupedTree)
-    {
-        __RP_Marker_ClassById(RuntimeProfiler::ProfId_HierarchicalSourceAdapter);
-    }
-    // Dropped first: it would re-slice the groups this rebuild replaces.
-    m_sliceTreeIntoGroups = false;
-    if (std::exchange(m_resetTreeIntent, false))
-    {
-        ResetNodeIntentQuietly();
-    }
-
-    if (kind == Kind::Tree)
-    {
-        DetachGroupRows();
-        m_treeGroups.clear();
-        m_rootBucket.clear();
-
-        {
-            // Update raises RowsChanged once this returns, which restamps the rows a splice kept in place.
-            m_isRebuildingTreeForView = true;
-            auto const done = wil::scope_exit([this]() noexcept { m_isRebuildingTreeForView = false; });
-            m_treeStructure = structure;
-            SetTreeIndex(std::move(index), {});
-        }
-        SetKind(Kind::Tree, m_treeRowsView);
-        m_treeIndexIsCurrent = !m_treeDetached && generation == m_declarationGeneration;
-        return;
-    }
-
-    // Under a grouped view the group a root's item is in buckets it; a descendant follows its root.
-    // Buckets are in the order their first root appears, which is the view's group order.
-    auto const identityByItem = GroupIdentityByItem();
-    std::vector<winrt::hstring> bucketIdentities;
-    std::vector<std::vector<winrt::IInspectable>> bucketRoots;
-    std::unordered_map<winrt::hstring, size_t> bucketByIdentity;
-    for (auto const& root : index->Roots)
-    {
-        winrt::hstring identity{ c_ungroupedIdentity };
-        if (auto const group = identityByItem.find(CanonicalAddress(root)); group != identityByItem.end())
-        {
-            identity = group->second;
-        }
-        auto [found, inserted] = bucketByIdentity.try_emplace(identity, bucketIdentities.size());
-        if (inserted)
-        {
-            bucketIdentities.push_back(identity);
-            bucketRoots.emplace_back();
-        }
-        bucketRoots[found->second].push_back(root);
-    }
-
-    std::unordered_map<winrt::hstring, winrt::IInspectable> keyByIdentity;
-    for (auto const& group : m_groups)
-    {
-        keyByIdentity.emplace(group.Identity, group.Key);
-    }
-
-    // Each bucket's roots are contiguous: the tree rows walk one segment per bucket and the re-slice
-    // cuts them at depth-0 rows.
-    std::vector<winrt::IInspectable> orderedRoots;
-    orderedRoots.reserve(index->Roots.size());
-    std::vector<size_t> segments;
-    segments.reserve(bucketRoots.size());
-    std::unordered_map<void*, size_t> rootBucket;
-    for (size_t bucket = 0; bucket < bucketRoots.size(); ++bucket)
-    {
-        for (auto const& root : bucketRoots[bucket])
-        {
-            rootBucket[winrt::get_abi(root)] = bucket;
-            orderedRoots.push_back(root);
-        }
-        segments.push_back(bucketRoots[bucket].size());
-    }
-    index->Roots = std::move(orderedRoots);
-
-    m_rootBucket = std::move(rootBucket);
-    m_treeGroups.clear();
-    m_treeStructure.reset();
-    SetTreeIndex(std::move(index), std::move(segments));
-    if (generation != m_declarationGeneration)
-    {
-        m_updatePending = true;
-        return;
-    }
-
-    std::vector<TreeGroup> treeGroups;
-    treeGroups.reserve(bucketIdentities.size());
-    for (auto const& identity : bucketIdentities)
-    {
-        auto const key = keyByIdentity.find(identity);
-        treeGroups.push_back({ identity, key != keyByIdentity.end() ? key->second : winrt::box_value(winrt::hstring{}) });
-    }
-    m_treeGroups = std::move(treeGroups);
-
-    // Sliced before the grouped rows attach, so they publish one coherent Reset.
-    DetachGroupRows();
-    ResliceTreeGroups();
-    AttachGroupRows(GroupSource::TreeGroups);
-    // A node toggle splices only the tree rows; this carries it to the groups.
-    m_sliceTreeIntoGroups = true;
-    SetKind(Kind::GroupedTree, m_groupRowsView);
-}
-
-void TableViewRowFlattener::ResliceTreeGroups()
-{
-    if (m_treeGroups.empty())
-    {
-        return;
-    }
-
-    for (auto& group : m_treeGroups)
-    {
-        group.Items.clear();
-        // A header counts roots, not the descendant rows its slice also holds.
-        group.RootCount = 0;
-    }
-
-    size_t bucket = 0;
-    bool haveBucket = false;
-    for (auto const& node : m_nodeRows)
-    {
-        if (node.Depth == 0)
-        {
-            auto const found = m_rootBucket.find(winrt::get_abi(node.Item));
-            haveBucket = found != m_rootBucket.end() && found->second < m_treeGroups.size();
-            if (haveBucket)
-            {
-                bucket = found->second;
-                ++m_treeGroups[bucket].RootCount;
-            }
-        }
-
-        if (haveBucket)
-        {
-            m_treeGroups[bucket].Items.push_back(node.Item);
-        }
-    }
-}
-
-void TableViewRowFlattener::ReleaseTree()
-{
-    m_sliceTreeIntoGroups = false;
-    // Also detaches: this may run inside a tree rows notification, which must stop here.
-    ClearTreeIndex();
-    ResetNodeIntentQuietly();
-    m_prunedForStructure.reset();
-    m_treeKeyCache.clear();
-    if (m_kind == Kind::GroupedTree)
-    {
-        DetachGroupRows();
-    }
-    m_treeGroups.clear();
-    m_rootBucket.clear();
-
-    // Fresh rows for the next tree: the released ones keep their items only while a repeater still holds them.
-    if (!m_nodeRows.empty() || m_treeRows.Size() > 0)
-    {
-        m_nodeRows.clear();
-        m_indexByItem.clear();
-        m_indexByItemValid = false;
-        m_treeRows = winrt::single_threaded_observable_vector<winrt::IInspectable>();
-        m_treeRowsView = winrt::ItemsSourceView{ m_treeRows };
-    }
-}
-
-void TableViewRowFlattener::OnViewChanged(winrt::Windows::Foundation::Collections::CollectionChange change, uint32_t index)
-{
-    using winrt::Windows::Foundation::Collections::CollectionChange;
-
-    // The rows a change brings in are read again at the next rebuild; a Reset reads every row. A cache filled
-    // before the first tree (SetHierarchy's probe) is kept current the same way.
-    if (m_kind == Kind::Tree || m_kind == Kind::GroupedTree || !m_treeKeyCache.empty())
-    {
-        if (change == CollectionChange::ItemInserted || change == CollectionChange::ItemChanged)
-        {
-            try
-            {
-                m_treeKeyCache.erase(winrt::get_abi(m_view.GetAt(index)));
-            }
-            catch (...)
-            {
-                m_treeKeyCache.clear();
-            }
-        }
-        else if (change != CollectionChange::ItemRemoved)
-        {
-            m_treeKeyCache.clear();
-        }
-    }
-
-    // Flat rows are the view; grouped rows follow its groups. Only a tree is rebuilt from the items. A plain tree
-    // applies an Insert, Remove or Replace to its index and rows in place; what it cannot localize rebuilds, at
-    // most once per dispatcher turn: a live tick moves many rows, each as a Remove and an Insert. The first
-    // Insert, Replace or Reset of a turn rebuilds at once; a Remove (the first half of a move) and anything
-    // later in the turn wait for the next turn, which rebuilds once.
-    if (m_kind == Kind::Tree)
-    {
-        if (m_treeChangeInFlight)
-        {
-            // App code changed the view while a change was being applied; that one rebuilds once it unwinds.
-            m_treeIndexIsCurrent = false;
-            m_treeRowsPending = true;
-            return;
-        }
-        if (!m_treeUpdatePending && change != CollectionChange::Reset && TryApplyTreeChange(change, index))
-        {
-            RaiseRowsChanged();
-            return;
-        }
-
-        m_treeIndexIsCurrent = false;
-        if (!m_treeUpdatedThisTurn && change != CollectionChange::ItemRemoved)
-        {
-            m_treeUpdatedThisTurn = QueueTreeTurnEnd();
-            Update();
-        }
-        else
-        {
-            m_treeUpdatePending = true;
-            if (!QueueTreeTurnEnd())
-            {
-                Update();
-            }
-        }
-    }
-    else if (m_kind == Kind::GroupedTree)
-    {
-        // A shaping view's Reset comes after its groups are complete; any other change may arrive while
-        // the view is still moving items between its groups.
-        if (m_isShapingView && change == CollectionChange::Reset)
-        {
-            Update();
-        }
-        else
-        {
-            ScheduleUpdate();
-        }
-    }
-}
-
-bool TableViewRowFlattener::QueueTreeTurnEnd()
-{
-    if (m_treeTurnQueued)
-    {
-        return true;
-    }
-
-    std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
-    if (auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread())
-    {
-        m_treeTurnQueued = queue.TryEnqueue([weakThis]()
-        {
-            if (auto const strongThis = weakThis.lock())
-            {
-                strongThis->OnTreeTurnEnd();
-            }
-        });
-    }
-    return m_treeTurnQueued;
-}
-
-void TableViewRowFlattener::OnTreeTurnEnd()
-{
-    m_treeTurnQueued = false;
-    m_treeUpdatedThisTurn = false;
-    if (auto const removedKeys = std::exchange(m_removedTreeKeys, {}); m_treeIndexIsCurrent && m_treeStructure)
-    {
-        for (auto const& key : removedKeys)
-        {
-            if (!m_treeStructure->ItemByKey.contains(std::wstring_view{ key }))
-            {
-                m_nodeExpansion.Forget(key);
-            }
-        }
-    }
-    if (!std::exchange(m_treeUpdatePending, false) || m_kind != Kind::Tree)
-    {
-        return;
-    }
-
-    m_treeUpdatedThisTurn = QueueTreeTurnEnd();
-    try
-    {
-        Update();
-    }
-    catch (...)
-    {
-        TVDiag::LogRetailF(L"[TableView] Rebuilding the tree after a view change failed (HRESULT 0x%08X).",
-            static_cast<unsigned int>(winrt::to_hresult()));
-    }
-}
-
-void TableViewRowFlattener::ScheduleUpdate()
-{
-    if (m_updateQueued)
-    {
-        return;
-    }
-
-    std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
-    auto const run = [weakThis]()
-    {
-        auto const strongThis = weakThis.lock();
-        if (!strongThis)
-        {
-            return;
-        }
-        strongThis->m_updateQueued = false;
-        try
-        {
-            // The view's groups first: a change to them rebuilds the tree (OnViewGroupSetChanged).
-            auto const before = strongThis->m_updateCount;
-            if (strongThis->m_viewGroups)
-            {
-                strongThis->ReadViewGroupsNow();
-            }
-            if (strongThis->m_updateCount == before)
-            {
-                strongThis->Update();
-            }
-        }
-        catch (...)
-        {
-            TVDiag::LogRetailF(L"[TableView] Rebuilding the rows after a view change failed (HRESULT 0x%08X).",
-                static_cast<unsigned int>(winrt::to_hresult()));
-        }
-    };
-
-    if (auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread())
-    {
-        m_updateQueued = queue.TryEnqueue(run);
-        if (m_updateQueued)
-        {
-            return;
-        }
-    }
-    run();
 }
 
 void TableViewRowFlattener::RaiseRowsChanged() const
@@ -913,14 +403,7 @@ std::optional<winrt::hstring> TableViewRowFlattener::TryGetGroupIdentityForKey(w
 std::vector<TableViewRowFlattener::GroupInfo> TableViewRowFlattener::CurrentGroups() const
 {
     std::vector<GroupInfo> groups;
-    if (m_kind == Kind::GroupedTree)
-    {
-        for (auto const& group : m_treeGroups)
-        {
-            groups.push_back({ group.Identity, group.Key });
-        }
-    }
-    else if (m_kind == Kind::Grouped)
+    if (m_kind == Kind::Grouped)
     {
         for (auto const& group : m_groups)
         {
@@ -932,15 +415,6 @@ std::vector<TableViewRowFlattener::GroupInfo> TableViewRowFlattener::CurrentGrou
 
 uint32_t TableViewRowFlattener::SourceRowCount() const
 {
-    return m_view.Size();
-}
-
-uint32_t TableViewRowFlattener::DataRowCount() const
-{
-    if (m_treeIndex)
-    {
-        return static_cast<uint32_t>(m_treeIndex->KeptNodeCount);
-    }
     return m_view.Size();
 }
 
@@ -988,26 +462,6 @@ winrt::hstring TableViewRowFlattener::IdentityForKey(winrt::IInspectable const& 
     wchar_t buffer[48];
     swprintf_s(buffer, L"cvgroup:%p", reinterpret_cast<void*>(CanonicalAddress(key)));
     return winrt::hstring{ buffer };
-}
-
-std::unordered_map<uintptr_t, winrt::hstring> TableViewRowFlattener::GroupIdentityByItem() const
-{
-    // Read now: a view may move items between its groups without replacing a group. A copy: enumerating a group runs
-    // app code, which can replace m_groups (a re-read of the view's groups).
-    std::unordered_map<uintptr_t, winrt::hstring> identityByItem;
-    auto const groups = m_groups;
-    for (auto const& group : groups)
-    {
-        auto const items = group.Items ? ShapingHelpers::EnumerateInspectableItems(group.Items) : group.Snapshot;
-        for (auto const& member : items)
-        {
-            if (auto const address = CanonicalAddress(member))
-            {
-                identityByItem.try_emplace(address, group.Identity);
-            }
-        }
-    }
-    return identityByItem;
 }
 
 void TableViewRowFlattener::OnViewGroupsChanged(winrt::Windows::Foundation::Collections::CollectionChange change)
@@ -1128,7 +582,7 @@ void TableViewRowFlattener::ReadViewGroups()
         m_groups = std::move(groups);
         if (!same)
         {
-            if (m_groupSource == GroupSource::ViewGroups)
+            if (m_groupRowsAttached)
             {
                 RebuildGroupRows();
             }
@@ -1136,23 +590,11 @@ void TableViewRowFlattener::ReadViewGroups()
         }
     } while (m_readGroupsPending);
 
-    if (changed)
-    {
-        OnViewGroupSetChanged();
-    }
-    RunPendingAttachViewGroups();
-}
-
-void TableViewRowFlattener::OnViewGroupSetChanged()
-{
-    if (m_kind == Kind::GroupedTree)
-    {
-        Update();
-    }
-    else if (m_kind == Kind::Grouped && !m_updating)
+    if (changed && m_kind == Kind::Grouped && !m_updating)
     {
         RaiseRowsChanged();
     }
+    RunPendingAttachViewGroups();
 }
 
 // --- Grouped rows ---------------------------------------------------------------------------------
@@ -1162,26 +604,26 @@ winrt::hstring TableViewRowFlattener::GroupIntentKey(winrt::hstring const& group
     return L"identity:" + groupIdentity;
 }
 
-void TableViewRowFlattener::AttachGroupRows(GroupSource source)
+void TableViewRowFlattener::AttachGroupRows()
 {
     if (!std::exchange(m_groupRowsProfiled, true))
     {
         __RP_Marker_ClassById(RuntimeProfiler::ProfId_GroupedSourceAdapter);
     }
-    m_groupSource = source;
+    m_groupRowsAttached = true;
     RebuildGroupRows();
 }
 
 void TableViewRowFlattener::DetachGroupRows()
 {
     UnsubscribeFromGroupItems();
-    m_groupSource = GroupSource::None;
+    m_groupRowsAttached = false;
 }
 
 std::vector<TableViewRowFlattener::GroupSlice> TableViewRowFlattener::ReadGroupSlices() const
 {
     std::vector<GroupSlice> slices;
-    if (m_groupSource == GroupSource::ViewGroups)
+    if (m_groupRowsAttached)
     {
         // A copy: the group enumerators and GroupItems/Group/Key getters below are app code, which can replace m_groups
         // (a re-read of the view's groups). That re-read schedules its own rebuild of the rows.
@@ -1207,14 +649,6 @@ std::vector<TableViewRowFlattener::GroupSlice> TableViewRowFlattener::ReadGroupS
             {
                 slices.push_back(std::move(slice));
             }
-        }
-    }
-    else if (m_groupSource == GroupSource::TreeGroups)
-    {
-        slices.reserve(m_treeGroups.size());
-        for (auto const& group : m_treeGroups)
-        {
-            slices.push_back({ group.Identity, group.Key, group.Items, group.RootCount });
         }
     }
     return slices;
@@ -1305,7 +739,7 @@ void TableViewRowFlattener::AppendSubgroupSlices(
 
 std::vector<winrt::IInspectable> TableViewRowFlattener::ReadGroupItems(winrt::hstring const& groupIdentity) const
 {
-    if (m_groupSource == GroupSource::ViewGroups)
+    if (m_groupRowsAttached)
     {
         for (auto const& group : m_groups)
         {
@@ -1314,16 +748,6 @@ std::vector<winrt::IInspectable> TableViewRowFlattener::ReadGroupItems(winrt::hs
                 // Copied before the enumeration (app code) can replace m_groups.
                 auto const items = group.Items;
                 return items ? ShapingHelpers::EnumerateInspectableItems(items) : group.Snapshot;
-            }
-        }
-    }
-    else if (m_groupSource == GroupSource::TreeGroups)
-    {
-        for (auto const& group : m_treeGroups)
-        {
-            if (group.Identity == groupIdentity)
-            {
-                return group.Items;
             }
         }
     }
@@ -1377,8 +801,7 @@ void TableViewRowFlattener::RebuildGroupRows()
 
                 // An empty group keeps its header: it stays targetable.
                 const int32_t groupItemCount = static_cast<int32_t>(slice.Items.size());
-                built.push_back(winrt::make<GroupedEntry>(slice.Identity, slice.Key, groupItemCount,
-                    slice.ChildCount >= 0 ? slice.ChildCount : groupItemCount, isExpanded, slice.Level));
+                built.push_back(winrt::make<GroupedEntry>(slice.Identity, slice.Key, groupItemCount, isExpanded, slice.Level));
                 if (isExpanded && slice.IsBottomLevel)
                 {
                     built.insert(built.end(), slice.Items.begin(), slice.Items.end());
@@ -1533,7 +956,7 @@ bool TableViewRowFlattener::TryApplyGroupExpansionSplice(winrt::hstring const& i
         const int32_t groupItemCount = entry->GroupItemCount();
 
         // GroupedEntry is immutable: one Replace refreshes the chevron without touching any other row.
-        m_groupRows.SetAt(i, winrt::make<GroupedEntry>(entry->Identity(), entry->Key(), groupItemCount, entry->ChildCount(), expand));
+        m_groupRows.SetAt(i, winrt::make<GroupedEntry>(entry->Identity(), entry->Key(), groupItemCount, expand));
 
         if (expand)
         {
@@ -1569,1252 +992,4 @@ bool TableViewRowFlattener::TryApplyGroupExpansionSplice(winrt::hstring const& i
 
     // The header is not in the rows (mid-reshape); a rebuild reconciles.
     return false;
-}
-
-// --- Tree rows ------------------------------------------------------------------------------------
-
-template <typename Fn>
-bool TableViewRowFlattener::MutateNodeExpansionQuietly(Fn&& fn)
-{
-    m_suppressNodeExpansionChanged = true;
-    m_nodeExpansionChangedWhileSuppressed = false;
-    auto guard = wil::scope_exit([this]() noexcept { m_suppressNodeExpansionChanged = false; });
-    fn();
-    return std::exchange(m_nodeExpansionChangedWhileSuppressed, false);
-}
-
-void TableViewRowFlattener::SetTreeIndex(std::shared_ptr<ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments)
-{
-    // A handler of the publish may drop the last external owner.
-    auto const keepAlive = shared_from_this();
-
-    m_treeDetached = false;
-    ++m_treeGeneration;
-    m_treeIndex = std::move(index);
-    m_rootSegments = std::move(rootSegments);
-
-    // A collapse override only means something on a row that is still a context row.
-    if (m_treeIndex)
-    {
-        std::erase_if(m_filterOverlayCollapsed, [this](winrt::hstring const& key)
-        {
-            return !m_treeIndex->ContextKeys.contains(std::wstring{ key });
-        });
-    }
-    else
-    {
-        m_filterOverlayCollapsed.clear();
-    }
-
-    RebuildTreeRows();
-
-    // Pruned after publish, against the UNFILTERED key set, so intent for filtered-out rows survives.
-    if (m_treeIndex && m_treeIndex->Structure && m_prunedForStructure.lock() != m_treeIndex->Structure)
-    {
-        // Nothing to prune while every node follows the default (a load, an expand-all or collapse-all).
-        if (m_nodeExpansion.HasExceptions())
-        {
-            std::unordered_set<winrt::hstring> liveKeys;
-            liveKeys.reserve(m_treeIndex->Structure->KeyByItem.size());
-            for (auto const& [item, key] : m_treeIndex->Structure->KeyByItem)
-            {
-                liveKeys.emplace(winrt::hstring{ key });
-            }
-            m_nodeExpansion.RetainOnly(liveKeys);
-        }
-        m_prunedForStructure = m_treeIndex->Structure;
-    }
-}
-
-void TableViewRowFlattener::ClearTreeIndex()
-{
-    // No rebuild: the repeater may still be bound mid-teardown, so an empty Reset is a hazard. The rows and
-    // node rows stay as they are until the rows are swapped.
-    m_treeDetached = true;
-    ++m_treeGeneration;
-    m_treeIndexIsCurrent = false;
-    m_treeIndex.reset();
-    m_treeStructure.reset();
-    m_removedTreeKeys.clear();
-    m_rootSegments.clear();
-    m_filterOverlayCollapsed.clear();
-    m_indexByNodeKey.clear();
-    m_indexByNodeKeyValid = true;
-}
-
-void TableViewRowFlattener::ResetNodeIntentQuietly()
-{
-    // SetAllExpanded moves the baseline and also clears every explicit intent.
-    MutateNodeExpansionQuietly([this]() { m_nodeExpansion.SetAllExpanded(false); });
-    m_filterOverlayCollapsed.clear();
-}
-
-bool TableViewRowFlattener::EffectiveExpanded(winrt::hstring const& nodeKey, bool hasChildren, bool isContext) const
-{
-    if (!hasChildren)
-    {
-        return false;
-    }
-
-    // Context rows follow the overlay only, so toggling them never writes intent.
-    return isContext ? !m_filterOverlayCollapsed.contains(nodeKey) : m_nodeExpansion.IsExpanded(nodeKey);
-}
-
-bool TableViewRowFlattener::EffectiveExpandedForKey(winrt::hstring const& nodeKey) const
-{
-    if (!m_treeIndex)
-    {
-        return m_nodeExpansion.IsExpanded(nodeKey);
-    }
-
-    const std::wstring key{ nodeKey };
-    auto const* const children = m_treeIndex->TryGetChildren(key);
-    return EffectiveExpanded(nodeKey, children && !children->empty(), m_treeIndex->ContextKeys.contains(key));
-}
-
-void TableViewRowFlattener::EmitNodeRange(
-    std::vector<winrt::IInspectable> const& siblings,
-    size_t begin,
-    size_t end,
-    winrt::hstring const& parentKey,
-    int32_t depth,
-    std::vector<winrt::IInspectable>& built,
-    std::vector<NodeRow>& nodeRows) const
-{
-    if (!m_treeIndex)
-    {
-        return;
-    }
-
-    struct Frame
-    {
-        std::vector<winrt::IInspectable> const* Siblings;
-        size_t Begin;
-        size_t End;
-        size_t Next;
-        winrt::hstring ParentKey;
-        int32_t Depth;
-    };
-
-    std::vector<Frame> stack;
-    stack.push_back({ &siblings, begin, end, begin, parentKey, depth });
-
-    while (!stack.empty())
-    {
-        Frame& frame = stack.back();
-        if (frame.Next >= frame.End)
-        {
-            stack.pop_back();
-            continue;
-        }
-
-        const size_t i = frame.Next++;
-        auto const& item = (*frame.Siblings)[i];
-        auto const* const key = m_treeIndex->TryGetKey(item);
-        if (!key)
-        {
-            // Every indexed item has a key; an unknown one cannot be addressed, so it is skipped.
-            continue;
-        }
-
-        auto const* const children = m_treeIndex->TryGetChildren(*key);
-
-        NodeRow row;
-        row.Item = item;
-        row.NodeKey = winrt::hstring{ *key };
-        row.ParentKey = frame.ParentKey;
-        row.Depth = frame.Depth;
-        row.ChildCount = children ? static_cast<int32_t>(children->size()) : 0;
-        row.SiblingIndex = static_cast<int32_t>(i - frame.Begin + 1);
-        row.SiblingCount = static_cast<int32_t>(frame.End - frame.Begin);
-        row.HasChildren = row.ChildCount > 0;
-        row.IsContext = !m_treeIndex->ContextKeys.empty() && m_treeIndex->ContextKeys.contains(*key);
-        row.IsExpanded = EffectiveExpanded(row.NodeKey, row.HasChildren, row.IsContext);
-
-        // Captured before the push below, which may reallocate the stack and invalidate `frame`.
-        const int32_t childDepth = frame.Depth + 1;
-        const bool descend = row.IsExpanded;
-        auto nodeKey = row.NodeKey;
-
-        built.push_back(item);
-        nodeRows.push_back(std::move(row));
-
-        if (descend)
-        {
-            stack.push_back({ children, 0, children->size(), 0, std::move(nodeKey), childDepth });
-        }
-    }
-}
-
-void TableViewRowFlattener::RebuildTreeRows()
-{
-    AssertOnUiThread();
-
-    if (m_treeDetached)
-    {
-        // Retracted: publishing even an empty Reset would reach a repeater mid-teardown.
-        return;
-    }
-
-    if (m_treeRowsInFlight)
-    {
-        m_treeRowsPending = true;
-        return;
-    }
-
-    bool runPending = false;
-    do
-    {
-        m_treeRowsInFlight = true;
-        m_treeRowsPending = false;
-        auto resetGuard = wil::scope_exit([this, &runPending]() noexcept
-        {
-            m_treeRowsInFlight = false;
-            runPending = m_treeRowsPending;
-            m_treeRowsPending = false;
-        });
-
-        std::vector<winrt::IInspectable> built;
-        std::vector<NodeRow> nodeRows;
-
-        if (m_treeIndex)
-        {
-            auto const& roots = m_treeIndex->Roots;
-            if (m_rootSegments.empty())
-            {
-                EmitNodeRange(roots, 0, roots.size(), winrt::hstring{}, 0, built, nodeRows);
-            }
-            else
-            {
-                // One segment per group, so a root's sibling position is per group.
-                MUX_ASSERT(std::accumulate(m_rootSegments.begin(), m_rootSegments.end(), size_t{ 0 }) == roots.size());
-
-                size_t segmentBegin = 0;
-                for (const size_t length : m_rootSegments)
-                {
-                    const size_t segmentEnd = (std::min)(segmentBegin + length, roots.size());
-                    EmitNodeRange(roots, segmentBegin, segmentEnd, winrt::hstring{}, 0, built, nodeRows);
-                    segmentBegin = segmentEnd;
-                }
-            }
-        }
-
-        // A rebuild after one view change usually differs from the rows by a row or a short run.
-        if (TryPublishTreeRowsAsSplice(built, nodeRows))
-        {
-            continue;
-        }
-
-        // Node rows before the Reset, so synchronous handlers see agreeing state. The node key index is built on
-        // first use (EnsureNodeKeyIndex), not for every rebuild.
-        auto previousNodeRows = std::exchange(m_nodeRows, std::move(nodeRows));
-        auto previousIndex = std::exchange(m_indexByNodeKey, {});
-        const bool previousIndexValid = std::exchange(m_indexByNodeKeyValid, false);
-        m_indexByItemValid = false;
-
-        // Roll back only if ReplaceAll's assignment threw (old rows still published, detected by row
-        // count). A throw from a Reset handler happens after the new rows are live; keep them.
-        const auto publishedCount = static_cast<uint32_t>(built.size());
-        // Captured: a handler of the Reset may release the tree, which replaces m_treeRows.
-        auto const rows = m_treeRows;
-        auto publishGuard = wil::scope_exit([this, rows, publishedCount, &previousNodeRows, &previousIndex, previousIndexValid]() noexcept
-        {
-            if (rows.Size() == publishedCount || m_treeDetached)
-            {
-                return;
-            }
-
-            m_nodeRows = std::move(previousNodeRows);
-            m_indexByNodeKey = std::move(previousIndex);
-            m_indexByNodeKeyValid = previousIndexValid;
-            m_indexByItemValid = false;
-        });
-
-        rows.ReplaceAll(built);
-        publishGuard.release();
-    } while (runPending && !m_treeDetached);
-
-    if (m_treeDetached)
-    {
-        // A handler of the Reset above retracted the tree; see ClearTreeIndex.
-        return;
-    }
-
-    OnTreeRowsPublished();
-}
-
-void TableViewRowFlattener::OnTreeRowsPublished()
-{
-    if (m_sliceTreeIntoGroups)
-    {
-        ResliceTreeGroups();
-        RebuildGroupRows();
-    }
-}
-
-bool TableViewRowFlattener::IsNodeExpanded(winrt::hstring const& nodeKey) const
-{
-    // The presented state (incl. overlay), so toggling an overlay-expanded context row collapses it.
-    int32_t index = -1;
-    if (TryGetIndexForNodeKey(nodeKey, index))
-    {
-        if (auto const* const row = TryGetNodeRow(index))
-        {
-            return row->IsExpanded;
-        }
-    }
-
-    // Not visible: context rows answer from the overlay, others from intent.
-    if (m_treeIndex && m_treeIndex->ContextKeys.contains(std::wstring{ nodeKey }))
-    {
-        return EffectiveExpandedForKey(nodeKey);
-    }
-    return m_nodeExpansion.IsExpanded(nodeKey);
-}
-
-void TableViewRowFlattener::SetNodeExpanded(winrt::hstring const& nodeKey, bool isExpanded)
-{
-    auto const keepAlive = shared_from_this();
-
-    if (!m_treeIndex)
-    {
-        return;
-    }
-
-    int32_t index = -1;
-    if (!TryGetIndexForNodeKey(nodeKey, index))
-    {
-        return;
-    }
-
-    auto const* const row = TryGetNodeRow(index);
-    if (!row || !row->HasChildren)
-    {
-        return;
-    }
-
-    const bool before = row->IsExpanded;
-
-    if (row->IsContext)
-    {
-        // Overlay only; discarded when the filter changes.
-        if (isExpanded)
-        {
-            m_filterOverlayCollapsed.erase(nodeKey);
-        }
-        else
-        {
-            m_filterOverlayCollapsed.insert(nodeKey);
-        }
-
-        const bool after = EffectiveExpanded(nodeKey, true, true);
-        if (before != after)
-        {
-            ApplySingleNodeToggle(nodeKey, after);
-        }
-        return;
-    }
-
-    if (m_nodeExpansion.IsExpanded(nodeKey) != isExpanded)
-    {
-        // Through the model, so its Changed notification drives ApplySingleNodeToggle.
-        m_nodeExpansion.SetExpanded(nodeKey, isExpanded);
-    }
-    else if (before != isExpanded)
-    {
-        // Intent agrees but the presented state does not (an earlier build never landed); reconcile.
-        ApplySingleNodeToggle(nodeKey, isExpanded);
-    }
-}
-
-void TableViewRowFlattener::ExpandAllNodes()
-{
-    auto const keepAlive = shared_from_this();
-
-    const bool hadOverlay = !m_filterOverlayCollapsed.empty();
-    m_filterOverlayCollapsed.clear();
-
-    // Moves the baseline, so future nodes also arrive expanded.
-    const bool changed = MutateNodeExpansionQuietly([this]() { m_nodeExpansion.SetAllExpanded(true); });
-    if (changed || hadOverlay)
-    {
-        RebuildTreeRows();
-    }
-}
-
-void TableViewRowFlattener::CollapseAllNodes()
-{
-    auto const keepAlive = shared_from_this();
-
-    const bool changed = MutateNodeExpansionQuietly([this]() { m_nodeExpansion.SetAllExpanded(false); });
-
-    // Context rows are overlay-expanded, so collapse-all must override each one.
-    bool overlayChanged = false;
-    if (m_treeIndex)
-    {
-        for (auto const& key : m_treeIndex->ContextKeys)
-        {
-            overlayChanged |= m_filterOverlayCollapsed.emplace(winrt::hstring{ key }).second;
-        }
-    }
-
-    if (changed || overlayChanged)
-    {
-        RebuildTreeRows();
-    }
-}
-
-void TableViewRowFlattener::ExpandSubtree(winrt::hstring const& nodeKey)
-{
-    auto const keepAlive = shared_from_this();
-
-    if (!m_treeIndex || !IsNodeKey(nodeKey))
-    {
-        return;
-    }
-
-    bool overlayChanged = false;
-    const bool changed = MutateNodeExpansionQuietly([&]()
-    {
-        std::vector<std::wstring> pending{ std::wstring{ nodeKey } };
-        while (!pending.empty())
-        {
-            const std::wstring key = std::move(pending.back());
-            pending.pop_back();
-
-            auto const* const children = m_treeIndex->TryGetChildren(key);
-            if (!children || children->empty())
-            {
-                continue;
-            }
-
-            const winrt::hstring hkey{ key };
-            if (m_treeIndex->ContextKeys.contains(key))
-            {
-                // A context row is presented from the overlay alone; expanding it writes no intent.
-                overlayChanged |= m_filterOverlayCollapsed.erase(hkey) > 0;
-            }
-            else
-            {
-                m_nodeExpansion.SetExpanded(hkey, true);
-            }
-
-            for (auto const& child : *children)
-            {
-                if (auto const* const childKey = m_treeIndex->TryGetKey(child))
-                {
-                    pending.push_back(*childKey);
-                }
-            }
-        }
-    });
-
-    if (changed || overlayChanged)
-    {
-        RebuildTreeRows();
-    }
-}
-
-void TableViewRowFlattener::OnNodeExpansionChanged(ShapingHelpers::RowExpansionModel::Change const& change)
-{
-    AssertOnUiThread();
-
-    // Only a single-node toggle can splice; baseline moves and batches rebuild.
-    if (change.AffectsAllKeys || change.Keys.size() != 1)
-    {
-        RebuildTreeRows();
-        return;
-    }
-
-    // Splice to the presented state; for context rows intent changes move nothing.
-    ApplySingleNodeToggle(change.Keys.front(), EffectiveExpandedForKey(change.Keys.front()));
-}
-
-void TableViewRowFlattener::ApplySingleNodeToggle(winrt::hstring const& nodeKey, bool isExpanded)
-{
-    AssertOnUiThread();
-
-    if (m_treeRowsInFlight)
-    {
-        // Raised mid-publish; the outer operation rebuilds once afterward.
-        m_treeRowsPending = true;
-        return;
-    }
-
-    bool runPending = false;
-    bool applied = false;
-    {
-        m_treeRowsInFlight = true;
-        m_treeRowsPending = false;
-        auto resetGuard = wil::scope_exit([this, &runPending]() noexcept
-        {
-            m_treeRowsInFlight = false;
-            runPending = m_treeRowsPending;
-            m_treeRowsPending = false;
-        });
-
-        applied = TryApplyNodeExpansionSplice(nodeKey, isExpanded);
-    }
-
-    // Re-entrant or unresolved: one rebuild after unwind (no-op once detached).
-    if (runPending || !applied)
-    {
-        RebuildTreeRows();
-    }
-}
-
-bool TableViewRowFlattener::TryApplyNodeExpansionSplice(winrt::hstring const& nodeKey, bool expand)
-{
-    // The rows and node rows must already agree or a ranged splice would corrupt the pairing.
-    if (!m_treeIndex || m_nodeRows.size() != static_cast<size_t>(m_treeRows.Size()))
-    {
-        return false;
-    }
-
-    int32_t index = -1;
-    if (!TryGetIndexForNodeKey(nodeKey, index) || index < 0 || static_cast<size_t>(index) >= m_nodeRows.size())
-    {
-        // Not visible (behind a collapsed ancestor); a rebuild reconciles.
-        return false;
-    }
-
-    auto const& node = m_nodeRows[static_cast<size_t>(index)];
-    if (node.IsExpanded == expand || !node.HasChildren)
-    {
-        return true;
-    }
-
-    const int32_t nodeDepth = node.Depth;
-
-    if (!expand)
-    {
-        // Visible descendants = contiguous following rows with greater Depth.
-        int32_t runEnd = index + 1;
-        while (static_cast<size_t>(runEnd) < m_nodeRows.size() && m_nodeRows[static_cast<size_t>(runEnd)].Depth > nodeDepth)
-        {
-            ++runEnd;
-        }
-
-        if (runEnd - (index + 1) > c_maxSpliceRows)
-        {
-            return false;
-        }
-
-        // Node row first, so the row reads collapsed when RemoveTreeRows notifies.
-        m_nodeRows[static_cast<size_t>(index)].IsExpanded = false;
-        if (RemoveTreeRows(index + 1, runEnd - (index + 1)))
-        {
-            OnTreeRowsPublished();
-        }
-        return true;
-    }
-
-    auto const* const children = m_treeIndex->TryGetChildren(std::wstring{ nodeKey });
-    if (!children || children->empty())
-    {
-        return false;
-    }
-
-    // Expand: emit the subtree from the index (honouring nested intent), then insert.
-    std::vector<winrt::IInspectable> built;
-    std::vector<NodeRow> nodeRows;
-    EmitNodeRange(*children, 0, children->size(), nodeKey, nodeDepth + 1, built, nodeRows);
-
-    if (built.size() > static_cast<size_t>(c_maxSpliceRows))
-    {
-        return false;
-    }
-
-    m_nodeRows[static_cast<size_t>(index)].IsExpanded = true;
-    if (InsertTreeRows(index + 1, built, nodeRows))
-    {
-        OnTreeRowsPublished();
-    }
-    return true;
-}
-
-bool TableViewRowFlattener::TryPublishTreeRowsAsSplice(std::vector<winrt::IInspectable> const& built, std::vector<NodeRow>& nodeRows)
-{
-    const size_t oldCount = m_nodeRows.size();
-    const size_t newCount = built.size();
-    if (!m_isRebuildingTreeForView || oldCount == 0 || newCount == 0 || m_treeRows.Size() != oldCount)
-    {
-        return false;
-    }
-
-    auto const same = [](winrt::IInspectable const& left, winrt::IInspectable const& right) { return winrt::get_abi(left) == winrt::get_abi(right); };
-    size_t prefix = 0;
-    while (prefix < oldCount && prefix < newCount && same(m_nodeRows[prefix].Item, built[prefix]))
-    {
-        ++prefix;
-    }
-    size_t suffix = 0;
-    while (suffix < oldCount - prefix && suffix < newCount - prefix && same(m_nodeRows[oldCount - 1 - suffix].Item, built[newCount - 1 - suffix]))
-    {
-        ++suffix;
-    }
-
-    // Each step removes rows at a position, then inserts the new rows [InsertFrom, InsertFrom + InsertCount).
-    struct Step
-    {
-        size_t At;
-        size_t RemoveCount;
-        size_t InsertFrom;
-        size_t InsertCount;
-    };
-    std::vector<Step> steps;
-    const size_t removed = oldCount - prefix - suffix;
-    const size_t inserted = newCount - prefix - suffix;
-    const size_t maxRows = static_cast<size_t>(c_maxSpliceRows);
-    if (removed <= maxRows && inserted <= maxRows)
-    {
-        steps.push_back({ prefix, removed, prefix, inserted });
-    }
-    else if (removed == inserted)
-    {
-        // A short run moved across the rest (a live move of a subtree): the middle is rotated.
-        const size_t middle = removed;
-        auto const isRotatedBy = [&](size_t shift)
-        {
-            for (size_t i = 0; i < middle; ++i)
-            {
-                if (!same(m_nodeRows[prefix + (i + shift) % middle].Item, built[prefix + i]))
-                {
-                    return false;
-                }
-            }
-            return true;
-        };
-        for (size_t run = 1; run <= maxRows && run < middle && steps.empty(); ++run)
-        {
-            if (same(m_nodeRows[prefix + run].Item, built[prefix]) && isRotatedBy(run))
-            {
-                steps.push_back({ prefix, run, 0, 0 });
-                steps.push_back({ prefix + middle - run, 0, prefix + middle - run, run });
-            }
-            else if (same(m_nodeRows[prefix + middle - run].Item, built[prefix]) && isRotatedBy(middle - run))
-            {
-                steps.push_back({ prefix + middle - run, run, 0, 0 });
-                steps.push_back({ prefix, 0, prefix, run });
-            }
-        }
-    }
-
-    if (steps.empty())
-    {
-        return false;
-    }
-
-    for (auto const& step : steps)
-    {
-        // A handler that released or replaced the tree ends the splice; the new tree's rebuild is pending.
-        if (step.RemoveCount > 0 && !RemoveTreeRows(static_cast<int32_t>(step.At), static_cast<int32_t>(step.RemoveCount)))
-        {
-            return true;
-        }
-        if (step.InsertCount > 0)
-        {
-            const std::vector<winrt::IInspectable> items(built.begin() + step.InsertFrom, built.begin() + step.InsertFrom + step.InsertCount);
-            const std::vector<NodeRow> rows(nodeRows.begin() + step.InsertFrom, nodeRows.begin() + step.InsertFrom + step.InsertCount);
-            if (!InsertTreeRows(static_cast<int32_t>(step.At), items, rows))
-            {
-                return true;
-            }
-        }
-    }
-
-    // The rows match; rows that kept their place take their new depth, sibling and expansion state, which the
-    // realized rows are restamped from.
-    MUX_ASSERT(m_nodeRows.size() == nodeRows.size());
-    m_nodeRows = std::move(nodeRows);
-    m_indexByNodeKeyValid = false;
-    m_indexByItemValid = false;
-    return true;
-}
-
-bool TableViewRowFlattener::TryApplyTreeChange(winrt::Windows::Foundation::Collections::CollectionChange change, uint32_t index)
-{
-    using winrt::Windows::Foundation::Collections::CollectionChange;
-
-    if (m_kind != Kind::Tree || !m_treeIndexIsCurrent || !m_treeIndex || !m_treeStructure ||
-        m_treeIndex->Structure.get() != m_treeStructure.get() || m_treeDetached ||
-        m_treeRowsInFlight || m_updating || !m_rootSegments.empty() || !m_keySelector ||
-        m_nodeRows.size() != static_cast<size_t>(m_treeRows.Size()))
-    {
-        return false;
-    }
-
-    auto const keepAlive = shared_from_this();
-    const size_t mirroredCount = m_treeStructure->Rows.size();
-    const size_t viewCount = m_view.Size();
-    bool applied = false;
-    bool runPending = false;
-    {
-        // App code (the key selectors, row change handlers) that changes the view again rebuilds once this unwinds.
-        m_treeRowsInFlight = true;
-        m_treeChangeInFlight = true;
-        m_treeRowsPending = false;
-        auto resetGuard = wil::scope_exit([this, &runPending]() noexcept
-        {
-            m_treeRowsInFlight = false;
-            m_treeChangeInFlight = false;
-            runPending = m_treeRowsPending;
-            m_treeRowsPending = false;
-        });
-
-        switch (change)
-        {
-        case CollectionChange::ItemInserted:
-            applied = mirroredCount + 1 == viewCount && index < viewCount && TryInsertTreeNode(index);
-            break;
-        case CollectionChange::ItemRemoved:
-            applied = mirroredCount == viewCount + 1 && index < mirroredCount && TryRemoveTreeNode(index);
-            break;
-        case CollectionChange::ItemChanged:
-            // A replacement is a removal and an insertion. The new row is checked first, so a replacement that cannot be
-            // applied in place rebuilds without having published the old row's removal.
-            if (mirroredCount == viewCount && index < mirroredCount)
-            {
-                std::pair<std::wstring, std::wstring> keys;
-                bool isSameRow = false;
-                applied = TryReadReplacementKeys(index, keys, isSameRow) &&
-                    (isSameRow ? TryRefreshTreeRow(index) : (TryRemoveTreeNode(index) && TryInsertTreeNode(index, &keys)));
-            }
-            break;
-        default:
-            break;
-        }
-    }
-
-    if (!applied)
-    {
-        m_treeIndexIsCurrent = false;
-    }
-    if (runPending)
-    {
-        m_treeIndexIsCurrent = false;
-        Update();
-        return true;
-    }
-    return applied;
-}
-
-int32_t TableViewRowFlattener::FindNodeRowIndex(winrt::IInspectable const& item, int32_t from) const
-{
-    auto const abi = winrt::get_abi(item);
-    for (size_t i = static_cast<size_t>((std::max)(from, 0)); i < m_nodeRows.size(); ++i)
-    {
-        if (winrt::get_abi(m_nodeRows[i].Item) == abi)
-        {
-            return static_cast<int32_t>(i);
-        }
-    }
-    return -1;
-}
-
-void TableViewRowFlattener::RenumberSiblingRows(int32_t parentRow, int32_t depth, int32_t siblingCount)
-{
-    int32_t sibling = 0;
-    for (size_t i = static_cast<size_t>(parentRow + 1); i < m_nodeRows.size(); ++i)
-    {
-        auto& row = m_nodeRows[i];
-        if (parentRow >= 0 && row.Depth < depth)
-        {
-            break;
-        }
-        if (row.Depth == depth)
-        {
-            row.SiblingIndex = ++sibling;
-            row.SiblingCount = siblingCount;
-        }
-    }
-}
-
-// The new row's keys are read; the others are not. Its siblings stay in the view's order: it goes after the nearest
-// earlier view item with the same parent. Everything is found before anything changes.
-bool TableViewRowFlattener::TryReadReplacementKeys(uint32_t viewIndex, std::pair<std::wstring, std::wstring>& keys, bool& isSameRow)
-{
-    auto const index = m_treeIndex;
-    auto const structure = m_treeStructure;
-    auto const generation = m_declarationGeneration;
-
-    isSameRow = false;
-    auto const item = m_view.GetAt(viewIndex);
-    auto const oldItem = structure->Rows[viewIndex];
-    if (!item)
-    {
-        return false;
-    }
-    const bool isSameObject = winrt::get_abi(item) == winrt::get_abi(oldItem);
-    auto const oldKey = structure->KeyByItem.find(winrt::get_abi(oldItem));
-    if (oldKey == structure->KeyByItem.end())
-    {
-        return false;
-    }
-    auto const* const children = index->TryGetChildren(oldKey->second);
-    const bool hasChildren = children && !children->empty();
-    if (hasChildren && !isSameObject)
-    {
-        return false;
-    }
-
-    ShapingHelpers::ReadNodeKeys(m_keySelector, m_parentKeySelector, item, keys.first, keys.second);
-    if (m_treeRowsPending || generation != m_declarationGeneration || m_treeIndex != index || m_treeStructure != structure)
-    {
-        return false;
-    }
-    if (isSameObject)
-    {
-        // A row refreshed (coll[i] = coll[i]): unchanged keys keep its place, its children and its expansion.
-        auto const oldDeclaredParent = structure->ParentKeyByItem.find(winrt::get_abi(oldItem));
-        isSameRow = keys.first == oldKey->second &&
-            oldDeclaredParent != structure->ParentKeyByItem.end() && keys.second == oldDeclaredParent->second;
-        if (isSameRow)
-        {
-            return true;
-        }
-        if (hasChildren)
-        {
-            return false;
-        }
-    }
-
-    // What TryInsertTreeNode will check once the old row is gone; the old row's own key is free for the new one.
-    auto const& key = keys.first;
-    auto const& declaredParent = keys.second;
-    auto const sameKey = structure->ItemByKey.find(key);
-    return !key.empty() && key != declaredParent &&
-        !ShapingHelpers::IsObjectNodeKey(key) && !ShapingHelpers::IsObjectNodeKey(declaredParent) &&
-        (sameKey == structure->ItemByKey.end() || winrt::get_abi(sameKey->second) == winrt::get_abi(oldItem)) &&
-        !structure->OrphanParentKeys.contains(key) && declaredParent != oldKey->second &&
-        (isSameObject || !structure->KeyByItem.contains(winrt::get_abi(item)));
-}
-
-bool TableViewRowFlattener::TryRefreshTreeRow(uint32_t viewIndex)
-{
-    auto const item = m_treeStructure->Rows[viewIndex];
-    const int32_t row = FindNodeRowIndex(item);
-    if (row >= 0 && !m_treeDetached)
-    {
-        m_treeRows.SetAt(static_cast<uint32_t>(row), item);
-    }
-    return true;
-}
-
-bool TableViewRowFlattener::TryInsertTreeNode(uint32_t viewIndex, std::pair<std::wstring, std::wstring>* keys)
-{
-    auto const index = m_treeIndex;
-    auto const structure = m_treeStructure;
-    auto const generation = m_declarationGeneration;
-
-    // A Replace inserts after its removal, whose handlers may have released the tree.
-    if (!index || !structure || m_treeDetached)
-    {
-        return false;
-    }
-
-    auto const item = m_view.GetAt(viewIndex);
-    if (!item)
-    {
-        return false;
-    }
-
-    std::wstring key;
-    std::wstring declaredParent;
-    if (keys)
-    {
-        key = std::move(keys->first);
-        declaredParent = std::move(keys->second);
-    }
-    else
-    {
-        ShapingHelpers::ReadNodeKeys(m_keySelector, m_parentKeySelector, item, key, declaredParent);
-    }
-    if (m_treeRowsPending || generation != m_declarationGeneration || m_treeIndex != index || m_treeStructure != structure)
-    {
-        // The selectors changed the view or the declaration.
-        return false;
-    }
-    if (key.empty() || key == declaredParent ||
-        ShapingHelpers::IsObjectNodeKey(key) || ShapingHelpers::IsObjectNodeKey(declaredParent) ||
-        structure->ItemByKey.contains(key) || structure->OrphanParentKeys.contains(key) ||
-        structure->KeyByItem.contains(winrt::get_abi(item)))
-    {
-        // A duplicate or a row that adopts orphans: the rebuild reports or reshapes it.
-        return false;
-    }
-
-    std::wstring_view parentKey;
-    winrt::IInspectable parentItem{ nullptr };
-    if (!declaredParent.empty())
-    {
-        if (auto const parent = structure->ItemByKey.find(declaredParent); parent != structure->ItemByKey.end())
-        {
-            parentKey = parent->first;
-            parentItem = parent->second;
-        }
-    }
-
-    std::vector<winrt::IInspectable> const* siblings = &index->Roots;
-    if (!parentKey.empty())
-    {
-        auto const children = index->Children.find(parentKey);
-        siblings = (children != index->Children.end()) ? &children->second : nullptr;
-    }
-
-    auto const& rows = structure->Rows;
-    size_t position = 0;
-    if (siblings && !siblings->empty())
-    {
-        std::unordered_set<void*> siblingSet;
-        if (!parentKey.empty())
-        {
-            siblingSet.reserve(siblings->size());
-            for (auto const& sibling : *siblings)
-            {
-                siblingSet.insert(winrt::get_abi(sibling));
-            }
-        }
-        for (size_t j = viewIndex; j-- > 0;)
-        {
-            const bool isSibling = parentKey.empty()
-                ? structure->ResolvedParentKey(rows[j]).empty()
-                : siblingSet.contains(winrt::get_abi(rows[j]));
-            if (isSibling)
-            {
-                auto const found = std::find_if(siblings->begin(), siblings->end(),
-                    [&](winrt::IInspectable const& sibling) { return winrt::get_abi(sibling) == winrt::get_abi(rows[j]); });
-                if (found == siblings->end())
-                {
-                    return false;
-                }
-                position = static_cast<size_t>(found - siblings->begin()) + 1;
-                break;
-            }
-        }
-    }
-    const int32_t siblingCount = static_cast<int32_t>(siblings ? siblings->size() : 0) + 1;
-
-    // Where the row shows, and how its parent's row changes.
-    int32_t parentRow = -1;
-    int32_t depth = 0;
-    bool isShown = true;
-    bool parentGainsChildren = false;
-    bool parentIsExpanded = true;
-    if (parentItem)
-    {
-        parentRow = FindNodeRowIndex(parentItem);
-        isShown = parentRow >= 0;
-        if (isShown)
-        {
-            auto const& parent = m_nodeRows[static_cast<size_t>(parentRow)];
-            depth = parent.Depth + 1;
-            parentGainsChildren = !parent.HasChildren;
-            parentIsExpanded = parentGainsChildren ? EffectiveExpanded(parent.NodeKey, true, parent.IsContext) : parent.IsExpanded;
-            isShown = parentIsExpanded;
-        }
-    }
-    int32_t at = parentRow + 1;
-    if (isShown && position > 0)
-    {
-        const int32_t previousRow = FindNodeRowIndex((*siblings)[position - 1], parentRow + 1);
-        if (previousRow < 0)
-        {
-            return false;
-        }
-        at = previousRow + 1;
-        while (static_cast<size_t>(at) < m_nodeRows.size() && m_nodeRows[static_cast<size_t>(at)].Depth > depth)
-        {
-            ++at;
-        }
-    }
-
-    auto& siblingList = parentKey.empty() ? index->Roots : index->Children[parentKey];
-    siblingList.insert(siblingList.begin() + position, item);
-    ++index->KeptNodeCount;
-    structure->Rows.insert(structure->Rows.begin() + viewIndex, item);
-    auto const entry = structure->KeyByItem.emplace(winrt::get_abi(item), std::move(key)).first;
-    std::wstring const& stored = entry->second;
-    structure->ItemByKey.emplace(std::wstring_view{ stored }, item);
-    if (!declaredParent.empty() && parentKey.empty())
-    {
-        ++structure->OrphanParentKeys[declaredParent];
-    }
-    structure->ParentKeyByItem.emplace(winrt::get_abi(item), std::move(declaredParent));
-
-    if (parentRow >= 0)
-    {
-        auto& parent = m_nodeRows[static_cast<size_t>(parentRow)];
-        parent.ChildCount = siblingCount;
-        if (parentGainsChildren)
-        {
-            parent.HasChildren = true;
-            parent.IsExpanded = parentIsExpanded;
-        }
-    }
-    if (!isShown)
-    {
-        return true;
-    }
-
-    NodeRow row;
-    row.Item = item;
-    row.NodeKey = winrt::hstring{ stored };
-    row.ParentKey = winrt::hstring{ parentKey };
-    row.Depth = depth;
-    row.SiblingIndex = static_cast<int32_t>(position) + 1;
-    row.SiblingCount = siblingCount;
-    if (!InsertTreeRows(at, { item }, { row }))
-    {
-        // A handler released or replaced the tree; its rebuild (or the release) shows the rows.
-        return false;
-    }
-    RenumberSiblingRows(parentRow, depth, siblingCount);
-    return true;
-}
-
-// A leaf leaves; a row with children rebuilds (its children become orphan roots).
-bool TableViewRowFlattener::TryRemoveTreeNode(uint32_t viewIndex)
-{
-    auto const index = m_treeIndex;
-    auto const structure = m_treeStructure;
-
-    auto const item = structure->Rows[viewIndex];
-    auto const keyEntry = structure->KeyByItem.find(winrt::get_abi(item));
-    if (keyEntry == structure->KeyByItem.end())
-    {
-        return false;
-    }
-    const std::wstring_view key{ keyEntry->second };
-    if (auto const* const children = index->TryGetChildren(key); children && !children->empty())
-    {
-        return false;
-    }
-
-    const std::wstring_view parentKey = structure->ResolvedParentKey(item);
-    std::vector<winrt::IInspectable>* siblings = &index->Roots;
-    auto children = index->Children.end();
-    if (!parentKey.empty())
-    {
-        children = index->Children.find(parentKey);
-        if (children == index->Children.end())
-        {
-            return false;
-        }
-        siblings = &children->second;
-    }
-    auto const found = std::find_if(siblings->begin(), siblings->end(),
-        [&](winrt::IInspectable const& sibling) { return winrt::get_abi(sibling) == winrt::get_abi(item); });
-    if (found == siblings->end())
-    {
-        return false;
-    }
-
-    int32_t parentRow = -1;
-    int32_t depth = 0;
-    bool isParentVisible = true;
-    if (!parentKey.empty())
-    {
-        parentRow = FindNodeRowIndex(structure->ItemByKey.at(parentKey));
-        isParentVisible = parentRow >= 0;
-        depth = isParentVisible ? m_nodeRows[static_cast<size_t>(parentRow)].Depth + 1 : 0;
-    }
-    const int32_t row = isParentVisible ? FindNodeRowIndex(item, parentRow + 1) : -1;
-
-    // Its expansion intent is dropped at the end of the turn unless the row came back (a move).
-    m_removedTreeKeys.emplace_back(key);
-    QueueTreeTurnEnd();
-
-    siblings->erase(found);
-    const int32_t siblingCount = static_cast<int32_t>(siblings->size());
-    if (siblingCount == 0 && children != index->Children.end())
-    {
-        index->Children.erase(children);
-    }
-    --index->KeptNodeCount;
-    structure->Rows.erase(structure->Rows.begin() + viewIndex);
-    auto const declared = structure->ParentKeyByItem.find(winrt::get_abi(item));
-    if (declared != structure->ParentKeyByItem.end())
-    {
-        if (!declared->second.empty() && parentKey.empty())
-        {
-            if (auto const orphan = structure->OrphanParentKeys.find(declared->second);
-                orphan != structure->OrphanParentKeys.end() && --orphan->second == 0)
-            {
-                structure->OrphanParentKeys.erase(orphan);
-            }
-        }
-        structure->ParentKeyByItem.erase(declared);
-    }
-    structure->ItemByKey.erase(key);
-    structure->KeyByItem.erase(keyEntry);
-    m_treeKeyCache.erase(winrt::get_abi(item));
-
-    if (parentRow >= 0)
-    {
-        auto& parent = m_nodeRows[static_cast<size_t>(parentRow)];
-        parent.ChildCount = siblingCount;
-        parent.HasChildren = siblingCount > 0;
-        parent.IsExpanded = parent.HasChildren && parent.IsExpanded;
-    }
-    if (row >= 0)
-    {
-        if (!RemoveTreeRows(row, 1))
-        {
-            // A handler released or replaced the tree: a Replace must not go on to insert into it (TryInsertTreeNode).
-            return false;
-        }
-        RenumberSiblingRows(parentRow, depth, siblingCount);
-    }
-    return true;
-}
-
-bool TableViewRowFlattener::IsSameTree(
-    uint64_t generation, winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& rows) const noexcept
-{
-    return !m_treeDetached && generation == m_treeGeneration && winrt::get_abi(rows) == winrt::get_abi(m_treeRows);
-}
-
-bool TableViewRowFlattener::InsertTreeRows(
-    int32_t index,
-    std::vector<winrt::IInspectable> const& items,
-    std::vector<NodeRow> const& nodeRows)
-{
-    MUX_ASSERT(items.size() == nodeRows.size());
-
-    // One row at a time, node row before its row: InsertAt notifies synchronously and handlers read node
-    // rows by index. A handler can release the tree and declare another (ClearHierarchy then SetHierarchy), whose
-    // node rows are empty until its deferred rebuild: the loop stops at the first sign of that, and never inserts
-    // past the end.
-    auto const generation = m_treeGeneration;
-    auto const rows = m_treeRows;
-    uint32_t insertAt = static_cast<uint32_t>(index);
-    for (size_t i = 0; i < items.size(); ++i)
-    {
-        if (!IsSameTree(generation, rows))
-        {
-            return false;
-        }
-        if (index < 0 || insertAt > m_nodeRows.size() || insertAt > rows.Size())
-        {
-            // The same tree, out of step with this splice: unreachable while same-tree re-entrancy is deferred
-            // (m_treeRowsInFlight). Every caller runs inside that guard, so a pending rebuild converges the rows.
-            MUX_ASSERT(false);
-            m_treeRowsPending = true;
-            return false;
-        }
-        m_nodeRows.insert(m_nodeRows.begin() + insertAt, nodeRows[i]);
-        m_indexByNodeKeyValid = false;
-        m_indexByItemValid = false;
-        rows.InsertAt(insertAt++, items[i]);
-    }
-    return IsSameTree(generation, rows);
-}
-
-bool TableViewRowFlattener::RemoveTreeRows(int32_t index, int32_t count)
-{
-    // From the end, so remaining rows keep their indices until removed. As in InsertTreeRows, a handler that
-    // replaced the tree stops the loop before a stale index reaches the new (empty) node rows.
-    auto const generation = m_treeGeneration;
-    auto const rows = m_treeRows;
-    for (int32_t i = index + count - 1; i >= index; --i)
-    {
-        if (!IsSameTree(generation, rows))
-        {
-            return false;
-        }
-        if (i < 0 || static_cast<size_t>(i) >= m_nodeRows.size() || static_cast<uint32_t>(i) >= rows.Size())
-        {
-            // As in InsertTreeRows: the same tree out of step with this splice converges through a rebuild.
-            MUX_ASSERT(false);
-            m_treeRowsPending = true;
-            return false;
-        }
-        m_nodeRows.erase(m_nodeRows.begin() + i);
-        m_indexByNodeKeyValid = false;
-        m_indexByItemValid = false;
-        rows.RemoveAt(static_cast<uint32_t>(i));
-    }
-    return IsSameTree(generation, rows);
-}
-
-TableViewRowFlattener::NodeRow const* TableViewRowFlattener::TryGetNodeRow(int32_t index) const
-{
-    if (index < 0 || static_cast<size_t>(index) >= m_nodeRows.size())
-    {
-        return nullptr;
-    }
-    return &m_nodeRows[static_cast<size_t>(index)];
-}
-
-TableViewRowFlattener::NodeRow const* TableViewRowFlattener::TryGetNodeRowForItem(winrt::IInspectable const& item) const
-{
-    if (!item)
-    {
-        return nullptr;
-    }
-
-    EnsureItemIndex();
-
-    const auto found = m_indexByItem.find(winrt::get_abi(item));
-    if (found == m_indexByItem.end() || found->second < 0 || static_cast<size_t>(found->second) >= m_nodeRows.size())
-    {
-        return nullptr;
-    }
-    return &m_nodeRows[static_cast<size_t>(found->second)];
-}
-
-void TableViewRowFlattener::EnsureItemIndex() const
-{
-    if (m_indexByItemValid)
-    {
-        return;
-    }
-
-    m_indexByItem.clear();
-    m_indexByItem.reserve(m_nodeRows.size());
-    for (size_t i = 0; i < m_nodeRows.size(); ++i)
-    {
-        if (auto const& item = m_nodeRows[i].Item)
-        {
-            m_indexByItem.emplace(winrt::get_abi(item), static_cast<int32_t>(i));
-        }
-    }
-    m_indexByItemValid = true;
-}
-
-void TableViewRowFlattener::EnsureNodeKeyIndex() const
-{
-    if (m_indexByNodeKeyValid)
-    {
-        return;
-    }
-
-    m_indexByNodeKey.clear();
-    m_indexByNodeKey.reserve(m_nodeRows.size());
-    for (size_t i = 0; i < m_nodeRows.size(); ++i)
-    {
-        m_indexByNodeKey.emplace(m_nodeRows[i].NodeKey, static_cast<int32_t>(i));
-    }
-    m_indexByNodeKeyValid = true;
-}
-
-bool TableViewRowFlattener::TryGetIndexForNodeKey(winrt::hstring const& nodeKey, int32_t& index) const
-{
-    index = -1;
-    if (nodeKey.empty())
-    {
-        return false;
-    }
-
-    EnsureNodeKeyIndex();
-
-    const auto found = m_indexByNodeKey.find(nodeKey);
-    if (found == m_indexByNodeKey.end())
-    {
-        return false;
-    }
-
-    index = found->second;
-    return true;
 }

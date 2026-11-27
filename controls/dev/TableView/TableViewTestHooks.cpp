@@ -8,6 +8,8 @@
 
 namespace
 {
+    winrt::Windows::Foundation::EventHandler<winrt::IInspectable> s_rowCellRebuildHandler{ nullptr };
+
     TableView* TableViewFrom(winrt::IInspectable const& tableView)
     {
         auto const table = tableView.try_as<winrt::TableView>();
@@ -37,4 +39,17 @@ bool TableViewTestHooks::IsColumnReorderDragging(winrt::IInspectable const& tabl
 {
     auto const table = TableViewFrom(tableView);
     return table && table->IsColumnReorderDraggingForTesting();
+}
+
+void TableViewTestHooks::SetRowCellRebuildHandler(winrt::Windows::Foundation::EventHandler<winrt::IInspectable> const& handler)
+{
+    s_rowCellRebuildHandler = handler;
+}
+
+void TableViewTestHooks::NoteRowCellRebuild(winrt::IInspectable const& row)
+{
+    if (auto const handler = s_rowCellRebuildHandler)
+    {
+        handler(row, nullptr);
+    }
 }

@@ -139,8 +139,7 @@ namespace
             TableViewRowItemAutomationPeer,
             winrt::ISelectionItemProvider,
             winrt::IVirtualizedItemProvider,
-            winrt::IScrollItemProvider,
-            winrt::IExpandCollapseProvider>
+            winrt::IScrollItemProvider>
     {
     public:
         TableViewRowItemAutomationPeer(winrt::TableView const& table, winrt::IInspectable const& item, int32_t index, bool byIndex)
@@ -184,14 +183,6 @@ namespace
                 const int32_t index = ItemIndex();
                 live = index >= 0;
                 rowPeer = RealizedRowPeer(index);
-            }
-            if (patternInterface == winrt::PatternInterface::ExpandCollapse)
-            {
-                if (rowPeer && rowPeer.GetPattern(patternInterface))
-                {
-                    return *this;
-                }
-                return nullptr;
             }
             if (patternInterface == winrt::PatternInterface::SelectionItem ||
                 patternInterface == winrt::PatternInterface::VirtualizedItem)
@@ -389,10 +380,6 @@ namespace
         {
             ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Select);
         }
-
-        winrt::ExpandCollapseState ExpandCollapseState() { return LiveRowPeer().ExpandCollapseState(); }
-        void Expand() { LiveRowPeer().Expand(); }
-        void Collapse() { LiveRowPeer().Collapse(); }
 
         void Realize()
         {

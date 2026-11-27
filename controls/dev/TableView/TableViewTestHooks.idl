@@ -15,6 +15,9 @@ runtimeclass TableViewTestHooks
     // A ManipulationCompleted with the given physical cumulative translation: drops the column.
     static Boolean CompleteColumnReorderDrag(Object tableView, Double translationX);
     static Boolean IsColumnReorderDragging(Object tableView);
+
+    // Raised (sender: the row) at the end of each row cell rebuild. Null clears the handler.
+    static void SetRowCellRebuildHandler(Windows.Foundation.EventHandler<Object> handler);
 }
 
 }

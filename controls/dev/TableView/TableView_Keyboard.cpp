@@ -1650,7 +1650,7 @@ void TableView::OnKeyDownForNavigation(
 }
 
 // Rows forward Left/Right (and row-level Up/Down) before PART_BodyScroller acts on them; the
-// handledEventsToo KeyDown then skips the key, since hierarchy Left/Right is not idempotent.
+// handledEventsToo KeyDown then skips the key, since a row-level Left/Right is not idempotent.
 void TableView::HandleBodyKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
 {
     m_navKeyHandledEarly = true;
@@ -3976,34 +3976,6 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
                 return true;
             }
             return false;
-        }
-
-        // Treegrid level: forward expands a collapsed node else drills in; backward collapses an
-        // expanded node else moves to the parent. Shift chords keep the plain drill.
-        if (row.Level() > 0 && !IsKeyDown(winrt::VirtualKey::Shift))
-        {
-            if (drillIn && row.IsExpandable() && !row.IsExpanded())
-            {
-                SetGroupExpansion(row, true);
-                args.Handled(true);
-                return true;
-            }
-
-            if (!drillIn)
-            {
-                if (row.IsExpandable() && row.IsExpanded())
-                {
-                    SetGroupExpansion(row, false);
-                }
-                else if (!TryFocusParentRow(row))
-                {
-                    ScrollBodyHorizontallyInternal(false);
-                }
-
-                // Consumed even at a root, for the same reason as the flat row below.
-                args.Handled(true);
-                return true;
-            }
         }
 
         if (!drillIn)

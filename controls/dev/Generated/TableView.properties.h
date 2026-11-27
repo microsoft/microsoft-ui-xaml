@@ -42,14 +42,8 @@ public:
     void HeadersVisibility(winrt::TableViewHeadersVisibility const& value);
     winrt::TableViewHeadersVisibility HeadersVisibility();
 
-    void ItemKeyPath(winrt::hstring const& value);
-    winrt::hstring ItemKeyPath();
-
     void ItemsSource(winrt::IInspectable const& value);
     winrt::IInspectable ItemsSource();
-
-    void ParentKeyPath(winrt::hstring const& value);
-    winrt::hstring ParentKeyPath();
 
     void RowBackground(winrt::Brush const& value);
     winrt::Brush RowBackground();
@@ -74,9 +68,7 @@ public:
     static winrt::DependencyProperty GridLinesVisibilityProperty() { return s_GridLinesVisibilityProperty; }
     static winrt::DependencyProperty GroupHeaderTemplateProperty() { return s_GroupHeaderTemplateProperty; }
     static winrt::DependencyProperty HeadersVisibilityProperty() { return s_HeadersVisibilityProperty; }
-    static winrt::DependencyProperty ItemKeyPathProperty() { return s_ItemKeyPathProperty; }
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
-    static winrt::DependencyProperty ParentKeyPathProperty() { return s_ParentKeyPathProperty; }
     static winrt::DependencyProperty RowBackgroundProperty() { return s_RowBackgroundProperty; }
     static winrt::DependencyProperty SelectedIndexProperty() { return s_SelectedIndexProperty; }
     static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
@@ -93,9 +85,7 @@ public:
     static GlobalDependencyProperty s_GridLinesVisibilityProperty;
     static GlobalDependencyProperty s_GroupHeaderTemplateProperty;
     static GlobalDependencyProperty s_HeadersVisibilityProperty;
-    static GlobalDependencyProperty s_ItemKeyPathProperty;
     static GlobalDependencyProperty s_ItemsSourceProperty;
-    static GlobalDependencyProperty s_ParentKeyPathProperty;
     static GlobalDependencyProperty s_RowBackgroundProperty;
     static GlobalDependencyProperty s_SelectedIndexProperty;
     static GlobalDependencyProperty s_SelectedItemProperty;
@@ -168,15 +158,7 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnItemKeyPathPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
     static void OnItemsSourcePropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnParentKeyPathPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

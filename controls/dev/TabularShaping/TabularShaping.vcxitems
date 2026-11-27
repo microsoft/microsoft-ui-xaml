@@ -26,7 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingHelpers.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ShapingDescriptions.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RowExpansionModel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingRevoke.h" />
   </ItemGroup>

@@ -43,8 +43,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RowMetadataProvider.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowFlattener.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GroupedEntry.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ParentKeyIndex.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)SortMemberPathResolver.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupExpandingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupCollapsedEventArgs.h" />
@@ -94,7 +92,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)RowMetadataProvider.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRowFlattener.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)GroupedEntry.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ParentKeyIndex.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_CurrentCell.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Grouping.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Sort.cpp" />

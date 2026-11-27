@@ -26,7 +26,6 @@ public:
         winrt::hstring const& identity,
         winrt::IInspectable const& key,
         int32_t groupItemCount,
-        int32_t childCount,
         bool isExpanded,
         int32_t level = 0);
 
@@ -36,8 +35,6 @@ public:
     winrt::IInspectable const& Key() const noexcept { return m_key; }
     // The rows the group holds when expanded.
     int32_t GroupItemCount() const noexcept { return m_groupItemCount; }
-    // The group's immediate children: its roots under a tree, else its rows.
-    int32_t ChildCount() const noexcept { return m_childCount; }
     bool IsExpanded() const noexcept { return m_isExpanded; }
     // 0 for a top-level group; a subgroup of a multi-level view is one deeper than its parent.
     int32_t Level() const noexcept { return m_level; }
@@ -46,7 +43,6 @@ private:
     winrt::hstring m_identity;
     winrt::IInspectable m_key{ nullptr };
     int32_t m_groupItemCount{ 0 };
-    int32_t m_childCount{ 0 };
     bool m_isExpanded{ true };
     int32_t m_level{ 0 };
 };

@@ -178,9 +178,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"GridLinesVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility", statics.GridLinesVisibilityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"GroupHeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.GroupHeaderTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeadersVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility", statics.HeadersVisibilityProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"ItemKeyPath", L"String", statics.ItemKeyPathProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ItemsSource", L"Object", statics.ItemsSourceProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"ParentKeyPath", L"String", statics.ParentKeyPathProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"RowBackground", L"Microsoft.UI.Xaml.Media.Brush", statics.RowBackgroundProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SelectedIndex", L"Int32", statics.SelectedIndexProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SelectedItem", L"Object", statics.SelectedItemProperty(), false /* isContent */);
@@ -505,10 +503,7 @@ Entry c_typeEntries[] =
                 {
                     winrt::ITableViewRowStatics statics = GetFactory<winrt::ITableViewRowStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewRow");
                     {
-                        xamlType.AddDPMember(L"IsExpandable", L"Boolean", statics.IsExpandableProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"IsExpanded", L"Boolean", statics.IsExpandedProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsSelected", L"Boolean", statics.IsSelectedProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"Level", L"Int32", statics.LevelProperty(), false /* isContent */);
                     }
 
                 });

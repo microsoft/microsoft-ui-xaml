@@ -13,4 +13,8 @@ public:
     static bool UpdateColumnReorderDrag(winrt::IInspectable const& tableView, double translationX);
     static bool CompleteColumnReorderDrag(winrt::IInspectable const& tableView, double translationX);
     static bool IsColumnReorderDragging(winrt::IInspectable const& tableView);
+    static void SetRowCellRebuildHandler(winrt::Windows::Foundation::EventHandler<winrt::IInspectable> const& handler);
+
+    // Called by TableViewRow at the end of each cell rebuild.
+    static void NoteRowCellRebuild(winrt::IInspectable const& row);
 };

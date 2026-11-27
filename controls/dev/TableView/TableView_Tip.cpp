@@ -145,7 +145,7 @@ TableViewTip::MetricsInputs TableView::TipMetricsInputs() noexcept
         if (auto const flattener = m_rowFlattener)
         {
             metrics.sourceRows = flattener->SourceRowCount();
-            metrics.dataRows = flattener->DataRowCount();
+            metrics.dataRows = metrics.sourceRows;
         }
     }
     catch (...)
