@@ -168,7 +168,8 @@ protected:
         _Out_ XUINT32 *pBrushMask,
         _Out_ bool *pHasBrush,
         _Out_ HWTexture** ppBrushTexture,
-        _Out_opt_ CMILMatrix *pBrushTextureTransform);
+        _Out_opt_ CMILMatrix *pBrushTextureTransform,
+        _In_opt_ CImageBrush *pFallbackBrush = nullptr);
 
     _Check_return_ HRESULT PanelRenderContentHelper(
         _In_ CPanel *pPanel

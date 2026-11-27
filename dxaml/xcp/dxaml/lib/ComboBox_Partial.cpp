@@ -1685,6 +1685,7 @@ _Check_return_ HRESULT ComboBox::OnOpen()
     // might be incorrect. To avoid this, will call UpdateLayout to trigger an
     // arrange pass that will end up calling ComboBox::ArrangePopup. This
     // method will update the template settings appropriately.
+    IFC_RETURN(InvalidateArrange());
     IFC_RETURN(UpdateLayout());
     IFC_RETURN(UpdateVisualState());
     IFC_RETURN(UpdateSelectionBoxHighlighted());
@@ -4777,17 +4778,17 @@ _Check_return_ HRESULT ComboBox::GetNonPannablePopupLayout(
 {
     ASSERT(!IsSmallFormFactor(), L"GetNonPannablePopupLayout is not used in small form factor mode");
 
-    if (static_cast<INT>(itemCount) < centerItemIndex || centerItemIndex < 0) // CenterItem is out of bounds
-    {
-        centerItemIndex = itemCount/2;
-    }
-
     if (itemCount == 0)
     {
         popupY = cbY;
         popupMaxHeight = cbHeight;
         offset = 0;
         return S_OK;
+    }
+
+    if (centerItemIndex < 0 || static_cast<INT>(itemCount) <= centerItemIndex) // CenterItem is out of bounds
+    {
+        centerItemIndex = 0;
     }
 
     // Layout centerItem on faceplate
@@ -4986,9 +4987,17 @@ _Check_return_ HRESULT ComboBox::GetPannablePopupLayout(
 {
     ASSERT(!IsSmallFormFactor(), L"GetPannablePopupLayout is not used in small form factor mode");
 
-    if (static_cast<INT>(itemCount) < centerItemIndex || centerItemIndex < 0) // CenterItem is out of bounds
+    if (itemCount == 0)
     {
-        centerItemIndex = itemCount/2;
+        popupY = cbY;
+        popupMaxHeight = cbHeight;
+        offset = 0;
+        return S_OK;
+    }
+
+    if (centerItemIndex < 0 || static_cast<INT>(itemCount) <= centerItemIndex) // CenterItem is out of bounds
+    {
+        centerItemIndex = 0;
     }
 
     DOUBLE popupSize = 0.0;

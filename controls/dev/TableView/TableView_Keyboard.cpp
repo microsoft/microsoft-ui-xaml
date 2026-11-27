@@ -9,6 +9,7 @@
 #include "TableViewGroupHeader.h"
 #include "TableViewColumn.h"
 #include "TableViewColumnHeader.h"
+#include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewToolTipHelpers.h"
 #include "GridCoordinateHelper.h"
 #include "ResourceAccessor.h"
@@ -27,11 +28,7 @@
 
 namespace
 {
-    bool IsKeyDown(winrt::VirtualKey key)
-    {
-        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-    }
+    using TableViewDetails::IsKeyDown;
 
     // Row cells carry the same column Tag as header cells, so finding a tagged ancestor is not
     // enough: the walk must actually reach the header host, or a focused cell (an open editor,
@@ -182,52 +179,28 @@ namespace
     void AnnounceColumnWidthOn(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column)
     {
         auto const element = announcer.try_as<winrt::UIElement>();
-        if (!element || !column)
+        if (!column)
         {
             return;
         }
 
-        if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification))
-        {
-            return;
-        }
-
-        auto peer = winrt::FrameworkElementAutomationPeer::FromElement(element);
-        if (!peer)
-        {
-            return;
-        }
-
-        winrt::hstring headerName = peer.GetName();
-        if (headerName.empty())
-        {
-            if (auto const stringable = column.Header().try_as<winrt::IStringable>())
+        RaiseTableViewNotification(element, winrt::AutomationNotificationKind::Other, [&element, &column]()
             {
-                headerName = stringable.ToString();
-            }
-        }
+                winrt::hstring headerName = winrt::FrameworkElementAutomationPeer::FromElement(element).GetName();
+                if (headerName.empty())
+                {
+                    if (auto const stringable = column.Header().try_as<winrt::IStringable>())
+                    {
+                        headerName = stringable.ToString();
+                    }
+                }
 
-        // Whole pixels: sub-pixel precision is noise in an announcement.
-        auto const width = TableViewDetails::FormatIntegerForCurrentCulture(static_cast<int32_t>(std::lround(column.ActualWidth())));
-
-        try
-        {
-            auto const format = ResourceAccessor::GetLocalizedStringResource(SR_TableViewColumnWidthChanged);
-            if (format.empty())
-            {
-                return;
-            }
-
-            peer.RaiseNotificationEvent(
-                winrt::AutomationNotificationKind::Other,
-                winrt::AutomationNotificationProcessing::MostRecent,
-                StringUtil::FormatString(format, headerName.c_str(), width.c_str()),
-                L"TableViewColumnWidthChangedActivityId");
-        }
-        catch (...)
-        {
-            // Best-effort UIA announcement; missing PRI/UIA must not cancel resize.
-        }
+                // Whole pixels: sub-pixel precision is noise in an announcement.
+                auto const width = TableViewDetails::FormatIntegerForCurrentCulture(static_cast<int32_t>(std::lround(column.ActualWidth())));
+                auto const format = ResourceAccessor::GetLocalizedStringResource(SR_TableViewColumnWidthChanged);
+                return format.empty() ? winrt::hstring{} : StringUtil::FormatString(format, headerName.c_str(), width.c_str());
+            },
+            L"TableViewColumnWidthChangedActivityId");
     }
 }
 
@@ -293,7 +266,7 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
 
     winrt::FrameworkElement headerCell{ nullptr };
     auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
-    if (!column || !column.CanResize())
+    if (!column || !column.CanUserResize())
     {
         return false;
     }
@@ -315,6 +288,38 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
     // raised from DragCompleted, which both input paths reach.
 
     args.Handled(true);
+    return true;
+}
+
+winrt::TableViewColumn TableView::HeaderColumnFromSource(const winrt::IInspectable& source, winrt::FrameworkElement& headerCell)
+{
+    return ResolveFocusedHeaderColumn(source, m_headerHost.get(), headerCell);
+}
+
+// Ctrl+Shift+Left/Right moves the focused header's column one position in reading order.
+bool TableView::TryHandleHeaderColumnReorderKey(const winrt::KeyRoutedEventArgs& args)
+{
+    const auto key = args.Key();
+    if (args.Handled() || (key != winrt::VirtualKey::Left && key != winrt::VirtualKey::Right) || !CanUserReorderColumns() ||
+        !IsKeyDown(winrt::VirtualKey::Control) || !IsKeyDown(winrt::VirtualKey::Shift) || IsKeyDown(winrt::VirtualKey::Menu))
+    {
+        return false;
+    }
+
+    winrt::FrameworkElement headerCell{ nullptr };
+    auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
+    if (!column)
+    {
+        return false;
+    }
+
+    // Consumed on every header, moved or not, so the chord never falls through to navigation.
+    args.Handled(true);
+    if (!m_columnReorder || !m_columnReorder->dragging)
+    {
+        const bool forward = (key == winrt::VirtualKey::Right) != (FlowDirection() == winrt::FlowDirection::RightToLeft);
+        TryReorderColumn(column, GetColumnReorderSlots(column, false /* fullRange */).own + (forward ? 1 : -1));
+    }
     return true;
 }
 
@@ -435,6 +440,7 @@ bool TableView::IsHeaderCellActionableInternal(const winrt::FrameworkElement& he
 
     // Resizable only while the gripper is available: a pinned column cannot be resized.
     if (IsColumnUserSortableInternal(column) || (IsColumnResizeAllowed(column) && !IsColumnResizePinned(column)) ||
+        CanUserMoveColumnInternal(column) ||
         column.HeaderContextFlyout() || ContextFlyout() || header.ContextFlyout() ||
         TableViewDetails::HasEffectiveToolTip(header))
     {
@@ -718,6 +724,20 @@ void TableView::RefreshHeaderTabStopsInternal()
         if (!actionable && header.FocusState() != winrt::FocusState::Unfocused)
         {
             focusedInactive = header;
+        }
+
+        // Movability is part of HelpText; only a peer a client already holds is notified.
+        auto const column = cell.Tag().try_as<winrt::TableViewColumn>();
+        const bool movable = column && CanUserMoveColumnInternal(column);
+        if (winrt::get_self<TableViewColumnHeader>(header)->ExchangeMovableInternal(movable) != movable &&
+            winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+        {
+            if (auto const peer = winrt::get_self<TableViewColumnHeader>(header)->GetExistingAutomationPeerInternal().try_as<winrt::TableViewColumnHeaderAutomationPeer>())
+            {
+                auto const peerImpl = winrt::get_self<TableViewColumnHeaderAutomationPeer>(peer);
+                peer.RaisePropertyChangedEvent(winrt::AutomationElementIdentifiers::HelpTextProperty(),
+                    winrt::box_value(peerImpl->HelpTextForInternal(!movable)), winrt::box_value(peerImpl->HelpTextForInternal(movable)));
+            }
         }
     }
 
@@ -1238,6 +1258,10 @@ void TableView::OnPreviewKeyDownForNavigation(
     const winrt::KeyRoutedEventArgs& args)
 {
     m_navKeyHandledEarly = false;
+    if (TryHandleKeyDuringPendingTabEditMove(args))
+    {
+        return;
+    }
     using winrt::Windows::System::VirtualKey;
     const auto pressed = args.Key();
     const bool isModifier = pressed == VirtualKey::Shift || pressed == VirtualKey::Control || pressed == VirtualKey::Menu ||
@@ -1383,6 +1407,11 @@ void TableView::OnKeyDownForNavigation(
     // After the editing guard so an open editor keeps its arrow keys; Alt+Arrow cannot shadow the
     // bare navigation arrows below.
     if (TryHandleHeaderColumnResizeKey(args))
+    {
+        return;
+    }
+
+    if (TryHandleHeaderColumnReorderKey(args))
     {
         return;
     }
@@ -1999,6 +2028,9 @@ void TableView::RestoreBodyFocusAfterReshape()
     m_pendingBodyFocusItem = nullptr;
     m_pendingBodyFocusFromKeyboard = false;
     m_pendingBodyFocusOrigin = nullptr;
+    // The re-shape re-aims focus at the captured row, so a pending Tab target is no longer where
+    // focus will land.
+    EndPendingTabEditMove();
 
     m_reshapeFocusArmedThisTurn = true;
     if (auto const queue = DispatcherQueue())
@@ -2091,6 +2123,7 @@ void TableView::CancelReshapeFocusRestore()
 {
     m_pendingReshapeFocusRow = -1;
     m_pendingBodyFocusItem = nullptr;
+    EndPendingTabEditMove();
     m_pendingBodyFocusFromKeyboard = false;
     m_pendingBodyFocusOrigin = nullptr;
     m_requestedBodyVerticalOffset.reset();
@@ -2110,9 +2143,19 @@ void TableView::CancelReshapeFocusRestore()
 // (a page PreviewKeyDown tunnels ahead of ours; a press-mode control inside the table bubbles first).
 void TableView::CancelReshapeFocusRestoreForUserInput()
 {
-    if (m_pendingReshapeFocusRow >= 0 && !m_reshapeFocusArmedThisTurn)
+    if (m_reshapeFocusArmedThisTurn)
+    {
+        return;
+    }
+    if (m_pendingReshapeFocusRow >= 0)
     {
         CancelReshapeFocusRestore();
+    }
+    else if (m_tabEditMovePending)
+    {
+        // The restore landed and handed its Tab move to a posted BeginEdit; input before that
+        // runs is still newer intent.
+        EndPendingTabEditMove();
     }
 }
 
@@ -2166,7 +2209,46 @@ void TableView::OnReshapeFocusAttempt()
 
     if (landed)
     {
+        auto const editItem = m_beginEditAfterBodyFocusItem.get();
+        auto const editColumn = m_beginEditAfterBodyFocusColumn.get();
+        // Posted: inside LayoutUpdated a CellEditingTemplate editor cannot be realized and focused.
+        auto const queue = editItem && editColumn ? DispatcherQueue() : nullptr;
+        // Hand a Tab move to the posted BeginEdit below without releasing its live-shaping hold.
+        const bool handOff = queue && std::exchange(m_tabEditMovePending, false);
         CancelReshapeFocusRestore();
+        if (handOff)
+        {
+            m_tabEditMovePending = true;
+            const uint32_t generation = m_tabEditMoveGeneration;
+            if (!queue.TryEnqueue([weakThis = get_weak(), editItem, editColumn, generation]()
+            {
+                auto const strongThis = weakThis.get();
+                if (!strongThis || strongThis->m_tabEditMoveGeneration != generation)
+                {
+                    // Escape, another key, or a newer restore retired the move.
+                    return;
+                }
+                try
+                {
+                    // The column can be hidden or locked, and focus can move to another cell of
+                    // the row, while the row realizes.
+                    if (!strongThis->IsEditing() && strongThis->IsColumnCellEditableInternal(editColumn) &&
+                        strongThis->IsBodyFocusOnCell(editItem, editColumn))
+                    {
+                        strongThis->BeginEdit(editItem, editColumn);
+                    }
+                }
+                catch (...)
+                {
+                    // Best-effort; never fail-fast the dispatcher.
+                }
+                // Resumes live shaping only if the edit did not open; its close resumes otherwise.
+                strongThis->EndPendingTabEditMove();
+            }))
+            {
+                EndPendingTabEditMove();
+            }
+        }
         return;
     }
 
@@ -2833,7 +2915,10 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
         // the request arrives for a container focus has already left, whose position may now be
         // a recycled or estimated one; honoring it scrolled the body back to the top.
         const auto requested = args.TargetRect();
-        const bool focusPadded = requested.Y < 0.0f || requested.Y + requested.Height > target.ActualHeight();
+        // Sub-pixel layout rounding of the rect must not read as focus padding.
+        constexpr double c_layoutRoundingTolerance = 0.5;
+        const bool focusPadded = requested.Y < -c_layoutRoundingTolerance ||
+            requested.Y + requested.Height > target.ActualHeight() + c_layoutRoundingTolerance;
         if (focusPadded && !IsBodyFocusInContainer(bodyItem))
         {
             args.Handled(true);
@@ -3918,7 +4003,7 @@ bool TableView::ScrollBodyHorizontallyInternal(bool forward, bool toEdge, winrt:
     // A focused non-frozen element stays in view: an edge scroll stops short, and a step is refused.
     auto const element = keepInView.try_as<winrt::FrameworkElement>();
     auto const column = element ? element.Tag().try_as<winrt::TableViewColumn>() : nullptr;
-    if (element && !(column && column.FrozenEdge() != winrt::TableViewFrozenEdge::None))
+    if (element && !(column && column.FrozenEdge() == winrt::TableViewFrozenEdge::Leading))
     {
         auto const bounds = element.TransformToVisual(scroller).TransformBounds({ 0.0f, 0.0f, static_cast<float>(element.ActualWidth()), 0.0f });
         const double left = offset + bounds.X;

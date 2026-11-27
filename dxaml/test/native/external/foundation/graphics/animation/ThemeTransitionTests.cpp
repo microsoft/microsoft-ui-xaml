@@ -1600,4 +1600,66 @@ void ThemeTransitionTests::ValidateContentOverride()
 
     VERIFY_ARE_EQUAL(0, storyboardStartedCounter);
 }
+
+void ThemeTransitionTests::CanReshowContentPresenterContentWhileItIsUnloading()
+{
+    TestCleanupWrapper cleanup;
+    RuntimeEnabledFeatureScopeGuard<RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableGlobalAnimations> enableAnimations;
+
+    // The app in #11047 hit this with a Page as TabViewItem content: once any Frame has navigated, Pages play the
+    // default NavigationThemeTransition when they leave the tree. A ContentThemeTransition on the content (or on the
+    // presenter's ContentTransitions) also plays on unload, without needing a Frame.
+    for (bool useContentTransitions : { false, true })
+    {
+        xaml_controls::ContentPresenter^ presenter = nullptr;
+        xaml_controls::Border^ content = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Transition set on the %s.", useContentTransitions ? L"presenter's ContentTransitions" : L"content");
+            presenter = ref new xaml_controls::ContentPresenter();
+            content = ref new xaml_controls::Border();
+            content->Width = 100;
+            content->Height = 100;
+
+            auto transitions = ref new xaml_animation::TransitionCollection();
+            transitions->Append(ref new xaml_animation::ContentThemeTransition());
+            if (useContentTransitions)
+            {
+                presenter->ContentTransitions = transitions;
+            }
+            else
+            {
+                content->Transitions = transitions;
+            }
+
+            presenter->Content = content;
+            TestServices::WindowHelper->WindowContent = presenter;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(presenter->Equals(xaml_media::VisualTreeHelper::GetParent(content)));
+
+            // TabView does this when it shows the selected tab (e.g. on Loaded): it sets ContentTemplate to null again.
+            // That clears the presenter's child, so the content starts unloading, and is re-added during this measure.
+            LOG_OUTPUT(L"Set ContentTemplate to null again.");
+            presenter->ContentTemplate = nullptr;
+            presenter->UpdateLayout();
+
+            VERIFY_IS_TRUE(content->Equals(presenter->Content));
+            VERIFY_IS_TRUE(presenter->Equals(xaml_media::VisualTreeHelper::GetParent(content)));
+            VERIFY_ARE_EQUAL(1, xaml_media::VisualTreeHelper::GetChildrenCount(presenter));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(presenter->Equals(xaml_media::VisualTreeHelper::GetParent(content)));
+            TestServices::WindowHelper->WindowContent = nullptr;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+}
 } } } } } }

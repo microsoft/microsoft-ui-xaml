@@ -244,7 +244,8 @@ CTileBrush::ComputeStretchAndAlignment(
 //
 //  Synopsis:
 //      Adjusts the given target render rectangle to account for the
-//      tile brush stretch and alignment so that the render rectangle
+//      tile brush stretch and alignment, and for the scale of the brush
+//      Transform and RelativeTransform, so that the render rectangle
 //      has the appropriate amount pixels for the stretch.
 //
 //      This is used in the decode to render size case to determine
@@ -325,6 +326,35 @@ _Check_return_ HRESULT CTileBrush::AdjustDecodeRectForStretch(
         default:
             ASSERT(FALSE);
             break;
+        }
+
+        // The brush Transform and RelativeTransform scale the image when it is drawn (see ComputeDeviceToSource), so an
+        // enlarging transform needs a larger decode, capped by the clamp below. Smaller scales keep the current size. An
+        // SVG lays out its artwork inside the decoded size, so it keeps the current size too.
+        const bool isSvg =
+            OfTypeByIndex<KnownTypeIndex::ImageBrush>() &&
+            static_cast<CImageBrush*>(this)->m_pImageSource &&
+            static_cast<CImageBrush*>(this)->m_pImageSource->OfTypeByIndex<KnownTypeIndex::SvgImageSource>();
+        if (!isSvg)
+        {
+            CMILMatrix brushTransform(TRUE);
+            if (auto relativeTransform = GetRelativeTransform())
+            {
+                CMILMatrix matrix(FALSE);
+                relativeTransform->GetTransform(&matrix);
+                brushTransform.Append(matrix);
+            }
+            if (auto transform = GetTransform())
+            {
+                CMILMatrix matrix(FALSE);
+                transform->GetTransform(&matrix);
+                brushTransform.Append(matrix);
+            }
+            float brushScaleX;
+            float brushScaleY;
+            brushTransform.GetScaleDimensions(&brushScaleX, &brushScaleY);
+            pDecodeBounds->Width *= std::max(brushScaleX, 1.0f);
+            pDecodeBounds->Height *= std::max(brushScaleY, 1.0f);
         }
 
         // Clamp to natural bounds

@@ -82,8 +82,9 @@ VisualContentRenderer::RenderSolidColorRectangle(
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
         const auto visualId = reinterpret_cast<uint64_t>(spVisual.Get());
-        XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 0);
-        XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 1);
+        const auto uiElementId = reinterpret_cast<uint64_t>(m_pUIElementNoRef);
+        XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 0, uiElementId);
+        XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 1, uiElementId);
     }
 
     return S_OK;
@@ -223,7 +224,8 @@ _Check_return_ HRESULT VisualContentRenderer::GeneralImageRenderContent(
     _In_opt_ CUIElement *pUIElement,
     _In_opt_ const XTHICKNESS *pNinegrid,
     _In_opt_ HWTexture *pShapeHwTexture,
-    _In_ bool fIsHollow)
+    _In_ bool fIsHollow,
+    _In_opt_ CImageBrush *pFallbackBrush)
 {
     XFLOAT brushOpacity = 1.0f;
     XUINT32 brushMask = 0xffffffff;
@@ -262,7 +264,8 @@ _Check_return_ HRESULT VisualContentRenderer::GeneralImageRenderContent(
         &brushMask,
         &hasBrush,
         brushHwTexture.ReleaseAndGetAddressOf(),
-        &brushTextureTransform));
+        &brushTextureTransform,
+        pFallbackBrush));
 
     //
     // NOTE: hasBrush is ignored.  We always create the appropriate WinRT objects, even
@@ -433,8 +436,10 @@ _Check_return_ HRESULT VisualContentRenderer::RenderPrimitive(
         };
 
         const auto visualId = reinterpret_cast<uint64_t>(spVisual.Get());
-        XamlProfilerTracing::VisualSurfaceChanged(visualId, getSurfaceId(brushTexture), 0);
-        XamlProfilerTracing::VisualSurfaceChanged(visualId, getSurfaceId(maskTexture), 1);
+        // Text primitives can have a null element argument; the renderer keeps the current element.
+        const auto uiElementId = reinterpret_cast<uint64_t>(m_pUIElementNoRef);
+        XamlProfilerTracing::VisualSurfaceChanged(visualId, getSurfaceId(brushTexture), 0, uiElementId);
+        XamlProfilerTracing::VisualSurfaceChanged(visualId, getSurfaceId(maskTexture), 1, uiElementId);
     }
 
     return S_OK;
@@ -901,6 +906,12 @@ void VisualContentRenderer::UnparentVisual(_In_ WUComp::IVisual* visual)
 void VisualContentRenderer::UnlinkVisual(_In_ WUComp::IVisual * visual)
 {
     UnparentVisual(visual);
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        const auto visualId = reinterpret_cast<uint64_t>(visual);
+        XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 0, 0);
+        XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 1, 0);
+    }
     ReleaseInterface(visual);
 }
 

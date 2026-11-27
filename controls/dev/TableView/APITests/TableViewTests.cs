@@ -154,7 +154,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(GridUnitType.Pixel, column.Width.GridUnitType, "Width defaults to a pixel GridLength, not Auto or Star.");
                 Verify.AreEqual(20.0, column.MinWidth);
                 Verify.IsTrue(double.IsPositiveInfinity(column.MaxWidth), "MaxWidth defaults to unbounded.");
-                Verify.IsTrue(column.CanResize);
+                Verify.IsTrue(column.CanUserResize);
                 Verify.AreEqual(120.0, column.ActualWidth, "ActualWidth resolves from the default Width before any layout pass.");
                 Verify.AreEqual(TableViewFrozenEdge.None, column.FrozenEdge);
                 Verify.AreEqual(Visibility.Visible, column.Visibility);
@@ -266,7 +266,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(TableViewColumn.WidthProperty);
                 Verify.IsNotNull(TableViewColumn.MinWidthProperty);
                 Verify.IsNotNull(TableViewColumn.MaxWidthProperty);
-                Verify.IsNotNull(TableViewColumn.CanResizeProperty);
+                Verify.IsNotNull(TableViewColumn.CanUserResizeProperty);
                 Verify.IsNotNull(TableViewColumn.ActualWidthProperty);
                 Verify.IsNotNull(TableViewColumn.FrozenEdgeProperty);
                 Verify.IsNotNull(TableViewColumn.VisibilityProperty);
@@ -377,9 +377,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySettableDependencyProperty(column, TableViewColumn.MaxWidthProperty, "TableViewColumn.MaxWidth",
                     400.0, 500.0,
                     () => column.MaxWidth, value => column.MaxWidth = (double)value);
-                VerifySettableDependencyProperty(column, TableViewColumn.CanResizeProperty, "TableViewColumn.CanResize",
+                VerifySettableDependencyProperty(column, TableViewColumn.CanUserResizeProperty, "TableViewColumn.CanUserResize",
                     false, true,
-                    () => column.CanResize, value => column.CanResize = (bool)value);
+                    () => column.CanUserResize, value => column.CanUserResize = (bool)value);
                 VerifySettableDependencyProperty(column, TableViewColumn.FrozenEdgeProperty, "TableViewColumn.FrozenEdge",
                     TableViewFrozenEdge.Leading, TableViewFrozenEdge.None,
                     () => column.FrozenEdge, value => column.FrozenEdge = (TableViewFrozenEdge)value);

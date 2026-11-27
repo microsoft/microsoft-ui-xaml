@@ -18,11 +18,6 @@
 
 namespace
 {
-    bool IsColumnOwnedBy(winrt::TableView const& owner, winrt::TableViewColumn const& column)
-    {
-        return column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == owner;
-    }
-
     bool TrySetColumnOwnerForTracking(winrt::TableView const& owner, winrt::TableViewColumn const& column)
     {
         if (!column)
@@ -48,18 +43,10 @@ double TableView::ComputeLeadingFrozenWidth()
     {
         // Only a contiguous leading prefix (from column 0) is frozen. A Leading flag on a
         // non-prefix column is ignored so it cannot corrupt the pinned-band layout.
-        for (auto const& column : columns)
-        {
-            if (!IsColumnOwnedBy(*this, column))
+        TableViewDetails::ForEachLeadingFrozenColumn(*this, columns, [&width](auto const& column)
             {
-                continue;
-            }
-            if (column.FrozenEdge() != winrt::TableViewFrozenEdge::Leading)
-            {
-                break;
-            }
-            width += column.Visibility() == winrt::Visibility::Visible ? std::max(0.0, column.ActualWidth()) : 0.0;
-        }
+                width += column.Visibility() == winrt::Visibility::Visible ? std::max(0.0, column.ActualWidth()) : 0.0;
+            });
     }
     return width;
 }
@@ -67,6 +54,18 @@ double TableView::ComputeLeadingFrozenWidth()
 void TableView::RefreshFrozenColumns()
 {
     const double leadingFrozenWidth = ComputeLeadingFrozenWidth();
+    double horizontalOffset = 0.0;
+    if (auto bodyScroller = m_bodyScroller.get())
+    {
+        horizontalOffset = bodyScroller.HorizontalOffset();
+    }
+
+    // A live reorder drag owns the header cells until a layout change cancels it.
+    const bool reorderOwnsHeaders = m_columnReorder && m_columnReorder->dragging && !m_columnReorder->stale;
+    if (reorderOwnsHeaders && ColumnReorderLayoutChanged(leadingFrozenWidth, horizontalOffset))
+    {
+        QueueCancelColumnReorderDrag();
+    }
 
     // No active frozen columns; avoid walking realized rows on every scroll.
     if (leadingFrozenWidth <= 0.0 && !m_frozenColumnsActive)
@@ -77,14 +76,8 @@ void TableView::RefreshFrozenColumns()
     // Run once after deactivation to clear prior transforms and clips.
     m_frozenColumnsActive = leadingFrozenWidth > 0.0;
 
-    double horizontalOffset = 0.0;
-    if (auto bodyScroller = m_bodyScroller.get())
-    {
-        horizontalOffset = bodyScroller.HorizontalOffset();
-    }
-
     // Header and row cells share pinning so they stay aligned.
-    if (auto headerHost = m_headerHost.get())
+    if (auto headerHost = m_headerHost.get(); headerHost && !(m_columnReorder && m_columnReorder->dragging && !m_columnReorder->stale))
     {
         TableViewCellsPanel::ApplyFrozenColumnLayout(headerHost, horizontalOffset, leadingFrozenWidth);
     }
@@ -165,6 +158,7 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
         return;
     }
 
+    CancelColumnReorderDrag();
     ExpireLockedColumnHolds();
 
     // Detach the old vector so replaced Columns do not leak subscriptions or owners.
@@ -197,6 +191,7 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
         // Inline Reset semantics because IVectorChangedEventArgs cannot be synthesized here.
         DetachAllColumnOwners();
         TrackColumnsFromVector(newColumns);
+        ScheduleReattachedColumnCellRegenerations();
         RebuildHeaders();
         // Columns replaced: recompute Auto widths for the new set and re-pin frozen columns.
         ResetColumnDesiredWidths();
@@ -226,12 +221,23 @@ void TableView::OnColumnsVectorChanged(
     const winrt::IObservableVector<winrt::TableViewColumn>& sender,
     const winrt::IVectorChangedEventArgs& args)
 {
-    ExpireLockedColumnHolds();
+    CancelColumnReorderDrag();
 
     // Track columns incrementally so owner back-pointers stay in sync without diffing.
     const auto change = args.CollectionChange();
     const auto index = args.Index();
 
+    // Only the moving column's own remove and insert skip hold expiry and header release.
+    auto const moving = m_movingColumn.get();
+    const bool movingChange = moving &&
+        ((change == winrt::CollectionChange::ItemRemoved && index < m_trackedColumns.size() && m_trackedColumns[index].get() == moving) ||
+         (change == winrt::CollectionChange::ItemInserted && index < sender.Size() && sender.GetAt(index) == moving));
+    if (!movingChange)
+    {
+        ExpireLockedColumnHolds();
+    }
+
+    winrt::TableViewColumn reattached{ nullptr };
     switch (change)
     {
     case winrt::CollectionChange::ItemInserted:
@@ -246,10 +252,13 @@ void TableView::OnColumnsVectorChanged(
                 ownsColumn = colImpl->SetOwningTableViewInternal(*this);
                 if (ownsColumn)
                 {
-                    // A re-inserted / recycled column instance may carry a stale grow-only accumulator
-                    // from a prior position or table; clear it so it re-grows from its content here.
-                    colImpl->ResetDesiredWidthInternal();
+                    // Clear a stale grow-only accumulator; a user reorder keeps the width already grown to.
+                    if (!movingChange)
+                    {
+                        colImpl->ResetDesiredWidthInternal();
+                    }
                     RestoreSortOfMovedColumn(col);
+                    reattached = col;
                 }
                 else
                 {
@@ -306,6 +315,7 @@ void TableView::OnColumnsVectorChanged(
                             newColImpl->ResetDesiredWidthInternal();
                         }
                         RestoreSortOfMovedColumn(newCol);
+                        reattached = newCol;
                     }
                     else
                     {
@@ -325,6 +335,15 @@ void TableView::OnColumnsVectorChanged(
         TrackColumnsFromVector(sender);
         break;
     }
+    }
+
+    if (change == winrt::CollectionChange::Reset)
+    {
+        ScheduleReattachedColumnCellRegenerations();
+    }
+    else
+    {
+        ScheduleReattachedColumnCellRegeneration(reattached);
     }
 
     QueueRebuildHeaders();
@@ -347,9 +366,8 @@ void TableView::OnColumnsVectorChanged(
         InvalidateMeasure();
     }
 
-    // A column that left may be added to another TableView before the queued rebuild runs. Last,
-    // because releasing runs app code that can change Columns again.
-    if (change != winrt::CollectionChange::ItemInserted)
+    // Release detached columns' headers last, as it runs app code; the moving column comes straight back.
+    if (change != winrt::CollectionChange::ItemInserted && !movingChange)
     {
         ReleaseHeaderCells(m_headerHost.get(), HeaderRelease::DetachedColumns);
     }
@@ -357,6 +375,7 @@ void TableView::OnColumnsVectorChanged(
 
 void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
 {
+    CancelColumnReorderDrag();
     if (!column)
     {
         return;
@@ -399,6 +418,11 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
     InvalidateMeasure();
     RefreshFrozenColumns();
     RefreshResizeGripperAvailability();
+    // Whether a header can be reordered depends on the visibility of the others.
+    if (CanUserReorderColumns())
+    {
+        RefreshHeaderTabStopsInternal();
+    }
 
     // UIA addresses only visible columns (IsVisibleColumn), so a visibility flip shifts column
     // indices just like an add/remove.
@@ -481,10 +505,145 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
         return;
     }
 
-    // Rebuild realized rows so the new CellTemplate is applied; virtualized rows pick it up on realization.
-    ForEachRealizedRow([](winrt::TableViewRow const& row)
+    EndEditOfChangedColumn(column);
+    ScheduleColumnCellRegeneration(column, resetAutoWidth);
+}
+
+void TableView::ScheduleColumnCellRegeneration(const winrt::TableViewColumn& column, bool resetAutoWidth, bool postOffTree)
+{
+    auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
+
+    // Regenerating cells inside measure or arrange would mutate the tree being laid out. Layout can
+    // measure a dirty cell without passing through any of this control's overrides, so once the
+    // table is in a live tree the regeneration is always posted. At most one post per column; the
+    // reset requests are OR'ed into it.
+    if (postOffTree || XamlRoot() || IsLoaded())
     {
-        winrt::get_self<TableViewRow>(row)->RefreshCells();
+        if (columnImpl->QueueCellContentChangeInternal(resetAutoWidth))
+        {
+            return;
+        }
+        const uint32_t generation = columnImpl->CellContentChangeGenerationInternal();
+        auto const queue = DispatcherQueue();
+        const bool posted = queue && queue.TryEnqueue([weakColumn = winrt::make_weak(column), generation]()
+            {
+                auto const liveColumn = weakColumn.get();
+                if (!liveColumn)
+                {
+                    return;
+                }
+                auto* const liveColumnImpl = winrt::get_self<TableViewColumn>(liveColumn);
+                if (liveColumnImpl->CellContentChangeGenerationInternal() != generation)
+                {
+                    return;
+                }
+                // The column may have moved to another table meanwhile; its current owner regenerates.
+                if (auto const owner = liveColumnImpl->GetOwningTableView())
+                {
+                    winrt::get_self<TableView>(owner)->RegenerateColumnCellsFromPost(liveColumn);
+                }
+                else
+                {
+                    // The owner went away without releasing the column; keep the change pending for
+                    // the next owner, which can post again.
+                    liveColumnImpl->InvalidateCellContentChangePostInternal();
+                }
+            });
+        // Without a post (teardown) the change stays pending for the next regeneration.
+        columnImpl->SetCellContentChangePostedInternal(posted);
+        return;
+    }
+
+    RegenerateColumnCells(column, resetAutoWidth);
+}
+
+// A change still pending when a column left never reached the cells its rows kept, also those of an
+// unloaded table. It is not new content: an edit open now was generated after it, so it is
+// rescheduled, and holds for that edit, rather than ending it. It runs app code, so it is posted even
+// off a live tree, after the Columns change is tracked; it is queued before the rows' own rebuild,
+// which then restamps the regenerated cells.
+void TableView::ScheduleReattachedColumnCellRegeneration(const winrt::TableViewColumn& column)
+{
+    auto* const columnImpl = column ? winrt::get_self<TableViewColumn>(column) : nullptr;
+    if (!columnImpl || !columnImpl->HasPendingCellContentChangeInternal())
+    {
+        return;
+    }
+    if (auto const owner = columnImpl->GetOwningTableView(); owner && winrt::get_self<TableView>(owner) == this)
+    {
+        ScheduleColumnCellRegeneration(column, false /* resetAutoWidth */, true /* postOffTree */);
+    }
+}
+
+void TableView::ScheduleReattachedColumnCellRegenerations()
+{
+    for (auto const& tracked : m_trackedColumns)
+    {
+        ScheduleReattachedColumnCellRegeneration(tracked.get());
+    }
+}
+
+// The open editor writes through the content being replaced, so a change to the edited column ends
+// its edit at once, as the synchronous row rebuild did (TableViewRow::RebuildCellsCore, hence the
+// layout-pass close). A change from a BeginningEdit handler comes before the editor is generated,
+// so the edit opens from the new content; a later one abandons the opening edit.
+void TableView::EndEditOfChangedColumn(const winrt::TableViewColumn& column)
+{
+    if (!column || !IsEditing() || m_currentEditColumn.get() != column)
+    {
+        return;
+    }
+    if (m_editState == EditState::Beginning)
+    {
+        if (m_pendingBeginEditGeneratingEditor)
+        {
+            m_abandonPendingBeginEdit = true;
+        }
+        return;
+    }
+    // App code run by the close in progress (a CellEditEnding handler, a setter, ConvertBack, a
+    // PropertyChanged handler) made the change: that close ends the edit with its own action, and
+    // the regeneration waits for it.
+    if (m_editState == EditState::Ending || m_editValueTransferDepth > 0)
+    {
+        return;
+    }
+    TerminateEditWithoutVisualRestore(true /* insideLayoutPass */);
+}
+
+void TableView::RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth)
+{
+    auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
+
+    // Regenerating would force the open edit closed. A change to the edited column ended its edit
+    // unless a close was already in progress, so any edit open now began after the change, is a Tab
+    // move, or is still closing: keep the change pending until it closes.
+    if (IsEditing() || m_tabEditMovePending)
+    {
+        columnImpl->QueueCellContentChangeInternal(resetAutoWidth);
+        HoldCellRegenerationUntilEditCloses(column);
+        return;
+    }
+
+    // This regeneration also applies a change still pending from an earlier request.
+    resetAutoWidth = columnImpl->TakeQueuedCellContentChangeInternal() || resetAutoWidth;
+
+    // Rebuild realized rows so the new CellTemplate is applied; virtualized rows pick it up on realization.
+    // GenerateElementCore is app code: a throw from one row does not skip the others.
+    std::exception_ptr failure;
+    ForEachRealizedRow([&failure](winrt::TableViewRow const& row)
+    {
+        try
+        {
+            winrt::get_self<TableViewRow>(row)->RefreshCells();
+        }
+        catch (...)
+        {
+            if (!failure)
+            {
+                failure = std::current_exception();
+            }
+        }
     });
 
     // The new template can be narrower or wider than the old cells: recompute only THIS column's Auto
@@ -493,10 +652,90 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
     // does not reset pre-existing columns).
     if (resetAutoWidth)
     {
-        winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
+        columnImpl->ResetDesiredWidthInternal();
     }
     InvalidateMeasure();
     RefreshCellFocusLevelsInternal();
+
+    if (failure)
+    {
+        // The change has not reached every cell, so it stays pending for the next regeneration.
+        columnImpl->QueueCellContentChangeInternal(resetAutoWidth);
+        std::rethrow_exception(failure);
+    }
+}
+
+// Posted regenerations run app code (GenerateElementCore) with no caller to receive a throw, so,
+// like TableViewRow::QueueRebuildCells, they never let one escape to the dispatcher.
+void TableView::RegenerateColumnCellsFromPost(const winrt::TableViewColumn& column)
+{
+    try
+    {
+        RegenerateColumnCells(column, false /* resetAutoWidth */);
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] A posted cell regeneration failed (HRESULT 0x%08X).",
+            static_cast<unsigned int>(winrt::to_hresult()));
+    }
+}
+
+void TableView::HoldCellRegenerationUntilEditCloses(const winrt::TableViewColumn& column)
+{
+    winrt::get_self<TableViewColumn>(column)->InvalidateCellContentChangePostInternal();
+    auto const known = std::find_if(m_cellRegenerationsAfterEdit.begin(), m_cellRegenerationsAfterEdit.end(),
+        [&column](auto const& weakColumn) { return weakColumn.get() == column; });
+    if (known == m_cellRegenerationsAfterEdit.end())
+    {
+        m_cellRegenerationsAfterEdit.push_back(winrt::make_weak(column));
+    }
+}
+
+void TableView::ReleaseCellRegenerationsAfterEdit()
+{
+    if (m_cellRegenerationsAfterEdit.empty() || IsEditing() || m_tabEditMovePending)
+    {
+        return;
+    }
+
+    // Edit close can run inside a layout pass, so the regeneration is posted.
+    auto const queue = DispatcherQueue();
+    if (!queue)
+    {
+        return;
+    }
+    queue.TryEnqueue([weakThis = get_weak(), columns = std::exchange(m_cellRegenerationsAfterEdit, {})]()
+        {
+            auto const strongThis = weakThis.get();
+            if (!strongThis)
+            {
+                return;
+            }
+            auto const table = strongThis.as<winrt::TableView>();
+            for (auto const& weakColumn : columns)
+            {
+                auto const column = weakColumn.get();
+                auto* const columnImpl = column ? winrt::get_self<TableViewColumn>(column) : nullptr;
+                // A column that moved on is regenerated by its new owner. A newer change's own post
+                // handles it; holding here would invalidate that post.
+                if (!columnImpl || !columnImpl->HasPendingCellContentChangeInternal() ||
+                    columnImpl->IsCellContentChangePostedInternal() ||
+                    columnImpl->GetOwningTableView() != table)
+                {
+                    continue;
+                }
+                // An edit opened since was generated from the current content: the change waits for
+                // it rather than ending it.
+                if (strongThis->IsEditing() || strongThis->m_tabEditMovePending)
+                {
+                    strongThis->HoldCellRegenerationUntilEditCloses(column);
+                }
+                else
+                {
+                    strongThis->RegenerateColumnCellsFromPost(column);
+                }
+            }
+        });
 }
 
 void TableView::OnColumnHeaderChanged(const winrt::TableViewColumn& column)
@@ -548,6 +787,7 @@ void TableView::OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& colum
 
 void TableView::OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column)
 {
+    CancelColumnReorderDrag();
     if (!column)
     {
         return;

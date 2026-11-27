@@ -24,6 +24,8 @@
 #include "NavigationViewAutomationPeer.h"
 #include "StackLayout.h"
 #include "ItemsRepeater.h"
+#include "SelectionNode.h"
+#include "SelectionModel.h"
 #include <ItemsRepeater.common.h>
 #include "NavigationViewItemExpandingEventArgs.h"
 #include "NavigationViewItemCollapsedEventArgs.h"
@@ -1020,7 +1022,7 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
                     if (!m_prevIndicator && !m_nextIndicator && m_activeIndicator)
                     {
                         // Remove selection indication if we are not in the middle of an ongoing animation
-                        ResetElementAnimationProperties(m_activeIndicator.get(), 0.0f);
+                        ResetElementAnimationProperties(m_activeIndicator.get(), 0.0f, false /* forAnimation */);
                         m_activeIndicator.set(nullptr);
                     }
                     m_selectionModel.DeselectAt(indexPathFromModel);
@@ -1478,6 +1480,18 @@ winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
     m_layoutUpdatedToken.revoke();
     m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
 
+    const double previousMeasureAvailableHeight = m_lastMeasureAvailableHeight;
+    m_lastMeasureAvailableHeight = availableSize.Height;
+    const bool isHeightUnconstrained = availableSize.Height == std::numeric_limits<float>::infinity();
+    // Also update when only a finite height changes: a non-Stretch NavigationView can keep its size under the old menu
+    // limit, so neither SizeChanged handler would refresh it.
+    if (m_isHeightUnconstrained != isHeightUnconstrained || previousMeasureAvailableHeight != m_lastMeasureAvailableHeight)
+    {
+        m_isHeightUnconstrained = isHeightUnconstrained;
+        // Runs before the pane is measured below, so the new limits apply to this pass.
+        UpdatePaneLayout();
+    }
+
     return __super::MeasureOverride(availableSize);
 }
 
@@ -1530,7 +1544,7 @@ void NavigationView::OnSelectionIndicatorReplaced(const winrt::UIElement& oldInd
         OnAnimationComplete(nullptr, nullptr);
     }
     m_activeIndicator.set(newIndicator);
-    ResetElementAnimationProperties(newIndicator, 1.0f);
+    ResetElementAnimationProperties(newIndicator, 1.0f, false /* forAnimation */);
 }
 
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
@@ -1692,6 +1706,24 @@ void NavigationView::UpdatePaneLayout()
 {
     if (!IsTopNavigationView())
     {
+        if (m_isHeightUnconstrained)
+        {
+            // With unlimited height the pane rows size to their content, so there is no height to share between the
+            // menu and footer items. The limits below are computed from the current row height, which here comes from
+            // the content itself: capping the menu at it would only let it grow a few pixels per layout pass while it
+            // expands (#8291).
+            if (const auto& menuItemsScrollViewer = m_menuItemsScrollViewer.get())
+            {
+                menuItemsScrollViewer.ClearValue(winrt::FrameworkElement::MaxHeightProperty());
+            }
+            if (const auto& footerItemsScrollViewer = m_footerItemsScrollViewer.get())
+            {
+                footerItemsScrollViewer.ClearValue(winrt::FrameworkElement::MaxHeightProperty());
+            }
+            winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
+            return;
+        }
+
         const auto totalAvailableHeight = [this]() {
             if (const auto &paneContentRow = m_itemsContainerRow.get())
             {
@@ -1703,7 +1735,12 @@ void NavigationView::UpdatePaneLayout()
                     }
                     return 0.0;
                 }();
-                return paneContentRow.ActualHeight() - itemsContainerMargin;
+                // When NavigationView is arranged shorter than it was offered (VerticalAlignment Top/Center/Bottom), the
+                // row is only as tall as its content. Count the unused height too, otherwise the cap below would only let
+                // the menu grow a few pixels per layout pass (#8291).
+                const double actualHeight = ActualHeight();
+                const double unusedHeight = actualHeight > 0 ? std::max(0.0, m_lastMeasureAvailableHeight - actualHeight) : 0.0;
+                return paneContentRow.ActualHeight() + unusedHeight - itemsContainerMargin;
             }
             return 0.0;
         }();
@@ -2221,7 +2258,7 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
         {
             if (prevIndicator && prevIndicator != m_prevIndicator.get())
             {
-                ResetElementAnimationProperties(prevIndicator, 0.0f);
+                ResetElementAnimationProperties(prevIndicator, 0.0f, false /* forAnimation */);
             }
             haveValidAnimation = true;
         }
@@ -2315,8 +2352,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
         else if (prevIndicator != nextIndicator)
         {
             // if all else fails, or if animations are turned off, attempt to correctly set the positions and opacities of the indicators.
-            ResetElementAnimationProperties(prevIndicator, 0.0f);
-            ResetElementAnimationProperties(nextIndicator, 1.0f);
+            ResetElementAnimationProperties(prevIndicator, 0.0f, false /* forAnimation */);
+            ResetElementAnimationProperties(nextIndicator, 1.0f, false /* forAnimation */);
         }
 
         m_activeIndicator.set(nextIndicator);
@@ -2442,13 +2479,33 @@ void NavigationView::OnAnimationComplete(const winrt::IInspectable& /*sender*/, 
     m_nextIndicator.set(nullptr);
 }
 
-void NavigationView::ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity)
+winrt::DependencyProperty NavigationView::GetAnimatedSelectionIndicatorProperty()
+{
+    static GlobalDependencyProperty s_AnimatedSelectionIndicatorProperty =
+        InitializeDependencyProperty(
+            L"AnimatedSelectionIndicator",
+            winrt::name_of<bool>(),
+            winrt::name_of<winrt::NavigationView>(),
+            true /* isAttached */,
+            winrt::box_value(false));
+
+    return s_AnimatedSelectionIndicatorProperty;
+}
+
+void NavigationView::ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity, bool forAnimation)
 {
     if (element)
     {
         element.Opacity(desiredOpacity);
-        if (winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(element))
+        const auto animatedIndicatorProperty = GetAnimatedSelectionIndicatorProperty();
+        const bool wasAnimated = winrt::unbox_value<bool>(element.GetValue(animatedIndicatorProperty));
+        if (forAnimation || wasAnimated)
         {
+            const auto visual = winrt::ElementCompositionPreview::GetElementVisual(element);
+            if (!wasAnimated)
+            {
+                element.SetValue(animatedIndicatorProperty, winrt::box_value(true));
+            }
             visual.Offset(winrt::float3(0.0f, 0.0f, 0.0f));
             visual.Scale(winrt::float3(1.0f, 1.0f, 1.0f));
             visual.Opacity(desiredOpacity);
@@ -2594,16 +2651,33 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
     {
         return;
     }
-    UpdateSelectionModelSelectionForSelectedItem(nextItem);
+    const bool isNextItemInMenus = UpdateSelectionModelSelectionForSelectedItem(nextItem);
     if (selectionOwnershipLost())
     {
         return;
     }
 
-    if (!nextItem && m_selectionModel)
+    // nextItem has no index path when it is null or an item outside the menus (#8266), so any path left in the
+    // selection model is stale (unless the model already holds nextItem, e.g. while its container is detached).
+    bool hasStaleSelectionModelPath = m_selectionModel && (!nextItem || (m_appliedTemplate && !isNextItemInMenus));
+    if (hasStaleSelectionModelPath && nextItem)
     {
-        // A redirect can clear SelectedItem before the invoked item's container was selected,
-        // so no container deselection removes the invoked item from the selection model.
+        // Reading the model's item calls into the items source (GetAt/IndexOf), which can start a new selection.
+        hasStaleSelectionModelPath = !winrt::get_self<SelectionModel>(m_selectionModel)->IsSelectedItem(nextItem);
+        if (selectionOwnershipLost())
+        {
+            return;
+        }
+    }
+
+    if (hasStaleSelectionModelPath)
+    {
+        // Nothing is left to move out of the Top overflow when its flyout closes.
+        m_moveTopNavOverflowItemOnFlyoutClose = false;
+
+        // A redirect can clear SelectedItem before the invoked item's container was selected, and a data item
+        // selected before its container existed never had a container to deselect, so no container deselection
+        // removes the old item from the selection model.
         if (auto const selectedIndexPath = m_selectionModel.SelectedIndex())
         {
             auto scopeGuard = gsl::finally([this, setIgnoreNextSelectionChangeToFalse = !m_shouldIgnoreNextSelectionChange]()
@@ -2714,11 +2788,12 @@ void NavigationView::CompletePendingSelectionChange()
     }
 }
 
-void NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem)
+// Returns whether selectedItem was found in the menus.
+bool NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem)
 {
     if (!m_appliedTemplate)
     {
-        return;
+        return false;
     }
 
     winrt::IndexPath indexPath{ nullptr };
@@ -2742,7 +2817,9 @@ void NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::I
             });
         m_shouldIgnoreNextSelectionChange = true;
         UpdateSelectionModelSelection(indexPath);
+        return true;
     }
+    return false;
 }
 
 void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)

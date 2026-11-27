@@ -1146,6 +1146,7 @@ public:
 
 // Null out the reference to BH
     _Check_return_ HRESULT UnregisterBrowserHost();
+    void UnregisterDisplayStatusNotification();
 
 // Download services
 
@@ -1472,6 +1473,7 @@ public:
         return m_isRenderEnabled;
     }
     _Check_return_ HRESULT EnableRender(bool enable);
+    _Check_return_ HRESULT OnDisplayStatusChanged(bool isDisplayOn);
 
     _Check_return_ HRESULT LookupThemeResource(
         _In_ const xstring_ptr_view& strKey,
@@ -1986,6 +1988,11 @@ private:
     // Not good enough in XamlIslandRoots mode. If any island is visible, we need to keep ticking.
     bool                        m_isWindowVisible;
     bool                        m_wasWindowEverMadeVisible;    // For debugging/post-mortem purposes
+
+    // GUID_SESSION_DISPLAY_STATUS. Nothing is presented while the session's display is off, so rendering is
+    // disabled as it is for a hidden window.
+    HPOWERNOTIFY                m_displayStatusNotification = nullptr;
+    bool                        m_isDisplayOn = true;
 
     enum class SuspendReason
     {

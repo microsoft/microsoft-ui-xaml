@@ -103,6 +103,23 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>$(GenerateDebugInformation)</GenerateDebugInformation>
+      <!--
+        Code coverage: static native instrumentation (vsinstr / Microsoft.CodeCoverage.Console)
+        needs the CV + FIXUP debug streams. Without them it refuses the binary with
+        "Unable to obtain debug information. Link with the /PROFILE linker switch." - and then
+        exits 0, leaving the DLL uninstrumented, which silently yields an empty coverage report.
+
+        Release already passes /debugtype:cv,fixup below, and Microsoft.ui.xaml.dll (MUX) passes
+        /debugtype:cv,fixup,pdata unconditionally (dxaml\Xaml.NTLegacy.Cpp.targets), which is why
+        MUX instruments fine in chk while MUXC did not. Debug was the gap.
+
+        This is opt-in rather than always-on because /debugtype:cv is incompatible with the
+        incremental linking that Debug uses by default (see the matching LinkIncremental override
+        in Microsoft.UI.Xaml.Common.props), and turning it on unconditionally would slow the local
+        Debug inner loop and change the linker flags for every Nightly/PR/Official build too. The
+        coverage pipeline sets /p:EnableCodeCoverageLinkOptions=true for its x86 chk leg.
+      -->
+      <AdditionalOptions Condition="'$(EnableCodeCoverageLinkOptions)' == 'true'">/debugtype:cv,fixup %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ResourceCompile>
       <PreprocessorDefinitions>DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

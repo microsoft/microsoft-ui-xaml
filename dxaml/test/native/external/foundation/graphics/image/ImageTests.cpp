@@ -1584,6 +1584,68 @@ void ImageTests::ToggleUriSource()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly, "Back-To-A");
 }
 
+void ImageTests::NewSourceKeepsPreviousImageWhileLoading()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    ImageEventWaitingContext eventWaitingContextA;
+    ImageEventWaitingContext eventWaitingContextB;
+
+    xaml_controls::Image^ image;
+
+    RunOnUIThread([&]
+    {
+        auto bitmapImage = ref new BitmapImage();
+        // Not from an earlier test's decode: the Image must still be loading B on the next frame.
+        bitmapImage->CreateOptions = BitmapCreateOptions::IgnoreImageCache;
+        eventWaitingContextA.Attach(bitmapImage);
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"barcelona.png"); // A
+
+        image = ref new xaml_controls::Image();
+        TestServices::WindowHelper->WindowContent = image;
+        image->Source = bitmapImage;
+    });
+
+    eventWaitingContextA.WaitOpened();
+    TestServices::WindowHelper->WaitForIdle();
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly, "A");
+
+    // Capture the first frame rendered after the change. B's decode is only requested from that frame's render walk,
+    // so B can't be shown yet: the Image must still draw A (same tree and surface as "A") rather than an empty surface.
+    bool sourceChanged = false;
+    bool verified = false;
+    // The callback captures locals; clear it even if a verification below throws.
+    TestCleanupWrapper cleanup([]()
+    {
+        TestServices::WindowHelper->SetPostTickCallback(nullptr);
+    });
+    TestServices::WindowHelper->SetPostTickCallback(ref new PostTickCallback([&]()
+    {
+        if (sourceChanged && !verified)
+        {
+            verified = true;
+            TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly, "A");
+        }
+    }));
+
+    RunOnUIThread([&]
+    {
+        // A new BitmapImage, as a string binding to Image.Source creates on every update.
+        auto bitmapImage = ref new BitmapImage();
+        bitmapImage->CreateOptions = BitmapCreateOptions::IgnoreImageCache;
+        eventWaitingContextB.Attach(bitmapImage);
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png"); // B
+        image->Source = bitmapImage;
+        sourceChanged = true;
+    });
+    TestServices::WindowHelper->SynchronouslyTickUIThread(1);
+    TestServices::WindowHelper->SetPostTickCallback(nullptr);
+    VERIFY_IS_TRUE(verified);
+
+    eventWaitingContextB.WaitOpened();
+    TestServices::WindowHelper->WaitForIdle();
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly, "B");
+}
+
 void ImageTests::RasterizationScale()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -1734,9 +1796,8 @@ void ImageTests::DecodeToRenderSizeUnderCollapsedSubtree()
 
         wh->WindowContent = rootGrid;
 
-        // Because the subtree is collapsed, the Border/ImageBrush won't render, which then won't go through
-        // CImageSource::ReloadReleasedSoftwareImage -> ImageSurfaceWrapper::SetKeepSystemMemory. We'll decode only a
-        // hardware surface.
+        // Because the subtree is collapsed, the Border/ImageBrush won't render, so the image decodes to a hardware surface
+        // only.
     });
 
     LOG_OUTPUT(L"> Waiting for BitmapImage.Opened.");
@@ -1756,15 +1817,9 @@ void ImageTests::DecodeToRenderSizeUnderCollapsedSubtree()
     {
         LOG_OUTPUT(L"> Making subtree visible.");
         rootGrid->Visibility = xaml::Visibility::Visible;
-
-        //
-        // The BitmapImage now needs a software surface due to BaseContentRenderer::MaskPartEnsureRealizationTexture's
-        // partHasContent check. CImageSource::ReloadReleasedSoftwareImage tracks the image so the decode is requested
-        // after the render walk, and DecodeToRenderSize decodes the software surface.
-        //
     });
 
-    // The software decode reuses a request that WaitForIdle doesn't count, so wait until the border draws.
+    // Wait until the border draws.
     const auto deadline = std::chrono::steady_clock::now() + Event::GetDefaultTimeout();
     do
     {

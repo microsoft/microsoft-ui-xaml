@@ -10,9 +10,54 @@ foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColum
     column.SortCycle = TableViewSortCycle.DescendingAscending;
 }
 
+RestoreColumnOrder(AppSettings.LoadColumnOrder(ColumnOrderSetting));
+ProcessTable.ColumnReordered += OnProcessTableColumnReordered;
+
 public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
 
 public TableViewSource Source { get; }
+
+private Task _columnOrderSave = Task.CompletedTask;
+
+// The order is read on the UI thread; the file is written off it, one save after another.
+private void QueueColumnOrderSave(IReadOnlyList<string> order)
+{
+    _columnOrderSave = _columnOrderSave.ContinueWith(previous =>
+    {
+        if (previous.Exception is { } error)
+        {
+            System.Diagnostics.Debug.WriteLine($"Saving the column order failed: {error.InnerException?.Message}");
+        }
+        AppSettings.SaveColumnOrder(ColumnOrderSetting, order);
+    }, TaskScheduler.Default);
+}
+
+// Keyed by header text, which this sample does not localize; a real app keys on something stable.
+private void OnProcessTableColumnReordered(TableView sender, TableViewColumnReorderedEventArgs args)
+{
+    QueueColumnOrderSave(sender.Columns.Select(c => c.Header as string).ToList());
+}
+
+private void RestoreColumnOrder(IReadOnlyList<string> order)
+{
+    // Known columns only, once each: a stale or repeated saved name must not shift the rest.
+    // Frozen columns keep their leading prefix; the saved order applies to the columns after it.
+    int frozen = ProcessTable.Columns.TakeWhile(c => c.FrozenEdge == TableViewFrozenEdge.Leading).Count();
+    var known = order.Distinct()
+        .Select(header => ProcessTable.Columns.FirstOrDefault(c => c.Header as string == header))
+        .Where(column => column is not null && column.FrozenEdge != TableViewFrozenEdge.Leading)
+        .ToList();
+    for (int i = 0; i < known.Count; i++)
+    {
+        int target = frozen + i;
+        int current = ProcessTable.Columns.IndexOf(known[i]);
+        if (current != target)
+        {
+            ProcessTable.Columns.RemoveAt(current);
+            ProcessTable.Columns.Insert(target, known[i]);
+        }
+    }
+}
 
 private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 {

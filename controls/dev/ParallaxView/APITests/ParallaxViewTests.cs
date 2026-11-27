@@ -161,6 +161,160 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyZeroShiftPreservesChildOpacityTransition()
+        {
+            foreach (var sourceType in new[] { SourceType.ScrollViewer, SourceType.ScrollPresenter })
+            {
+                ParallaxView parallaxView = null;
+                Rectangle child = null;
+                FrameworkElement source = null;
+                ScalarTransition transition = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var sourceContent = new Rectangle { Width = 1200, Height = 600 };
+                    if (sourceType == SourceType.ScrollViewer)
+                    {
+                        source = new ScrollViewer { Content = sourceContent };
+                    }
+                    else
+                    {
+                        source = new ScrollPresenter { Content = sourceContent };
+                    }
+                    source.Width = 200;
+                    source.Height = 100;
+                    child = new Rectangle { Width = 200, Height = 100 };
+                    parallaxView = new ParallaxView { Width = 200, Height = 100, Child = child, Source = source };
+                    var root = new StackPanel();
+                    root.Children.Add(parallaxView);
+                    root.Children.Add(source);
+                    Content = root;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(parallaxView.IsLoaded);
+                    Verify.IsTrue(source.ActualWidth > 0);
+                    transition = new ScalarTransition();
+                    child.OpacityTransition = transition;
+                    child.Opacity = 0.5;
+                    parallaxView.HorizontalSourceStartOffset = 10;
+                    parallaxView.VerticalSourceEndOffset = 100;
+                    source.Width = 220;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(transition, child.OpacityTransition);
+                    Verify.AreEqual(0.5, child.Opacity);
+                    parallaxView.Child = null;
+                    child = new Rectangle { Width = 200, Height = 100, OpacityTransition = transition };
+                    parallaxView.Child = child;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(child, parallaxView.Child);
+                    Verify.AreEqual(transition, child.OpacityTransition);
+                    Verify.AreEqual(0.0, parallaxView.HorizontalShift);
+                    Verify.AreEqual(0.0, parallaxView.VerticalShift);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyShiftChangesStopAndRestartParallax()
+        {
+            ParallaxView parallaxView = null;
+            ScrollViewer scrollViewer = null;
+            Visual visual = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                scrollViewer = new ScrollViewer
+                {
+                    Width = 200,
+                    Height = 100,
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                    Content = new Rectangle { Width = 600, Height = 600 }
+                };
+                parallaxView = new ParallaxView
+                {
+                    Width = 200,
+                    Height = 100,
+                    Child = new Rectangle { Width = 200, Height = 100 },
+                    Source = scrollViewer,
+                    HorizontalSourceOffsetKind = ParallaxSourceOffsetKind.Absolute,
+                    HorizontalSourceEndOffset = 100,
+                    VerticalSourceOffsetKind = ParallaxSourceOffsetKind.Absolute,
+                    VerticalSourceEndOffset = 100
+                };
+                var root = new StackPanel();
+                root.Children.Add(parallaxView);
+                root.Children.Add(scrollViewer);
+                Content = root;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                parallaxView.HorizontalShift = 100;
+                parallaxView.VerticalShift = 50;
+                visual = ElementCompositionPreview.GetElementVisual(parallaxView.Child);
+            });
+
+            float? horizontalShift = null;
+            float? verticalShift = null;
+            ChangeScrollViewerView(scrollViewer, 50, 50, null, true, null, ref horizontalShift, ref verticalShift);
+            VerifyTranslation(-50, -25);
+
+            RunOnUIThread.Execute(() => parallaxView.HorizontalShift = 0);
+            VerifyTranslation(0, -25);
+
+            RunOnUIThread.Execute(() => parallaxView.VerticalShift = 0);
+            VerifyTranslation(0, 0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                parallaxView.HorizontalShift = 100;
+                parallaxView.VerticalShift = 50;
+            });
+            VerifyTranslation(-50, -25);
+
+            RunOnUIThread.Execute(() => parallaxView.Source = null);
+            VerifyTranslation(0, 0);
+
+            void VerifyTranslation(float expectedHorizontal, float expectedVertical)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    CompositionPropertySpy.StartSpyingScalarProperty(visual, GetVisualHorizontalTargetedPropertyName());
+                    CompositionPropertySpy.StartSpyingScalarProperty(visual, GetVisualVerticalTargetedPropertyName());
+                });
+                CompositionPropertySpy.SynchronouslyTickUIThread(10);
+                RunOnUIThread.Execute(() =>
+                {
+                    CompositionPropertySpy.StopSpyingProperty(visual, GetVisualHorizontalTargetedPropertyName());
+                    CompositionPropertySpy.StopSpyingProperty(visual, GetVisualVerticalTargetedPropertyName());
+                });
+                CompositionPropertySpy.SynchronouslyTickUIThread(10);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(CompositionGetValueStatus.Succeeded,
+                        CompositionPropertySpy.TryGetScalar(visual, GetVisualHorizontalTargetedPropertyName(), out float horizontal));
+                    Verify.AreEqual(CompositionGetValueStatus.Succeeded,
+                        CompositionPropertySpy.TryGetScalar(visual, GetVisualVerticalTargetedPropertyName(), out float vertical));
+                    Verify.IsTrue(CompositionPropertyLogger.AreFloatsEqualWithTolerance(horizontal, expectedHorizontal, c_shiftTolerance));
+                    Verify.IsTrue(CompositionPropertyLogger.AreFloatsEqualWithTolerance(vertical, expectedVertical, c_shiftTolerance));
+                });
+            }
+        }
+
+        [TestMethod]
         [Description("Parallaxes a Rectangle based on a ListView's ScrollViewer.")]
         public void VerifyBasicParallaxingWithListView()
         {

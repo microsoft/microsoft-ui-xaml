@@ -43,7 +43,7 @@
                 <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
                   <MaskBrush>
                     <Source>
-                      <SurfaceBrush Transform="1112_2122 dxdy {0.0651, 0, 0, 0.0651, -16.67, 0}" Surface="1" />
+                      <SurfaceBrush Transform="1112_2122 dxdy {0.995, 0, 0, 1, -16.67, 0}" Surface="1" />
                     </Source>
                     <Mask>
                       <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="2" />

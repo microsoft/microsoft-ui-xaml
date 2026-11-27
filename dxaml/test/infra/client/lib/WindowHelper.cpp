@@ -3539,6 +3539,30 @@ HRESULT WindowHelper::SetXamlVisibilityOverride(_In_ BOOLEAN isVisible)
     COM_END
 }
 
+HRESULT WindowHelper::SimulateDisplayStatusChanged(_In_ BOOLEAN isDisplayOn)
+{
+    COM_START
+    {
+        RunOnUIThread([&]()
+        {
+            LogThrow_IfFailed(GetTestHooks()->SimulateDisplayStatusChanged(isDisplayOn));
+        });
+    }
+    COM_END
+}
+
+HRESULT WindowHelper::SimulateXamlVisibilityChanged(_In_ BOOLEAN isVisible)
+{
+    COM_START
+    {
+        RunOnUIThread([&]()
+        {
+            LogThrow_IfFailed(GetTestHooks()->SimulateXamlVisibilityChanged(isVisible));
+        });
+    }
+    COM_END
+}
+
 HRESULT WindowHelper::SetBrushForXamlRoot(
     _In_ xaml_media::IXamlCompositionBrushBase* xcbb,
     _In_ IInspectable* xamlRoot,

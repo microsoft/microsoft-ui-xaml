@@ -49,8 +49,9 @@ class TableViewColumn :
 public:
     TableViewColumn();
 
-    // Public ABI
-    winrt::FrameworkElement GenerateElement(const winrt::IInspectable& dataItem);
+    // Internal: the display cell, through the overridable GenerateElementCore.
+    winrt::FrameworkElement GenerateDisplayElement(const winrt::IInspectable& dataItem);
+    // Internal: the editing hooks, through their overridable *Core counterparts.
     winrt::FrameworkElement GenerateEditingElement(const winrt::IInspectable& dataItem);
     winrt::IInspectable PrepareCellForEdit(const winrt::FrameworkElement& editingElement, const winrt::RoutedEventArgs& editingEventArgs);
     bool CommitCellEdit(const winrt::FrameworkElement& editingElement);
@@ -84,8 +85,36 @@ public:
     winrt::ITableViewSortComparer CustomSortComparer() const { return m_customSortComparer; }
     void CustomSortComparer(winrt::ITableViewSortComparer const& value);
 
-    // Derived columns call this when one of their own properties invalidates realized cell content.
-    void NotifyCellContentChanged(bool resetAutoWidth = true);
+    // Protected ABI: derived columns call this when one of their own properties invalidates
+    // realized cell content. Regenerates realized cells and resets the Auto width.
+    void NotifyCellContentChanged();
+    void NotifyCellContentChangedInternal(bool resetAutoWidth);
+
+    // Internal: a cell-content change on a live table stays pending until a regeneration takes it.
+    // Queue returns true when a post for it is already in flight.
+    bool QueueCellContentChangeInternal(bool resetAutoWidth) noexcept
+    {
+        m_cellContentChangePending = true;
+        m_queuedCellContentResetAutoWidth = m_queuedCellContentResetAutoWidth || resetAutoWidth;
+        return m_cellContentChangePosted;
+    }
+    void SetCellContentChangePostedInternal(bool posted) noexcept { m_cellContentChangePosted = posted; }
+    bool HasPendingCellContentChangeInternal() const noexcept { return m_cellContentChangePending; }
+    bool IsCellContentChangePostedInternal() const noexcept { return m_cellContentChangePosted; }
+    // Bumped by every take, so a post that a regeneration has already covered does nothing.
+    uint32_t CellContentChangeGenerationInternal() const noexcept { return m_cellContentChangeGeneration; }
+    bool TakeQueuedCellContentChangeInternal() noexcept
+    {
+        m_cellContentChangePending = false;
+        InvalidateCellContentChangePostInternal();
+        return std::exchange(m_queuedCellContentResetAutoWidth, false);
+    }
+    // Drops the in-flight post but keeps the change pending, for the next owner to regenerate.
+    void InvalidateCellContentChangePostInternal() noexcept
+    {
+        m_cellContentChangePosted = false;
+        ++m_cellContentChangeGeneration;
+    }
 
     // Keep the owner weak to avoid TableView -> Columns -> Column -> TableView cycles.
     bool SetOwningTableViewInternal(winrt::TableView const& owner);
@@ -135,6 +164,11 @@ private:
     double m_headerDesiredWidth{ 0.0 };
     winrt::GridLength m_authoredWidth{ c_widthDefault };
     bool m_inUserResize{ false };
+    bool m_cellContentChangePosted{ false };
+    bool m_cellContentChangePending{ false };
+    bool m_hasBeenOwned{ false };
+    bool m_queuedCellContentResetAutoWidth{ false };
+    uint32_t m_cellContentChangeGeneration{ 0 };
 
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };
 
@@ -143,3 +177,29 @@ private:
     winrt::ITableViewSortComparer m_customSortComparer{ nullptr };
     uint32_t m_automationIdentity{ 0 };
 };
+
+namespace TableViewDetails
+{
+    inline bool IsColumnOwnedBy(winrt::TableView const& owner, winrt::TableViewColumn const& column)
+    {
+        return column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == owner;
+    }
+
+    // The leading-frozen prefix: unowned columns are skipped and the first owned non-Leading column ends it.
+    template <typename Columns, typename Fn>
+    void ForEachLeadingFrozenColumn(winrt::TableView const& owner, Columns const& columns, Fn&& fn)
+    {
+        for (auto const& column : columns)
+        {
+            if (!IsColumnOwnedBy(owner, column))
+            {
+                continue;
+            }
+            if (column.FrozenEdge() != winrt::TableViewFrozenEdge::Leading)
+            {
+                break;
+            }
+            fn(column);
+        }
+    }
+}

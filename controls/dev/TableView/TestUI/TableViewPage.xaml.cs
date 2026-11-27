@@ -180,6 +180,7 @@ namespace MUXControlsTestApp
             // second F2 that did nothing from one that re-reported the same column.
             BasicTableView.BeginningEdit += OnBasicTableViewBeginningEdit;
             BasicTableView.CellEditEnding += OnBasicTableViewCellEditEnding;
+            BasicTableView.GettingFocus += OnBasicTableViewGettingFocus;
 
             _basicItems[0].PropertyChanged += OnFirstItemPropertyChanged;
             FirstItemNameTextBlock.Text = _basicItems[0].Name;
@@ -301,7 +302,7 @@ namespace MUXControlsTestApp
             return cell.TransformToVisual(ScrollingTableView)
                        .TransformPoint(new Windows.Foundation.Point(0, 0))
                        .X
-                       .ToString("F0");
+                       .ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         // Diagnostic only: the counter-translation the product wrote. Never summed into the rendered x.
@@ -340,6 +341,94 @@ namespace MUXControlsTestApp
         private void OnBasicTableViewCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
         {
             EditEndReportTextBlock.Text += args.EditAction + ";";
+            if (VetoCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                args.Cancel = true;
+            }
+
+            if (SortOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                // Raised while the edit is closing, so the control replays the sort once the commit completes.
+                TableViewColumn age = BasicTableView.Columns.FirstOrDefault(column => (column.Header as string) == "Age");
+                if (age != null)
+                {
+                    BasicTableView.SortByColumn(age, SortDirection.Descending);
+                }
+            }
+
+            if (FocusHeaderInCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                FindDescendant<TableViewColumnHeader>(BasicTableView)?.Focus(FocusState.Programmatic);
+            }
+
+            if (HideAgeInCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                AgeColumn.Visibility = Visibility.Collapsed;
+            }
+
+            if (DisableSecondRowInCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                TableViewRow row = FindRowForItem(BasicTableView, _basicItems[1]);
+                if (row != null)
+                {
+                    ReenableDisabledRow();
+                    _disabledRow = row;
+                    _disabledRowItem = row.DataContext;
+                    row.DataContextChanged += OnDisabledRowDataContextChanged;
+                    row.IsEnabled = false;
+                }
+            }
+        }
+
+        private void OnBasicTableViewGettingFocus(UIElement sender, GettingFocusEventArgs args)
+        {
+            if (RedirectSecondRowFocusCheckBox.IsChecked != true)
+            {
+                return;
+            }
+
+            for (DependencyObject node = args.NewFocusedElement; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node is TableViewRow row)
+                {
+                    if (object.Equals(row.DataContext, _basicItems[1]) &&
+                        FindDescendant<TableViewColumnHeader>(BasicTableView) is TableViewColumnHeader header)
+                    {
+                        args.TrySetNewFocusedElement(header);
+                    }
+                    return;
+                }
+            }
+        }
+
+        private void OnHideAgeInCommitUnchecked(object sender, RoutedEventArgs e)
+        {
+            AgeColumn.Visibility = Visibility.Visible;
+        }
+
+        private void OnDisableSecondRowInCommitUnchecked(object sender, RoutedEventArgs e)
+        {
+            ReenableDisabledRow();
+        }
+
+        private static TableViewRow FindRowForItem(DependencyObject root, object item)
+        {
+            if (root is TableViewRow row && object.Equals(row.DataContext, item))
+            {
+                return row;
+            }
+
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                TableViewRow found = FindRowForItem(VisualTreeHelper.GetChild(root, i), item);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+
+            return null;
         }
 
         // Reports the editor an edit opened, by an in-process visual-tree walk. Posted at Low priority: the
@@ -437,6 +526,12 @@ namespace MUXControlsTestApp
         private void OnToggleBasicFlowDirectionClick(object sender, RoutedEventArgs e)
         {
             BasicTableView.FlowDirection = BasicTableView.FlowDirection == FlowDirection.RightToLeft
+                ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+        }
+
+        private void OnToggleScrollingFlowDirectionClick(object sender, RoutedEventArgs e)
+        {
+            ScrollingTableView.FlowDirection = ScrollingTableView.FlowDirection == FlowDirection.RightToLeft
                 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
         }
 
@@ -1199,6 +1294,22 @@ namespace MUXControlsTestApp
             ScrollingTableView.IsReadOnly = BasicTableView.IsReadOnly;
         }
 
+        private void OnAllowGroupedEditingToggled(object sender, RoutedEventArgs e)
+        {
+            GroupedTableView.IsReadOnly = ((CheckBox)sender).IsChecked != true;
+        }
+
+        private void OnHideScoreColumnToggled(object sender, RoutedEventArgs e)
+        {
+            ScoreColumn.Visibility = ((CheckBox)sender).IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void OnShowExtraEditColumnsToggled(object sender, RoutedEventArgs e)
+        {
+            var visibility = ((CheckBox)sender).IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            PairColumn.Visibility = visibility;
+        }
+
         // Guarded because IsChecked="True" in markup raises Checked during InitializeComponent, before the
         // BasicTableView field is assigned - an unguarded dereference there throws inside the parse and the
         // whole page fails to load with E_XAMLPARSEFAILED (0x802B000A).
@@ -1218,6 +1329,15 @@ namespace MUXControlsTestApp
             {
                 BasicTableView.CanUserResizeColumns = ((CheckBox)sender).IsChecked == true;
                 RtlTableView.CanUserResizeColumns = BasicTableView.CanUserResizeColumns;
+            }
+        }
+
+        private void OnCanUserReorderColumnsToggled(object sender, RoutedEventArgs e)
+        {
+            if (BasicTableView != null)
+            {
+                BasicTableView.CanUserReorderColumns = ((CheckBox)sender).IsChecked == true;
+                RtlTableView.CanUserReorderColumns = BasicTableView.CanUserReorderColumns;
             }
         }
 
@@ -1372,7 +1492,7 @@ namespace MUXControlsTestApp
         // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
         private void OnToggleNameCanResizeClick(object sender, RoutedEventArgs e)
         {
-            NameColumn.CanResize = !NameColumn.CanResize;
+            NameColumn.CanUserResize = !NameColumn.CanUserResize;
         }
 
         // Template is Star too, so Score keeps a later Star column to trade with and stays resizable.

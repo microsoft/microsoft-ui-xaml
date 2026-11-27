@@ -31,15 +31,17 @@ public sealed record CpuModuleSymbols(string Name, string FilePath, string? Stat
 public sealed record CpuProfile(CpuSamplingInfo Sampling, int? ThreadId, long Samples, IReadOnlyList<CpuThreadSamples> Threads,
     IReadOnlyList<CpuFrameSamples> Exclusive, IReadOnlyList<CpuFrameSamples> Inclusive, IReadOnlyList<CpuModuleSymbols> Modules);
 
-// Reads the CPU samples of a session file, for the CLI and the app. The same rows are in its views (HotFunctions,
+// Reads a session's CPU database, for the CLI and the app. The same rows are in its views (HotFunctions,
 // CpuSampleDetails, CpuFrames) for any SQLite reader.
 public static class CpuProfileReader
 {
+    internal const string FilteredNote = "CPU samples before the retained event range are omitted.";
+
     // The CpuSampling row, or null when the session did not sample CPU (or was written before CPU sampling was added). While
     // the session records, the samples stored so far, or null when there are none yet.
     public static CpuSamplingInfo? ReadSampling(string path)
     {
-        using var connection = SessionFile.Open(path);
+        using var connection = SessionFile.Open(path, includeCpu: true);
         return ReadSampling(connection);
     }
 
@@ -47,7 +49,7 @@ public static class CpuProfileReader
     public static CpuProfile? Read(string path, int? threadId = null, int top = 20, CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(top);
-        using var connection = SessionFile.Open(path);
+        using var connection = SessionFile.Open(path, includeCpu: true);
         // One snapshot of a session that may still be recording.
         using var transaction = connection.BeginTransaction(deferred: true);
         if (ReadSampling(connection, transaction) is not { } sampling)
@@ -113,7 +115,7 @@ public static class CpuProfileReader
     public static CpuStacks? ReadStacks(string path, int? threadId = null, CancellationToken cancellationToken = default,
         Func<long, string?>? functionName = null)
     {
-        using var connection = SessionFile.Open(path);
+        using var connection = SessionFile.Open(path, includeCpu: true);
         // One snapshot of a session that may still be recording.
         using var transaction = connection.BeginTransaction(deferred: true);
         if (ReadSampling(connection, transaction) is not { } sampling)
@@ -233,12 +235,20 @@ public static class CpuProfileReader
 
     private static CpuSamplingInfo? ReadSampling(SqliteConnection connection, SqliteTransaction? transaction = null)
     {
-        if (Sql.Scalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'CpuSampling'",
+        if (Sql.Scalar(connection, """
+            SELECT COUNT(*) FROM pragma_table_list WHERE schema IN ('main', 'cpu') AND type = 'table' AND name = 'CpuSampling'
+            """,
             transaction) == 0)
         {
             return null;
         }
 
+        var separate = Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_database_list WHERE name = 'cpu'", transaction) != 0;
+        var cutoff = separate ? Sql.Scalar(connection, "SELECT CompleteFromQpc FROM main.SessionInfo", transaction) : 0;
+        var filtered = cutoff != 0 && Sql.Scalar(connection,
+            "SELECT EXISTS (SELECT 1 FROM cpu.CpuSamples WHERE Qpc < $cutoff)", transaction, ("$cutoff", cutoff)) != 0;
+        var note = RetentionNote(connection, transaction, separate, filtered);
+        long? visibleSamples = filtered ? Sql.Scalar(connection, "SELECT COUNT(*) FROM CpuSamples", transaction) : null;
         using (var command = connection.CreateCommand())
         {
             command.CommandText = """
@@ -249,14 +259,32 @@ public static class CpuProfileReader
             {
                 DateTime? symbolized = reader.IsDBNull(5) ? null
                     : DateTime.Parse(reader.GetString(5), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-                return new(reader.IsDBNull(0) ? null : reader.GetDouble(0), reader.GetInt64(1), reader.GetInt64(2),
+                return new(reader.IsDBNull(0) ? null : reader.GetDouble(0), visibleSamples ?? reader.GetInt64(1), reader.GetInt64(2),
                     reader.GetBoolean(3), reader.IsDBNull(4) ? null : reader.GetString(4), symbolized,
-                    reader.IsDBNull(6) ? null : reader.GetString(6));
+                    AppendNote(reader.IsDBNull(6) ? null : reader.GetString(6), note));
             }
         }
 
         // The row is written when the recording ends; until then the samples stored so far are read.
-        var samples = Sql.Scalar(connection, "SELECT COUNT(*) FROM CpuSamples", transaction);
-        return samples > 0 ? new(null, samples, 0, false, null, null, null) : null;
+        var samples = visibleSamples ?? Sql.Scalar(connection,
+            separate ? "SELECT COUNT(*) FROM cpu.CpuSamples" : "SELECT COUNT(*) FROM main.CpuSamples", transaction);
+        return samples > 0 || note is not null ? new(null, samples, 0, false, null, null, note) : null;
     }
+
+    private static string? RetentionNote(SqliteConnection connection, SqliteTransaction? transaction, bool separate, bool filtered)
+    {
+        if (!separate)
+        {
+            return null;
+        }
+
+        var trimmed = Sql.Scalar(connection,
+            "SELECT COUNT(*) FROM pragma_table_info('CpuSessionInfo', 'cpu') WHERE name = 'Trimmed'", transaction) != 0 &&
+            Sql.Scalar(connection, "SELECT Trimmed FROM cpu.CpuSessionInfo", transaction) != 0;
+        return AppendNote(trimmed ? CpuSampleIndex.TrimmedNote : null, filtered ? FilteredNote : null);
+    }
+
+    private static string? AppendNote(string? note, string? extra) =>
+        extra is null || note?.Contains(extra, StringComparison.Ordinal) == true ? note
+            : note is null ? extra : $"{note} {extra}";
 }

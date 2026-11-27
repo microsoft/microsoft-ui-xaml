@@ -5,7 +5,7 @@
 
 `TableView` is a virtualized tabular control that ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as rows and generates one cell per realized row and column from `Columns`. It is read-only by default with opt-in cell editing.
 
-It provides column width sizing, row virtualization, leading frozen columns, single-row selection, single-column, control-driven sorting, filtering, single-level grouping, hierarchical rows, column resize, cell-level keyboard navigation and a UIA grid/table model. Column reorder is not yet implemented.
+It provides column width sizing, row virtualization, leading frozen columns, single-row selection, single-column, control-driven sorting, filtering, single-level grouping, hierarchical rows, column resize, opt-in user column reorder (proposed, pending API review), cell-level keyboard navigation and a UIA grid/table model.
 
 # Design considerations
 
@@ -18,7 +18,7 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 - `TableViewGridLinesVisibility` keeps WPF's names and values, so persisted casts round-trip.
 - `Width` is a `GridLength`, so XAML can express `Pixel`, `Auto` and `*`.
 
-**Frozen columns** are a contiguous leading prefix. `TableViewFrozenEdge.Trailing` is reserved.
+**Frozen columns** are a contiguous leading prefix.
 
 **Groups are a separate container kind.** A group header is a `TableViewGroupHeader` interleaved into the flat row list, not a nesting level, so `TableViewRow` never needs an "am I a header?" branch. Hierarchical rows also stay a flat list: each row carries its level and expansion state, and its lead cell is indented.
 
@@ -109,7 +109,7 @@ TableViewRow
       └─ Border PART_SelectionIndicator           rounded whole-row outline, Opacity 0 unless Selected*
 ```
 
-`RebuildHeaders` and `RebuildCells` create one header or cell per non-null column, in `Columns` order. A cell hosts the element from `TableViewColumn.GenerateElement(dataItem)`. `TableView` sets `PART_RowsRepeater.ItemTemplate` (the selector needs an owner XAML cannot supply) and owns its `ItemsSource`.
+`RebuildHeaders` and `RebuildCells` create one header or cell per non-null column, in `Columns` order. A cell hosts the element from the column's `GenerateElementCore(dataItem)`. `TableView` sets `PART_RowsRepeater.ItemTemplate` (the selector needs an owner XAML cannot supply) and owns its `ItemsSource`.
 
 **Header focus survives a rebuild.** `RebuildHeaders` restores header focus by column identity through `RestoreHeaderFocus`. If the focused column was removed, focus falls back to the first visible header, else to the body. Separately, hiding the focused column is handled by `OnColumnVisibilityChanged`, which moves focus to the next visible header, or to the previous one when it was last.
 # Performance considerations
@@ -153,7 +153,7 @@ Cells only measure and cache; they never push a width. Every panel reads the sam
 
 ## Column resize
 
-Resize is split between a primitive and the table. **The primitive owns** the gesture: hit target, cursor, visual states, `IsDragging`, a 0.5 DIP deadband, rejection of non-finite deltas, re-entrancy guards and cancel. It reports a logical delta (positive grows in reading order; only the horizontal axis mirrors under RTL). **The table owns** every policy: whether a column gets a gripper (`CanUserResizeColumns` and `CanResize`, both default `true`), its width (`TableViewResizeGripperWidth`, 8), the anchor, clamping, writing `Width`, reverting on cancel and the UIA announcement. The gripper owns no width state, because `TableViewColumn` already does.
+Resize is split between a primitive and the table. **The primitive owns** the gesture: hit target, cursor, visual states, `IsDragging`, a 0.5 DIP deadband, rejection of non-finite deltas, re-entrancy guards and cancel. It reports a logical delta (positive grows in reading order; only the horizontal axis mirrors under RTL). **The table owns** every policy: whether a column gets a gripper (`CanUserResizeColumns` and `CanUserResize`, both default `true`), its width (`TableViewResizeGripperWidth`, 8), the anchor, clamping, writing `Width`, reverting on cancel and the UIA announcement. The gripper owns no width state, because `TableViewColumn` already does.
 
 **Protocol.** `BeginDrag()`, `DragDelta` (`Delta`, `TotalDelta`), then `EndDrag(canceled)`. `DragCompleted.Canceled` marks a torn-down gesture (Escape, lost capture, disabled, unloaded); the table then restores the authored `GridLength`, so a canceled drag never pins an `Auto` or `*` column. The drag methods are public so keyboard resize raises the same events.
 
@@ -176,13 +176,39 @@ Resize is split between a primitive and the table. **The primitive owns** the ge
 | No donor, dragged column is `*` | Pinned: no gripper |
 | No donor, dragged column is `Pixel`/`Auto` | Shrink-only |
 
-A column with `MinWidth` ≥ `MaxWidth` is also pinned. `IsColumnResizePinned` is shared by the bounds and gripper visibility. It is re-evaluated when `Width`, `MinWidth`, `MaxWidth`, `Visibility` or `CanResize` changes; size changes apply on `DragCompleted`, not mid-drag.
+A column with `MinWidth` ≥ `MaxWidth` is also pinned. `IsColumnResizePinned` is shared by the bounds and gripper visibility. It is re-evaluated when `Width`, `MinWidth`, `MaxWidth`, `Visibility` or `CanUserResize` changes; size changes apply on `DragCompleted`, not mid-drag.
 
-**Locked `*` columns.** A `*` column with `CanResize="False"` is sized from its *authored share* (its factor in the layout with every column at its authored `Width`) while that fits. It cannot take a `Pixel` `Width` without being counted twice, so rule 2 gives it a *resize hold* (`m_lockedColumnHolds`) instead:
+**Locked `*` columns.** A `*` column with `CanUserResize="False"` is sized from its *authored share* (its factor in the layout with every column at its authored `Width`) while that fits. It cannot take a `Pixel` `Width` without being counted twice, so rule 2 gives it a *resize hold* (`m_lockedColumnHolds`) instead:
 
 - **Start.** The first write of a resize (pointer, keyboard, UIA or double-click fit) holds every locked `*` column before the resized one at its `ActualWidth`, recording the `Auto` columns' total width and `LockedColumnHoldsSignature()`. Resizing an `Auto` column drops its width from the recorded `Auto` total, because it turns `Pixel`.
-- **End.** `ExpireLockedColumnHolds` runs when a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns` or `ItemsSource` changes. `ResolveColumnWidths` also drops the holds when the signature (viewport width plus those inputs) no longer matches, or when the `Auto` columns have grown past the recorded total and the held layout no longer fits.
+- **End.** `ExpireLockedColumnHolds` runs when a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanUserResize`, the `Columns` collection or `ItemsSource` changes. `ResolveColumnWidths` also drops the holds when the signature (viewport width plus those inputs) no longer matches, or when the `Auto` columns have grown past the recorded total and the held layout no longer fits.
 - **Cancel.** A canceled drag puts back the holds that were in place before its first write.
+
+## Column reorder
+
+Reorder is opt-in (`CanUserReorderColumns`, default `false`) and lives in `TableView_ColumnReorder.cpp`. The public contract, and what was deferred, is in the API spec's [Reordering columns](../../api-specs/TableView/TableView-spec.md#reordering-columns).
+
+**One apply path.** Pointer and keyboard both end in `TryReorderColumn(column, slot)`, which refuses while a cell edit is open, validates the slot, and applies `Columns.RemoveAt` + `InsertAt` of the same column, the programmatic path apps already use. While that runs, `OnColumnsVectorChanged` treats the moving column's own remove and insert as a move: its `Auto` accumulator is kept, its header cell is not released, so focus is not pushed to a neighbor in between, and the locked-column holds of a user resize are kept (their signature sums per-column hashes, so it does not depend on order). Any other change in between is handled as usual. Sort state follows through the existing `RestoreSortOfMovedColumn`. The column cursor and the remembered body focus are visible indexes, so they are moved to their column's new index, and a focused body cell that was in the moved column, or lost focus in the move, is refocused through `BeginPendingBodyFocus` in its original focus state once its row has laid out the cell. The headers are then rebuilt synchronously, which restores focus to the moved header, cancels the queued rebuild, and lets the next key press read the new order. The UIA notification (through `RaiseTableViewNotification`, shared with the width and sort announcements) and then `ColumnReordered` follow. `VectorChanged` handlers run between the two calls and can change `Columns`: if after `RemoveAt` the vector was replaced or the column is back in it, the move stops there and raises nothing; otherwise the column is inserted at the target index, clamped to the vector's size. An app vector can throw after applying a change, so after a throwing `RemoveAt` or `InsertAt` the column is put back at its old index only if it is missing from the same vector. Every bail-out is reported to telemetry (`ColumnReorder`), and no fault escapes the input handler. A failed synchronous header rebuild queues another.
+
+**Frozen boundary.** A target is allowed only if every column's membership in the frozen prefix is the same before and after the move, checked by simulating the new order (`IsColumnMoveAllowed`). That rule covers the boundary in both directions and the non-prefix `Leading` columns that the prefix rule ignores, without special cases.
+
+**Slots, not indexes.** The gesture picks a slot among the *visible* columns other than the dragged one; slot `k` maps to "directly before visible column `k`", or "after the last visible column". Collapsed columns therefore never become drop targets and keep their place. The allowed slots are contiguous around the column's own slot, so a drag computes the range `[min, max]` once when it starts and clamps to it; a header with no allowed neighbouring slot is not actionable.
+
+**Pointer.**
+
+- **Input.** The drag is the header host's manipulation, as the resize gripper's is. While `CanUserReorderColumns` is true, `PART_HeaderHost` has `ManipulationMode = System | TranslateX` (its own local value is restored on unhook), so the gesture recognizer owns the threshold, mouse, touch and pen take one path, and an ancestor vertical `ScrollViewer` still takes vertical pans.
+- **Press.** A `PointerPressed` handler (handled events too, so it can clear a stale press) records the pressed header unless the press was handled, so gripper and interactive-content presses stay theirs; the gripper's own manipulation is handled before it reaches the host.
+- **Start.** `ManipulationStarted` begins the drag, refused while editing. It snapshots the allowed slots and the other headers' edges in the header row's logical coordinates (RTL needs no case; the manipulation's physical translation is mirrored). It is refused while the body is panned or the header offset has not caught up with the body, because the band is then placed by compositor `Translation`, which `TransformToVisual` does not see. It captures a mouse pointer on the host and attaches the `Esc` hook.
+- **Frozen band.** When a scrolling column moves and the band is scrolled, the pointer and the dragged header are clamped to the frozen band's trailing edge, and columns hidden under it are skipped.
+- **Move and drop.** `ManipulationDelta` updates the preview; `ManipulationCompleted` drops.
+- **Cancel.** `Esc` uses `DragEscapeHook` (`controls/dev/ResizeGripper`), the handled-events-too `KeyDown` hook on the `XamlRoot` content that the resize gripper also uses. A change to `Columns`, a column's `Visibility` or `FrozenEdge`, `CanUserReorderColumns`, unloading, a new template, a cancel of the drag's own pointer or the host losing its capture cancels. A header scroll, a body pan, starting the header scroll animation, a header rebuild (`RebuildHeadersCore`: `Density`, sort/resize switches, header content or style) and a layout change seen by `RefreshFrozenColumns` (`ColumnReorderLayoutChanged`: any measured header's column `ActualWidth`, the frozen width or the body offset moving by 0.5 px or more) also cancel; all but the scroll animation can arrive inside layout, where releasing capture fail-fasts, so they mark the drag stale and cancel on the next tick (matched by a drag generation). Later manipulation events are ignored.
+- **Tap.** A drag suppresses the header's next `Tapped`, so the drop does not also sort.
+
+**Visuals.** As in File Explorer and Task Manager, the source header follows the pointer by its own `Translation` at `Canvas.ZIndex` 2, kept `Pressed`, clamped to the header row and to its side of the frozen band; a header is passed once the pointer enters it and slides by the source's width with `ListView`'s DragBetween timing (200 ms, cubic-bezier(0.1, 0.9, 0.2, 1)), retargeting from its current value. Every write adds to the header's pre-drag `Translation`, so frozen headers keep their pin, and while the drag lasts `RefreshFrozenColumns` leaves the header cells alone; a change to the widths, the frozen band, the scroll offset or the header cells cancels the drag. Every end of the drag re-runs `ApplyFrozenColumnLayout` on the header cells, which restores each pin, clip and ZIndex before a drop's remove and insert; the body never moves.
+
+**Keyboard.** `Ctrl+Shift+Left/Right` on a header moves it by one visible position, mirrored under RTL. It runs after the resize chord and before header navigation, which ignores `Ctrl`. While reorder is enabled, the chord is consumed on any header, moved or not, so it cannot fall through to focus navigation.
+
+**Testing.** `TableViewTestHooks` (private namespace, `MUX_INTERNAL`) runs the press, `ManipulationDelta` and `ManipulationCompleted` steps without a pointer, as a touch drag does (nothing is captured), so API tests can move, preview and cancel a drag deterministically. Tests that need the real pointer or keyboard path inject input and report Skipped where it cannot reach the test window.
 
 ## Row virtualization and recycling
 
@@ -196,9 +222,9 @@ On recycle, `ItemsRepeater` re-points a row's `DataContext`, and cells update **
 
 ## Scrolling: sticky headers and frozen leading columns
 
-**Sticky headers.** `PART_HeaderScroller` has user scrolling disabled. `TableView` calls `ChangeView` on it from `PART_BodyScroller.ViewChanged`. The sync is one-way and skips differences under 0.5 px.
+**Sticky headers.** `PART_HeaderScroller` has user scrolling disabled. `TableView` calls `ChangeView` on it from `PART_BodyScroller.ViewChanged`. The sync is one-way and skips differences under 0.5 px. That offset is what hit-testing, UIA and `TransformToVisual` see. Touch and precision-touchpad pans move the body on the compositor before `ViewChanged` reaches the UI thread, so an `ExpressionAnimation` on `PART_HeaderHost.Translation` adds the difference in the same frame: the body manipulation property set's `Translation.X` plus the header offset last applied (fed from the UI thread). It is 0 at rest. The animation restarts when the scrollers are resolved again (template re-apply, reload). Frozen cells keep the UI-thread pin below in header and rows alike, so the two frozen bands stay aligned with each other.
 
-**Frozen leading columns.** Frozen cells are counter-translated against the horizontal offset through `UIElement.Translation` (enabled with `ElementCompositionPreview.SetIsTranslationEnabled`), and non-frozen cells are clipped out of the pinned band. Only the contiguous prefix from column 0 freezes. Column reorder, when implemented, must not assume this approach.
+**Frozen leading columns.** Frozen cells are counter-translated against the horizontal offset through `UIElement.Translation` (enabled with `ElementCompositionPreview.SetIsTranslationEnabled`), and non-frozen cells are clipped out of the pinned band. Only the contiguous prefix from column 0 freezes. Column reorder does not depend on this approach: it reads the header cells' rendered positions only to lay out the drag preview, and keeps columns on their side of the boundary.
 
 ## Shaping: sort, filter, group and hierarchy
 
@@ -246,8 +272,9 @@ Editing is cell-scoped and starts only from user gestures (double-click, or `F2`
 - `TableViewRow::EndCellEdit` restores the display element and moves focus; it runs only on interactive close paths.
 - `TableViewRow::AbandonCellEdit` never touches focus. `TableView::TerminateEditWithoutVisualRestore` uses it from `OnRowElementClearing`, `RebuildCells`, `OnIsReadOnlyPropertyChanged` and `OnItemsSourcePropertyChanged`.
 - The cell restamp path keeps the edit open, because installing the editor itself triggers a re-measure.
+- A cell-content change to the edited column ends the edit synchronously in the setter (`TableView::EndEditOfChangedColumn`, the forced layout-pass close the synchronous row rebuild used), since its editor was generated from the previous content; `TableViewTextColumn::Binding` closes before swapping the binding, so the close validates the property the editor writes. A close runs app code (`CellEditEnding` handlers, the value transfer's setter, `ConvertBack`, `PropertyChanged` handlers); while a close is in progress (`EditState::Ending`, or `m_editValueTransferDepth` while a close transfers, validates or rolls back), a change to the edited column does not start another close: that close finishes with its own action, so a change from a `CellEditEnding` handler during `CancelEdit` writes nothing and `CancelEdit` still returns `true`, and the regeneration waits for it, and a `Binding` set there supersedes the outer setter's older value (`m_bindingRequest`). Validation and rollback use the property path captured when the editor was generated (`m_currentEditPropertyPath`). During `Beginning`, a change from a `BeginningEdit` handler is left alone and the edit opens from the new content; once the handler has returned (`m_pendingBeginEditGeneratingEditor`), the change sets `m_abandonPendingBeginEdit`, so `BeginEdit` skips `PrepareCellForEdit`, restores the display cell (`EndCellEdit(Cancel)`) and unwinds as a stale open with no `CellEditEnding`. A cell regeneration (`TableView::RegenerateColumnCells`, posted on a live table) that finds an edit open, or a `Tab` move to the next edit pending, is held: that edit began after the change. The column keeps its change pending and goes on `m_cellRegenerationsAfterEdit`, which `DrainCoalescedEditReshape` and `EndPendingTabEditMove` release once no edit is open. A release skips a column whose newer change has its own post in flight. A throw from `GenerateElementCore` in a posted regeneration or release is caught and logged, as in `TableViewRow::QueueRebuildCells`, after the other rows are regenerated, and the change stays pending. A column re-attached with a change still pending (`Columns.SetAt(i, column)`, or a move to another table) reschedules it through `ScheduleColumnCellRegeneration`, which does not end an edit: it is not new content. The reschedule is made once `OnColumnsVectorChanged` has tracked the change and is posted even off a live tree, so `GenerateElementCore` never runs inside the `Columns` change; the post is queued before the rows' own rebuild, which then restamps the regenerated cells.
 - The focus-loss commit is posted and re-evaluated once focus settles.
-- An explicit `Tab`/`Shift+Tab` departure is not opening-gesture recovery, even when XAML targets the edited cell's wrapper. It attempts the normal focus-loss commit without redirecting focus back into the editor. Navigation within a composite editor or its owned popups still keeps the edit open; validation can still veto the commit. This does not introduce adjacent-cell editing, wrapping, or automatic editing of a destination. Queued focus work is invalidated when its edit closes or its begin is abandoned.
+- An explicit `Tab`/`Shift+Tab` departure is not opening-gesture recovery, even when XAML targets the edited cell's wrapper. It attempts the normal focus-loss commit without redirecting focus back into the editor. Navigation within a composite editor or its owned popups still keeps the edit open; validation can still veto the commit. A plain `Tab`/`Shift+Tab` in an editor is normally handled on key-down, which commits and moves the edit to the adjacent editable cell, so this path covers departures that still reach focus navigation, such as a programmatic move or a key the editor leaves unhandled. Queued focus work is invalidated when its edit closes or its begin is abandoned.
 
 ## Keyboard navigation
 
@@ -259,6 +286,7 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 | Header | `Down` / `Up` | First row / stay. |
 | Header | `Enter`, `Space` | Sort. `Space` fires on key-up, so auto-repeat cannot re-sort. |
 | Header | `Alt+Left`/`Alt+Right` | Resize. |
+| Header | `Ctrl+Shift+Left`/`Ctrl+Shift+Right` | Reorder by one visible position, when `CanUserReorderColumns`. |
 | Row | `Up`/`Down`, `PageUp`/`PageDown` | Move at the same level (row or cell); `Up` from row 0 enters the header. Paging works like `ListView`. |
 | Row | `Home`/`End` | First or last row. |
 | Row | `Right`/`Left` | Flat row: drill into the first cell / nothing. Tree row: expand, else drill in / collapse, else go to parent. |
@@ -280,10 +308,10 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 | Peer | Control type | Patterns |
 |---|---|---|
 | Table | `DataGrid` | `Grid`, `Table`, `ItemContainer`; `Selection` unless `SelectionMode` is `None`; `Scroll` from the body scroller. Bounds exclude cache rows. |
-| Row | `DataItem` | `SelectionItem` unless `SelectionMode` is `None`; `ExpandCollapse` for tree rows; `VirtualizedItem` while virtualized. |
+| Row | `DataItem` | `SelectionItem` unless `SelectionMode` is `None`; `ExpandCollapse` for tree rows; `ScrollItem`; `VirtualizedItem` while virtualized. |
 | Cell | `DataItem` ("cell") | `GridItem`, `TableItem`; `Value` only when editable with a text editor; `VirtualizedItem`. |
 | Column header | `HeaderItem` | `Invoke` (sort) when sortable; `Transform` (resize) when resizable, with `CanResize` false while pinned. |
-| Group header | `Group` | `ExpandCollapse` always (empty groups report `LeafNode`), `GridItem`. |
+| Group header | `Group` | `ExpandCollapse` always (empty groups report `LeafNode`), `GridItem`, `ScrollItem`. |
 
 The column-header peer implements `ITransformProvider`, though the IDL lists only `IInvokeProvider`.
 
@@ -292,6 +320,11 @@ The column-header peer implements `ITransformProvider`, though the IDL lists onl
 - **Header names** come from a string `Header` or the realized content, never the gridline, glyph or gripper.
 - **Unknown values.** `PositionInSet`, `SizeOfSet` and `Level` report `0` when unknown, and app-set `AutomationProperties` win. The group-header peer computes no `Level`.
 - **Stale items.** A `GridItem` whose row, item or column is gone throws `UIA_E_ELEMENTNOTAVAILABLE` rather than reporting a wrong coordinate.
+- **Row element per binding.** UIA sees a realized row through `TableViewRowItemAutomationPeer`, not `TableViewRowAutomationPeer`. `TableViewRow::SyncItemAutomationPeer` creates one each time the row is bound to an item (`OnCreateAutomationPeer`, owner change, recycle to another item) and installs it as the row peer's `EventsSource`; it clears it when the row goes to the recycle pool and never replaces a source the app installed. The binding holds only weak references. Every member first checks that the row's peer still has this binding as its `EventsSource` and the row is still in the repeater (`BoundRow()`), and throws `UIA_E_ELEMENTNOTAVAILABLE` otherwise, so a held element and its pattern objects go stale instead of retargeting to the row's next item. The shared members forward to the row's peer through `TableViewBindingAutomationPeerT` (`TableViewAutomationHelpers.h`); `SelectionItem`, `ExpandCollapse` and `ScrollItem` are served by the binding itself.
+- **Group element per group.** UIA sees a realized group header through `TableViewGroupBindingAutomationPeer` (`TableViewGroupHeader.cpp`), installed as the header peer's `EventsSource` by `SyncGroupAutomationPeerInternal`. Unlike rows, the element is keyed by group identity in `TableView::m_groupAutomationElements`: when another header shows the group, `Retarget` points the same element at it, and `PrepareGroupHeaderElement` creates the header peer early if a client still holds the group's element. The map holds elements strongly (a client's hold does not keep one alive while no header exposes it), past 256 entries prunes those whose group no header shows any more, and is cleared with `m_rowMetadataGeneration` when the projection's row metadata provider is replaced, since identities are only meaningful within one projection. Every member checks that the header's peer still has this element as its `EventsSource` and the header is still in the repeater (`HeaderPeer()`), and throws `UIA_E_ELEMENTNOTAVAILABLE` otherwise. Shared members forward through `TableViewBindingAutomationPeerT`; `ExpandCollapse`, `GridItem` and `ScrollItem` are served by the element.
+- **Selected-item peer.** When the selected row is not realized, `GetSelection` returns the same class in its unbound mode: it tracks the item (or, for a boxed value, the row index) and degrades instead of throwing while its row is unrealized. It offers `VirtualizedItem` until the row is realized.
+- **Resolving a binding.** `ITableViewBindingAutomationPeerAccess` is a private COM tag on the binding base. `TryGetBoundContainer` uses it to type-test an arbitrary peer and read the row or group header it currently speaks for, so `FindItemByProperty` resolves a `startAfter` binding without scanning the repeater or creating peers.
+- **Reorder.** Header and cell coordinates are computed from `Columns`, so they follow a move with no extra bookkeeping. A user reorder adds a notification, raised on the table peer because the header peers are replaced by the rebuild.
 
 Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree; a missing resource falls back safely.
 
@@ -305,7 +338,7 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 | `GridLinesVisibility` | Body gridlines, independent of header lines. |
 | Column-header gridlines | Dividers and bottom rule are always present, independent of body lines. Both use `TabularSurfaceHeaderSeparatorBrush`; the trailing column divider is suppressed at the viewport edge even with a hidden outer frame. |
 | `BorderBrush`, `BorderThickness` | Outer frame. DividerStrokeColorDefault in Light/Dark; system-color in High Contrast. The default 1px inset is retained by the borderless style for stable layout. |
-| `Density` | `Compact` / `Standard` / `Comfortable`: 24/32/40px minimum row/header heights and 14px text; Standard is the default. Cell/header control padding is 12,2,12,2 / 12,6,12,6 / 12,10,12,10; section-host padding is 4,2,12,2 / 4,6,12,6 / 4,10,12,10. Metric keys use Small / Medium / Large suffixes respectively. App metric overrides win. Auto widths persist unless font resources change. Original enum values remain Compact=0, Standard=1, Comfortable=2. |
+| `Density` | `Standard = 0` (the default) / `Compact = 1` / `Comfortable = 2`. `Compact` / `Standard` / `Comfortable` give 24/32/40px minimum row/header heights and 14px text. Cell/header control padding is 12,2,12,2 / 12,6,12,6 / 12,10,12,10; section-host padding is 4,2,12,2 / 4,6,12,6 / 4,10,12,10. Metric keys use Small / Medium / Large suffixes respectively. App metric overrides win. Auto widths persist unless font resources change. |
 | Density styles | `DefaultTableViewStyle` selects Standard, `CompactTableViewStyle` selects Compact, and `ComfortableTableViewStyle` selects Comfortable. Each sets only `Density`; the density variants derive from the named default preset and retain the shared template. Local values and bindings take precedence; clearing a local value restores the style selection. Density composes with banded/borderless appearance through the property or a derived style. |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
 | `StrongTableViewColumnHeaderStyle` | Named style from `TabularControlsResources`: semibold primary text, sharing the default header template. Omit a header style for the regular secondary-text default. |
@@ -387,7 +420,7 @@ Text uses the same divider-free center as selection. `RefreshCellVisualGeometry`
 | `TableView` | Resolved: `PART_HeaderHost` (`Panel`, required), `PART_RowsRepeater` (`ItemsRepeater`, required, do not bind `ItemsSource`), `PART_HeaderRow` (collapsed when headers hide), `PART_EmptyStatePresenter` (`ContentControl`, optional), `PART_LayoutRoot` (`FrameworkElement`, optional, arranged inner frame for terminal separator comparison). |
 | `TableViewRow` | Resolved: `PART_CellsHost` (`Panel`, required), `PART_GridLineBorder` and `PART_RowExpanderGutter` (optional). State: `PART_RootBorder`, `PART_CellForegroundPresenter`, `PART_SelectionIndicator`, `PART_RowExpanderIcon`. |
 | `TableViewColumnHeader` | Resolved, optional: `PART_ContentPresenter`, `PART_GridLine`, `PART_SortIndicatorHost`, `PART_ResizeGripperHost`. State: `PART_Background`, `PART_ContentPresenter`, `PART_SortIndicatorHost`. |
-| `TableViewGroupHeader` | Resolved, optional: `PART_GridLineBorder`. State: `PART_Root`, `PART_ExpanderIcon`, `PART_ContentPresenter`. |
+| `TableViewGroupHeader` | Resolved, optional: `PART_GridLineBorder`, `PART_ExpanderGutter` (`Border`; content padding, and filtered from UIA children). State: `PART_Root`, `PART_ExpanderIcon`, `PART_ContentPresenter`. |
 
 The scrollers are found as the nearest `ScrollViewer` ancestors of the header host and repeater, not by name. Row states are `CommonStates` (including four `Selected*` states), `RowExpansionStates`, `RowExpandabilityStates` and `RowHierarchyStates`, `Row`-prefixed so they cannot collide with an app's `Expanded`/`Collapsed`.
 
@@ -581,6 +614,6 @@ These contracts are documented only here; they belong in the [API spec](../../ap
 
 ## Non-goals and deferred work
 
-- **Not yet implemented:** column reorder, trailing frozen columns, multi-select, `RowStyle`/`CellStyle`, programmatic `BeginEdit`, row-scoped editing.
+- **Not yet implemented:** trailing frozen columns, multi-select, `RowStyle`/`CellStyle`, programmatic `BeginEdit`, row-scoped editing.
 - **Deferred:** `Auto` shrink, multi-column sort, clipboard, incremental loading, editing announcements.
 - **Non-goals:** column virtualization, row headers, marquee selection, spreadsheet-style interaction.

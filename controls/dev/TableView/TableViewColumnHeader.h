@@ -56,6 +56,11 @@ public:
     // True while the local IsTabStop=false is the TableView's inactive-header stamp, not the app's.
     void SetOwnsTabStopStampInternal(bool ownsStamp) { m_ownsTabStopStamp = ownsStamp; }
     bool OwnsTabStopStampInternal() const { return m_ownsTabStopStamp; }
+    // Returns the previous value: whether the header's HelpText last offered the move keys.
+    bool ExchangeMovableInternal(bool movable) { return std::exchange(m_movable, movable); }
+
+    // The reorder drag keeps the dragged header Pressed while the header row holds the capture.
+    void SetReorderDragging(bool dragging);
 
 private:
     void UpdateVisualStates(bool useTransitions);
@@ -87,9 +92,13 @@ private:
     winrt::SortDirection m_sortDirection{ winrt::SortDirection::None };
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
+    // An unhandled primary press; its release focuses the header.
+    bool m_focusOnRelease{ false };
+    bool m_isReorderDragging{ false };
     winrt::weak_ref<winrt::TextBlock> m_ownedText{ nullptr };
     winrt::Thickness m_textPadding{};
     tracker_ref<winrt::Binding> m_densityPaddingBinding{ this };
     bool m_hasTextPadding{ false };
     bool m_ownsTabStopStamp{ false };
+    bool m_movable{ false };
 };

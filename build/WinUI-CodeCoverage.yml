@@ -1,0 +1,127 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+trigger: none
+
+# No YAML schedule: like WinUI-Nightly, any recurring run is configured on the pipeline
+# definition's Triggers settings in Azure DevOps.
+
+name: $(versionFinal)
+
+# Focused code coverage pipeline: a trimmed cousin of WinUI-Nightly.yml. Builds x86 chk only,
+# runs the Dev test suite on Win10-RS5 (the leg with the largest Dev test population) with
+# coverage on, then merges and publishes to the Code Coverage tab. Skips sample apps,
+# scenario/static tests, packaging, API checks, extra OSes, and static analysis.
+#
+# Both Microsoft.ui.xaml.dll (MUX) and Microsoft.UI.Xaml.Controls.dll (MUXC) are instrumented,
+# each with its own independent session id/collector/.coverage file - there is no shared
+# listener between the two, so one module's data can never mix into the other's. The merge job
+# publishes to the Code Coverage tab with each DLL under its own top-level folder (MUX / MUXC;
+# see CoverageTabLayout), and writes a coverage-report.html with a Combined/MUX/MUXC drop-down
+# plus one standalone folder-tree HTML page per view into the MergeCodeCoverage artifact.
+#
+# EXPERIMENTAL QUALITY.
+
+parameters:
+- name: CollectCodeCoverage
+  displayName: "Collect code coverage"
+  type: boolean
+  default: true
+- name: CoverageModules
+  displayName: "Product DLL(s) to instrument (one per list entry)"
+  # A list, NOT a space-separated string. The value is joined with commas before it reaches
+  # CreateTestPayload.ps1's [string[]]$CoverageModules: PowerShell only binds multiple values to
+  # an array parameter when they are comma-separated. A space-separated string would bind just
+  # the first entry and spill the rest onto the next positional parameter.
+  type: object
+  default:
+  - 'Microsoft.ui.xaml.dll'
+  - 'Microsoft.UI.Xaml.Controls.dll'
+- name: CoverageModuleStems
+  displayName: "Module stems (CoverageModules entries without .dll) to merge"
+  type: object
+  default:
+  - 'Microsoft.ui.xaml'
+  - 'Microsoft.UI.Xaml.Controls'
+- name: CoverageTabLayout
+  displayName: "Code Coverage tab layout"
+  type: string
+  default: 'PerModuleFolders'
+  values:
+  - 'PerModuleFolders'   # one top-level folder per DLL (MUX / MUXC); overview = all DLLs
+  - 'Combined'           # real source paths, all DLLs merged into one tree
+
+variables:
+- template: AzurePipelinesTemplates\WinUI-Versions.yml
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+- group: WinUITeamKeyVault-Secrets  # This pipeline must be granted access to this group, or
+                                    # secret-dependent steps fail.
+- group: WinUI-Variable-Library
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    - repository: WinAppSDK
+      type: git
+      name: OS/WinAppSDK
+      ref: refs/heads/release/main
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates # https://aka.ms/obpipelines/templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: 'windows_undocked' # windows undocked
+    globalsdl:
+      # TSA needs .config\tsaoptions.json, which is internal-only and not in this repo
+      # (same as WinUI-GitHub-PR.yml).
+      tsa:
+        enabled: false
+      enableXFGCheck: false
+      codeql:
+        tsandjs:
+          enabled: true
+        python:
+          enabled: false
+        psscriptanalyzer:
+          enable: true
+      prefast:
+        enabled: false
+        break: true
+      apiscan:
+        enabled: false
+        break: false
+      binskim:
+        enabled: true
+        analyzeTargetGlob: $(BinskimExclusion)
+        break: true
+      policheck:
+        exclusionsFile: $(Build.SourcesDirectory)\.config\PolicheckExclusions.xml
+
+    stages:
+    # Build x86 chk only. buildProductOnly stays false so the payload gets the TAEF test
+    # binaries and TestDependencies from MUXControls.sln. pipelineKind stays Nightly so this
+    # reuses the known-good payload/CodeQL semantics of that pipelineKind while
+    # collectCodeCoverage collapses the build matrix down to the single x86/chk leg.
+    - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
+      parameters:
+        pipelineKind: Nightly
+        signOutput: false
+        runStaticAnalysis: false
+        buildProductOnly: false
+        collectCodeCoverage: ${{ parameters.CollectCodeCoverage }}
+
+    - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
+      parameters:
+        pipelineKind: Nightly
+        collectCodeCoverage: ${{ parameters.CollectCodeCoverage }}
+        coverageTestOS: 'Win10-RS5'
+        coverageModules: ${{ parameters.CoverageModules }}
+        coverageModuleStems: ${{ parameters.CoverageModuleStems }}
+        coverageTabLayout: ${{ parameters.CoverageTabLayout }}
