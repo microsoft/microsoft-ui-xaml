@@ -6934,7 +6934,6 @@ VerifyAllTimeZonesPartImpl(19, 20)
         TestCleanupWrapper cleanup;
         xaml_controls::CalendarView^ cv = nullptr;
         xaml_controls::Primitives::CalendarPanel^ monthViewPanel = nullptr;
-        ::Windows::Foundation::EventRegistrationToken keyDownToken{};
         const auto november15 = MakeEnUsGregorianDate(2000, 11, 15);
         const auto november22 = MakeEnUsGregorianDate(2000, 11, 22);
 
@@ -6953,14 +6952,11 @@ VerifyAllTimeZonesPartImpl(19, 20)
             VERIFY_IS_TRUE(IsSameEnUsGregorianDay(expectedDate, focusedItem->Date));
         };
 
-        auto removeHandler = wil::scope_exit([&]()
+        auto keyDownRegistration = CreateSafeEventRegistration(xaml::FrameworkElement, KeyDown);
+        auto releaseStoredArgs = wil::scope_exit([&]()
         {
             RunOnUIThread([&]()
             {
-                if (monthViewPanel != nullptr)
-                {
-                    monthViewPanel->KeyDown -= keyDownToken;
-                }
                 state->lastArgs = nullptr;
             });
         });
@@ -6981,16 +6977,20 @@ VerifyAllTimeZonesPartImpl(19, 20)
         RunOnUIThread([&]()
         {
             monthViewPanel = safe_cast<xaml_controls::Primitives::CalendarPanel^>(CalendarHelper::GetTemplateChild(cv, L"MonthViewPanel"));
-            keyDownToken = monthViewPanel->KeyDown += ref new Microsoft::UI::Xaml::Input::KeyEventHandler(
-                [state](Platform::Object^, Microsoft::UI::Xaml::Input::KeyRoutedEventArgs^ e)
-            {
-                state->lastArgs = e;
-                if (state->handleKeys)
-                {
-                    e->Handled = true;
-                }
-            });
+        });
 
+        keyDownRegistration.Attach(monthViewPanel, ref new Microsoft::UI::Xaml::Input::KeyEventHandler(
+            [state](Platform::Object^, Microsoft::UI::Xaml::Input::KeyRoutedEventArgs^ e)
+        {
+            state->lastArgs = e;
+            if (state->handleKeys)
+            {
+                e->Handled = true;
+            }
+        }));
+
+        RunOnUIThread([&]()
+        {
             xaml_controls::CalendarViewDayItem^ startItem = nullptr;
             for (unsigned i = 0; i < monthViewPanel->Children->Size; ++i)
             {
