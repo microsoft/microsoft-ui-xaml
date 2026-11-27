@@ -34,11 +34,9 @@ TitleBar::~TitleBar()
     m_sizeChangedRevoker.revoke();
     m_flowDirectionChangedRevoker.revoke();
 
-    if (m_inputActivationChangedToken.value)
-    {
-        m_inputActivationListener.InputActivationChanged(m_inputActivationChangedToken);
-        m_inputActivationChangedToken.value = 0;
-    }
+    // Must precede TryGetAppWindow(): a stale id would drop the cached sources first.
+    RevokeInputActivationChanged();
+    RevokeWindowRectChanged();
 
     const auto appWindow = TryGetAppWindow();
     if (appWindow)
@@ -66,10 +64,15 @@ void TitleBar::OnApplyTemplate()
 
     auto appWindowId = GetAppWindowId();
 
+    RevokeInputActivationChanged();
+
     if (appWindowId.Value != 0)
     {
         m_inputActivationListener = winrt::Microsoft::UI::Input::InputActivationListener::GetForWindowId(appWindowId);
-        m_inputActivationChangedToken = m_inputActivationListener.InputActivationChanged({ this, &TitleBar::OnInputActivationChanged });
+        if (m_inputActivationListener)
+        {
+            m_inputActivationChangedToken = m_inputActivationListener.InputActivationChanged({ this, &TitleBar::OnInputActivationChanged });
+        }
     }
 
     UpdateHeight();
@@ -299,14 +302,14 @@ void TitleBar::UpdateIcon()
             m_iconLayoutUpdatedRevoker.revoke();
         }
 
+        RevokeWindowRectChanged();
+
         if (const auto& nonClientPointerSource = GetInputNonClientPointerSource())
         {
-            m_windowRectChangedToken = nonClientPointerSource.WindowRectChanged({ this, &TitleBar::OnWindowRectChanged });
-        }
-        else if (m_inputNonClientPointerSource)
-        {
-            m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
-            m_windowRectChangedToken.value = 0;
+            if (m_windowRectChangedToken.value == 0)
+            {
+                m_windowRectChangedToken = nonClientPointerSource.WindowRectChanged({ this, &TitleBar::OnWindowRectChanged });
+            }
         }
 
         templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
@@ -315,12 +318,7 @@ void TitleBar::UpdateIcon()
     else
     {
         m_iconLayoutUpdatedRevoker.revoke();
-
-        if (m_inputNonClientPointerSource)
-        {
-            m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
-            m_windowRectChangedToken.value = 0;
-        }
+        RevokeWindowRectChanged();
 
         templateSettings->IconElement(nullptr);
         GoToState(s_iconCollapsedVisualStateName, false);
@@ -925,12 +923,35 @@ winrt::WindowId TitleBar::GetAppWindowId()
     {
         m_lastAppWindowId = appWindowId;
 
+        RevokeInputActivationChanged();
+        m_inputActivationListener = nullptr;
+
+        RevokeWindowRectChanged();
         m_inputNonClientPointerSource = nullptr;
 
         m_appWindow = nullptr;
     }
 
     return appWindowId;
+}
+
+void TitleBar::RevokeInputActivationChanged()
+{
+    if (m_inputActivationChangedToken.value != 0 && m_inputActivationListener)
+    {
+        m_inputActivationListener.InputActivationChanged(m_inputActivationChangedToken);
+        m_inputActivationChangedToken.value = 0;
+    }
+}
+
+// No auto_revoke: InputNonClientPointerSource doesn't support weak references.
+void TitleBar::RevokeWindowRectChanged()
+{
+    if (m_windowRectChangedToken.value != 0 && m_inputNonClientPointerSource)
+    {
+        m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
+        m_windowRectChangedToken.value = 0;
+    }
 }
 
 winrt::InputNonClientPointerSource const& TitleBar::GetInputNonClientPointerSource()
@@ -940,6 +961,11 @@ winrt::InputNonClientPointerSource const& TitleBar::GetInputNonClientPointerSour
     if (!m_inputNonClientPointerSource && appWindowId.Value != 0)
     {
         m_inputNonClientPointerSource = winrt::InputNonClientPointerSource::GetForWindowId(appWindowId);
+
+        if (m_inputNonClientPointerSource && IconSource() && m_windowRectChangedToken.value == 0)
+        {
+            m_windowRectChangedToken = m_inputNonClientPointerSource.WindowRectChanged({ this, &TitleBar::OnWindowRectChanged });
+        }
     }
 
     return m_inputNonClientPointerSource;

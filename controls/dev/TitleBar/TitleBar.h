@@ -67,6 +67,8 @@ private:
 
     void LoadBackButton();
     void LoadPaneToggleButton();
+    void RevokeInputActivationChanged();
+    void RevokeWindowRectChanged();
 
     winrt::InputNonClientPointerSource const& GetInputNonClientPointerSource();
     winrt::Windows::Graphics::RectInt32 const GetBounds(const winrt::FrameworkElement& element);

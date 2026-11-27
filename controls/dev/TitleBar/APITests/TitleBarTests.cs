@@ -1221,6 +1221,116 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: host a TitleBar with an IconSource in Content (not attached to Window.SetTitleBar), swap
+        //           IconSource, remove it from Content, force GC so ~TitleBar() runs while the window stays alive,
+        //           and then trigger window and non-client region rect changes.
+        // Expected: the TitleBar is collected and subsequent window/region rect changes do not dispatch into the
+        //           destroyed control or crash the process.
+        // A failure means: WindowRectChanged (either the latest registration or one overwritten during the
+        //                  IconSource swap) was not revoked before destruction.
+        [TestMethod]
+        public void VerifyWindowRectChangedRevokedAfterIconSwapAndCollect()
+        {
+            WeakReference weakTitleBar = null;
+            var loaded = new AutoResetEvent(false);
+            var unloaded = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var titleBar = new TitleBar()
+                {
+                    IconSource = new SymbolIconSource() { Symbol = Symbol.Home },
+                };
+
+                RoutedEventHandler onLoaded = null;
+                onLoaded = (sender, args) =>
+                {
+                    ((TitleBar)sender).Loaded -= onLoaded;
+                    loaded.Set();
+                };
+                titleBar.Loaded += onLoaded;
+
+                RoutedEventHandler onUnloaded = null;
+                onUnloaded = (sender, args) =>
+                {
+                    ((TitleBar)sender).Unloaded -= onUnloaded;
+                    unloaded.Set();
+                };
+                titleBar.Unloaded += onUnloaded;
+
+                weakTitleBar = new WeakReference(titleBar);
+                Content = titleBar;
+            });
+            Verify.IsTrue(loaded.WaitOne(DefaultWaitTimeInMS), "Waiting for the TitleBar to load");
+            IdleSynchronizer.Wait();
+
+            // Swap IconSource to exercise revoking the previous WindowRectChanged registration before re-subscribing.
+            RunOnUIThread.Execute(() =>
+            {
+                var titleBar = (TitleBar)Content;
+                Verify.IsNotNull(titleBar);
+                Verify.IsNotNull(titleBar.XamlRoot, "TitleBar should be attached to a live XamlRoot");
+                Verify.IsNotNull(titleBar.TemplateSettings.IconElement);
+
+                titleBar.IconSource = new SymbolIconSource() { Symbol = Symbol.Mail };
+                titleBar.UpdateLayout();
+                Verify.IsNotNull(titleBar.TemplateSettings.IconElement);
+            });
+            IdleSynchronizer.Wait();
+
+            // Detach and collect the TitleBar while the host window remains alive.
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            Verify.IsTrue(unloaded.WaitOne(DefaultWaitTimeInMS), "Waiting for the TitleBar to unload");
+
+            for (int attempt = 0; attempt < 10 && weakTitleBar.IsAlive; attempt++)
+            {
+                IdleSynchronizer.Wait();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+            Verify.IsFalse(weakTitleBar.IsAlive, "TitleBar should be collected after being removed from Content");
+            IdleSynchronizer.Wait();
+
+            // Trigger window and non-client region rect changes on the surviving window.
+            RectInt32 originalRect = default;
+            bool moved = false;
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var appWindow = MUXControlsTestApp.App.CurrentWindow.AppWindow;
+                    var pos = appWindow.Position;
+                    var size = appWindow.Size;
+                    originalRect = new RectInt32(pos.X, pos.Y, size.Width, size.Height);
+
+                    var nonClientSource = InputNonClientPointerSource.GetForWindowId(appWindow.Id);
+                    nonClientSource.SetRegionRects(NonClientRegionKind.Icon, new[] { new RectInt32(0, 0, 16, 16) });
+                    nonClientSource.ClearRegionRects(NonClientRegionKind.Icon);
+
+                    appWindow.MoveAndResize(new RectInt32(originalRect.X + 10, originalRect.Y + 10, originalRect.Width + 20, originalRect.Height + 20));
+                    moved = true;
+                });
+                IdleSynchronizer.Wait();
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var appWindow = MUXControlsTestApp.App.CurrentWindow.AppWindow;
+                    InputNonClientPointerSource.GetForWindowId(appWindow.Id).ClearRegionRects(NonClientRegionKind.Icon);
+                    if (moved)
+                    {
+                        appWindow.MoveAndResize(originalRect);
+                    }
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
         private static void VerifyDependencyPropertyRoundTrip<T>(TitleBar titleBar, DependencyProperty property, Func<T> getClrValue, T defaultValue, T newValue)
         {
             Verify.AreEqual(defaultValue, getClrValue());
