@@ -940,6 +940,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void ListViewFocusEntryPadsMarginedItemSlotOnce()
+        {
+            foreach (bool vertical in new[] { false, true })
+            foreach (string margin in new[] { "Extends 20 past its slot", "Inset 10 in its slot" })
+            foreach (string position in new[] { "Before", "After" })
+            {
+                using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+                {
+                    Log.Comment($"Margined focus entry: vertical={vertical}, margin={margin}, position={position}.");
+                    if (vertical)
+                    {
+                        new CheckBox(FindElement.ById("VerticalScrolling")).Check();
+                    }
+                    new ComboBox(FindElement.ById("ItemMargin")).SelectItemByName(margin);
+                    new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                    Wait.ForIdle();
+                    new ComboBox(FindElement.ById("FocusEntryPosition")).SelectItemByName(position);
+                    new Button(FindElement.ById("PrepareFocusEntryBefore")).Invoke();
+
+                    int itemSize = vertical ? 100 : 200;
+                    int viewportSize = vertical ? 300 : 600;
+                    double initialOffset = position == "Before" ? 0 : 15 * itemSize;
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                        IsKeyboardScrollOffsetNear(initialOffset) &&
+                        new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText() == "0");
+                    VerifyKeyboardScrollOffset(initialOffset);
+
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                        new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText() == "10");
+                    Wait.ForIdle();
+
+                    // Item 10's slot is [10, 11) cells. The drawn item either extends 20 past its trailing edge or starts 10
+                    // into it, and the focus padding adds 20 around the drawn item.
+                    bool extends = margin.StartsWith("Extends");
+                    double slotStart = 10 * itemSize;
+                    double slotEnd = slotStart + itemSize;
+                    double expectedOffset = position == "Before" ?
+                        slotEnd + (extends ? 40 : 20) - viewportSize :
+                        slotStart - (extends ? 20 : 10);
+                    string diagnostics =
+                        $"offset history={new TextBlock(FindElement.ById("KeyboardScrollOffsetHistory")).GetText()}, " +
+                        $"offset at focus={new TextBlock(FindElement.ById("KeyboardScrollOffsetAtFocus")).GetText()}";
+                    Verify.AreEqual("10", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
+                    VerifyKeyboardScrollOffset(expectedOffset, message: diagnostics);
+                    VerifyKeyboardScrollOffset(expectedOffset, "KeyboardScrollOffsetAtFocus", diagnostics);
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText(),
+                        $"The item must land at its padded position in one scroll, measured from the panel's slot; {diagnostics}.");
+                }
+            }
+        }
+
+        [TestMethod]
         public void ListViewLocalTabEntryRealizesItemWithPaddingOnce()
         {
             foreach (bool fromAfterList in new[] { false, true })

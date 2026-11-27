@@ -362,7 +362,7 @@ namespace MUXControlsTestApp
             }
             KeyboardScrollingList.ItemTemplate = NestedFocusTarget.IsChecked == true ?
                 (DataTemplate)Resources["KeyboardScrollNestedButton"] : null;
-            if (LargeFocusMargin.IsChecked == true || ScaleItems.IsChecked == true)
+            if (LargeFocusMargin.IsChecked == true || ScaleItems.IsChecked == true || ItemMargin.SelectedIndex > 0)
             {
                 var style = new Style(typeof(ListViewItem));
                 if (LargeFocusMargin.IsChecked == true)
@@ -373,6 +373,18 @@ namespace MUXControlsTestApp
                 {
                     style.Setters.Add(new Setter(UIElement.RenderTransformProperty,
                         new ScaleTransform { ScaleX = vertical ? 1 : 0.5, ScaleY = vertical ? 0.5 : 1 }));
+                }
+                if (ItemMargin.SelectedIndex > 0)
+                {
+                    // The panel's slot stays one cell. A negative trailing margin lets the item extend 20 pixels past it;
+                    // a positive leading margin insets it by 10.
+                    bool extends = ItemMargin.SelectedIndex == 1;
+                    double cell = vertical ? 100 : 200;
+                    double size = extends ? cell + 20 : cell - 10;
+                    style.Setters.Add(new Setter(vertical ? FrameworkElement.HeightProperty : FrameworkElement.WidthProperty, size));
+                    style.Setters.Add(new Setter(FrameworkElement.MarginProperty, extends ?
+                        (vertical ? new Thickness(0, 0, 0, -20) : new Thickness(0, 0, -20, 0)) :
+                        (vertical ? new Thickness(0, 10, 0, 0) : new Thickness(10, 0, 0, 0))));
                 }
                 KeyboardScrollingList.ItemContainerStyle = style;
             }

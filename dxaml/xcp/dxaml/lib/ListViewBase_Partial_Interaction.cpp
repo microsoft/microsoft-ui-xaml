@@ -1683,15 +1683,15 @@ _Check_return_ HRESULT ListViewBase::GetFocusPaddingScrollOffset(
         }
         isLeading = itemIndex < cacheStart;
 
-        if (!paddingSource)
-        {
-            ctl::ComPtr<IDependencyObject> nearestContainer;
-            IFC_RETURN(ContainerFromIndex(isLeading ? cacheStart : cacheEnd, &nearestContainer));
-            paddingSource = nearestContainer.AsOrNull<IUIElement>();
-        }
+        // The item has no container, or its container is parked in the garbage section with no usable slot, so measure
+        // the padding on the nearest realized one.
+        ctl::ComPtr<IDependencyObject> nearestContainer;
+        IFC_RETURN(ContainerFromIndex(isLeading ? cacheStart : cacheEnd, &nearestContainer));
+        paddingSource = nearestContainer.AsOrNull<IUIElement>();
     }
 
-    if (!paddingSource)
+    if (!paddingSource || !paddingSource.Cast<UIElement>()->GetVirtualizationInformation() ||
+        ModernCollectionBasePanel::ElementIsPositionedInGarbageSection(paddingSource))
     {
         return S_OK;
     }
@@ -1714,11 +1714,11 @@ _Check_return_ HRESULT ListViewBase::GetFocusPaddingScrollOffset(
         return S_OK;
     }
 
-    // The panel aligns the item's layout slot with the viewport edge, so the offset is the part of the padded focus bounds
-    // beyond that slot. A render transform can make the drawn item smaller than its slot, leaving less (or no) padding.
-    auto coreSource = static_cast<CUIElement*>(paddingSource.Cast<UIElement>()->GetHandle());
-    const FLOAT slotStart = isVertical ? coreSource->GetActualOffsetY() : coreSource->GetActualOffsetX();
-    const FLOAT slotEnd = slotStart + (isVertical ? coreSource->GetActualHeight() : coreSource->GetActualWidth());
+    // The panel aligns the slot it stores for the item (margins included) with the viewport edge, so the offset is the part
+    // of the padded focus bounds beyond that slot. Margins and render transforms make the drawn item differ from its slot.
+    const wf::Rect slot = paddingSource.Cast<UIElement>()->GetVirtualizationInformation()->GetBounds();
+    const FLOAT slotStart = isVertical ? slot.Y : slot.X;
+    const FLOAT slotEnd = slotStart + (isVertical ? slot.Height : slot.Width);
     const FLOAT leadingPadding = std::max(0.0f, slotStart - (isVertical ? focusBounds.Y : focusBounds.X));
     const FLOAT trailingPadding = std::max(0.0f,
         (isVertical ? focusBounds.Y + focusBounds.Height : focusBounds.X + focusBounds.Width) - slotEnd);

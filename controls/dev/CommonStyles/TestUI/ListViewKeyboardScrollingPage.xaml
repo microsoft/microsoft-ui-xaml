@@ -31,6 +31,11 @@
             <CheckBox x:Name="DisableStickyHeaders" Content="Non-sticky group headers" />
             <CheckBox x:Name="ScaleItems" Content="Half-size items (render transform)" />
             <CheckBox x:Name="VaryHeaderHeights" Content="50/80/110-pixel group headers" />
+            <ComboBox x:Name="ItemMargin" Header="Item margin" SelectedIndex="0">
+                <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>Extends 20 past its slot</ComboBoxItem>
+                <ComboBoxItem>Inset 10 in its slot</ComboBoxItem>
+            </ComboBox>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="16">
             <CheckBox x:Name="DisableFocusScrolling" Content="Disable focus scrolling" />
