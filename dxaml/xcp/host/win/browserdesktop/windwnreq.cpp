@@ -327,6 +327,9 @@ CWindowsDownloadRequest::QueryInterface( _In_ REFIID riid, _Outptr_ void** ppv)
     else if (IsEqualIID(riid, IID_IHttpNegotiate)) {
         *ppv = (IHttpNegotiate *) this;
     }
+    else if (IsEqualIID(riid, IID_IWinInetHttpTimeouts)) {
+        *ppv = static_cast<IWinInetHttpTimeouts*>(this);
+    }
     else {
         return E_NOINTERFACE;
     }
@@ -925,6 +928,24 @@ CWindowsDownloadRequest::OnResponse( DWORD dwResponseCode,
         &m_strHeaders));
 
 Cleanup:
+    return S_OK;
+}
+
+// IWinInetHttpTimeouts methods
+STDMETHODIMP
+CWindowsDownloadRequest::GetRequestTimeouts(
+    _Out_ DWORD* pdwConnectTimeout,
+    _Out_ DWORD* pdwSendTimeout,
+    _Out_ DWORD* pdwReceiveTimeout)
+{
+    // Without a receive timeout from the callback, urlmon's asynchronous bind waits 60 minutes on a stalled
+    // transfer (e.g. the network drops mid-download) before OnStopBinding, so ImageFailed is that late too.
+    // 0 keeps the default connect and send timeouts. 30 s is WinINet's default receive timeout.
+    constexpr DWORD receiveTimeoutMs = 30 * 1000;
+
+    *pdwConnectTimeout = 0;
+    *pdwSendTimeout = 0;
+    *pdwReceiveTimeout = receiveTimeoutMs;
     return S_OK;
 }
 
