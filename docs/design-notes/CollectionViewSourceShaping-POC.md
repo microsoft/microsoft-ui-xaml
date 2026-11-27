@@ -806,7 +806,7 @@ an `ICollectionViewNode` (`Item`, `Key`, `Parent`, `Children`, `IsContext`).
 | Sort | `SortDescriptions`/`CustomSort` order every sibling list, roots included; ties in source order. |
 | Grouping | Not with a hierarchy (V1): adding the second rule throws `InvalidOperationException`. |
 | The view's list | Every kept node, depth first (pre-order), context nodes included; read-only. |
-| Source changes | Add, Remove and Replace update the tree in place: a node and its subtree move as one; a removed parent's children become roots and are adopted again when the key returns. A Replace with the same keys updates in place. Changes are published per vector (node lists first, then the flat list; a node arrives with its subtree complete). Over 64 rows of one change, the flat list raises one `Reset`. |
+| Source changes | Add, Remove and Replace update the tree in place: a node and its subtree move as one; a removed parent's children become roots and are adopted again when the key returns. A Replace with the same keys updates in place; a same-object Replace raises `ItemChanged` on the flat list (a refresh, as a flat view does). Changes are published per vector (node lists first, then the flat list; a node arrives with its subtree complete). Over 64 rows of one change, the flat list raises one `Reset`. |
 | Live shaping | A live sort moves the node (with its subtree) among its siblings; a live filter change brings context ancestors in or out. Key changes are seen on `Replace`/`Refresh()`, not live (V1). |
 | Bad data | Never throws: a later duplicate key is a root that cannot be a parent; the member of a cycle that comes first in the source becomes a root. Logged once per recompute (binding debug output and a `CollectionViewHierarchyDataError` trace). A change that touches a duplicate owner or a cycle recomputes. |
 | Recompute | `Refresh()`, a rule or description change, or a source `Reset`: one `Reset` on the flat list and on `CollectionNodes`; node objects are new. `CollectionNodes` is one object for the view's lifetime (null while flat), and `PropertyChanged("CollectionNodes")` precedes the `Reset` when the hierarchy is turned on or off. |
@@ -821,6 +821,11 @@ those lists' changes as row splices, and keeps expansion intent keyed by the nod
 rows start expanded). New TableView API: `ExpandRow`/`CollapseRow` (expanding also expands the ancestors),
 `ExpandAllRows`/`CollapseAllRows`, `TableViewRow.Level`/`IsExpandable`/`IsExpanded`, and the row peer's
 `IExpandCollapseProvider`. Two tables over one view keep their own expansion.
+
+Performance (fre, VM, 100k items as 10k roots × 9 children): TableView settled load 847 ms (main 903 ms), one
+settled insert into the expanded tree 11 ms (main 965 ms), view-only build 889 ms. A WPR profile of the view build
+puts the engine's own code at ~3% of samples; the per-item key reads (two `ICustomPropertyProvider` reads through the
+property path reader, boxed keys, GC) dominate, so a faster load needs a cheaper shared key reader, not tree changes.
 
 ### One engine: every ItemsSource goes through a view
 
