@@ -17,10 +17,6 @@
     <AppxPackageName>DisableXamlGeneratedMainCs</AppxPackageName>
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <Configurations>Debug;Release;Debug_test</Configurations>
-
-    <CSWinRTIncludes>
-      AppTestAutomationHelpers
-    </CSWinRTIncludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,6 +41,7 @@
 
   <ItemGroup>
     <!-- Provides the TestAutomationHelpersPanel that the scenario app tests rely on. -->
+    <ProjectReference Include="..\..\AppTestAutomationHelpers\projection\AppTestAutomationHelpers.Projection.csproj" />
     <ProjectReference Include="..\..\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj" />
   </ItemGroup>
 
@@ -66,4 +63,5 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
+  <Import Project="..\..\AppTestAutomationHelpers\projection\AppTestAutomationHelpers.Projection.Consumer.targets" />
 </Project>
