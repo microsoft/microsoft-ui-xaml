@@ -237,6 +237,10 @@ public:
     IFACEMETHOD(GetResourceSnapShot)(
         _Out_ XamlResourceSnapshot* snapshot) override;
 
+    IFACEMETHOD(TryGetExistingElementVisual)(
+        _In_ InstanceHandle element,
+        _Outptr_result_maybenull_ IInspectable** visual) override;
+
     // IXamlDiagnosticsTestHooks Interface
     IFACEMETHOD(UnregisterInstance)(\
         _In_ InstanceHandle handle) override;
