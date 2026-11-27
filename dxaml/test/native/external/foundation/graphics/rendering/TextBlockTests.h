@@ -245,6 +245,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(ZoomedTextTexturePayloadIsBounded)
+                TEST_METHOD_PROPERTY(L"Description", L"Zoomed RTL/overhanging text uses bounded texture payload.")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ZoomedTextBatchesShareTextureBudget)
+                TEST_METHOD_PROPERTY(L"Description", L"Multiple text brush batches share the realization payload allowance.")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ZoomedColorGlyphTexturePayloadIsBounded)
+                TEST_METHOD_PROPERTY(L"Description", L"Zoomed SVG glyphs use bounded BGRA texture payload.")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(InvalidWSS)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify fast path text block can handle invalid WSS")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
@@ -286,6 +301,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             END_TEST_METHOD()
 
         private:
+            enum class ZoomedTextContent { Plain, MultipleBrushes, ColorGlyph };
+            void VerifyZoomedTextSurfaces(ZoomedTextContent content);
+
             void TextBlockSelectionInternal(
                 Microsoft::UI::Xaml::Tests::Common::DCompRendering rendering);
 

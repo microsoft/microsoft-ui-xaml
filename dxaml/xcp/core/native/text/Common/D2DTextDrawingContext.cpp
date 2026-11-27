@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <cmath>
+#include <limits>
 #include <vector>
 #include <wil\resource.h>
 
@@ -27,6 +29,7 @@
 #include <ContentRenderer.h>
 #include <WindowRenderTarget.h>
 #include <PixelFormat.h>
+#include <RootScale.h>
 #include <platformsdk-uplevel/dwrite_colr_paint_tree.h>
 
 #define DBG_TEXT_REALIZATIONS 0
@@ -95,6 +98,19 @@ auto constexpr c_anyBitmapGlyphImageFormats       = DWRITE_GLYPH_IMAGE_FORMATS_P
 // Purely monochromatic formats which use the foreground brush.
 auto constexpr c_monochromeGlyphImageFormats      = DWRITE_GLYPH_IMAGE_FORMATS_TRUETYPE
                                                   | DWRITE_GLYPH_IMAGE_FORMATS_CFF;
+
+namespace
+{
+    constexpr double c_maxTextTextureBytes = 64.0 * 1024 * 1024;
+
+    double GetTextTextureBytes(double width, double height, uint32_t bytesPerPixel)
+    {
+        // Include gutters and the surface allocation granularity in the payload allowance.
+        const double alignedWidth = std::ceil((std::ceil(width) + 2) / 64) * 64;
+        const double alignedHeight = std::ceil((std::ceil(height) + 2) / 64) * 64;
+        return alignedWidth * alignedHeight * bytesPerPixel;
+    }
+}
 
 //---------------------------------------------------------------------------
 //
@@ -1275,7 +1291,10 @@ D2DTextDrawingContext::HWRender(
     if (m_pGlyphRunRealizations->GetCount() == 0 && m_glyphRuns.GetCount() > 0)
     {
         m_pBaseRealization->UpdateRealizationParameters(&rasterizationMatrix, rp.isTransformAnimating, 0, 0, false /* renderCollapsedMask */);
-        IFC(HWBuildGlyphRunTextures(&rp, &rasterizationMatrix));
+        IFC(HWBuildGlyphRunTextures(
+            &rp,
+            &rasterizationMatrix,
+            RootScale::GetRasterizationScaleForElement(pContentRenderer->GetUIElement())));
     }
 
     // Render the lines
@@ -1809,7 +1828,8 @@ D2DTextDrawingContext::D2DRender(
 _Check_return_ HRESULT
 D2DTextDrawingContext::HWBuildGlyphRunTextures(
     _In_ const HWRenderParams *pHWRenderParams,
-    _In_ const CMILMatrix *pRealizationTransform
+    _In_ const CMILMatrix *pRealizationTransform,
+    float naturalRasterizationScale
     )
 {
     ASSERT(m_pGlyphRunRealizations != nullptr);
@@ -1831,6 +1851,165 @@ D2DTextDrawingContext::HWBuildGlyphRunTextures(
     // Apply DPI settings to ID2D1DeviceContext in order to benefit from D2D rendering optimizations.
     m_pTextCore->GetWinTextCore()->ApplyLogicalDpiSettings(pSharedD2DDeviceContextNoRef);
 
+    if (!std::isfinite(naturalRasterizationScale) || naturalRasterizationScale <= 0)
+    {
+        IFC_RETURN(E_INVALIDARG);
+    }
+
+    const uint32_t maxTextureSize = m_pTextCore->GetCoreServices()->GetMaxTextureSize();
+    if (maxTextureSize == 0)
+    {
+        IFC_RETURN(E_UNEXPECTED);
+    }
+
+    float requestedScaleX, requestedScaleY;
+    pRealizationTransform->GetScaleDimensions(&requestedScaleX, &requestedScaleY);
+    if (std::isnan(requestedScaleX) || std::isnan(requestedScaleY))
+    {
+        IFC_RETURN(E_INVALIDARG);
+    }
+
+    const float naturalScaleX = std::min(requestedScaleX, naturalRasterizationScale);
+    const float naturalScaleY = std::min(requestedScaleY, naturalRasterizationScale);
+    float maxFontSize = 0;
+    for (uint32_t i = 0; i < m_glyphRuns.GetCount(); ++i)
+    {
+        const float fontSize = m_glyphRuns[i].GlyphRun->FontEmSize;
+        if (!std::isfinite(fontSize) || fontSize <= 0)
+        {
+            IFC_RETURN(E_INVALIDARG);
+        }
+        maxFontSize = std::max(maxFontSize, fontSize);
+    }
+
+    CMILMatrix effectiveTransform = *pRealizationTransform;
+    if (maxFontSize > 0)
+    {
+        // Measure extreme zoom at a safe device-em size first. Natural-density content is unchanged.
+        const double previewLimit = static_cast<double>(maxTextureSize) / maxFontSize;
+        effectiveTransform.SetM11(static_cast<float>(std::min<double>(requestedScaleX, std::max<double>(naturalScaleX, previewLimit))));
+        effectiveTransform.SetM22(static_cast<float>(std::min<double>(requestedScaleY, std::max<double>(naturalScaleY, previewLimit))));
+    }
+
+    float previewScaleX, previewScaleY;
+    effectiveTransform.GetScaleDimensions(&previewScaleX, &previewScaleY);
+    std::vector<GlyphRunBatch> batches;
+    GlyphRunBatchMetrics metrics;
+    IFC_RETURN(MeasureGlyphRunBatches(pSharedD2DDeviceContextNoRef, effectiveTransform, batches, metrics));
+
+    auto fits = [](const GlyphRunBatchMetrics& value, const GlyphRunBatchMetrics& limit)
+    {
+        return value.Bytes <= limit.Bytes && value.MaxWidth <= limit.MaxWidth && value.MaxHeight <= limit.MaxHeight;
+    };
+    GlyphRunBatchMetrics limits;
+    limits.Bytes = c_maxTextTextureBytes;
+    limits.MaxWidth = maxTextureSize;
+    limits.MaxHeight = maxTextureSize;
+
+    // At natural density the preview already is the permitted plan, even when naturally oversized.
+    if ((requestedScaleX > naturalScaleX || requestedScaleY > naturalScaleY) &&
+        (previewScaleX != requestedScaleX || previewScaleY != requestedScaleY || !fits(metrics, limits)))
+    {
+        const auto referenceBatches = batches;
+        CMILMatrix naturalTransform = *pRealizationTransform;
+        naturalTransform.SetM11(naturalScaleX);
+        naturalTransform.SetM22(naturalScaleY);
+        GlyphRunBatchMetrics naturalMetrics;
+        IFC_RETURN(MeasureGlyphRunBatches(pSharedD2DDeviceContextNoRef, naturalTransform, batches, naturalMetrics));
+        limits.Bytes = std::max(limits.Bytes, naturalMetrics.Bytes);
+        limits.MaxWidth = std::max(limits.MaxWidth, naturalMetrics.MaxWidth);
+        limits.MaxHeight = std::max(limits.MaxHeight, naturalMetrics.MaxHeight);
+
+        auto transformForFactor = [&](double factor)
+        {
+            CMILMatrix transform = *pRealizationTransform;
+            transform.SetM11(factor == 0 ? naturalScaleX : static_cast<float>(std::max<double>(naturalScaleX, requestedScaleX * factor)));
+            transform.SetM22(factor == 0 ? naturalScaleY : static_cast<float>(std::max<double>(naturalScaleY, requestedScaleY * factor)));
+            return transform;
+        };
+        auto estimateFits = [&](double factor)
+        {
+            const auto transform = transformForFactor(factor);
+            float scaleX, scaleY;
+            transform.GetScaleDimensions(&scaleX, &scaleY);
+            if (scaleX == naturalScaleX && scaleY == naturalScaleY)
+            {
+                return true;
+            }
+            const double ratioX = previewScaleX == 0 ? 1 : static_cast<double>(scaleX) / previewScaleX;
+            const double ratioY = previewScaleY == 0 ? 1 : static_cast<double>(scaleY) / previewScaleY;
+            GlyphRunBatchMetrics estimate;
+            for (const auto& batch : referenceBatches)
+            {
+                const double width = std::ceil(batch.Bounds.Width * ratioX + 4);
+                const double height = std::ceil(batch.Bounds.Height * ratioY + 4);
+                estimate.Bytes += GetTextTextureBytes(width, height, batch.BytesPerPixel);
+                estimate.MaxWidth = std::max(estimate.MaxWidth, width);
+                estimate.MaxHeight = std::max(estimate.MaxHeight, height);
+            }
+            return std::isfinite(estimate.Bytes) && fits(estimate, limits);
+        };
+
+        double factor = 1;
+        if (!estimateFits(factor))
+        {
+            double low = 0;
+            double high = 1;
+            for (uint32_t iteration = 0; iteration < 48; ++iteration)
+            {
+                const double middle = (low + high) / 2;
+                if (estimateFits(middle))
+                {
+                    low = middle;
+                }
+                else
+                {
+                    high = middle;
+                }
+            }
+            factor = low * 0.99;
+        }
+        effectiveTransform = transformForFactor(factor);
+        IFC_RETURN(MeasureGlyphRunBatches(pSharedD2DDeviceContextNoRef, effectiveTransform, batches, metrics));
+        if (!fits(metrics, limits))
+        {
+            // Device-space padding and bitmap strikes can change with scale. Fall back only to a verified plan.
+            effectiveTransform = naturalTransform;
+            IFC_RETURN(MeasureGlyphRunBatches(pSharedD2DDeviceContextNoRef, effectiveTransform, batches, metrics));
+        }
+        if (!fits(metrics, limits))
+        {
+            IFC_RETURN(E_OUTOFMEMORY);
+        }
+    }
+
+    if (metrics.MaxWidth > std::numeric_limits<uint32_t>::max() || metrics.MaxHeight > std::numeric_limits<uint32_t>::max())
+    {
+        IFC_RETURN(E_OUTOFMEMORY);
+    }
+
+    // The base realization remains the requested-transform cache key; each texture stores its actual sampling transform.
+    for (const auto& batch : batches)
+    {
+        IFC_RETURN(HWBuildGlyphRunTexture(
+            pHWRenderParams,
+            &effectiveTransform,
+            batch.Bounds,
+            batch.StartIndex,
+            batch.Count));
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT D2DTextDrawingContext::MeasureGlyphRunBatches(
+    _In_ ID2D1DeviceContext* deviceContext,
+    _In_ const CMILMatrix& realizationTransform,
+    _Out_ std::vector<GlyphRunBatch>& batches,
+    _Out_ GlyphRunBatchMetrics& metrics)
+{
+    batches.clear();
+    metrics = {};
+
     //
     // Batch glyph runs together, where possible.
     // This optimization generates fewer DComp primitives and fewer separate DComp surface allocations, which reduces
@@ -1846,6 +2025,29 @@ D2DTextDrawingContext::HWBuildGlyphRunTextures(
     CBrush *pBatchBrushNoRef = nullptr;
     DWRITE_GLYPH_IMAGE_FORMATS batchGlyphImageFormat = DWRITE_GLYPH_IMAGE_FORMATS_NONE;
 
+    auto appendBatch = [&]() -> HRESULT
+    {
+        const double width = std::ceil(static_cast<double>(batchGlyphRunsBounds.Width));
+        const double height = std::ceil(static_cast<double>(batchGlyphRunsBounds.Height));
+        if (!std::isfinite(width) || !std::isfinite(height) || width < 0 || height < 0)
+        {
+            IFC_RETURN(E_INVALIDARG);
+        }
+        if (batchGlyphRunCount > 0 && width > 0 && height > 0)
+        {
+            const uint32_t bytesPerPixel = (batchGlyphImageFormat & c_bgraColorGlyphImageFormats) ? 4 : 1;
+            batches.push_back({batchGlyphRunsBounds, batchGlyphRunStartIndex, batchGlyphRunCount, bytesPerPixel});
+            metrics.Bytes += GetTextTextureBytes(width, height, bytesPerPixel);
+            metrics.MaxWidth = std::max(metrics.MaxWidth, width);
+            metrics.MaxHeight = std::max(metrics.MaxHeight, height);
+            if (!std::isfinite(metrics.Bytes))
+            {
+                IFC_RETURN(E_OUTOFMEMORY);
+            }
+        }
+        return S_OK;
+    };
+
     for (XUINT32 i = 0, collectionSize = m_glyphRuns.GetCount(); i < collectionSize; i++)
     {
         GlyphRunData *pGlyphRunDataNoRef = &m_glyphRuns[i];
@@ -1857,9 +2059,9 @@ D2DTextDrawingContext::HWBuildGlyphRunTextures(
             CMILMatrix glyphRunRealizationTransform;
 
             IFC_RETURN(GetGlyphRunTransformAndBounds(
-                pSharedD2DDeviceContextNoRef,
+                deviceContext,
                 pGlyphRunDataNoRef,
-                pRealizationTransform,
+                &realizationTransform,
                 true, // snapToPixel
                 glyphRunRealizationTransform,
                 glyphRunBounds
@@ -1886,13 +2088,7 @@ D2DTextDrawingContext::HWBuildGlyphRunTextures(
             || (pBatchBrushNoRef != nullptr && !pBatchBrushNoRef->OfTypeByIndex<KnownTypeIndex::SolidColorBrush>())
             || batchGlyphImageFormat != pGlyphRunDataNoRef->GlyphImageFormat)
         {
-            IFC_RETURN(HWBuildGlyphRunTexture(
-                pHWRenderParams,
-                pRealizationTransform,
-                batchGlyphRunsBounds,
-                batchGlyphRunStartIndex,
-                batchGlyphRunCount
-                ));
+            IFC_RETURN(appendBatch());
 
             // Initialize state for the new batch that starts with this run.
             batchGlyphRunStartIndex = i;
@@ -1908,13 +2104,7 @@ D2DTextDrawingContext::HWBuildGlyphRunTextures(
     }
 
     // Ensure the final batch is processed, if needed.
-    IFC_RETURN(HWBuildGlyphRunTexture(
-        pHWRenderParams,
-        pRealizationTransform,
-        batchGlyphRunsBounds,
-        batchGlyphRunStartIndex,
-        batchGlyphRunCount
-        ));
+    IFC_RETURN(appendBatch());
 
     return S_OK;
 }
@@ -2167,6 +2357,14 @@ D2DTextDrawingContext::GetGlyphRunTransformAndBounds(
         &glyphRunRealizationTransform);
     glyphRunRealizationTransform.Append(*pRealizationTransform);
 
+    float scaleX, scaleY;
+    glyphRunRealizationTransform.GetScaleDimensions(&scaleX, &scaleY);
+    if (!std::isfinite(scaleX) || !std::isfinite(scaleY) ||
+        !std::isfinite(glyphRunRealizationTransform.GetDx()) || !std::isfinite(glyphRunRealizationTransform.GetDy()))
+    {
+        IFC_RETURN(E_INVALIDARG);
+    }
+
     //
     // If baseline snapping is enabled, adjust the GlyphRun realization transform to include the baseline shift delta.
     //
@@ -2265,6 +2463,17 @@ D2DTextDrawingContext::GetGlyphRunTransformAndBounds(
         glyphRunBounds.right = MAX(glyphRunBounds.left, MIN(glyphRunBounds.right, clipRectInBitmapSpace.right));
     }
 
+    // D2D can represent runs with no ink using non-finite empty bounds.
+    if (glyphRunBounds.left >= glyphRunBounds.right || glyphRunBounds.top >= glyphRunBounds.bottom)
+    {
+        EmptyRectF(&glyphRunBounds);
+        return S_OK;
+    }
+    if (!std::isfinite(glyphRunBounds.left) || !std::isfinite(glyphRunBounds.top) ||
+        !std::isfinite(glyphRunBounds.right) || !std::isfinite(glyphRunBounds.bottom))
+    {
+        IFC_RETURN(E_INVALIDARG);
+    }
     InflateRectF(&glyphRunBounds);
 
     return S_OK;

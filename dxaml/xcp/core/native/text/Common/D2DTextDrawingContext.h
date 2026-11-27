@@ -258,6 +258,21 @@ private:
         bool HasExplicitBrush;
     };
 
+    struct GlyphRunBatch
+    {
+        XRECTF Bounds;
+        uint32_t StartIndex;
+        uint32_t Count;
+        uint32_t BytesPerPixel;
+    };
+
+    struct GlyphRunBatchMetrics
+    {
+        double Bytes{};
+        double MaxWidth{};
+        double MaxHeight{};
+    };
+
     // Core text services.
     CTextCore *m_pTextCore;
 
@@ -364,8 +379,15 @@ private:
     // Builds glyph run textures using D2D.
     _Check_return_ HRESULT HWBuildGlyphRunTextures(
         _In_ const HWRenderParams *pHWRenderParams,
-        _In_ const CMILMatrix *pRealizationTransform
+        _In_ const CMILMatrix *pRealizationTransform,
+        float naturalRasterizationScale
         );
+
+    _Check_return_ HRESULT MeasureGlyphRunBatches(
+        _In_ ID2D1DeviceContext* deviceContext,
+        _In_ const CMILMatrix& realizationTransform,
+        _Out_ std::vector<GlyphRunBatch>& batches,
+        _Out_ GlyphRunBatchMetrics& metrics);
 
     _Check_return_ HRESULT HWBuildGlyphRunTexture(
         _In_ const HWRenderParams *pHWRenderParams,
