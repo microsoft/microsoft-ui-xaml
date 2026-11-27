@@ -68,6 +68,30 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyRichTextBlockPropertiesRoundTripThroughProjection)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies RichTextBlock property defaults, that each property round-trips through its dependency property, and that the dependency property identifiers are distinct.")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyAutomationPeerProvidesOnlyTheTextPattern)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that the RichTextBlock automation peer provides the Text pattern for its content and no Invoke or Value pattern.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWrapWholeWordsKeepsOverlongRightToLeftWordOnOneLine)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that WrapWholeWords keeps a right-to-left word wider than the available width on one line inside a left-to-right paragraph while Wrap breaks it.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCharacterEllipsisTrimsLineInsideRightToLeftRun)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that CharacterEllipsis trims a single line that overflows inside a right-to-left run and reports IsTextTrimmed.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyInlineUIContainerInsideRightToLeftRunFollowsVisualOrder)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that an InlineUIContainer between two Hebrew words of a left-to-right paragraph is placed in right-to-left visual order between them.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyDottedLineFocusRectangleOfKeyboardFocusedHyperlink)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that with FocusVisualKind DottedLine a keyboard-focused Hyperlink draws its focus rectangle around its text only, also when the RichTextBlock is mirrored.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifySelectionHighlightOfVerticallyMirroredRichTextBlock)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that the selection highlight of a vertically mirrored RichTextBlock covers the mirrored bounds of the selected characters only.")
+        END_TEST_METHOD()
     };
 
 } } } } } }

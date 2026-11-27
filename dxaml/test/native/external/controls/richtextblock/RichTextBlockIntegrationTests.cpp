@@ -636,19 +636,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             richTextBlock->Select(PositionAt(last, 1), PositionAt(last, 1));
             VerifySelection(richTextBlock, last->Offset, last->Offset, nullptr);
 
-            // Starting at the Bold element edge: the start never moves forward past the requested position and
-            // never lands inside a cluster; the already normalized end is kept.
-            richTextBlock->Select(bold->ElementStart, PositionAt(last, 4));
-            auto selectionStart = richTextBlock->SelectionStart;
-            VERIFY_IS_NOT_NULL(selectionStart);
-            VERIFY_IS_LESS_THAN_OR_EQUAL(selectionStart->Offset, bold->ElementStart->Offset);
-            VERIFY_ARE_EQUAL(lastEmojiEnd, richTextBlock->SelectionEnd->Offset);
-            std::wstring selectedText(richTextBlock->SelectedText->Data());
-            LOG_OUTPUT(L"Selected text length from the Bold edge: %u", static_cast<unsigned int>(selectedText.length()));
-            const std::wstring expectedSuffix(L"be\u0301\U0001F600");
-            VERIFY_IS_GREATER_THAN_OR_EQUAL(selectedText.length(), expectedSuffix.length());
-            VERIFY_ARE_EQUAL(expectedSuffix, selectedText.substr(selectedText.length() - expectedSuffix.length()));
-            VERIFY_IS_FALSE(IS_LOW_SURROGATE(selectedText.front()));
+            // A start directly before the first visible character of the Bold run is already on a cluster boundary, so
+            // it is kept exactly; the already normalized end is kept too.
+            auto boldRun = safe_cast<xaml_docs::Run^>(bold->Inlines->GetAt(0));
+            richTextBlock->Select(boldRun->ContentStart, PositionAt(last, 4));
+            VerifySelection(richTextBlock, boldRun->ContentStart->Offset, lastEmojiEnd, L"be\u0301\U0001F600");
+
+            // An end at the Bold element's closing edge is not on a visible character: it may only move forward, up
+            // to the start of the next run's text, so the selection is exactly "b".
+            richTextBlock->Select(boldRun->ContentStart, bold->ElementEnd);
+            auto selectionEnd = richTextBlock->SelectionEnd;
+            VERIFY_IS_NOT_NULL(selectionEnd);
+            LOG_OUTPUT(L"End from the Bold closing edge: %d (Bold run end %d, Bold end %d, last run start %d)",
+                selectionEnd->Offset, boldRun->ContentEnd->Offset, bold->ElementEnd->Offset, last->Offset);
+            VERIFY_ARE_EQUAL(boldRun->ContentStart->Offset, richTextBlock->SelectionStart->Offset);
+            VERIFY_IS_GREATER_THAN_OR_EQUAL(selectionEnd->Offset, bold->ElementEnd->Offset);
+            VERIFY_IS_LESS_THAN_OR_EQUAL(selectionEnd->Offset, last->Offset);
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"b"), richTextBlock->SelectedText);
         });
     }
 
@@ -724,6 +728,43 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_GREATER_THAN(firstHebrew.X, secondHebrew.X);
             VERIFY_IS_GREATER_THAN(lastHebrew.Y, firstHebrew.Y + c_layoutTolerance);
             VERIFY_IS_GREATER_THAN(trailingLatin.Y, firstLatin.Y + c_layoutTolerance);
+
+            // On every line, including the continuation lines, a logically later Hebrew letter is left of every
+            // earlier Hebrew letter on that line: the letters of a word and the words of the line run right to left.
+            // Spaces are skipped: at a line break the trailing space takes the paragraph direction (UBA rule L1).
+            std::vector<wf::Rect> hebrewRects;
+            for (int i = wrappedHebrewStart; i < wrappedHebrewEnd; i++)
+            {
+                hebrewRects.push_back(CharacterRect(wrappedStart, i, xaml_docs::LogicalDirection::Forward));
+            }
+
+            int continuationLinePairs = 0;
+            for (size_t i = 0; i < hebrewRects.size(); i++)
+            {
+                if (hebrewSentence[i] == L' ')
+                {
+                    continue;
+                }
+
+                const bool isOnContinuationLine = hebrewRects[i].Y > firstHebrew.Y + c_layoutTolerance;
+                for (size_t j = i + 1; j < hebrewRects.size(); j++)
+                {
+                    if (hebrewSentence[j] == L' ' || std::abs(hebrewRects[i].Y - hebrewRects[j].Y) > c_layoutTolerance)
+                    {
+                        continue;
+                    }
+
+                    LOG_OUTPUT(L"Hebrew letters %d and %d on line y %f: x %f > %f", static_cast<int>(i), static_cast<int>(j), hebrewRects[i].Y, hebrewRects[i].X, hebrewRects[j].X);
+                    VERIFY_IS_GREATER_THAN(hebrewRects[i].X, hebrewRects[j].X);
+                    if (isOnContinuationLine && j == i + 1)
+                    {
+                        continuationLinePairs++;
+                    }
+                }
+            }
+
+            LOG_OUTPUT(L"Adjacent Hebrew letter pairs on continuation lines: %d", continuationLinePairs);
+            VERIFY_IS_GREATER_THAN(continuationLinePairs, 0);
         });
     }
 
@@ -751,13 +792,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
-            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(richTextBlock);
-            VERIFY_IS_NOT_NULL(peer);
-            VERIFY_IS_NULL(peer->GetPattern(xaml_automation_peers::PatternInterface::Invoke));
-            VERIFY_IS_NULL(peer->GetPattern(xaml_automation_peers::PatternInterface::Value));
-            auto textPattern = peer->GetPattern(xaml_automation_peers::PatternInterface::Text);
-            VERIFY_IS_NOT_NULL(textPattern);
-            VERIFY_IS_TRUE(AreSameObject(textPattern, peer->GetPattern(xaml_automation_peers::PatternInterface::Text)));
             auto textProvider = GetTextProvider(richTextBlock);
 
             const int length = static_cast<int>(run->Text->Length());
@@ -1192,6 +1226,641 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 }
             }
         });
+    }
+
+    void RichTextBlockIntegrationTests::VerifyAutomationPeerProvidesOnlyTheTextPattern()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::RichTextBlock^ richTextBlock = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            richTextBlock = CreateRichTextBlock(400, 20, L"Segoe UI");
+            AppendParagraphWithRun(richTextBlock, L"peer text");
+
+            auto root = CreateTopLeftPanel();
+            root->Children->Append(richTextBlock);
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(richTextBlock);
+            VERIFY_IS_NOT_NULL(peer);
+
+            // The RichTextBlock peer supports the Text pattern, and repeated requests return the same provider for the
+            // same content.
+            Platform::Object^ firstTextPattern = nullptr;
+            for (int request = 0; request < 2; request++)
+            {
+                auto textPattern = peer->GetPattern(xaml_automation_peers::PatternInterface::Text);
+                VERIFY_IS_NOT_NULL(textPattern);
+                if (request == 0)
+                {
+                    firstTextPattern = textPattern;
+                }
+                else
+                {
+                    VERIFY_IS_TRUE(AreSameObject(firstTextPattern, textPattern));
+                }
+
+                auto textProvider = safe_cast<xaml_automation::Provider::ITextProvider^>(textPattern);
+                std::wstring documentText(textProvider->DocumentRange->GetText(-1)->Data());
+                while (!documentText.empty() && (documentText.back() == L'\r' || documentText.back() == L'\n'))
+                {
+                    documentText.pop_back();
+                }
+                VERIFY_ARE_EQUAL(std::wstring(L"peer text"), documentText);
+            }
+
+            // Patterns of interactive controls are not supported by read-only text.
+            VERIFY_IS_NULL(peer->GetPattern(xaml_automation_peers::PatternInterface::Invoke));
+            VERIFY_IS_NULL(peer->GetPattern(xaml_automation_peers::PatternInterface::Value));
+        });
+    }
+
+    namespace
+    {
+        // Hebrew alef to tav: one word that is much wider than the RichTextBlocks below.
+        std::wstring LongHebrewWord()
+        {
+            std::wstring word;
+            for (wchar_t letter = L'\u05D0'; letter <= L'\u05EA'; letter++)
+            {
+                word.push_back(letter);
+            }
+            return word;
+        }
+
+        struct CapturedPixels
+        {
+            std::vector<uint32_t> pixels;
+            int width = 0;
+            int height = 0;
+
+            uint32_t At(int x, int y) const
+            {
+                return pixels[static_cast<size_t>(y) * width + x];
+            }
+        };
+
+        struct CaptureState
+        {
+            Microsoft::UI::Xaml::Media::Imaging::RenderTargetBitmap^ bitmap = nullptr;
+            ::Windows::Storage::Streams::IBuffer^ buffer = nullptr;
+            bool rendered = false;
+        };
+
+        CapturedPixels CaptureElement(xaml::UIElement^ element)
+        {
+            auto state = std::make_shared<CaptureState>();
+            auto renderedEvent = std::make_shared<Event>();
+            auto pixelsEvent = std::make_shared<Event>();
+
+            RunOnUIThread([&]()
+            {
+                state->bitmap = ref new Microsoft::UI::Xaml::Media::Imaging::RenderTargetBitmap();
+                auto renderOperation = state->bitmap->RenderAsync(element);
+                renderOperation->Completed = ref new wf::AsyncActionCompletedHandler(
+                    [state, renderedEvent](wf::IAsyncAction^, wf::AsyncStatus status)
+                    {
+                        state->rendered = (status == wf::AsyncStatus::Completed);
+                        renderedEvent->Set();
+                    });
+            });
+            renderedEvent->WaitForDefault();
+            VERIFY_IS_TRUE(state->rendered);
+
+            RunOnUIThread([&]()
+            {
+                auto pixelsOperation = state->bitmap->GetPixelsAsync();
+                pixelsOperation->Completed = ref new wf::AsyncOperationCompletedHandler<::Windows::Storage::Streams::IBuffer^>(
+                    [state, pixelsEvent](wf::IAsyncOperation<::Windows::Storage::Streams::IBuffer^>^ operation, wf::AsyncStatus status)
+                    {
+                        if (status == wf::AsyncStatus::Completed)
+                        {
+                            state->buffer = operation->GetResults();
+                        }
+                        pixelsEvent->Set();
+                    });
+            });
+            pixelsEvent->WaitForDefault();
+
+            CapturedPixels captured;
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_NOT_NULL(state->buffer);
+                captured.width = state->bitmap->PixelWidth;
+                captured.height = state->bitmap->PixelHeight;
+                VERIFY_ARE_EQUAL(static_cast<unsigned int>(captured.width * captured.height * 4), state->buffer->Length);
+
+                auto bytes = ref new Platform::Array<byte>(state->buffer->Length);
+                ::Windows::Storage::Streams::DataReader::FromBuffer(state->buffer)->ReadBytes(bytes);
+                captured.pixels.resize(bytes->Length / 4);
+                for (unsigned int i = 0; i < bytes->Length; i += 4)
+                {
+                    captured.pixels[i / 4] = (bytes[i + 3] << 24) | (bytes[i + 2] << 16) | (bytes[i + 1] << 8) | bytes[i];
+                }
+                state->bitmap = nullptr;
+                state->buffer = nullptr;
+            });
+            return captured;
+        }
+
+        // Pixel rectangle (in capture pixels) of the text of a hyperlink, transformed into the coordinate space of
+        // 'root'. The hyperlink must be on one line.
+        wf::Rect HyperlinkPixelBounds(
+            xaml_docs::Hyperlink^ hyperlink,
+            xaml_controls::RichTextBlock^ richTextBlock,
+            xaml::FrameworkElement^ root,
+            float scale)
+        {
+            const wf::Rect start = hyperlink->ContentStart->GetCharacterRect(xaml_docs::LogicalDirection::Forward);
+            const wf::Rect end = hyperlink->ContentEnd->GetCharacterRect(xaml_docs::LogicalDirection::Backward);
+            VerifyAreClose(start.Y, end.Y, L"The hyperlink is on one line");
+            const wf::Rect local((std::min)(start.X, end.X), start.Y, std::abs(end.X - start.X), start.Height);
+            const wf::Rect bounds = richTextBlock->TransformToVisual(root)->TransformBounds(local);
+            LOG_OUTPUT(L"Hyperlink bounds in the root: %f,%f %fx%f", bounds.X, bounds.Y, bounds.Width, bounds.Height);
+            return wf::Rect(bounds.X * scale, bounds.Y * scale, bounds.Width * scale, bounds.Height * scale);
+        }
+
+        // True if the pixel lies within 'margin' pixels of the outline of 'bounds'.
+        bool IsNearOutline(const wf::Rect& bounds, int x, int y, float margin)
+        {
+            const float px = x + 0.5f;
+            const float py = y + 0.5f;
+            const bool insideOuter =
+                px >= bounds.X - margin && px <= bounds.X + bounds.Width + margin &&
+                py >= bounds.Y - margin && py <= bounds.Y + bounds.Height + margin;
+            const bool insideInner =
+                px > bounds.X + margin && px < bounds.X + bounds.Width - margin &&
+                py > bounds.Y + margin && py < bounds.Y + bounds.Height - margin;
+            return insideOuter && !insideInner;
+        }
+    }
+
+    void RichTextBlockIntegrationTests::VerifyWrapWholeWordsKeepsOverlongRightToLeftWordOnOneLine()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::RichTextBlock^ wrapWholeWords = nullptr;
+        xaml_controls::RichTextBlock^ wrap = nullptr;
+        xaml_docs::Run^ wrapWholeWordsRun = nullptr;
+        xaml_docs::Run^ wrapRun = nullptr;
+
+        const std::wstring longWord = LongHebrewWord();
+        const int longWordStart = 3;
+        const int longWordLast = longWordStart + static_cast<int>(longWord.length()) - 1;
+        const int trailingWordStart = longWordLast + 2;
+        Platform::String^ text = ref new Platform::String((L"aa " + longWord + L" bb").c_str());
+
+        RunOnUIThread([&]()
+        {
+            wrapWholeWords = CreateRichTextBlock(120, 20, L"Segoe UI");
+            wrapWholeWords->FlowDirection = xaml::FlowDirection::LeftToRight;
+            wrapWholeWords->TextWrapping = xaml::TextWrapping::WrapWholeWords;
+            wrapWholeWordsRun = AppendParagraphWithRun(wrapWholeWords, text);
+
+            wrap = CreateRichTextBlock(120, 20, L"Segoe UI");
+            wrap->FlowDirection = xaml::FlowDirection::LeftToRight;
+            wrap->TextWrapping = xaml::TextWrapping::Wrap;
+            wrapRun = AppendParagraphWithRun(wrap, text);
+
+            auto root = CreateTopLeftPanel();
+            root->Children->Append(wrapWholeWords);
+            root->Children->Append(wrap);
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto start = wrapWholeWordsRun->ContentStart;
+            const wf::Rect leadingWord = CharacterRect(start, 0, xaml_docs::LogicalDirection::Forward);
+            const wf::Rect longWordFirst = CharacterRect(start, longWordStart, xaml_docs::LogicalDirection::Forward);
+            const wf::Rect longWordSecond = CharacterRect(start, longWordStart + 1, xaml_docs::LogicalDirection::Forward);
+            const wf::Rect longWordEnd = CharacterRect(start, longWordLast, xaml_docs::LogicalDirection::Forward);
+            const wf::Rect trailingWord = CharacterRect(start, trailingWordStart, xaml_docs::LogicalDirection::Forward);
+            LOG_OUTPUT(L"WrapWholeWords: aa y %f, Hebrew word y %f..%f (first x %f, last x %f), bb y %f",
+                leadingWord.Y, longWordFirst.Y, longWordEnd.Y, longWordFirst.X, longWordEnd.X, trailingWord.Y);
+
+            // The right-to-left word is wider than the RichTextBlock, moves to its own line and is not broken.
+            VerifyAreClose(longWordFirst.Y, longWordEnd.Y, L"The over-long right-to-left word stays on one line");
+            VERIFY_IS_GREATER_THAN(longWordFirst.Y, leadingWord.Y + c_layoutTolerance);
+            VERIFY_IS_GREATER_THAN(trailingWord.Y, longWordFirst.Y + c_layoutTolerance);
+
+            // Its letters run right to left, so its first letter is at the far end, past the available width.
+            VERIFY_IS_GREATER_THAN(longWordFirst.X, longWordSecond.X);
+            VERIFY_IS_GREATER_THAN(longWordFirst.X, longWordEnd.X);
+            VERIFY_IS_GREATER_THAN(longWordFirst.X, 120.0f);
+
+            // Control: with Wrap the same word is broken because it does not fit.
+            auto wrapStart = wrapRun->ContentStart;
+            const wf::Rect wrapLongWordFirst = CharacterRect(wrapStart, longWordStart, xaml_docs::LogicalDirection::Forward);
+            const wf::Rect wrapLongWordEnd = CharacterRect(wrapStart, longWordLast, xaml_docs::LogicalDirection::Forward);
+            LOG_OUTPUT(L"Wrap: Hebrew word y %f..%f", wrapLongWordFirst.Y, wrapLongWordEnd.Y);
+            VERIFY_IS_GREATER_THAN(wrapLongWordEnd.Y, wrapLongWordFirst.Y + c_layoutTolerance);
+        });
+    }
+
+    void RichTextBlockIntegrationTests::VerifyCharacterEllipsisTrimsLineInsideRightToLeftRun()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::RichTextBlock^ trimmed = nullptr;
+        xaml_docs::Run^ trimmedRun = nullptr;
+        xaml_controls::RichTextBlock^ untrimmed = nullptr;
+        xaml_docs::Run^ untrimmedRun = nullptr;
+
+        const std::wstring longWord = LongHebrewWord();
+        const int hebrewStart = 3;
+        Platform::String^ text = ref new Platform::String((L"ab " + longWord).c_str());
+
+        RunOnUIThread([&]()
+        {
+            trimmed = CreateRichTextBlock(120, 20, L"Segoe UI");
+            trimmed->FlowDirection = xaml::FlowDirection::LeftToRight;
+            trimmed->TextWrapping = xaml::TextWrapping::NoWrap;
+            trimmed->TextTrimming = xaml::TextTrimming::CharacterEllipsis;
+            trimmedRun = AppendParagraphWithRun(trimmed, text);
+
+            untrimmed = CreateRichTextBlock(600, 20, L"Segoe UI");
+            untrimmed->FlowDirection = xaml::FlowDirection::LeftToRight;
+            untrimmed->TextWrapping = xaml::TextWrapping::NoWrap;
+            untrimmed->TextTrimming = xaml::TextTrimming::CharacterEllipsis;
+            untrimmedRun = AppendParagraphWithRun(untrimmed, text);
+
+            auto root = CreateTopLeftPanel();
+            root->Children->Append(trimmed);
+            root->Children->Append(untrimmed);
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // In the wide control the Latin prefix ends before x = 120 and the right-to-left run extends past it, so
+            // in the narrow control the line overflows inside the right-to-left run.
+            auto start = untrimmedRun->ContentStart;
+            const wf::Rect prefixEnd = CharacterRect(start, hebrewStart, xaml_docs::LogicalDirection::Backward);
+            float hebrewRight = 0;
+            for (int i = hebrewStart; i < hebrewStart + static_cast<int>(longWord.length()); i++)
+            {
+                hebrewRight = (std::max)(hebrewRight, CharacterRect(start, i, xaml_docs::LogicalDirection::Forward).X);
+            }
+            LOG_OUTPUT(L"Latin prefix ends at %f, Hebrew run reaches %f; trimmed %d/%d, heights %f/%f, width %f",
+                prefixEnd.X, hebrewRight, trimmed->IsTextTrimmed, untrimmed->IsTextTrimmed, trimmed->ActualHeight, untrimmed->ActualHeight, trimmed->ActualWidth);
+            VERIFY_IS_LESS_THAN(prefixEnd.X, 120.0f);
+            VERIFY_IS_GREATER_THAN(hebrewRight, 120.0f);
+
+            VERIFY_IS_FALSE(untrimmed->IsTextTrimmed);
+            VERIFY_IS_TRUE(trimmed->IsTextTrimmed);
+            VERIFY_IS_TRUE(safe_cast<bool>(trimmed->GetValue(xaml_controls::RichTextBlock::IsTextTrimmedProperty)));
+
+            // Trimming cuts only the overflowing end: the Latin text before the cut keeps its position.
+            auto trimmedStart = trimmedRun->ContentStart;
+            for (int i = 0; i < hebrewStart; i++)
+            {
+                const wf::Rect trimmedRect = CharacterRect(trimmedStart, i, xaml_docs::LogicalDirection::Forward);
+                const wf::Rect untrimmedRect = CharacterRect(start, i, xaml_docs::LogicalDirection::Forward);
+                VerifyAreClose(untrimmedRect.X, trimmedRect.X, L"A character before the cut keeps its x position");
+                VerifyAreClose(untrimmedRect.Y, trimmedRect.Y, L"A character before the cut keeps its y position");
+            }
+        });
+    }
+
+    void RichTextBlockIntegrationTests::VerifyInlineUIContainerInsideRightToLeftRunFollowsVisualOrder()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::RichTextBlock^ richTextBlock = nullptr;
+        xaml_docs::Run^ firstRun = nullptr;
+        xaml_docs::Run^ secondRun = nullptr;
+        xaml_controls::Border^ border = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            richTextBlock = CreateRichTextBlock(600, 20, L"Segoe UI");
+            richTextBlock->FlowDirection = xaml::FlowDirection::LeftToRight;
+
+            // "ab " + alef bet gimel + " " | 10 px Border | " " + dalet he vav + " cd": the Border sits between two
+            // Hebrew words, so it belongs to the right-to-left run nested in the left-to-right paragraph.
+            firstRun = ref new xaml_docs::Run();
+            firstRun->Text = L"ab \u05D0\u05D1\u05D2 ";
+            border = ref new xaml_controls::Border();
+            border->Width = 10;
+            border->Height = 10;
+            border->Background = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Red);
+            auto container = ref new xaml_docs::InlineUIContainer();
+            container->Child = border;
+            secondRun = ref new xaml_docs::Run();
+            secondRun->Text = L" \u05D3\u05D4\u05D5 cd";
+
+            auto paragraph = ref new xaml_docs::Paragraph();
+            paragraph->Inlines->Append(firstRun);
+            paragraph->Inlines->Append(container);
+            paragraph->Inlines->Append(secondRun);
+            richTextBlock->Blocks->Append(paragraph);
+
+            auto root = CreateTopLeftPanel();
+            root->Children->Append(richTextBlock);
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // Both edges of a character: its leading-edge rectangle and the trailing edge of the position after it.
+            auto edges = [](xaml_docs::TextPointer^ start, int index)
+            {
+                const float first = CharacterRect(start, index, xaml_docs::LogicalDirection::Forward).X;
+                const float second = CharacterRect(start, index + 1, xaml_docs::LogicalDirection::Backward).X;
+                return std::make_pair((std::min)(first, second), (std::max)(first, second));
+            };
+
+            const auto alef = edges(firstRun->ContentStart, 3);
+            const auto gimel = edges(firstRun->ContentStart, 5);
+            const auto dalet = edges(secondRun->ContentStart, 1);
+            const auto vav = edges(secondRun->ContentStart, 3);
+            const auto c = edges(secondRun->ContentStart, 5);
+            const wf::Rect lineRect = CharacterRect(firstRun->ContentStart, 0, xaml_docs::LogicalDirection::Forward);
+            const wf::Rect borderBounds = border->TransformToVisual(richTextBlock)->TransformBounds(wf::Rect(0, 0, 10, 10));
+            LOG_OUTPUT(L"alef %f-%f, gimel %f-%f, Border %f-%f (y %f), dalet %f-%f, vav %f-%f, c %f-%f",
+                alef.first, alef.second, gimel.first, gimel.second, borderBounds.X, borderBounds.X + borderBounds.Width,
+                borderBounds.Y, dalet.first, dalet.second, vav.first, vav.second, c.first, c.second);
+
+            // Visual order of the right-to-left run: vav he dalet, Border, gimel bet alef; the run sits between the
+            // Latin words.
+            VERIFY_IS_LESS_THAN_OR_EQUAL(vav.second, dalet.first + c_layoutTolerance);
+            VERIFY_IS_LESS_THAN_OR_EQUAL(dalet.second, borderBounds.X + c_layoutTolerance);
+            VERIFY_IS_LESS_THAN_OR_EQUAL(borderBounds.X + borderBounds.Width, gimel.first + c_layoutTolerance);
+            VERIFY_IS_LESS_THAN_OR_EQUAL(gimel.second, alef.first + c_layoutTolerance);
+            VERIFY_IS_LESS_THAN_OR_EQUAL(alef.second, c.first + c_layoutTolerance);
+
+            // The Border is on the text line.
+            VERIFY_IS_GREATER_THAN_OR_EQUAL(borderBounds.Y, lineRect.Y - c_layoutTolerance);
+            VERIFY_IS_LESS_THAN_OR_EQUAL(borderBounds.Y + borderBounds.Height, lineRect.Y + lineRect.Height + c_layoutTolerance);
+        });
+    }
+
+    void RichTextBlockIntegrationTests::VerifyDottedLineFocusRectangleOfKeyboardFocusedHyperlink()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml::FocusVisualKind previousFocusVisualKind = xaml::FocusVisualKind::HighVisibility;
+        RunOnUIThread([&]()
+        {
+            previousFocusVisualKind = xaml::Application::Current->FocusVisualKind;
+            xaml::Application::Current->FocusVisualKind = xaml::FocusVisualKind::DottedLine;
+        });
+        auto restoreFocusVisualKind = wil::scope_exit([previousFocusVisualKind]()
+        {
+            RunOnUIThread([previousFocusVisualKind]()
+            {
+                xaml::Application::Current->FocusVisualKind = previousFocusVisualKind;
+            });
+        });
+
+        xaml_controls::StackPanel^ root = nullptr;
+        xaml_controls::Button^ startButton = nullptr;
+        xaml_controls::RichTextBlock^ upright = nullptr;
+        xaml_controls::RichTextBlock^ flipped = nullptr;
+        xaml_docs::Hyperlink^ uprightLink = nullptr;
+        xaml_docs::Hyperlink^ flippedLink = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            auto createWithHyperlink = [](xaml_docs::Hyperlink^* hyperlink)
+            {
+                auto richTextBlock = CreateRichTextBlock(300, 20, L"Segoe UI");
+                richTextBlock->Margin = xaml::ThicknessHelper::FromUniformLength(10);
+                auto linkRun = ref new xaml_docs::Run();
+                linkRun->Text = L"link";
+                *hyperlink = ref new xaml_docs::Hyperlink();
+                (*hyperlink)->Inlines->Append(linkRun);
+                auto before = ref new xaml_docs::Run();
+                before->Text = L"before ";
+                auto after = ref new xaml_docs::Run();
+                after->Text = L" after";
+                auto paragraph = ref new xaml_docs::Paragraph();
+                paragraph->Inlines->Append(before);
+                paragraph->Inlines->Append(*hyperlink);
+                paragraph->Inlines->Append(after);
+                richTextBlock->Blocks->Append(paragraph);
+                return richTextBlock;
+            };
+
+            upright = createWithHyperlink(&uprightLink);
+
+            // Mirrored on both axes, so the focus rectangle is snapped with inverted axes.
+            flipped = createWithHyperlink(&flippedLink);
+            auto flip = ref new xaml_media::ScaleTransform();
+            flip->ScaleX = -1;
+            flip->ScaleY = -1;
+            flipped->RenderTransformOrigin = wf::Point(0.5f, 0.5f);
+            flipped->RenderTransform = flip;
+
+            root = CreateTopLeftPanel();
+            root->Background = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::White);
+            startButton = ref new xaml_controls::Button();
+            startButton->Content = L"start";
+            root->Children->Append(startButton);
+            root->Children->Append(upright);
+            root->Children->Append(flipped);
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Start from a pointer-focused Button, which shows no focus visual.
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(startButton->Focus(xaml::FocusState::Pointer));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto focusLink = [](xaml_docs::Hyperlink^ hyperlink)
+        {
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(hyperlink->Focus(xaml::FocusState::Keyboard));
+                VERIFY_ARE_EQUAL(xaml::FocusState::Keyboard, hyperlink->FocusState);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+        };
+
+        const CapturedPixels unfocused = CaptureElement(root);
+        focusLink(uprightLink);
+        const CapturedPixels uprightFocused = CaptureElement(root);
+        focusLink(flippedLink);
+        const CapturedPixels flippedFocused = CaptureElement(root);
+
+        wf::Rect uprightBounds;
+        wf::Rect flippedBounds;
+        RunOnUIThread([&]()
+        {
+            const float scale = static_cast<float>(unfocused.width / root->ActualWidth);
+            LOG_OUTPUT(L"Capture %dx%d, scale %f", unfocused.width, unfocused.height, scale);
+            uprightBounds = HyperlinkPixelBounds(uprightLink, upright, root, scale);
+            flippedBounds = HyperlinkPixelBounds(flippedLink, flipped, root, scale);
+        });
+
+        VERIFY_ARE_EQUAL(unfocused.width, uprightFocused.width);
+        VERIFY_ARE_EQUAL(unfocused.height, uprightFocused.height);
+        VERIFY_ARE_EQUAL(unfocused.width, flippedFocused.width);
+        VERIFY_ARE_EQUAL(unfocused.height, flippedFocused.height);
+
+        // The dotted rectangle is drawn around the focused hyperlink's text and nowhere else; it moves with the focus.
+        VERIFY_ARE_EQUAL(static_cast<size_t>(unfocused.width) * unfocused.height, unfocused.pixels.size());
+        const float margin = 4.0f;
+        int uprightRectanglePixels = 0;
+        int flippedRectanglePixels = 0;
+        int changedElsewhere = 0;
+        for (int y = 0; y < unfocused.height; y++)
+        {
+            for (int x = 0; x < unfocused.width; x++)
+            {
+                if (unfocused.At(x, y) != uprightFocused.At(x, y))
+                {
+                    uprightRectanglePixels++;
+                    if (!IsNearOutline(uprightBounds, x, y, margin))
+                    {
+                        if (changedElsewhere++ < 10)
+                        {
+                            LOG_OUTPUT(L"Upright focus changed pixel %d,%d away from the hyperlink", x, y);
+                        }
+                    }
+                }
+
+                if (unfocused.At(x, y) != flippedFocused.At(x, y))
+                {
+                    flippedRectanglePixels++;
+                    if (!IsNearOutline(flippedBounds, x, y, margin))
+                    {
+                        if (changedElsewhere++ < 10)
+                        {
+                            LOG_OUTPUT(L"Flipped focus changed pixel %d,%d away from the hyperlink", x, y);
+                        }
+                    }
+                }
+            }
+        }
+
+        LOG_OUTPUT(L"Changed pixels: upright focus %d, flipped focus %d, away from the hyperlink %d", uprightRectanglePixels, flippedRectanglePixels, changedElsewhere);
+        VERIFY_ARE_EQUAL(0, changedElsewhere);
+        const int minimumRectanglePixels = static_cast<int>(uprightBounds.Width);
+        VERIFY_IS_GREATER_THAN(uprightRectanglePixels, minimumRectanglePixels);
+        VERIFY_IS_GREATER_THAN(flippedRectanglePixels, minimumRectanglePixels);
+    }
+
+    void RichTextBlockIntegrationTests::VerifySelectionHighlightOfVerticallyMirroredRichTextBlock()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::StackPanel^ root = nullptr;
+        xaml_controls::RichTextBlock^ richTextBlock = nullptr;
+        xaml_docs::Run^ run = nullptr;
+        const int selectionStart = 10;
+        const int selectionEnd = 12;
+
+        RunOnUIThread([&]()
+        {
+            richTextBlock = CreateRichTextBlock(300, 20, L"Segoe UI");
+            richTextBlock->Height = 100;
+            richTextBlock->Margin = xaml::ThicknessHelper::FromUniformLength(10);
+            richTextBlock->SelectionHighlightColor = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Red);
+            run = AppendParagraphWithRun(richTextBlock, L"highlight me here");
+
+            // Mirrored vertically, so the selection rectangle is snapped with an inverted y axis. The control is much
+            // taller than its single line, so the mirrored line ends up at the bottom of the control.
+            auto flip = ref new xaml_media::ScaleTransform();
+            flip->ScaleY = -1;
+            richTextBlock->RenderTransformOrigin = wf::Point(0.5f, 0.5f);
+            richTextBlock->RenderTransform = flip;
+
+            root = CreateTopLeftPanel();
+            root->Background = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::White);
+            root->Children->Append(richTextBlock);
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(richTextBlock->Focus(xaml::FocusState::Pointer));
+            richTextBlock->Select(PositionAt(run->ContentStart, selectionStart), PositionAt(run->ContentStart, selectionStart));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        const CapturedPixels unselected = CaptureElement(root);
+
+        RunOnUIThread([&]()
+        {
+            richTextBlock->Select(PositionAt(run->ContentStart, selectionStart), PositionAt(run->ContentStart, selectionEnd));
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"me"), richTextBlock->SelectedText);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        const CapturedPixels selected = CaptureElement(root);
+
+        wf::Rect selectionBounds;
+        RunOnUIThread([&]()
+        {
+            const float scale = static_cast<float>(unselected.width / root->ActualWidth);
+            const wf::Rect start = CharacterRect(run->ContentStart, selectionStart, xaml_docs::LogicalDirection::Forward);
+            const wf::Rect end = CharacterRect(run->ContentStart, selectionEnd, xaml_docs::LogicalDirection::Backward);
+            const wf::Rect bounds = richTextBlock->TransformToVisual(root)->TransformBounds(
+                wf::Rect(start.X, start.Y, end.X - start.X, start.Height));
+            LOG_OUTPUT(L"Selection bounds in the root: %f,%f %fx%f (scale %f)", bounds.X, bounds.Y, bounds.Width, bounds.Height, scale);
+
+            // The line is at the top of the unmirrored control, so its mirror image is in the bottom part.
+            VERIFY_IS_LESS_THAN(start.Y + start.Height, 50.0f);
+            VERIFY_IS_GREATER_THAN(bounds.Y, 10.0f + 50.0f);
+            selectionBounds = wf::Rect(bounds.X * scale, bounds.Y * scale, bounds.Width * scale, bounds.Height * scale);
+        });
+
+        VERIFY_ARE_EQUAL(unselected.width, selected.width);
+        VERIFY_ARE_EQUAL(unselected.height, selected.height);
+        VERIFY_ARE_EQUAL(static_cast<size_t>(unselected.width) * unselected.height, unselected.pixels.size());
+
+        // The highlight fills the mirrored bounds of the selected characters and changes nothing else.
+        const float margin = 2.0f;
+        int changedInside = 0;
+        int highlightPixels = 0;
+        int changedElsewhere = 0;
+        for (int y = 0; y < unselected.height; y++)
+        {
+            for (int x = 0; x < unselected.width; x++)
+            {
+                if (unselected.At(x, y) == selected.At(x, y))
+                {
+                    continue;
+                }
+
+                const float px = x + 0.5f;
+                const float py = y + 0.5f;
+                if (px >= selectionBounds.X - margin && px <= selectionBounds.X + selectionBounds.Width + margin &&
+                    py >= selectionBounds.Y - margin && py <= selectionBounds.Y + selectionBounds.Height + margin)
+                {
+                    changedInside++;
+                    const uint32_t pixel = selected.At(x, y);
+                    const int red = (pixel >> 16) & 0xFF;
+                    const int green = (pixel >> 8) & 0xFF;
+                    const int blue = pixel & 0xFF;
+                    if (red > green + 50 && red > blue + 50)
+                    {
+                        highlightPixels++;
+                    }
+                }
+                else if (changedElsewhere++ < 10)
+                {
+                    LOG_OUTPUT(L"Selection changed pixel %d,%d outside the selected characters", x, y);
+                }
+            }
+        }
+
+        LOG_OUTPUT(L"Changed pixels: inside %d (highlight %d), elsewhere %d", changedInside, highlightPixels, changedElsewhere);
+        VERIFY_ARE_EQUAL(0, changedElsewhere);
+        VERIFY_IS_GREATER_THAN(highlightPixels, static_cast<int>(selectionBounds.Width * selectionBounds.Height / 4));
     }
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::RichTextBlock
