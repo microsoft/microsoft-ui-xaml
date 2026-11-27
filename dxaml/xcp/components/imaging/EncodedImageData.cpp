@@ -45,6 +45,8 @@ _Check_return_ HRESULT EncodedImageData::Parse(_In_opt_ CD3D11Device* graphicsDe
 
     if (IsSvg())
     {
+        XRECT maxBounds = { 0, 0, static_cast<int>(round(maxRootSize.Width)), static_cast<int>(round(maxRootSize.Height)) };
+
         if (graphicsDevice)
         {
             if (s_testHook_ForceDeviceLostOnMetadataParse)
@@ -73,8 +75,6 @@ _Check_return_ HRESULT EncodedImageData::Parse(_In_opt_ CD3D11Device* graphicsDe
                 m_enabled_testHook_ForceDeviceLostOnMetadataParse = false;
             }
 
-            XRECT maxBounds = { 0, 0, static_cast<int>(round(maxRootSize.Width)), static_cast<int>(round(maxRootSize.Height)) };
-
             IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(graphicsDevice->EnsureD2DResources());
 
             CD3D11SharedDeviceGuard guard;
@@ -82,6 +82,29 @@ _Check_return_ HRESULT EncodedImageData::Parse(_In_opt_ CD3D11Device* graphicsDe
             auto d2dDeviceContextNoRef = graphicsDevice->GetD2DDeviceContext(&guard);
             ctl::ComPtr<ID2D1DeviceContext5> d2dDeviceContext5;
             IFCFAILFAST(ctl::do_query_interface(d2dDeviceContext5, d2dDeviceContextNoRef));
+
+            IFC_RETURN(ParseSvg(d2dDeviceContext5.Get(), maxBounds));
+        }
+        else
+        {
+            // Metadata only needs an SVG document. Reuse the decoder's software target when the device is absent.
+            wrl::ComPtr<IWICBitmap> wicBitmap;
+            IFC_RETURN(WicService::GetInstance().GetFactory()->CreateBitmap(
+                1,
+                1,
+                GUID_WICPixelFormat32bppPBGRA,
+                WICBitmapCreateCacheOption::WICBitmapCacheOnDemand,
+                wicBitmap.ReleaseAndGetAddressOf()));
+
+            const auto renderTargetProperties = D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_SOFTWARE);
+            wrl::ComPtr<ID2D1RenderTarget> renderTarget;
+            IFC_RETURN(WicService::GetInstance().GetD2DFactory()->CreateWicBitmapRenderTarget(
+                wicBitmap.Get(),
+                &renderTargetProperties,
+                renderTarget.ReleaseAndGetAddressOf()));
+
+            wrl::ComPtr<ID2D1DeviceContext5> d2dDeviceContext5;
+            IFC_RETURN(renderTarget.As(&d2dDeviceContext5));
 
             IFC_RETURN(ParseSvg(d2dDeviceContext5.Get(), maxBounds));
         }
