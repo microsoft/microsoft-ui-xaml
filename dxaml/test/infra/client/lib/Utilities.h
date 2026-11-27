@@ -138,6 +138,7 @@ namespace Private { namespace Infrastructure {
         IFACEMETHOD(SimulateSwallowedDeviceLostOnStartup)();
         IFACEMETHOD(SimulateDeviceLostOnMetadataParse)();
         IFACEMETHOD(SimulateDeviceLostOnCreatingSvgDecoder)();
+        IFACEMETHOD(MarkDeviceInstanceLost)();
 
         IFACEMETHOD(SetDCompDeviceLeakDetectionEnabled)(_In_ BOOLEAN enableLeakDetection) override;
         IFACEMETHOD(SetMaxTextureSizeOverride)(_In_ int maxTextureSize) override;
