@@ -2060,6 +2060,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a live add that starts a new group followed, in the same UI turn, by GroupDescriptions.Clear() does not crash when the queued group read runs, and the rows are flat afterwards.")]
+        public void VerifyNewGroupThenUngroupInOneTurnLeavesFlatRows()
+        {
+            TableView tableView = null;
+            CollectionViewSource cvs = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                cvs = MakeShapingSource(out items);
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("DepartmentName"));
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                items.Add(new ShapedPerson("Kai", "Counsel", "Legal"));
+                cvs.GroupDescriptions.Clear();
+                Verify.IsNull(cvs.View.CollectionGroups, "Precondition: the view stopped grouping.");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRowItems(tableView, items.ToList(), "flat after the add and the ungroup");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a CollectionViewSource view that starts grouping, regroups and stops grouping stays the TableView's ItemsSource, as WPF keeps its view: the rows follow it, a regroup keeps a collapsed group collapsed, and grouping again restores the headers.")]
         public void VerifyCollectionViewGroupingToggleKeepsView()
         {

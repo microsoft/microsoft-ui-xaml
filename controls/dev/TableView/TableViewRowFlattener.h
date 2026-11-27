@@ -178,6 +178,8 @@ private:
     bool m_readingGroups{ false };
     bool m_readGroupsPending{ false };
     bool m_readGroupsQueued{ false };
+    // Bumped whenever m_viewGroups is replaced or cleared, so a queued read of the old groups is dropped.
+    uint32_t m_viewGroupsGeneration{ 0 };
 
     bool m_groupRowsAttached{ false };
     winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> m_groupRows{

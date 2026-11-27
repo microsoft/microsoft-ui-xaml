@@ -269,6 +269,8 @@ bool TableViewRowFlattener::AttachViewGroupsNow()
         m_viewGroups = nullptr;
         m_viewGroupsChangedToken = {};
         m_groups.clear();
+        ++m_viewGroupsGeneration;
+        m_readGroupsQueued = false;
 
         if (groups)
         {
@@ -292,6 +294,8 @@ bool TableViewRowFlattener::AttachViewGroupsNow()
         m_viewGroups = nullptr;
         m_viewGroupsChangedToken = {};
         m_groups.clear();
+        ++m_viewGroupsGeneration;
+        m_readGroupsQueued = false;
     }
     return true;
 }
@@ -484,9 +488,9 @@ void TableViewRowFlattener::OnViewGroupsChanged(winrt::Windows::Foundation::Coll
     if (auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread())
     {
         std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
-        m_readGroupsQueued = queue.TryEnqueue([weakThis]()
+        m_readGroupsQueued = queue.TryEnqueue([weakThis, generation = m_viewGroupsGeneration]()
         {
-            if (auto const strongThis = weakThis.lock())
+            if (auto const strongThis = weakThis.lock(); strongThis && strongThis->m_viewGroupsGeneration == generation)
             {
                 strongThis->m_readGroupsQueued = false;
                 strongThis->ReadViewGroupsNow();
@@ -526,6 +530,10 @@ void TableViewRowFlattener::ReadViewGroups()
     bool changed = false;
     do
     {
+        if (!m_viewGroups)
+        {
+            break;
+        }
         m_readingGroups = true;
         m_readGroupsPending = false;
         auto const done = wil::scope_exit([this]() noexcept { m_readingGroups = false; });
