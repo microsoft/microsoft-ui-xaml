@@ -607,7 +607,8 @@ CImageSource::DecodeStream(
         GetDecodeWidth(),
         GetDecodeHeight(),
         &decodeWidthInPhysicalPixels,
-        &decodeHeightInPhysicalPixels);
+        &decodeHeightInPhysicalPixels,
+        &m_logicalDecodeScale);
 
     IFC_RETURN(DecodeStreamWithSize(
         spImageAvailableCallback,
@@ -928,14 +929,17 @@ CImageSource::GetDecodePixelWidthAndHeightInPhysicalPixels(
     _In_  const XUINT32         decodePixelWidth,
     _In_  const XUINT32         decodePixelHeight,
     _Out_       XUINT32 * const pDecodePixelWidthInPhysicalPixels,
-    _Out_       XUINT32 * const pDecodePixelHeightInPhysicalPixels)
+    _Out_       XUINT32 * const pDecodePixelHeightInPhysicalPixels,
+    _Out_opt_   float * const pScaleFactor)
 {
+    float scaleFactor = 1.0f;
+
     if (DirectUI::DecodePixelType::Logical == decodePixelType)
     {
         // Warning: This may not work correctly with AppWindows
         //     Task 19490172: CImageSource::RegisterWithReloadManager must be AppWindow aware
         const auto root = VisualTree::GetContentRootForElement(this);
-        const auto scaleFactor = RootScale::GetRasterizationScaleForContentRoot(root);
+        scaleFactor = RootScale::GetRasterizationScaleForContentRoot(root);
 
         *pDecodePixelWidthInPhysicalPixels  = XcpRound(decodePixelWidth  * scaleFactor);
         *pDecodePixelHeightInPhysicalPixels = XcpRound(decodePixelHeight * scaleFactor);
@@ -945,6 +949,11 @@ CImageSource::GetDecodePixelWidthAndHeightInPhysicalPixels(
         ASSERT(DirectUI::DecodePixelType::Physical == decodePixelType);
         *pDecodePixelWidthInPhysicalPixels  = decodePixelWidth;
         *pDecodePixelHeightInPhysicalPixels = decodePixelHeight;
+    }
+
+    if (pScaleFactor)
+    {
+        *pScaleFactor = scaleFactor;
     }
 }
 
@@ -2377,19 +2386,13 @@ CImageSource::GetLayoutHeight()
 //
 //------------------------------------------------------------------------
 XUINT32
-CImageSource::GetLogicalSize(XUINT32 physicalSize) const
+CImageSource::GetLogicalSize(XUINT32 physicalSize)
 {
     XUINT32 logicalSize;
     if (HasLogicalDecodeSize())
     {
-        // Warning: This may not work correctly with AppWindows
-        //     Task 19490172: CImageSource::RegisterWithReloadManager must be AppWindow aware
-        const auto contentRootCoordinator = GetContext()->GetContentRootCoordinator();
-        const auto root = contentRootCoordinator->Unsafe_IslandsIncompatible_CoreWindowContentRoot();
-        const auto scaleFactor = RootScale::GetRasterizationScaleForContentRoot(root);
-
-        // Return the logical size at plateau 1.0 if the image has a logical decode size.
-        logicalSize = XcpRound(static_cast<XFLOAT>(physicalSize) / scaleFactor);
+        // Return the logical size at plateau 1.0 by undoing the scale DecodeStream applied.
+        logicalSize = XcpRound(static_cast<XFLOAT>(physicalSize) / m_logicalDecodeScale);
     }
     else if (IsMetadataAvailable() && m_imageMetadataView->GetImageMetadata()->scalePercentage != 0)
     {
@@ -2411,7 +2414,7 @@ CImageSource::GetLogicalSize(XUINT32 physicalSize) const
 }
 
 bool
-CImageSource::HasLogicalDecodeSize() const
+CImageSource::HasLogicalDecodeSize()
 {
     // If the image has a logical decode size, it will be decoded at a scaled-up size to ensure it appears at higher
     // quality at a higher plateau. If the image is being layed out to its natural size (e.g. Stretch="None"), it's
@@ -2419,8 +2422,8 @@ CImageSource::HasLogicalDecodeSize() const
     // plateaus (the scaling is applied optically via a RenderTransform). If the logical bounds were also scaled, then
     // the optical scale would enlarge the image a second time and cause it to appear too large, relative to other
     // UIElements.
-    return DirectUI::DecodePixelType::Logical == m_decodePixelType
-        && (m_decodePixelHeight || m_decodePixelWidth);
+    return DirectUI::DecodePixelType::Logical == GetDecodeType()
+        && (GetDecodeWidth() || GetDecodeHeight());
 }
 
 //------------------------------------------------------------------------

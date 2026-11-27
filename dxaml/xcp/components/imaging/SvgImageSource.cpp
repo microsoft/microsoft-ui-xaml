@@ -57,6 +57,14 @@ CSvgImageSource::GetDecodeHeight(
     return std::max(XcpRound(rasterizeHeight), 0);
 }
 
+// RasterizePixelWidth/Height are in logical pixels.
+DirectUI::DecodePixelType
+CSvgImageSource::GetDecodeType(
+    ) const
+{
+    return DirectUI::DecodePixelType::Logical;
+}
+
 _Check_return_ HRESULT
 CSvgImageSource::EnsureAndUpdateHardwareResources(
     _In_ HWTextureManager *pTextureManager,

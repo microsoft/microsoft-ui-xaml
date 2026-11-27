@@ -51,6 +51,7 @@ protected:
 
     XUINT32 GetDecodeWidth() override;
     XUINT32 GetDecodeHeight() override;
+    DirectUI::DecodePixelType GetDecodeType() const override;
 
     _Check_return_ HRESULT OnDownloadImageAvailableImpl(
         _In_ IImageAvailableResponse* pResponse
