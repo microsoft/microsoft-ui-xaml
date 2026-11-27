@@ -9,6 +9,9 @@ namespace WinUIProfiler.Engine.Target;
 public static class TreeSnapshotCodec
 {
     public const int MaximumRecords = 131072;
+    // Saving can escape each original UTF-8 byte as six ASCII bytes (for example, '<' as "\u003C").
+    internal const int MaximumSavedSnapshotBytes = 6 * TapProtocol.MaximumSnapshotBytes;
+    private const int MaximumPropertyBytes = 64 * 1024;
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -19,16 +22,26 @@ public static class TreeSnapshotCodec
     internal static Task WriteAsync(Stream destination, TreeSnapshotDocument snapshot, CancellationToken token) =>
         JsonSerializer.SerializeAsync(destination, snapshot, Options, token);
 
+    internal static byte[] Encode(TreeSnapshotDocument snapshot) => JsonSerializer.SerializeToUtf8Bytes(snapshot, Options);
+
     public static TreeSnapshotDocument Decode(ReadOnlyMemory<byte> bytes, ProcessInstanceKey target, Guid captureId)
         => Decode(bytes, (ProcessInstanceKey?)target, captureId);
 
-    // Files carry their own identity; callers loading a saved capture may additionally pin the expected identity.
     public static TreeSnapshotDocument Decode(ReadOnlyMemory<byte> bytes, ProcessInstanceKey? target = null,
         Guid? captureId = null, CancellationToken token = default)
+        => DecodeCore(bytes, TapProtocol.MaximumSnapshotBytes, MaximumPropertyBytes, target, captureId, token);
+
+    // Files carry their own identity; callers loading a saved capture may additionally pin the expected identity.
+    internal static TreeSnapshotDocument DecodeSaved(ReadOnlyMemory<byte> bytes, ProcessInstanceKey? target = null,
+        Guid? captureId = null, CancellationToken token = default)
+        => DecodeCore(bytes, MaximumSavedSnapshotBytes, 6 * MaximumPropertyBytes, target, captureId, token);
+
+    private static TreeSnapshotDocument DecodeCore(ReadOnlyMemory<byte> bytes, int maximumBytes, int maximumPropertyBytes,
+        ProcessInstanceKey? target, Guid? captureId, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         target?.Validate();
-        Check(bytes.Length is > 0 and <= TapProtocol.MaximumSnapshotBytes, "Snapshot size is invalid.");
+        Check(bytes.Length > 0 && bytes.Length <= maximumBytes, "Snapshot size is invalid.");
         var value = JsonSerializer.Deserialize<TreeSnapshotDocument>(bytes.Span, Options)
             ?? throw new InvalidDataException("Snapshot document is null.");
         Check(value.SchemaVersion is 1 or 2 or 3 or 4 && value.CaptureId != Guid.Empty &&
@@ -109,9 +122,14 @@ public static class TreeSnapshotCodec
             token.ThrowIfCancellationRequested();
             if (node.Name is { } name) Text(name, true);
             if (node.DiagnosticsHandle is { } handle) Address(handle);
-            Properties(node.Properties);
+            Properties(node.Properties, maximumPropertyBytes);
         }
-        foreach (var node in composition) { token.ThrowIfCancellationRequested(); Address(node.VisualAddress); Properties(node.Properties); }
+        foreach (var node in composition)
+        {
+            token.ThrowIfCancellationRequested();
+            Address(node.VisualAddress);
+            Properties(node.Properties, maximumPropertyBytes);
+        }
         var links = new HashSet<(ulong, ulong)>();
         foreach (var link in correlations)
         {
@@ -167,9 +185,9 @@ public static class TreeSnapshotCodec
         return index;
     }
 
-    private static void Properties(JsonElement value)
+    private static void Properties(JsonElement value, int maximumBytes)
     {
-        Check(value.ValueKind == JsonValueKind.Object && Encoding.UTF8.GetByteCount(value.GetRawText()) <= 64 * 1024,
+        Check(value.ValueKind == JsonValueKind.Object && Encoding.UTF8.GetByteCount(value.GetRawText()) <= maximumBytes,
             "Snapshot node properties are invalid or oversized.");
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var property in value.EnumerateObject())

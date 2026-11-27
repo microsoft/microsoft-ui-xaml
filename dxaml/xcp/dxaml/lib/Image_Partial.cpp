@@ -45,6 +45,17 @@ Cleanup:
     RRETURN(hr);
 }
 
+void Image::NotifyOfDataContextChange(_In_ const DataContextChangedParams& args)
+{
+    // A new DataContext means the Image now shows another item. Before the base call, which updates {Binding} sources.
+    if (args.m_dataContextChangedReason == NewDataContext)
+    {
+        static_cast<CImage*>(GetHandle())->OnItemChanged();
+    }
+
+    ImageGenerated::NotifyOfDataContextChange(args);
+}
+
 // Returns the CastingSource instance to the App to be used in the Casting APIs
 _Check_return_ HRESULT Image::GetAsCastingSourceImpl(_Outptr_ wm::Casting::ICastingSource** ppReturnValue)
 {

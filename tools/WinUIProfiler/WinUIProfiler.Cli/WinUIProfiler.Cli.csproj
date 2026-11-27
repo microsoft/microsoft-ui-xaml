@@ -3,9 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>WinUIProfiler.Cli</RootNamespace>
+    <!-- Keep equal to the version in ..\plugin.json; usage events report it. -->
+    <VersionPrefix>0.1.0</VersionPrefix>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\WinUIProfiler.Core\WinUIProfiler.Core.csproj" />
+    <ProjectReference Include="..\WinUIProfiler.Telemetry\WinUIProfiler.Telemetry.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="WinUIProfiler.Tests" />

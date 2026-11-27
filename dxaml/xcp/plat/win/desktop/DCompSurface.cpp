@@ -804,6 +804,8 @@ DCompSurface::CopySubresource(
         sourceBoxWithGutters.bottom = pSource->GetHeight();
     }
 
+    TraceSurfaceTextureObserved(pDestD3DResource, dstOffsetNoGutters);
+
     // Nobody should be staging from heap memory
     ASSERT(pSource->IsDriverVisible());
 
@@ -958,6 +960,8 @@ DCompSurface::BeginDraw(
     pOffsetIntoSurface->x = offset.x;
     pOffsetIntoSurface->y = offset.y;
 
+    TraceSurfaceTextureObserved(*ppSurface, offset);
+
     if (s_traceDCompSurfaceUpdates)
     {
         m_updateRects.push_back(rect);
@@ -1009,6 +1013,8 @@ DCompSurface::BeginDrawWithGutters(
     // before drawing to the 'real' offset into the texture, not into the gutter region.
     pOffsetIntoSurface->x = offset.x;
     pOffsetIntoSurface->y = offset.y;
+
+    TraceSurfaceTextureObserved(*ppSurface, offset);
 
     if (s_traceDCompSurfaceUpdates)
     {
@@ -1388,6 +1394,58 @@ void DCompSurface::TraceSurfaceInit(DXGI_FORMAT format)
         static_cast<bool>(m_includesGutters),
         static_cast<bool>(m_requestAtlas),
         static_cast<bool>(m_fAlphaMask));
+}
+
+void DCompSurface::TraceSurfaceTextureObserved(_In_ IUnknown* updateObject, const POINT& offset) noexcept
+{
+    if (!XamlProfilerTracing::IsProfilerEnabled() ||
+        !XamlProfilerLogging::IsEnabled(WINEVENT_LEVEL_VERBOSE))
+    {
+        return;
+    }
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+    if (FAILED(updateObject->QueryInterface(IID_PPV_ARGS(&texture))))
+    {
+        Microsoft::WRL::ComPtr<ID2D1DeviceContext> deviceContext;
+        Microsoft::WRL::ComPtr<ID2D1Image> target;
+        Microsoft::WRL::ComPtr<ID2D1Bitmap1> targetBitmap;
+        Microsoft::WRL::ComPtr<IDXGISurface> targetSurface;
+
+        if (FAILED(updateObject->QueryInterface(IID_PPV_ARGS(&deviceContext))))
+        {
+            return;
+        }
+
+        deviceContext->GetTarget(&target);
+        if (target == nullptr ||
+            FAILED(target.As(&targetBitmap)) ||
+            FAILED(targetBitmap->GetSurface(&targetSurface)) ||
+            FAILED(targetSurface.As(&texture)))
+        {
+            return;
+        }
+    }
+
+    Microsoft::WRL::ComPtr<ID3D11Resource> resource;
+    if (FAILED(texture.As(&resource)))
+    {
+        return;
+    }
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    texture->GetDesc(&desc);
+    XamlProfilerTracing::DCompSurfaceTextureObserved(
+        reinterpret_cast<uint64_t>(this),
+        reinterpret_cast<uint64_t>(resource.Get()),
+        desc.Width,
+        desc.Height,
+        desc.MipLevels,
+        desc.ArraySize,
+        static_cast<uint32_t>(desc.Format),
+        desc.SampleDesc.Count,
+        offset.x,
+        offset.y);
 }
 
 //-------------------------------------------------------------------------

@@ -15,9 +15,9 @@ class TableViewColumnHeaderAutomationPeer :
     public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT, winrt::ITransformProvider>
 {
 public:
+    explicit TableViewColumnHeaderAutomationPeer(winrt::TableViewColumnHeader const& owner);
+    // Internal: the TableView-owned peer for a column whose header is not realized.
     TableViewColumnHeaderAutomationPeer(winrt::TableView const& owner, winrt::TableViewColumn const& column);
-    TableViewColumnHeaderAutomationPeer(winrt::FrameworkElement const& header,
-        winrt::TableView const& table, winrt::TableViewColumn const& column);
 
     // IAutomationPeerOverrides
     hstring GetClassNameCore();
@@ -62,10 +62,17 @@ public:
     void ShowContextMenuCore();
 
     bool IsTableViewOwned();
+    hstring HelpTextForInternal(bool movable);
+
+    // True for a header the table has attached to one of its columns and not since replaced.
+    static bool DescribesColumnHeader(winrt::TableViewColumnHeader const& header);
 
 private:
     winrt::FrameworkElement GetHeaderElement();
+    bool IsHeaderReplaced();
+    void ThrowIfHeaderReplaced();
     bool IsSortableColumn();
+    hstring GetSortAndToolTipHelpText();
     bool IsResizableColumn();
     int32_t GetColumnIndex();
 

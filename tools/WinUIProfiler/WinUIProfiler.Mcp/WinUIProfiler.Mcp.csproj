@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="ModelContextProtocol" />
     <ProjectReference Include="..\WinUIProfiler.Core\WinUIProfiler.Core.csproj" />
+    <ProjectReference Include="..\WinUIProfiler.Telemetry\WinUIProfiler.Telemetry.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="WinUIProfiler.Tests" />

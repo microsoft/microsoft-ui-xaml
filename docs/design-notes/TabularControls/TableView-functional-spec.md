@@ -41,7 +41,11 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 
 ### Column capabilities
 - Width + `MinWidth`/`MaxWidth` (`Pixel` exact; `Auto` grows to the widest realized cell within a data set; `*` shares the viewport). — **PR2** · UI resize **PR3**
-- Reorder (drag + `MoveColumn`). — **PR3**
+- User reorder, opt-in through `CanUserReorderColumns`: drag a header, or
+  <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd>/<kbd>Right</kbd> on a focused header. Columns stay
+  on their side of the frozen boundary. `ColumnReordered` lets the app persist the order; code
+  reorders through `Columns`, so there is no `MoveColumn`. See
+  [Reordering columns](../../api-specs/TableView/TableView-spec.md#reordering-columns). — **PR3, proposed (API review)**
 - Show/hide via `Visibility`. — **PR2**
 - Sticky (always-visible) header. — **PR2**
 - Single-column sort (`SortByColumn` / header invoke). — **PR3**
@@ -99,7 +103,7 @@ the source publishes, so the same engine serves an app that never touches `Table
 ### Editing
 - Opt-in cell editing (`IsReadOnly = false` on the control; per-column `IsReadOnly`). — **cell editing**
 - Editors supplied by the column: `TableViewTextColumn` produces a `TextBox`; `TableViewTemplateColumn` uses `CellEditingTemplate`. — **cell editing**
-- Gestures: double-click / double-tap and `F2` begin an edit; `Enter` commits; `Esc` cancels unless consumed by the editor or used to dismiss its own menu. Focus leaving the editor and its owned flyouts/popups attempts a commit after focus settles; focus within that editing interaction keeps the edit open. Commit is re-evaluated after an editor-owned flyout/popup closes, and validation or an edit-ending veto can keep the edit open. — **cell editing**
+- Gestures: double-click / double-tap and `F2` begin an edit; `Enter` commits; `Tab` / `Shift+Tab` commit and edit the next / previous editable cell (a vetoed commit keeps the editor; selection follows a row wrap); `Esc` cancels unless consumed by the editor or used to dismiss its own menu. Focus leaving the editor and its owned flyouts/popups attempts a commit after focus settles; focus within that editing interaction keeps the edit open. Commit is re-evaluated after an editor-owned flyout/popup closes, and validation or an edit-ending veto can keep the edit open. — **cell editing**
 - Programmatic API: `CommitEdit()` and `CancelEdit()` close the open cell edit and return `false` when it stays open (veto or failed validation); read-only `IsEditing` reports whether a cell editor is open. Editing **starts only from user gestures**: there is no public `BeginEdit` and no public current-cell surface (`CurrentItem` / `CurrentColumn` / `SetCurrentCell`) in this release. — **cell editing** · programmatic begin + current cell *deferred* (land together when a scenario such as a context menu or view-model command needs them)
 - Vetoable lifecycle events `BeginningEdit` and `CellEditEnding`. Both are synchronous: a handler sets `Cancel` before it returns, and there is no `GetDeferral()`. `CellEditEnding` reports the outcome through `EditAction` and is raised for every close, so there is no separate post-close event. — **cell editing** · `RowEditEnding`, `EditEnded` and async deferrals *deferred*
 - Rollback: the built-in text editor uses `UpdateSourceTrigger=Explicit`, so a cancelled edit never reaches the data item; application editing templates must buffer the same way. — **cell editing** · item-owned transactions (`ITableViewEditableItem`, the WinRT counterpart of `IEditableObject`) *deferred* with row editing
@@ -143,11 +147,14 @@ the source publishes, so the same engine serves an app that never touches `Table
 ### Accessibility (UIA)
 - Grid/Table peers; Row peer (`SelectionItem` + `GridItem`); ColumnHeader peer (`Invoke` → sort). — **PR2** read-only Grid/Table · **PR3** Selection + sort invoke
 - Narrator, keyboard navigation parity, sort announcements. — **PR2** nav · **PR3** sort
+- Column reorder announcement ("Moved {header} to column {n} of {count}") and header order that follows `Columns`. — **PR3, proposed**
 
 ### Keyboard focus and accessibility model
 
 The whole `TableView` is one tab stop: the column header row. `Tab` and `Shift+Tab` land on the
 header in the current column, else the first actionable one; the next `Tab` leaves the table.
+While a cell is being edited, `Tab` / `Shift+Tab` instead commit and edit the next / previous
+editable cell (see Editing); only past the last (first) editable cell does focus leave the table.
 `Down` moves into the rows (the remembered row if in view, else the selected row, else the first row
 in view; a row selected after the remembered one wins), and `Up` from the first row returns to the
 header row. When no header is actionable or headers are hidden, the rows are the stop, entered in
@@ -157,7 +164,8 @@ the same order; an empty table's `EmptyTemplate` content is the stop instead (it
 Takes keyboard focus:
 
 - Actionable headers: sort (with a sort key), resize (while the column can actually be resized),
-  context menu, tooltip, or interactive content.
+  reorder (while `CanUserReorderColumns` is true and the column has a position it may move to), context menu,
+  tooltip, or interactive content.
 - Rows.
 - Actionable cells: editable (a `CellEditingTemplate`, or a text column with a `Binding`, in an
   editable table and column), interactive content (a control, an inline `Hyperlink`, or a nested

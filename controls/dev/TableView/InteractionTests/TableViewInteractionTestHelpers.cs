@@ -805,6 +805,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return readout == null ? "<no readout>" : readout.DocumentText;
         }
 
+        // Animated scrolls (wheel, touch inertia) outlast Wait.ForIdle, so poll until two reads agree.
+        internal static string ReadSettledScrollOffsets()
+        {
+            string previous = ReadScrollOffsets();
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            while (timer.ElapsedMilliseconds < 4000)
+            {
+                Wait.ForMilliseconds(400);
+                string current = ReadScrollOffsets();
+                if (current == previous)
+                {
+                    return current;
+                }
+                previous = current;
+            }
+            return previous;
+        }
+
         // Returns double.NaN when the readout is missing or malformed.
         internal static double ReadScrollOffsetComponent(string offsets, string name)
         {

@@ -12,11 +12,11 @@ public:
     void ActualWidth(double value);
     double ActualWidth();
 
-    void CanResize(bool value);
-    bool CanResize();
-
     void CanSort(bool value);
     bool CanSort();
+
+    void CanUserResize(bool value);
+    bool CanUserResize();
 
     void CellContextFlyout(winrt::FlyoutBase const& value);
     winrt::FlyoutBase CellContextFlyout();
@@ -70,8 +70,8 @@ public:
     winrt::GridLength Width();
 
     static winrt::DependencyProperty ActualWidthProperty() { return s_ActualWidthProperty; }
-    static winrt::DependencyProperty CanResizeProperty() { return s_CanResizeProperty; }
     static winrt::DependencyProperty CanSortProperty() { return s_CanSortProperty; }
+    static winrt::DependencyProperty CanUserResizeProperty() { return s_CanUserResizeProperty; }
     static winrt::DependencyProperty CellContextFlyoutProperty() { return s_CellContextFlyoutProperty; }
     static winrt::DependencyProperty CellEditingTemplateProperty() { return s_CellEditingTemplateProperty; }
     static winrt::DependencyProperty FrozenEdgeProperty() { return s_FrozenEdgeProperty; }
@@ -91,8 +91,8 @@ public:
     static winrt::DependencyProperty WidthProperty() { return s_WidthProperty; }
 
     static GlobalDependencyProperty s_ActualWidthProperty;
-    static GlobalDependencyProperty s_CanResizeProperty;
     static GlobalDependencyProperty s_CanSortProperty;
+    static GlobalDependencyProperty s_CanUserResizeProperty;
     static GlobalDependencyProperty s_CellContextFlyoutProperty;
     static GlobalDependencyProperty s_CellEditingTemplateProperty;
     static GlobalDependencyProperty s_FrozenEdgeProperty;
@@ -114,11 +114,11 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnCanResizePropertyChanged(
+    static void OnCanSortPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnCanSortPropertyChanged(
+    static void OnCanUserResizePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

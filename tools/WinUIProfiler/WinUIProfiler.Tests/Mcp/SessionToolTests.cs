@@ -28,6 +28,7 @@ internal static class SessionToolTests
         new("sessions.damaged", Damaged),
         new("sessions.recording", Recording),
         new("sessions.newest", Newest),
+        new("sessions.cpu-files", CpuFiles),
         new("sessions.newer", Newer),
     ];
 
@@ -431,6 +432,48 @@ internal static class SessionToolTests
 
         static DateTime Written(JsonElement session) =>
             DateTime.Parse(session.Text("lastWrittenUtc")!, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+    }
+
+    private static void CpuFiles(McpTestContext context)
+    {
+        var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "cpu-files")).FullName;
+        var sampled = Write(Path.Combine(folder, "sampled.sqlite"), MainEvents);
+        var other = Write(Path.Combine(folder, "other.sqlite"), MainEvents);
+        var cpuPath = SessionFile.CpuDatabasePath(sampled);
+        var now = DateTime.UtcNow;
+        // Only filesystem metadata is needed: the catalog must not open the CPU file to list event recordings.
+        File.WriteAllBytes(cpuPath, new byte[1024 * 1024]);
+        File.SetLastWriteTimeUtc(sampled, now.AddHours(-3));
+        File.SetLastWriteTimeUtc(other, now.AddHours(-2));
+        File.SetLastWriteTimeUtc(cpuPath, now.AddHours(-1));
+
+        Expect.Equal(sampled, SessionCatalog.Resolve(null, folder), "The newest session after CPU-only activity");
+        Check(new FileInfo(sampled).Length + new FileInfo(cpuPath).Length, File.GetLastWriteTimeUtc(cpuPath));
+
+        File.WriteAllBytes(cpuPath + "-wal", new byte[64 * 1024]);
+        File.SetLastWriteTimeUtc(cpuPath + "-wal", now);
+        Check(new FileInfo(sampled).Length + new FileInfo(cpuPath).Length + new FileInfo(cpuPath + "-wal").Length,
+            File.GetLastWriteTimeUtc(cpuPath + "-wal"));
+        File.SetLastWriteTimeUtc(cpuPath, now.AddHours(-4));
+        Expect.Equal(sampled, SessionCatalog.Resolve(null, folder), "The newest session from its CPU WAL alone");
+
+        File.WriteAllBytes(cpuPath + "-wal", []);
+        File.SetLastWriteTimeUtc(cpuPath + "-wal", now.AddHours(1));
+        Expect.Equal(other, SessionCatalog.Resolve(null, folder), "An empty CPU WAL must not count as recording activity");
+        Check(new FileInfo(sampled).Length + new FileInfo(cpuPath).Length, File.GetLastWriteTimeUtc(sampled));
+
+        void Check(long bytes, DateTime written)
+        {
+            var entry = SessionCatalog.Files(folder).Single(file => file.Path == sampled);
+            Expect.Equal(bytes, entry.Bytes, "The combined main and CPU storage size");
+            Expect.Equal(written, entry.LastWrittenUtc, "The most recent nonempty database or WAL write");
+            var listed = Run(() => SessionTools.Sessions(folder: folder)).Items("sessions");
+            var session = listed.Single(item => item.Text("path") == sampled);
+            Expect.Equal(Math.Round(bytes / 1024.0 / 1024.0, 2, MidpointRounding.AwayFromZero), session.Double("sizeMB"),
+                "The listed combined recording size");
+            Expect.Equal(2, listed.Count, "CPU sidecars must not be listed as separate recordings");
+            Expect.True(!session.TryGetProperty("error", out _), "Listing must not require opening the CPU database.");
+        }
     }
 
     // A newer version can store a provider or object kind this version doesn't have. The tools that read it say so, and

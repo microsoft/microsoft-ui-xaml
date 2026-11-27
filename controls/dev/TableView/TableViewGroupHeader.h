@@ -99,6 +99,9 @@ public:
     // falls back to this instead.
     winrt::IInspectable GroupEntryInternal() const { return m_groupEntry.get(); }
     void SetGroupEntryInternal(winrt::IInspectable const& entry) { m_groupEntry.set(entry); }
+    void SyncGroupAutomationPeerInternal(winrt::AutomationPeer const& headerPeer, bool newBinding, winrt::hstring const& groupIdentity);
+    bool HasContentAutomationPeersInternal();
+    bool IsExpanderPartInternal(winrt::DependencyObject element);
 
 private:
     void UpdateVisualStates(bool useTransitions);
@@ -125,6 +128,7 @@ private:
     winrt::weak_ref<winrt::UIElement> m_inspectedContentRoot{ nullptr };
     tracker_ref<winrt::DataTemplate> m_inspectedContentTemplate{ this };
     tracker_ref<winrt::IInspectable> m_groupEntry{ this };
+    winrt::weak_ref<winrt::AutomationPeer> m_groupBinding{ nullptr };
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };

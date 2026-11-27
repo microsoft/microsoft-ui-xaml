@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pages:SamplePageBase
+    x:Class="TableViewSampleApp.Pages.ColumnReorderPage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:pages="using:TableViewSampleApp.Pages"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Column reordering"
+        Description="With CanUserReorderColumns on, a user moves a column by dragging its header, or by pressing Ctrl+Shift+Left or Right on a focused header. The move is applied to Columns, and ColumnReordered reports the column and its old and new index so an app can save the order. Frozen columns can't move past the frozen boundary."
+        Snippet="ColumnReorder"
+        StretchExample="True"
+        TryIt="Drag the Department header past Role, then focus a header and press Ctrl+Shift+Right. Freeze one or two columns and try to drag a column in front of them. Turn on RightToLeft and drag again. Start a drag and press Esc."
+        WhatToLookFor="The header follows the pointer and the headers it passes slide over to open the gap where it will land; the rows move on the drop. Each move adds an entry to the ColumnReordered log, newest first. Frozen columns stay in front, a cancelled drag logs nothing, and under RightToLeft the keys and the drag follow reading order.">
+
+        <controls:SamplePresenter.Example>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="PeopleTable"
+                AutomationProperties.AutomationId="ColumnReorderTable"
+                AutomationProperties.Name="People with reorderable columns"
+                ItemsSource="{x:Bind People}"
+                CanUserReorderColumns="True"
+                ColumnReordered="OnColumnReordered"
+                SelectionMode="Single"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <tv:TableViewTextColumn Header="ID" Width="64" Binding="{Binding EmployeeId}"/>
+                <tv:TableViewTextColumn Header="First name" Width="160" Binding="{Binding FirstName}"/>
+                <tv:TableViewTextColumn Header="Last name" Width="160" Binding="{Binding LastName}"/>
+                <tv:TableViewTextColumn Header="Department" Width="140" Binding="{Binding Department}"/>
+                <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="140" Binding="{Binding Role}"/>
+                <tv:TableViewTextColumn Header="Office" Width="120" Binding="{Binding Office}"/>
+                <tv:TableViewTextColumn Header="Email" Width="220" Binding="{Binding Email}"/>
+                <tv:TableViewTextColumn Header="Joined" Width="110" Binding="{Binding JoinDateText}"/>
+            </tv:TableView>
+            <!-- /snippet -->
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <controls:RailSection IsFirst="True" Header="Reordering" Description="Sets CanUserReorderColumns, the leading frozen columns, FlowDirection and Density.">
+                    <StackPanel Spacing="8">
+                        <ToggleSwitch x:Name="ReorderToggle" AutomationProperties.AutomationId="ColumnReorderToggle" Header="CanUserReorderColumns" IsOn="True" Toggled="OnReorderToggled"/>
+                        <ComboBox x:Name="FrozenSelector" AutomationProperties.AutomationId="ColumnReorderFrozenSelector" Header="Frozen leading columns" SelectedIndex="0" SelectionChanged="OnFrozenChanged" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="0" Tag="0"/>
+                            <ComboBoxItem Content="1" Tag="1"/>
+                            <ComboBoxItem Content="2" Tag="2"/>
+                        </ComboBox>
+                        <ToggleSwitch x:Name="RtlToggle" AutomationProperties.AutomationId="ColumnReorderRtlToggle" Header="FlowDirection" OnContent="RightToLeft" OffContent="LeftToRight" Toggled="OnRtlToggled"/>
+                        <ComboBox x:Name="DensitySelector" AutomationProperties.AutomationId="ColumnReorderDensitySelector" Header="Density" SelectedIndex="1" SelectionChanged="OnDensityChanged" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="Compact" Tag="Compact"/>
+                            <ComboBoxItem Content="Standard (default)" Tag="Standard"/>
+                            <ComboBoxItem Content="Comfortable" Tag="Comfortable"/>
+                        </ComboBox>
+                        <Button x:Name="ResetButton" AutomationProperties.AutomationId="ColumnReorderResetButton" Content="Reset column order" Click="OnResetClick" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </controls:RailSection>
+
+                <controls:RailSection Header="How to move a column">
+                    <TextBlock AutomationProperties.AutomationId="ColumnReorderHints" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}">
+                        <Run Text="• Drag a header; a copy follows the pointer and a line marks the drop."/><LineBreak/>
+                        <Run Text="• Focus a header and press Ctrl+Shift+Left or Right."/><LineBreak/>
+                        <Run Text="• Esc cancels a drag."/><LineBreak/>
+                        <Run Text="• Frozen columns can't move, and nothing moves in front of them."/><LineBreak/>
+                        <Run Text="• Narrator announces each move, and a movable header's help text names the keys."/>
+                    </TextBlock>
+                </controls:RailSection>
+
+                <controls:RailSection Header="Event log" Description="The last 10 ColumnReordered events: the column, its old index and its new index in Columns.">
+                    <ListView
+                        x:Name="EventLog"
+                        AutomationProperties.AutomationId="ColumnReorderEventLog"
+                        AutomationProperties.Name="ColumnReordered log, newest first"
+                        ItemsSource="{x:Bind Log}"
+                        SelectionMode="None"
+                        MaxHeight="260"/>
+                </controls:RailSection>
+
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="ColumnReorder">
+                    <TextBlock x:Name="OrderText" AutomationProperties.AutomationId="ColumnReorderOrderText" controls:StatusPanel.Label="Order" TextWrapping="Wrap"/>
+                </controls:StatusPanel>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+    </controls:SamplePresenter>
+</pages:SamplePageBase>

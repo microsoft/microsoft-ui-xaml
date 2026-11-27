@@ -421,34 +421,6 @@ CImageSource::ResetSurfaces(
 //------------------------------------------------------------------------
 //
 //  Synopsis:
-//      Shows the previous source's hardware surface until this source
-//      decodes, the same way ReloadImage keeps the surface when UriSource
-//      changes. The surface can be shared through the surface cache, so
-//      the decoded bits must go to a new surface.
-//
-//------------------------------------------------------------------------
-void
-CImageSource::UsePreviousHardwareSurface(
-    _In_ CImageSource* previous
-    )
-{
-    // A hardware decode can leave this wrapper locked with no surface; SetHardwareSurface requires it unlocked.
-    if (!m_pImageSurfaceWrapper->HasAnySurface() &&
-        !m_pImageSurfaceWrapper->IsHardwareLocked() &&
-        previous->CheckForHardwareResources())
-    {
-        // Null while a background thread decode holds the hardware surface.
-        if (HWTexture* surface = previous->GetHardwareSurface())
-        {
-            m_pImageSurfaceWrapper->SetHardwareSurface(surface);
-            m_pImageSurfaceWrapper->SetForceRecreateHardwareResources();
-        }
-    }
-}
-
-//------------------------------------------------------------------------
-//
-//  Synopsis:
 //      Returns whether there is a hardware surface or tiles that are lost.
 //
 //------------------------------------------------------------------------
@@ -1773,9 +1745,8 @@ CImageSource::ReloadReleasedSoftwareImage()
 
         IFC_RETURN(RedecodeEncodedImage(TRUE));
 
-        // RedecodeEncodedImage leaves a DecodeToRenderSize image for the render walk to request, but the alpha mask
-        // path only requests a decode once the software surface exists. Track the image so the decode is requested
-        // after this frame.
+        // RedecodeEncodedImage leaves a DecodeToRenderSize image for the render walk to request, but the caller may not
+        // be rendered. Track the image so the decode is requested after this frame.
         if (m_fDecodeToRenderSize)
         {
             IFC_RETURN(GetContext()->StartTrackingImageForRenderWalk(this));

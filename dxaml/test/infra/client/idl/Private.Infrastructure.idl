@@ -903,6 +903,12 @@ namespace Private.Infrastructure
         // This is a one-time override. To clear it, call it again with true
         HRESULT SetXamlVisibilityOverride([in] BOOLEAN isVisible);
 
+        // Deliver a session display on/off notification, as the GUID_SESSION_DISPLAY_STATUS callback does.
+        HRESULT SimulateDisplayStatusChanged([in] BOOLEAN isDisplayOn);
+
+        // Apply SetXamlVisibilityOverride, then deliver a visibility notification, as a window or island change does.
+        HRESULT SimulateXamlVisibilityChanged([in] BOOLEAN isVisible);
+
         // Microsoft.UI.Composition.ICompositionBrush is exclusive to composition IDL, use IInspectable*
         HRESULT SetBrushForXamlRoot([in] Microsoft.UI.Xaml.Media.XamlCompositionBrushBase* xcbb, [in] IInspectable* xamlRoot, [in] IInspectable* compBrush);
         HRESULT GetBrushForXamlRoot([in] Microsoft.UI.Xaml.Media.XamlCompositionBrushBase* xcbb, [in] IInspectable* xamlRoot, [out, retval] IInspectable** compBrush);

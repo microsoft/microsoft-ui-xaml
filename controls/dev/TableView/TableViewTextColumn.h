@@ -40,4 +40,6 @@ public:
 
 private:
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_binding{ this };
+    // Bumped by every Binding set, so a set made by app code the edit close runs supersedes the outer one.
+    uint32_t m_bindingRequest{ 0 };
 };

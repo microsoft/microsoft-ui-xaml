@@ -564,7 +564,30 @@ winrt::TableViewRow TableView::FindRealizedRowForItem(winrt::IInspectable const&
 
 bool TableView::TryBeginEditVisual(winrt::IInspectable const& item, winrt::TableViewColumn const& column)
 {
-    if (auto row = FindRealizedRowForItem(item))
+    // The same object can appear more than once in an unshaped source. Prefer the row that has
+    // focus (Tab, F2 and double-click all edit there) over the first realized occurrence.
+    winrt::TableViewRow row{ nullptr };
+    if (auto repeater = m_rowsRepeater.get(); repeater && item)
+    {
+        if (const int32_t focusedRow = GetFocusedRowIndex(); focusedRow >= 0)
+        {
+            if (auto focusedElement = repeater.TryGetElement(focusedRow).try_as<winrt::TableViewRow>())
+            {
+                if (auto dataItem = UnwrapEditingDataItem(focusedElement.DataContext());
+                    dataItem && SameInspectableIdentity(dataItem, item))
+                {
+                    row = focusedElement;
+                }
+            }
+        }
+    }
+
+    if (!row)
+    {
+        row = FindRealizedRowForItem(item);
+    }
+
+    if (row)
     {
         if (winrt::get_self<TableViewRow>(row)->BeginCellEdit(column, item))
         {
@@ -602,7 +625,8 @@ void TableView::EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip)
         {
             std::optional<HRESULT> displayFailure;
             bool applicationFault = false;
-            winrt::get_self<TableViewRow>(row)->EndCellEdit(action, tip ? &displayFailure : nullptr, &applicationFault);
+            winrt::get_self<TableViewRow>(row)->EndCellEdit(
+                action, tip ? &displayFailure : nullptr, &applicationFault, m_editCloseFocusColumn.get());
             if (displayFailure && tip)
             {
                 // The edit already landed and the row fell back to its parked element.
@@ -679,6 +703,15 @@ void TableView::PostEditNotification(std::function<void()> notify)
     notify();
 }
 
+winrt::hstring TableView::EditingPropertyPathOf(winrt::TableViewColumn const& column)
+{
+    if (column && m_editState != EditState::None && m_currentEditColumn.get() == column)
+    {
+        return m_currentEditPropertyPath;
+    }
+    return column ? ResolveEditingPropertyPath(column) : winrt::hstring{};
+}
+
 bool TableView::HasBlockingValidationErrors(
     winrt::IInspectable const& item,
     winrt::TableViewColumn const& column,
@@ -698,7 +731,7 @@ bool TableView::HasBlockingValidationErrors(
     // Scope to the property this column actually writes. Object-level HasErrors lets an
     // unrelated, pre-existing error on a different property block this cell permanently -
     // the user could never leave the edit.
-    const auto editingPath = column ? ResolveEditingPropertyPath(column) : winrt::hstring{};
+    const auto editingPath = EditingPropertyPathOf(column);
     // A validation read that throws is the app's; the edit treats it as no error and carries on.
     auto const recoverValidationFault = [this, tip](HRESULT error) noexcept
     {
@@ -857,7 +890,7 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                     // property and restoring the pre-edit value would overwrite it.
                     auto weakThis = get_weak();
                     auto const uneditedValue = m_editUneditedValue.get();
-                    auto const editingPath = ResolveEditingPropertyPath(column);
+                    auto const editingPath = EditingPropertyPathOf(column);
                     auto const resolver = std::make_shared<SortMemberPathResolver>(editingPath);
                     auto const rejectedValue = resolver->Resolve(item);
                     // The snapshot cannot tell a fresh box from a newer write for enums, structs or
@@ -992,7 +1025,12 @@ bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction act
 
     auto const generation = m_editGeneration;
 
-    const bool closed = FinishEditTeardown(unit, action, honorCancel, tip);
+    bool closed = false;
+    {
+        ++m_editValueTransferDepth;
+        auto const transferDone = wil::scope_exit([this]() noexcept { --m_editValueTransferDepth; });
+        closed = FinishEditTeardown(unit, action, honorCancel, tip);
+    }
 
     // A rollback write inside FinishEditTeardown raises PropertyChanged, which can re-enter layout
     // and drive a forced teardown (row rebuild / recycle) underneath this frame. That teardown has
@@ -1086,6 +1124,8 @@ bool TableView::TerminateEditForReset(bool force, bool sourceReplaced)
     // replaced) is reported as Cancel with nothing written, as WPF DataGrid does, so a deleted
     // record is never written back. Control-initiated (non-forced) reshapes stay cancelable.
     auto action = winrt::TableViewEditAction::Commit;
+    m_editValueTransferDepth += force ? 1 : 0;
+    auto const transferDone = wil::scope_exit([this, force]() noexcept { m_editValueTransferDepth -= force ? 1 : 0; });
     if (force)
     {
         // Asked of the active source, not the repeater: a projection swap is reported before the
@@ -1260,6 +1300,7 @@ void TableView::DrainCoalescedEditReshape()
     // safe even inside a layout pass.
     if (!IsEditing())
     {
+        ReleaseCellRegenerationsAfterEdit();
         if (auto const source = m_activeSource.get())
         {
             winrt::get_self<::TableViewSource>(source)->ResumeHeldLiveShaping();
@@ -1323,6 +1364,7 @@ void TableView::ResetPendingBeginEdit()
     m_editUneditedValue.set(nullptr);
     m_editState = EditState::None;
     m_abandonPendingBeginEdit = false;
+    m_pendingBeginEditGeneratingEditor = false;
 }
 
 bool TableView::BeginEdit()
@@ -1339,6 +1381,10 @@ bool TableView::BeginEdit()
 
 bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column)
 {
+    // Any newer edit request (an automation SetValue included) retires a Tab move still waiting
+    // for its row or for its posted open; the posted live-shaping resume re-checks the hold.
+    EndPendingTabEditMove();
+
     if (IsReadOnly() || !item || !column || column.IsReadOnly() || !IsColumnInColumns(*this, column))
     {
         return false;
@@ -1380,6 +1426,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         m_currentEditRow.set(nullptr);
         m_editState = EditState::Beginning;
         m_abandonPendingBeginEdit = false;
+        m_pendingBeginEditGeneratingEditor = false;
         m_editSourceWritten = false;
 
         // Only a throw reaches here still Beginning; without this unwind IsEditing would stay true and
@@ -1420,6 +1467,9 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         // close an edit that is still Beginning, so OnRowElementClearing raises this flag instead and
         // the checks below unwind rather than promoting to Editing over a recycled row.
         const bool allowed = RaiseBeginningEdit(item, column, tip);
+        m_pendingBeginEditGeneratingEditor = allowed && !m_abandonPendingBeginEdit;
+        // The editor is generated from this; a later change of the column abandons the opening edit.
+        m_currentEditPropertyPath = ResolveEditingPropertyPath(column);
         if (!allowed || m_abandonPendingBeginEdit || !TryBeginEditVisual(item, column))
         {
             tip.Ignore(!allowed ? TableViewTip::IgnoreReason::Vetoed :
@@ -1437,7 +1487,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
 
         // The column primes its own editor and hands back whatever it needs to revert. Done here rather
         // than in the row so the returned value has an owner for the lifetime of the edit.
-        if (auto const row = m_currentEditRow.get())
+        if (auto const row = m_currentEditRow.get(); row && !m_abandonPendingBeginEdit)
         {
             if (auto const editingElement = winrt::get_self<TableViewRow>(row)->GetEditingElement())
             {
@@ -1462,6 +1512,19 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         if (m_abandonPendingBeginEdit || !m_currentEditRow.get())
         {
             tip.Ignore(TableViewTip::IgnoreReason::Stale);
+            // A content change of the edited column abandons an editor that is already in the tree.
+            if (auto const row = m_currentEditRow.get())
+            {
+                m_currentEditRow.set(nullptr);
+                try
+                {
+                    winrt::get_self<TableViewRow>(row)->EndCellEdit(winrt::TableViewEditAction::Cancel);
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Abandoning an opening edit could not restore the display cell.");
+                }
+            }
             ResetPendingBeginEdit();
             DrainCoalescedEditReshape();
             return false;

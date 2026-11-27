@@ -20,6 +20,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class SwipeControlTests : ApiTestBase
     {
         [TestMethod]
+        public void VerifyCompositionSetupPreservesTemplateRootOpacityTransition()
+        {
+            SwipeControl swipeControl = null;
+            Grid root = null;
+            ScalarTransition transition = null;
+
+            using (var loaded = new ManualResetEvent(false))
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    swipeControl = new SwipeControl
+                    {
+                        Content = new TextBlock { Text = "Swipe content" },
+                        LeftItems = new SwipeItems { new SwipeItem { Text = "Action" } }
+                    };
+                    swipeControl.Loaded += (sender, args) => loaded.Set();
+                    Content = swipeControl;
+                    Content.UpdateLayout();
+
+                    root = (Grid)VisualTreeHelper.GetChild(swipeControl, 0);
+                    Verify.AreEqual("RootGrid", root.Name);
+                    transition = new ScalarTransition();
+                    root.OpacityTransition = transition;
+                });
+                Verify.IsTrue(loaded.WaitOne(DefaultWaitTimeInMS), "Waiting for loaded event");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(swipeControl.IsLoaded);
+                    swipeControl.Close();
+
+                    Verify.AreEqual(transition, root.OpacityTransition);
+                    Verify.AreEqual("Swipe content", ((TextBlock)swipeControl.Content).Text);
+                    Verify.AreEqual(1, swipeControl.LeftItems.Count);
+                });
+            }
+        }
+
+        [TestMethod]
         public void SwipeItemTest()
         {
             SwipeItem swipeItem = null;

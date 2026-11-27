@@ -207,6 +207,12 @@ void PrimitiveCompositionPropertyData::ClearRenderDataList(_In_ PCRenderDataList
                 IFCFAILFAST(spChildren->Remove(visual));
             }
 
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                const auto visualId = reinterpret_cast<uint64_t>(visual);
+                XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 0, 0);
+                XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 1, 0);
+            }
             ReleaseInterface(visual);
         }
 

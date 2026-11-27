@@ -34,7 +34,7 @@ public sealed partial class ColumnLayoutPage
         }
 
         var tableGate = WidthsTable.CanUserResizeColumns ? "CanUserResizeColumns on" : "CanUserResizeColumns off (every gripper)";
-        var columnGate = _activeColumn is null ? string.Empty : _activeColumn.CanResize ? "; CanResize on" : "; CanResize off";
+        var columnGate = _activeColumn is null ? string.Empty : _activeColumn.CanUserResize ? "; CanUserResize on" : "; CanUserResize off";
         ResizeStateText.Text = tableGate + columnGate;
     }
 }

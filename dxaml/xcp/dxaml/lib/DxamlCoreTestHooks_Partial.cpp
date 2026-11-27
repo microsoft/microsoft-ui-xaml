@@ -1634,6 +1634,25 @@ IFACEMETHODIMP DxamlCoreTestHooks::SetXamlVisibilityOverride(_In_ BOOLEAN isVisi
     return S_OK;
 }
 
+IFACEMETHODIMP DxamlCoreTestHooks::SimulateDisplayStatusChanged(_In_ BOOLEAN isDisplayOn)
+{
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    CCoreServices* coreServices = static_cast<CCoreServices*>(dxamlCore->GetHandle());
+    IFC_RETURN(coreServices->OnDisplayStatusChanged(!!isDisplayOn));
+
+    return S_OK;
+}
+
+IFACEMETHODIMP DxamlCoreTestHooks::SimulateXamlVisibilityChanged(_In_ BOOLEAN isVisible)
+{
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    CCoreServices* coreServices = static_cast<CCoreServices*>(dxamlCore->GetHandle());
+    coreServices->ForceXamlInvisible_TestHook(isVisible);
+    IFC_RETURN(coreServices->OnVisibilityChanged(false /* isStartingUp */, false /* freezeDWMSnapshotIfHidden */));
+
+    return S_OK;
+}
+
 IFACEMETHODIMP DxamlCoreTestHooks::SetBrushForXamlRoot(
     _In_ xaml_media::IXamlCompositionBrushBase* xcbb,
     _In_ IInspectable* xamlRoot,

@@ -166,6 +166,7 @@
 "WPF-Foundation-Graphics-DoubleAnimationTests","Microsoft::UI::Xaml::Tests::Foundation::Graphics::DoubleAnimationTests::TransformAnimationRealizations2WUCFull"
 "WPF-Foundation-Graphics-DoubleAnimationTests","Microsoft::UI::Xaml::Tests::Foundation::Graphics::DoubleAnimationTests::TrickyStoryboardsWUC"
 "WPF-Foundation-Graphics-HighContrastAdjustmentTests","Microsoft::UI::Xaml::Tests::Foundation::Graphics::HighContrastAdjustmentTests::VerifyCheckBoxDCompTree"
+"WPF-Foundation-Graphics-HighContrastAdjustmentTests","Microsoft::UI::Xaml::Tests::Foundation::Graphics::HighContrastAdjustmentTests::VerifyPasswordBoxDCompTree"
 "WPF-Foundation-Graphics-HighContrastAdjustmentTests","Microsoft::UI::Xaml::Tests::Foundation::Graphics::HighContrastAdjustmentTests::VerifyRichEditBoxDCompTree"
 "WPF-Foundation-Graphics-HighContrastAdjustmentTests","Microsoft::UI::Xaml::Tests::Foundation::Graphics::HighContrastAdjustmentTests::VerifyRichTextBlockDCompTree"
 "WPF-Foundation-Graphics-HighContrastAdjustmentTests","Microsoft::UI::Xaml::Tests::Foundation::Graphics::HighContrastAdjustmentTests::VerifyTextBlockDCompTree"
@@ -470,4 +471,5 @@
 "WPF-Managed.Controls","Microsoft.UI.Xaml.Tests.Controls.TextEditingTests.DoRichEditBoxControlAcceptReturnTests"
 "WPF-Managed.Controls","Microsoft.UI.Xaml.Tests.Controls.TextEditingTests.ProgrammaticRichEditBoxContentTests"
 "WPF-Managed.Foundation","Microsoft.UI.Xaml.Tests.Focus.FocusRectTests.ChangeFocusWithoutChangingTree"
+"WPF-Managed.Foundation","Microsoft.UI.Xaml.Tests.Focus.FocusRectTests.OccludedFocusedElement"
 "WPF-Managed.Foundation","Microsoft.UI.Xaml.Tests.Focus.FocusRectTests.ValidateFocusRectInListView"

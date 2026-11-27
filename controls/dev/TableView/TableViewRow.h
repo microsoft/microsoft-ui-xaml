@@ -46,6 +46,7 @@ public:
     bool SetOwningTableViewInternal(winrt::TableView const& owner, bool rebuildCells = true);
     // skipIfCellsCurrent: skip when the DataContext change that just re-bound this row rebuilt the cells.
     bool EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent = false);
+    void SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, bool newBinding);
 
     // Rewire realized rows when the owner keeps the same identity but Columns changes.
     void RefreshColumnsSubscriptionInternal();
@@ -137,8 +138,13 @@ public:
 
     bool BeginCellEdit(const winrt::TableViewColumn& column, const winrt::IInspectable& dataItem);
 
-    // Restores the display visual. Safe to call when no cell edit is open.
-    void EndCellEdit(winrt::TableViewEditAction action, std::optional<HRESULT>* displayFailure = nullptr, bool* applicationFault = nullptr);
+    // Restores the display visual. Safe to call when no cell edit is open. A focused editor hands
+    // focus to `focusColumn`'s cell when given and focusable, otherwise to the edited cell.
+    void EndCellEdit(
+        winrt::TableViewEditAction action,
+        std::optional<HRESULT>* displayFailure = nullptr,
+        bool* applicationFault = nullptr,
+        winrt::TableViewColumn const& focusColumn = nullptr);
 
     winrt::FrameworkElement GetEditingElement() const { return m_editingElement.get(); }
 
@@ -158,10 +164,13 @@ public:
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
 
+    // For a Tab that closed an editor and continues from its cell, as OnKeyDown does for a focused cell.
+    void PrepareTabWalkFromCellInternal();
+
 private:
     void ResetCellAutomationNames();
     void UpdateCellPeerItems(winrt::IInspectable const& dataItem);
-    bool HasCellAutomationPeers() const;
+    bool HasCellAutomationPeers(winrt::IInspectable const& otherThanItem = nullptr) const;
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
     void ApplyFocusLevelInternal();
@@ -183,7 +192,7 @@ private:
     // Directional expand/collapse for the keyboard, routed through the owner like the chevron.
 
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
-    // binding a template column needs. GenerateElement alone is not a complete cell.
+    // binding a template column needs. GenerateDisplayElement alone is not a complete cell.
     void AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement);
 
     // Drops begin-edit gesture state (recycle, owner change).
@@ -325,6 +334,7 @@ private:
     bool m_cellsInvalidated{ false };
     // Between ElementClearing (SetOwningTableViewInternal without rebuild) and the next prepare.
     bool m_inRecyclePool{ false };
+    winrt::weak_ref<winrt::AutomationPeer> m_itemAutomationPeer{ nullptr };
 
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
     tracker_ref<winrt::Grid> m_editingCellWrapper{ this };

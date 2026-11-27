@@ -441,6 +441,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(NewSourceKeepsPreviousImageWhileLoading)
+                TEST_METHOD_PROPERTY(L"Description", L"Setting Image.Source to a new BitmapImage keeps drawing the previous image until the new one loads (GitHub #8750)")
+                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(RasterizationScale)
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")

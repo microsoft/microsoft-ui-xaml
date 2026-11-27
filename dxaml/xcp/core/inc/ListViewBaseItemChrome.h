@@ -452,6 +452,9 @@ public:
     // Removes the selection indicator from the tree.
     _Check_return_ HRESULT RemoveSelectionIndicator();
 
+    // Removes the selection indicator from the tree when present and the chrome should no longer show it.
+    _Check_return_ HRESULT RemoveSelectionIndicatorIfHidden();
+
     // Removes the inner selection border from the tree.
     _Check_return_ HRESULT RemoveInnerSelectionBorder();
 

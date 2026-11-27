@@ -53,6 +53,25 @@ public:
     // Shared cached ETW state; querying must not initialize the provider on allocation paths.
     static void SetProfilerEnabled(bool enabled) noexcept;
     static bool IsProfilerEnabled() noexcept;
+    static void BeginStoryboard(_In_ const void* storyboard);
+    static bool TryGetStoryboardState(
+        _In_ const void* storyboard, uint32_t stateKey, bool observation, bool destroyed,
+        _Out_ uint64_t& storyboardId, _Out_ uint64_t& runId);
+    static void ForgetStoryboard(_In_ const void* storyboard);
+
+    // XAML bookkeeping only: neither an active clock nor an independent animation proves presentation.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(StoryboardActivity,
+        uint64_t, StoryboardId,
+        uint64_t, ObjectAddress,
+        uint64_t, RunId,
+        PCWSTR,   Operation,
+        PCWSTR,   Name,
+        PCWSTR,   State,
+        bool,     IsPaused,
+        bool,     HasIndependentAnimation,
+        bool,     IsInTimeManager,
+        uint32_t, ChildCount,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     static void NotifyChildInserted(_In_opt_ IUnknown* parentVisual, _In_opt_ IUnknown* childVisual);
     static void NotifyChildRemoved(_In_opt_ IUnknown* parentVisual, _In_opt_ IUnknown* childVisual);
@@ -78,6 +97,22 @@ public:
         bool,     IncludesGutters,
         bool,     RequestAtlas,
         bool,     IsAlphaMask,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Reports a transient BeginDraw update texture. Atlased surfaces may share this resource;
+    // its interface is not retained after the observation. OffsetX/OffsetY identify the
+    // gutter-excluded content origin within the update texture.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(DCompSurfaceTextureObserved,
+        uint64_t, SurfaceId,
+        uint64_t, ResourceId,
+        uint32_t, Width,
+        uint32_t, Height,
+        uint32_t, MipLevels,
+        uint32_t, ArraySize,
+        uint32_t, Format,
+        uint32_t, SampleCount,
+        int32_t,  OffsetX,
+        int32_t,  OffsetY,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     DEFINE_TRACELOGGING_EVENT_PARAM3(GraphicsResourceCreated,
@@ -209,10 +244,13 @@ public:
         bool,     IsVirtual,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM3(VisualSurfaceChanged,
+    // Role is 0 for brush, 1 for mask. UIElementId is the current core element;
+    // unlinking clears both SurfaceId and UIElementId.
+    DEFINE_TRACELOGGING_EVENT_PARAM4(VisualSurfaceChanged,
         uint64_t, VisualId,
         uint64_t, SurfaceId,
         uint32_t, Role,
+        uint64_t, UIElementId,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
 };

@@ -8,7 +8,7 @@ using WinUIProfiler.Engine.Ingestion;
 
 namespace WinUIProfiler.Engine.Storage;
 
-// Stores a session's CPU samples with their call stacks (SessionSchema: Modules, CodeAddresses, CallStacks, CpuSamples).
+// Stores a session's CPU samples with their call stacks (CpuSchema: Modules, CodeAddresses, CallStacks, CpuSamples).
 // Each module and code address is stored once, and the stacks as a tree from their root frames, so the callers a stack
 // shares with others are stored once. Trimming deletes the oldest samples, then the stacks and code addresses no sample
 // has any more. It finds those from counts, kept in memory, of what has each node and address, so it costs what it
@@ -121,7 +121,7 @@ internal sealed class CpuSampleIndex : IDisposable
     {
         if (sample.Qpc < keptFromQpc)
         {
-            trimmed = true;
+            MarkTrimmed(transaction);
             return;
         }
 
@@ -179,7 +179,8 @@ internal sealed class CpuSampleIndex : IDisposable
     internal long Trim(long qpc, SqliteTransaction transaction)
     {
         keptFromQpc = Math.Max(keptFromQpc, qpc);
-        return Deleted(Sql.Longs(connection, "DELETE FROM CpuSamples WHERE Qpc < $qpc RETURNING StackId", transaction, ("$qpc", qpc)));
+        return Deleted(Sql.Longs(connection, "DELETE FROM CpuSamples WHERE Qpc < $qpc RETURNING StackId", transaction, ("$qpc", qpc)),
+            transaction);
     }
 
     // Deletes the first count samples stored, the oldest, but none from beforeQpc on when it's given, and returns how many
@@ -191,13 +192,13 @@ internal sealed class CpuSampleIndex : IDisposable
             DELETE FROM CpuSamples
             WHERE rowid <= (SELECT rowid FROM CpuSamples ORDER BY rowid LIMIT 1 OFFSET $skip) AND ($before IS NULL OR Qpc < $before)
             RETURNING StackId
-            """, transaction, ("$skip", count - 1), ("$before", beforeQpc)));
+            """, transaction, ("$skip", count - 1), ("$before", beforeQpc)), transaction);
     }
 
     // The time of the first sample stored, which is the oldest but for the few a live session stores late; null when
-    // there are none. Call outside a transaction.
-    internal long? FirstQpc() =>
-        Samples == 0 ? null : Sql.Scalar(connection, "SELECT Qpc FROM CpuSamples ORDER BY rowid LIMIT 1");
+    // there are none.
+    internal long? FirstQpc(SqliteTransaction? transaction = null) =>
+        Samples == 0 ? null : Sql.Scalar(connection, "SELECT Qpc FROM CpuSamples ORDER BY rowid LIMIT 1", transaction);
 
     // Deletes the stack nodes the trimmed samples left unused, then the callers that leaves unused, and the code addresses
     // no node has any more, and forgets them, so a later sample stores them again rather than referring to the deleted
@@ -361,7 +362,7 @@ internal sealed class CpuSampleIndex : IDisposable
 
     // Counts the deleted samples, given by their stacks, and releases each one's node: Prune deletes those no sample or
     // child node has any more.
-    private long Deleted(List<long> stackIds)
+    private long Deleted(List<long> stackIds, SqliteTransaction transaction)
     {
         foreach (var stackId in stackIds)
         {
@@ -372,8 +373,21 @@ internal sealed class CpuSampleIndex : IDisposable
         }
 
         Samples -= stackIds.Count;
-        trimmed |= stackIds.Count > 0;
+        if (stackIds.Count > 0)
+        {
+            MarkTrimmed(transaction);
+        }
+
         return stackIds.Count;
+    }
+
+    private void MarkTrimmed(SqliteTransaction transaction)
+    {
+        if (!trimmed)
+        {
+            Sql.Execute(connection, "UPDATE CpuSessionInfo SET Trimmed = 1", transaction);
+            trimmed = true;
+        }
     }
 
     // An address stored without a module, with the process of the samples that have it (MixedProcesses for several), and

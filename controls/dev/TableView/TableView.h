@@ -6,6 +6,7 @@
 #include "pch.h"
 #include "common.h"
 
+#include <chrono>
 #include <deque>
 #include <functional>
 #include <limits>
@@ -17,6 +18,7 @@
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
 #include "TableViewTip.h"
+#include "DragEscapeHook.h"
 
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
@@ -354,6 +356,13 @@ public:
 
     // TableViewTemplateColumn calls this when CellTemplate changes so realized rows regenerate cells.
     void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth = true);
+    // Posts (or, outside a live tree, runs) the regeneration without ending the edited column's edit.
+    void ScheduleColumnCellRegeneration(const winrt::TableViewColumn& column, bool resetAutoWidth, bool postOffTree = false);
+    void ScheduleReattachedColumnCellRegeneration(const winrt::TableViewColumn& column);
+    void ScheduleReattachedColumnCellRegenerations();
+    void RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth);
+    void RegenerateColumnCellsFromPost(const winrt::TableViewColumn& column);
+    void EndEditOfChangedColumn(const winrt::TableViewColumn& column);
 
     // TableViewColumn calls this when Header / HeaderTemplate / HeaderTemplateSelector changes so
     // headers re-render and Auto columns recompute their content width.
@@ -435,6 +444,13 @@ public:
     {
         return TryGetContainerIdentity(container);
     }
+
+    winrt::AutomationPeer GetGroupAutomationElementInternal(winrt::hstring const& identity)
+    {
+        auto const it = m_groupAutomationElements.find(identity);
+        return it != m_groupAutomationElements.end() ? it->second : nullptr;
+    }
+    void SetGroupAutomationElementInternal(winrt::hstring const& identity, winrt::AutomationPeer const& element);
 
     // Two-level cursor state. False = ROW level, true = CELL level. Owned here rather than on the
     // row because it has to survive row recycling and follow the cursor from row to row.
@@ -552,6 +568,9 @@ public:
     void QueueReshapeAfterEditCloses(TableViewTip::Operation operation, std::function<void()> apply);
     void ClearCoalescedEditReshape();
     void DrainCoalescedEditReshape();
+    // Re-requests the cell regenerations an open edit held back.
+    void ReleaseCellRegenerationsAfterEdit();
+    void HoldCellRegenerationUntilEditCloses(const winrt::TableViewColumn& column);
     void QueueDeferredEditReshapeDrain();
     void FlushDeferredEditReshapes();
     // In a catch: reports the deferred reshape that threw as a recovered app fault.
@@ -573,6 +592,22 @@ public:
     void ResetEditFocusTracking();
     // Keeps the Escape that closed an editor's flyout from also cancelling the edit.
     void MarkEditorFlyoutClosing();
+    // True when Tab is consumed, including by a vetoed commit.
+    bool TryMoveEditToAdjacentCell(bool forward);
+    bool IsTabEditMovePending() const noexcept { return m_tabEditMovePending; }
+    // Drops a pending Tab move's BeginEdit and releases the live-shaping hold it kept.
+    void EndPendingTabEditMove();
+    // While a Tab move waits for its row, a repeated Tab is swallowed and Escape drops the edit.
+    bool TryHandleKeyDuringPendingTabEditMove(const winrt::KeyRoutedEventArgs& args);
+    void FindAdjacentEditableColumns(
+        winrt::TableViewColumn const& source,
+        bool forward,
+        winrt::TableViewColumn& inRow,
+        winrt::TableViewColumn& wrap);
+    int32_t StepToAdjacentDataRow(int32_t row, bool forward);
+    bool IsBodyFocusOnItem(winrt::IInspectable const& item);
+    bool IsBodyFocusOnCell(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
+    bool HasTabStopAfterFocusInEditor(winrt::XamlRoot const& root, winrt::FrameworkElement const& editingElement, bool forward);
 
     // ----- Selection (TableView_Selection.cpp) -----
     // SelectionModel owns the selected index and reconciles it across collection changes; this
@@ -838,9 +873,12 @@ private:
     bool m_editSourceWritten{ false };
 
     // True while a forced teardown arrived during the Beginning window, where EndCurrentEdit cannot
-    // close the edit. BeginEdit re-checks it and unwinds instead of promoting to Editing over a row
-    // that has already been recycled onto a different item.
+    // close the edit, or the edited column's content changed after its editor began generating.
+    // BeginEdit re-checks it and unwinds instead of promoting to Editing.
     bool m_abandonPendingBeginEdit{ false };
+
+    // True once BeginningEdit has returned and the editor is being generated from the column.
+    bool m_pendingBeginEditGeneratingEditor{ false };
 
     // True only while a queued reshape is replaying, so the drain is not re-entered by it.
     bool m_isApplyingCoalescedEditReshape{ false };
@@ -849,10 +887,23 @@ private:
     // recognise itself as stale.
     uint32_t m_editGeneration{ 0 };
 
+    // A Tab target outside the viewport: BeginEdit runs once the pending body focus lands on it.
+    tracker_ref<winrt::IInspectable> m_beginEditAfterBodyFocusItem{ this };
+    tracker_ref<winrt::TableViewColumn> m_beginEditAfterBodyFocusColumn{ this };
+    // True from the off-screen Tab move until its BeginEdit runs or the move is dropped. Holds live
+    // shaping, so a reshape from the commit cannot re-aim focus away from the target.
+    bool m_tabEditMovePending{ false };
+    // Bumped when a pending Tab move ends, so its posted BeginEdit can recognise itself as stale.
+    uint32_t m_tabEditMoveGeneration{ 0 };
+    // Set only across a Tab move's commit: the same-row cell the closing editor hands focus to.
+    tracker_ref<winrt::TableViewColumn> m_editCloseFocusColumn{ this };
+
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.
     std::deque<DeferredEditReshape> m_pendingEditReshapes;
     std::deque<DeferredEditReshape> m_reshapesAfterEditCloses;
+    // Columns whose posted cell regeneration found an edit open; regenerated once it closes.
+    std::vector<winrt::weak_ref<winrt::TableViewColumn>> m_cellRegenerationsAfterEdit;
     bool m_editReshapeDrainQueued{ false };
     TableViewTip::Operation m_failedEditReshapeOperation{ TableViewTip::Operation::Sort };
 
@@ -877,6 +928,13 @@ private:
     tracker_ref<winrt::IInspectable> m_currentEditItem{ this };
     tracker_ref<winrt::TableViewColumn> m_currentEditColumn{ this };
     tracker_ref<winrt::TableViewRow> m_currentEditRow{ this };
+    // The property the open editor writes, fixed when it is generated: a Binding set while the edit
+    // closes must not redirect that edit's validation or rollback.
+    winrt::hstring m_currentEditPropertyPath;
+    winrt::hstring EditingPropertyPathOf(winrt::TableViewColumn const& column);
+    // Nonzero while an edit close transfers, validates or rolls back its value. A content change of the
+    // edited column made by app code it runs does not start another close.
+    uint32_t m_editValueTransferDepth{ 0 };
 
     // Whatever the column's PrepareCellForEdit handed back, returned to it on cancel.
     tracker_ref<winrt::IInspectable> m_editUneditedValue{ this };
@@ -1037,6 +1095,10 @@ private:
     void OnBodyScrollerViewChanged(
         const winrt::IInspectable& sender,
         const winrt::ScrollViewerViewChangedEventArgs& args);
+    void SyncHeaderScroller();
+    void StartHeaderScrollAnimation();
+    void UpdateHeaderScrollOffset();
+    void StopHeaderScrollAnimation();
 
     // Defer ScrollViewer ancestor lookup until Loaded because ScrollViewer template names are shadowed.
     void OnHeaderHostLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -1185,6 +1247,12 @@ private:
         bool subtree = false);
     void RaiseGroupStructureChanged();
     void AnnounceRowExpansionChange(winrt::hstring const& identity);
+    std::optional<winrt::ExpandCollapseState> TryGetGroupExpandCollapseState(winrt::hstring const& identity);
+
+    // Group identity -> ExpandCollapseState before a toggle that has not reached its header yet.
+    std::unordered_map<winrt::hstring, winrt::ExpandCollapseState> m_pendingGroupExpansionStates;
+    // Cleared with m_rowMetadataGeneration: identities are only meaningful within one projection.
+    std::unordered_map<winrt::hstring, winrt::AutomationPeer> m_groupAutomationElements;
 
     void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
     void ApplyBulkExpansion(bool expand, BulkExpansionAxis axis);
@@ -1296,6 +1364,7 @@ private:
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
+    winrt::ScrollViewer::ViewChanged_revoker m_headerScrollerViewChangedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_headerContextRequestedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     // Keeps the header band locked to the body when focus moves to an off-screen header.
@@ -1304,6 +1373,11 @@ private:
     // Targets of the requests ReleaseRowsRepeaterAnchor raised; OnBodyBringIntoViewRequested swallows them.
     std::vector<winrt::weak_ref<winrt::UIElement>> m_anchorReleaseTargets;
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
+    double m_headerRequestedOffset{ std::numeric_limits<double>::quiet_NaN() };
+    // The expression doesn't keep the property sets it reads alive.
+    winrt::ExpressionAnimation m_headerScrollAnimation{ nullptr };
+    winrt::CompositionPropertySet m_headerScrollOffset{ nullptr };
+    winrt::CompositionPropertySet m_bodyManipulationProperties{ nullptr };
 
     winrt::event_token m_rowElementPreparedToken{};
     winrt::event_token m_rowElementClearingToken{};
@@ -1311,6 +1385,8 @@ private:
     winrt::event_token m_bodyScrollerViewChangedToken{};
     // Body-viewport resize invalidates measure so Star columns resolve during the table layout pass.
     winrt::FrameworkElement::SizeChanged_revoker m_bodyScrollerSizeChangedRevoker{};
+    winrt::ScrollViewer::DirectManipulationStarted_revoker m_bodyManipulationStartedRevoker{};
+    winrt::ScrollViewer::DirectManipulationCompleted_revoker m_bodyManipulationCompletedRevoker{};
     winrt::event_token m_headerHostLoadedToken{};
     // Set while a drag is in flight, so Escape can reach the gripper that owns it.
     std::shared_ptr<ColumnResizeDragState> m_activeColumnResizeDrag{};
@@ -1511,9 +1587,9 @@ private:
     // Collapses the gripper of every pinned column; it stays in the tree for keyboard resize lookup.
     void RefreshResizeGripperAvailability();
     void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state);
-    // Hash of the hold inputs a user resize does not change: the viewport width, CanUserResizeColumns, the
-    // Columns identities, and each column's authored Width, MinWidth (and whether it is local), MaxWidth,
-    // Visibility and CanResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
+    // Hash of the hold inputs a user resize does not change: the viewport width, the Columns identities,
+    // and each column's authored Width, MinWidth (and whether it is local), MaxWidth, Visibility and
+    // CanUserResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
     // checks Auto growth separately.
     size_t LockedColumnHoldsSignature();
     void ClearLockedColumnHolds(bool invalidate);
@@ -1702,4 +1778,85 @@ private:
 
     int32_t GetFocusedRowIndex() const;
     int32_t GetEstimatedRowsPerPage(); // Non-const — GetDensityRowMinHeight() mutates the resource cache.
+
+    // --- Column reorder (TableView_ColumnReorder.cpp) ---
+public:
+    void OnCanUserReorderColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    // A neighbouring position is allowed, so the header is actionable.
+    bool CanUserMoveColumnInternal(const winrt::TableViewColumn& column);
+    void CancelColumnReorderDrag();
+    void QueueCancelColumnReorderDrag();
+    // For TableViewTestHooks: a press on the column's header and its manipulation, without a pointer.
+    bool BeginColumnReorderDragForTesting(const winrt::TableViewColumn& column);
+    bool UpdateColumnReorderDragForTesting(double translationX) { return UpdateColumnReorderDrag(translationX); }
+    bool CompleteColumnReorderDragForTesting(double translationX);
+    bool IsColumnReorderDraggingForTesting() const noexcept { return m_columnReorder && m_columnReorder->dragging; }
+
+private:
+    // The visible owned columns other than the moving one; own is its slot among them, [min, max] the allowed slots.
+    struct ColumnReorderSlots
+    {
+        std::vector<winrt::TableViewColumn> others;
+        int32_t own{ -1 };
+        int32_t min{ 0 };
+        int32_t max{ 0 };
+    };
+
+    // A header press that becomes a reorder once its manipulation starts. Header-row coordinates.
+    struct ColumnReorderDragState
+    {
+        winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+        winrt::Pointer pointer{ nullptr };
+        double pressX{ 0.0 };
+        double pointerX{ 0.0 };
+        bool dragging{ false };
+        // The header band scrolled; the drag ends without a drop.
+        bool stale{ false };
+        double headerOffset{ 0.0 };
+        // The source header's grab offset, left edge and width.
+        double grabOffset{ 0.0 };
+        double sourceLeft{ 0.0 };
+        double sourceWidth{ 0.0 };
+        double bandEdge{ -std::numeric_limits<double>::infinity() };
+        // The frozen band's width and the body offset the drag measured.
+        double frozenWidth{ 0.0 };
+        double bodyOffset{ 0.0 };
+        float sourceBase{ 0.0f };
+        ColumnReorderSlots slots;
+        // Per slots.others: edges, cell, pre-drag Translation.X and running slide.
+        std::vector<std::pair<double, double>> edges;
+        std::vector<winrt::weak_ref<winrt::FrameworkElement>> cells;
+        std::vector<float> bases;
+        winrt::weak_ref<winrt::FrameworkElement> source{ nullptr };
+        struct Slide { float from{ 0.0f }; float to{ 0.0f }; std::chrono::steady_clock::time_point start{}; };
+        std::vector<Slide> slides;
+    };
+
+    void HookColumnReorderInput();
+    void OnHeaderHostPointerPressedForReorder(const winrt::PointerRoutedEventArgs& args);
+    winrt::TableViewColumn HeaderColumnFromSource(const winrt::IInspectable& source, winrt::FrameworkElement& headerCell);
+    bool TryHandleHeaderColumnReorderKey(const winrt::KeyRoutedEventArgs& args);
+    bool BeginColumnReorderDrag();
+    bool UpdateColumnReorderDrag(double translationX, bool preview = true);
+    void ApplyColumnReorderPreview(ColumnReorderDragState& state);
+    bool ColumnReorderLayoutChanged(double frozenWidth, double bodyOffset);
+    void EndColumnReorderDrag(bool commit);
+    static int32_t ColumnReorderSlotAt(const ColumnReorderDragState& state);
+    bool ConsumeColumnReorderTap();
+    ColumnReorderSlots GetColumnReorderSlots(const winrt::TableViewColumn& column, bool fullRange);
+    int32_t ColumnReorderTargetIndex(const winrt::TableViewColumn& column, const ColumnReorderSlots& slots, int32_t slot);
+    bool IsColumnMoveAllowed(uint32_t from, uint32_t to);
+    bool TryReorderColumn(const winrt::TableViewColumn& column, int32_t slot);
+
+    std::optional<ColumnReorderDragState> m_columnReorder;
+    DragEscapeHook m_columnReorderEscape;
+    winrt::weak_ref<winrt::TableViewColumn> m_movingColumn{ nullptr };
+    bool m_suppressHeaderTap{ false };
+    bool m_bodyManipulating{ false };
+    uint32_t m_columnReorderGeneration{ 0 };
+    uint32_t m_rebuildHeadersQueueGeneration{ 0 };
+    winrt::weak_ref<winrt::UIElement> m_columnReorderHookedHost{ nullptr };
+    std::vector<std::pair<winrt::RoutedEvent, winrt::IInspectable>> m_columnReorderHandlers;
+    // The host's own ManipulationMode local value, restored on unhook.
+    winrt::IInspectable m_columnReorderSavedManipulationMode{ nullptr };
 };

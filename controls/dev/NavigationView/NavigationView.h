@@ -118,7 +118,7 @@ private:
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
     void CompletePendingSelectionChange();
-    void UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem);
+    bool UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem);
     void UpdateSelectionModelSelection(const winrt::IndexPath& ip);
 
     // Item/container info functions
@@ -307,7 +307,8 @@ private:
     void PlayIndicatorNonSameLevelAnimations(const winrt::UIElement& indicator, bool isOutgoing, bool fromTop);
     void PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::UIElement& indicator, bool isOutgoing);
     void OnAnimationComplete(const winrt::IInspectable& sender, const winrt::CompositionBatchCompletedEventArgs& args);
-    void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity);
+    static winrt::DependencyProperty GetAnimatedSelectionIndicatorProperty();
+    void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity, bool forAnimation = true);
     winrt::NavigationViewItem NavigationViewItemOrSettingsContentFromData(const winrt::IInspectable& data);
     winrt::NavigationViewItemBase NavigationViewItemBaseOrSettingsContentFromData(const winrt::IInspectable& data);
 
@@ -481,6 +482,10 @@ private:
     bool m_isClosedCompact{ false };
     bool m_blockNextClosingEvent{ false };
     bool m_initialListSizeStateSet{ false };
+    // True when the last measure gave NavigationView unlimited height (for example inside a vertical StackPanel).
+    bool m_isHeightUnconstrained{ false };
+    // Height NavigationView was offered in the last measure; it can be arranged shorter (non-Stretch VerticalAlignment).
+    double m_lastMeasureAvailableHeight{ 0.0 };
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
