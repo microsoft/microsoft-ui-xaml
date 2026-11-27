@@ -1691,7 +1691,7 @@ _Check_return_ HRESULT HierarchyStore::RemoveNode(NodeId id, const HierarchyOutp
     return S_OK;
 }
 
-_Check_return_ HRESULT HierarchyStore::UpdateNode(NodeId id, _In_opt_ IInspectable* pItem, bool isMatch, _In_opt_ const SortKeys* pKeys, const HierarchyOutput& output)
+_Check_return_ HRESULT HierarchyStore::UpdateNode(NodeId id, _In_opt_ IInspectable* pItem, bool isMatch, _In_opt_ const SortKeys* pKeys, const HierarchyOutput& output, bool isReplace)
 {
     const NodeId parent = nodes[id].parent;
     const bool wasKept = nodes[id].isKept;
@@ -1751,6 +1751,11 @@ _Check_return_ HRESULT HierarchyStore::UpdateNode(NodeId id, _In_opt_ IInspectab
         if (isMoving)
         {
             IFC_RETURN(Attach(id, output));
+        }
+        else if (isReplace && spOldItem.Get() == pItem && output.pFlat)
+        {
+            // A same-object Replace is a refresh; consumers redraw the row in place.
+            IFC_RETURN(output.pFlat->InternalSetAt(FlatIndexOf(id), pItem));
         }
         IFC_RETURN(SetIsContext(id));
     }
@@ -2112,7 +2117,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessHierarchyCollectionChanged(w
         const auto& node = spStore->nodes[id];
         if (node.key == key && node.parentKey == parentKey)
         {
-            IFC_RETURN(spStore->UpdateNode(id, spItem.Get(), isMatch, &keys, output));
+            IFC_RETURN(spStore->UpdateNode(id, spItem.Get(), isMatch, &keys, output, true));
             *pIsApplied = (sourceChangeCount == m_sourceListChangeCount);
             return S_OK;
         }

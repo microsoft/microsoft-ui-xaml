@@ -280,7 +280,7 @@ namespace DirectUI::ShapingEngine
         _Check_return_ HRESULT InsertNode(NodeId id, const HierarchyOutput& output);
         _Check_return_ HRESULT RemoveNode(NodeId id, const HierarchyOutput& output);
         // The node's item, filter result or sort keys changed (same key and parent key).
-        _Check_return_ HRESULT UpdateNode(NodeId id, _In_opt_ IInspectable* pItem, bool isMatch, _In_opt_ const SortKeys* pKeys, const HierarchyOutput& output);
+        _Check_return_ HRESULT UpdateNode(NodeId id, _In_opt_ IInspectable* pItem, bool isMatch, _In_opt_ const SortKeys* pKeys, const HierarchyOutput& output, bool isReplace = false);
 
         // Shifts the source indices for an insert (delta 1) or a remove (delta -1) at index.
         void ShiftSourceIndices(UINT index, int delta);

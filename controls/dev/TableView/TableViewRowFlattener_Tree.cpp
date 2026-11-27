@@ -296,6 +296,8 @@ void TableViewRowFlattener::RebuildTreeRows()
         }
         ApplyTreeRows(std::move(items), std::move(rows));
     } while (m_treeRowsPending);
+
+    RunPendingAttachViewGroups();
 }
 
 void TableViewRowFlattener::ApplyTreeRows(std::vector<winrt::IInspectable>&& items, std::vector<NodeRow>&& rows)
@@ -496,6 +498,10 @@ void TableViewRowFlattener::OnNodeListChanged(
     {
         RebuildTreeRows();
     }
+    else
+    {
+        RunPendingAttachViewGroups();
+    }
 }
 
 bool TableViewRowFlattener::TryApplyNodeListChange(
@@ -603,7 +609,7 @@ void TableViewRowFlattener::OnViewItemChanged(uint32_t index)
         auto const item = m_view.GetAt(index);
         auto const node = m_hierarchy.NodeFromItem(item);
         int32_t row = -1;
-        if (node && TryGetIndexForNodeKey(NodeKeyFor(node), row) && m_nodeRows[row].Item != item)
+        if (node && TryGetIndexForNodeKey(NodeKeyFor(node), row))
         {
             m_nodeRows[row].Item = item;
             m_treeRows.SetAt(static_cast<uint32_t>(row), item);
@@ -817,6 +823,10 @@ void TableViewRowFlattener::OnNodeExpansionChanged(ShapingHelpers::RowExpansionM
     if (!applied || m_treeRowsPending)
     {
         RebuildTreeRows();
+    }
+    else
+    {
+        RunPendingAttachViewGroups();
     }
 }
 

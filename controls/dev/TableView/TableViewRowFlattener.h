@@ -271,6 +271,8 @@ private:
     std::vector<ViewGroup> m_groups;
     bool m_attachingViewGroups{ false };
     bool m_attachViewGroupsPending{ false };
+    // A CollectionNodes change, deferred the same way (and while tree rows are spliced).
+    bool m_attachViewNodesPending{ false };
     bool m_runningPendingAttach{ false };
     bool m_readingGroups{ false };
     bool m_readGroupsPending{ false };

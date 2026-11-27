@@ -207,9 +207,10 @@ void TableViewRowFlattener::Start()
                     {
                         strongThis->AttachViewGroups();
                     }
-                    else if (args.PropertyName() == L"CollectionNodes" && strongThis->AttachViewNodesNow())
+                    else if (args.PropertyName() == L"CollectionNodes")
                     {
-                        strongThis->Update();
+                        strongThis->m_attachViewNodesPending = true;
+                        strongThis->RunPendingAttachViewGroups();
                     }
                 }
             });
@@ -220,7 +221,7 @@ void TableViewRowFlattener::Start()
 
 bool TableViewRowFlattener::IsBusyWithGroups() const noexcept
 {
-    return m_attachingViewGroups || m_readingGroups || m_groupRowsInFlight || m_updating;
+    return m_attachingViewGroups || m_readingGroups || m_groupRowsInFlight || m_treeRowsInFlight || m_updating;
 }
 
 void TableViewRowFlattener::AttachViewGroups()
@@ -233,7 +234,7 @@ void TableViewRowFlattener::AttachViewGroups()
 
 void TableViewRowFlattener::RunPendingAttachViewGroups()
 {
-    if (!m_attachViewGroupsPending || m_runningPendingAttach || IsBusyWithGroups())
+    if ((!m_attachViewGroupsPending && !m_attachViewNodesPending) || m_runningPendingAttach || IsBusyWithGroups())
     {
         return;
     }
@@ -247,10 +248,15 @@ void TableViewRowFlattener::RunPendingAttachViewGroups()
     m_runningPendingAttach = true;
     auto const done = wil::scope_exit([this]() noexcept { m_runningPendingAttach = false; });
     int reattaches = 0;
-    while (m_attachViewGroupsPending && !IsBusyWithGroups() && WithinReattachCap(reattaches))
+    while ((m_attachViewGroupsPending || m_attachViewNodesPending) && !IsBusyWithGroups() && WithinReattachCap(reattaches))
     {
         ++reattaches;
-        if (AttachViewGroupsNow())
+        bool changed = m_attachViewGroupsPending && AttachViewGroupsNow();
+        if (std::exchange(m_attachViewNodesPending, false))
+        {
+            changed = AttachViewNodesNow() || changed;
+        }
+        if (changed)
         {
             Update();
         }
@@ -265,6 +271,7 @@ bool TableViewRowFlattener::WithinReattachCap(int reattaches) noexcept
     }
     // Cleared, not left set: a request still pending would be retried by the next caller and spin again.
     m_attachViewGroupsPending = false;
+    m_attachViewNodesPending = false;
     TVDiag::LogRetailF(L"[TableView] The ICollectionView changed CollectionGroups on each of %d consecutive reads; keeping the groups read last.",
         c_maxReattachesPerLoop);
     return false;
