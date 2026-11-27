@@ -1605,6 +1605,121 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode (item template TreeViewItem with ItemsSource and Content bindings): Big(Big.0..Big.29)
+        //   collapsed, then Small(Small.0..Small.2) expanded. SelectedItem = a visible item (Small.1), an item inside
+        //   the collapsed Big (Big.20), a root item (Big), then null.
+        // Expected: each time SelectedNode is the node of that item and SelectedItems holds only it; null clears.
+        // Failure means: ViewModel::GetAssociatedNode (the item to node lookup of content mode, now visible rows first
+        //   and then the whole tree) returns a wrong node or none, for visible or for hidden items.
+        [TestMethod]
+        public void TreeViewSelectedItemFindsVisibleAndHiddenItemsInContentMode()
+        {
+            TreeView treeView = null;
+            TreeViewItemSource big = null, small = null;
+            RunOnUIThread.Execute(() =>
+            {
+                big = new TreeViewItemSource() { Content = "Big" };
+                for (int i = 0; i < 30; i++)
+                {
+                    big.Children.Add(new TreeViewItemSource() { Content = "Big." + i });
+                }
+                small = new TreeViewItemSource() { Content = "Small" };
+                for (int i = 0; i < 3; i++)
+                {
+                    small.Children.Add(new TreeViewItemSource() { Content = "Small." + i });
+                }
+
+                treeView = XamlReader.Load(@"
+                    <TreeView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                              Width='400' Height='400' ItemsSource='{Binding}'>
+                        <TreeView.ItemTemplate>
+                            <DataTemplate>
+                                <TreeViewItem ItemsSource='{Binding Children}' Content='{Binding Content}'/>
+                            </DataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>") as TreeView;
+                treeView.DataContext = new ObservableCollection<TreeViewItemSource>() { big, small };
+                Content = treeView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                treeView.Expand(treeView.RootNodes[1]);
+                Content.UpdateLayout();
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                Verify.AreEqual(5, listControl.Items.Count, "Rows: Big, Small and Small's 3 children");
+                Verify.AreEqual(30, treeView.RootNodes[0].Children.Count, "Big's nodes exist while it is collapsed");
+
+                treeView.SelectedItem = small.Children[1];
+                Verify.AreEqual(treeView.RootNodes[1].Children[1], treeView.SelectedNode, "Visible item");
+                Verify.AreEqual(1, treeView.SelectedItems.Count);
+                Verify.AreEqual(small.Children[1], treeView.SelectedItems[0]);
+
+                treeView.SelectedItem = big.Children[20];
+                Verify.AreEqual(treeView.RootNodes[0].Children[20], treeView.SelectedNode, "Item inside a collapsed node");
+                Verify.AreEqual(1, treeView.SelectedItems.Count);
+
+                treeView.SelectedItem = big;
+                Verify.AreEqual(treeView.RootNodes[0], treeView.SelectedNode, "Root item");
+                Verify.AreEqual(1, treeView.SelectedNodes.Count);
+
+                treeView.SelectedItem = null;
+                Verify.IsNull(treeView.SelectedNode);
+                Verify.AreEqual(0, treeView.SelectedItems.Count);
+            });
+        }
+
+        // Scenario: Content mode: Hidden(shared) collapsed, then Shown(shared) expanded, where both children are the same
+        //   item object. SelectedItem = shared.
+        // Expected: SelectedNode is the visible node under Shown, not the hidden node under Hidden that comes first in
+        //   tree order.
+        // Failure means: the item to node lookup of content mode (ViewModel::GetAssociatedNode) searched the whole tree
+        //   first instead of the visible rows. That search walks every collapsed node before a visible item, which makes
+        //   selecting by item slow in large trees, and selects a row the user cannot see.
+        [TestMethod]
+        public void TreeViewSelectedItemPrefersTheVisibleNodeOfAnItemInContentMode()
+        {
+            TreeView treeView = null;
+            TreeViewItemSource shared = null;
+            RunOnUIThread.Execute(() =>
+            {
+                shared = new TreeViewItemSource() { Content = "Shared" };
+                var hidden = new TreeViewItemSource() { Content = "Hidden" };
+                hidden.Children.Add(shared);
+                var shown = new TreeViewItemSource() { Content = "Shown" };
+                shown.Children.Add(shared);
+
+                treeView = XamlReader.Load(@"
+                    <TreeView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                              Width='400' Height='400' ItemsSource='{Binding}'>
+                        <TreeView.ItemTemplate>
+                            <DataTemplate>
+                                <TreeViewItem ItemsSource='{Binding Children}' Content='{Binding Content}'/>
+                            </DataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>") as TreeView;
+                treeView.DataContext = new ObservableCollection<TreeViewItemSource>() { hidden, shown };
+                Content = treeView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                treeView.Expand(treeView.RootNodes[1]);
+                Content.UpdateLayout();
+                Verify.IsFalse(treeView.RootNodes[0].IsExpanded, "Hidden stays collapsed");
+                Verify.AreEqual(1, treeView.RootNodes[0].Children.Count, "Hidden's node for the shared item exists");
+
+                treeView.SelectedItem = shared;
+                Verify.AreEqual(treeView.RootNodes[1].Children[0], treeView.SelectedNode, "The visible node is selected");
+                Verify.AreEqual(1, treeView.SelectedItems.Count);
+                Verify.AreEqual(shared, treeView.SelectedItems[0]);
+            });
+        }
+
         // Scenario: ICustomPropertyProvider (and IStringable) on nodes with string, null, int, nested-node, Uri
         //   and SolidColorBrush Content.
         // Expected: Content string/"42"/inner node's string/Uri text; null and brush fall back to the full type

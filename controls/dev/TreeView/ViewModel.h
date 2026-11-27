@@ -119,6 +119,7 @@ private:
     winrt::IInspectable ItemAt(uint32_t index, bool useSafeGet = false);
     bool IndexOfItem(winrt::IInspectable const& value, uint32_t& index);
     void RaiseVectorChanged(winrt::CollectionChange change, uint32_t index);
+    winrt::TreeViewNode GetVisibleNodeWithContent(winrt::IInspectable const& item);
     winrt::TreeViewNode GetRemovedChildTreeViewNodeByIndex(winrt::TreeViewNode const& node, unsigned int childIndex);
     unsigned int GetInsertedChildIndexInFlatTree(winrt::TreeViewNode const& parentNode, unsigned int childIndex);
     int CountDescendants(const winrt::TreeViewNode& value);
