@@ -77,14 +77,7 @@
                           <Visual Tag="PrimaryVisual" SizeX="3" SizeY="3">
                             <Visual Tag="ContentVisual">
                               <wucSpriteVisual SizeX="3" SizeY="3" BorderMode="Soft" TransparentForInput="True">
-                                <MaskBrush>
-                                  <Source>
-                                    <ColorBrush Color="rgb {0.3569, 0.1804, 0.7725}" />
-                                  </Source>
-                                  <Mask>
-                                    <SurfaceBrush Stretch="Fill" Transform="Identity" />
-                                  </Mask>
-                                </MaskBrush>
+                                <ColorBrush Color="rgb {0.3569, 0.1804, 0.7725}" />
                               </wucSpriteVisual>
                             </Visual>
                             <wucSpriteVisual>
