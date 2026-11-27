@@ -22,6 +22,7 @@ using WEX.TestExecution.Markup;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewShapingTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewSortingTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -2536,14 +2537,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 if (route == "SortByColumn")
                 {
                     var returned = true;
-                    Verify.AreEqual("no exception", TableViewShapingTestHelpers.ThrownTypeName(
+                    Verify.AreEqual("no exception", TableViewTreeTestHelpers.ThrownTypeName(
                         () => returned = tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending)),
                         "A comparer fault must not escape SortByColumn.");
                     Verify.IsFalse(returned, "SortByColumn must report that the sort was not applied.");
                 }
                 else
                 {
-                    Verify.AreEqual("no exception", TableViewShapingTestHelpers.ThrownTypeName(() => InvokeHeader(tableView, 1)),
+                    Verify.AreEqual("no exception", TableViewTreeTestHelpers.ThrownTypeName(() => InvokeHeader(tableView, 1)),
                         "A comparer fault must not escape the header Invoke.");
                 }
             });
@@ -2583,7 +2584,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var roles = RowValues(tableView, person => person.Role);
                 Verify.IsTrue(roles.Count != roles.Distinct().Count(), "Precondition: some rows share a Role.");
-                Verify.AreEqual("no exception", TableViewShapingTestHelpers.ThrownTypeName(() => InvokeHeader(tableView, 1)),
+                Verify.AreEqual("no exception", TableViewTreeTestHelpers.ThrownTypeName(() => InvokeHeader(tableView, 1)),
                     "The header Invoke must not throw.");
             });
 
@@ -2618,7 +2619,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var thrown = TableViewShapingTestHelpers.ThrownTypeName(() => tableView.Columns[0].CustomSortComparer = new ThrowingSortComparer());
+                var thrown = TableViewTreeTestHelpers.ThrownTypeName(() => tableView.Columns[0].CustomSortComparer = new ThrowingSortComparer());
                 Log.Comment($"Setting the throwing comparer: {thrown}.");
             });
 

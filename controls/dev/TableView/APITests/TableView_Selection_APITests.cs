@@ -480,7 +480,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = MakeShapedPeople();
-                source = TableViewShapingTestHelpers.MakeShapingView(items, "Role");
+                source = TableViewTreeTestHelpers.MakeShapingView(items, "Role");
                 tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });

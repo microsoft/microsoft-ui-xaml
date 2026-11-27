@@ -22,6 +22,7 @@ using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewShapingTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewGroupingTestHelpers;
 

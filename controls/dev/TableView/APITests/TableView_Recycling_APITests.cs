@@ -780,7 +780,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 .Select(i => new Person { Name = $"Person {i}", Role = $"Group {i / ItemsPerGroup}" })
                 .ToList();
 
-            return CreateTableView(TableViewShapingTestHelpers.MakeShapingView(items, "Role").View, headers: new[] { "Name", "Role" }, width: 500, height: 240);
+            return CreateTableView(TableViewTreeTestHelpers.MakeShapingView(items, "Role").View, headers: new[] { "Name", "Role" }, width: 500, height: 240);
         }
 
         // RealizationBound's viewport-plus-cache formula, sized by the shortest realized element so shorter group headers cannot exceed it.
@@ -1230,7 +1230,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal static TableView CreateScrollableGroupedTable()
         {
-            return CreateTableView(TableViewShapingTestHelpers.MakeShapingView(MakeManyItems(RecyclingSourceCount), "Role").View,
+            return CreateTableView(TableViewTreeTestHelpers.MakeShapingView(MakeManyItems(RecyclingSourceCount), "Role").View,
                 headers: new[] { "Name", "Role" }, width: 500, height: 240);
         }
 
