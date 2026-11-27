@@ -26,7 +26,7 @@ internal static class LiveCommands
         string? OutputPath, string SnapshotDirectory, TargetConnectionOptions Connection);
 
     internal static async Task<int> RunAsync(string[] args, TextReader input, TextWriter output, TextWriter error,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, CommandUsage? usage = null)
     {
         var json = args.Contains("--json", StringComparer.Ordinal);
         try
@@ -83,6 +83,14 @@ internal static class LiveCommands
             }
 
             var parsed = Parse(args, error);
+            if (usage is not null)
+            {
+                // Named now, while a process to attach to still runs.
+                var app = TelemetryTarget.ForTarget(parsed.Connection.Kind, parsed.Connection.Target);
+                usage.Input = "live";
+                usage.App = () => app;
+            }
+
             if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Live profiling requires Windows.");
             return await RunSessionAsync(parsed, input, output, error, cancellationToken,
                 async (settings, progress, token) =>

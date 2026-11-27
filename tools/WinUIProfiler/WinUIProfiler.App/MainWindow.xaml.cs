@@ -52,6 +52,8 @@ public sealed partial class MainWindow : Window
     private readonly Dictionary<(Guid Before, Guid After), SnapshotDiffWindow> snapshotDiffWindows = [];
     // The tabs the user has opened, and the usage sessions of the connection or trace reading and of an opened file.
     private readonly HashSet<string> viewsOpened = [];
+    // What the tabs show: online for a live app, offline for a trace or a session file, none before either.
+    private string shownMode = "none";
     private UsageSession? recordingUsage;
     private UsageSession? fileUsage;
     public ObservableCollection<SnapshotHistoryEntry> Snapshots { get; } = [];
@@ -712,6 +714,7 @@ PrivateRuntime);
                 model.ReportProgress(value);
             }));
             _ = EndFileUsage();
+            shownMode = "online";
             recordingUsage = UsageSession.Start("online", () => TelemetryTarget.ForTarget(options.Kind, options.Target));
             session.BeginRecording();
             await model.ConnectAsync(options, progress);
@@ -738,6 +741,8 @@ PrivateRuntime);
     {
         if (scannedTrace is not { } path || SelectedTraceProcess is not { } process) return;
         snapshot = null;
+        // Set first: opening the Frames tab below is reported for the trace.
+        shownMode = "offline";
         Tabs.SelectedItem = FramesTab;
         try
         {
@@ -765,7 +770,8 @@ PrivateRuntime);
         await model.DisconnectAsync();
     }
 
-    // Reports each tab the first time the user opens it; the tab shown at startup was not opened by the user.
+    // Reports each tab the first time the user opens it for a live app, and for a trace or a session file; the tab shown at
+    // startup was not opened by the user.
     private void Tabs_SelectionChanged(object sender, SelectionChangedEventArgs args)
     {
         if (args.RemovedItems.Count == 0 || !UsageTelemetry.IsEnabled)
@@ -777,9 +783,10 @@ PrivateRuntime);
         var view = ReferenceEquals(selected, LaunchTab) ? "Launch" : ReferenceEquals(selected, FramesTab) ? "Frames" :
             ReferenceEquals(selected, ObjectsTab) ? "Objects" : ReferenceEquals(selected, LiveMetricsTab) ? "LiveMetrics" :
             ReferenceEquals(selected, CpuTab) ? "Cpu" : null;
-        if (view is not null && viewsOpened.Add(view))
+        if (view is not null && viewsOpened.Add($"{view}/{shownMode}"))
         {
-            UsageTelemetry.Track("Profiler.ViewOpened", new Dictionary<string, string> { ["view"] = view });
+            UsageTelemetry.Track("Profiler.ViewOpened",
+                new Dictionary<string, string> { ["view"] = view, ["mode"] = shownMode });
         }
     }
 
@@ -791,6 +798,7 @@ PrivateRuntime);
         }
 
         _ = EndFileUsage();
+        shownMode = "offline";
         fileUsage = UsageSession.Start("offline", () => TelemetryTarget.ForSessionFile(path));
     }
 

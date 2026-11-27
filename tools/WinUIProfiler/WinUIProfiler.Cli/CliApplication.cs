@@ -9,6 +9,7 @@ using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Launch;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Engine.Symbols;
+using WinUIProfiler.Engine.Target;
 
 namespace WinUIProfiler.Cli;
 
@@ -112,11 +113,15 @@ internal static partial class CliApplication
         public bool IsSessionFile => InputPath.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
         public int Offset { get; init; }
         public int Count { get; init; } = -1;
+
+        // Gets the process's start when a command reads one process of a trace, and the trace has its start.
+        public Action<TraceProcessStart>? ProcessStarted { get; init; }
     }
 
     private sealed record ReadResult(long EventsDelivered, int EventsLost, TimeSpan Duration);
 
-    internal static int Run(string[] args, TextWriter output, TextWriter error, CancellationToken cancellationToken)
+    internal static int Run(string[] args, TextWriter output, TextWriter error, CancellationToken cancellationToken,
+        CommandUsage? usage = null)
     {
         if (args is ["--help"] or ["-h"] or ["help"])
         {
@@ -126,7 +131,7 @@ internal static partial class CliApplication
 
         if (args.Length > 0 && (args[0] is "live" or "targets" || args is ["snapshot", "capture", ..]))
         {
-            return LiveCommands.RunAsync(args, Console.In, output, error, cancellationToken).GetAwaiter().GetResult();
+            return LiveCommands.RunAsync(args, Console.In, output, error, cancellationToken, usage).GetAwaiter().GetResult();
         }
 
         if (args.Length > 0 && args[0] == "snapshot")
@@ -136,7 +141,7 @@ internal static partial class CliApplication
 
         if (args.Length > 0 && args[0] is "events" or "info")
         {
-            return QueryCommands(args, output, error, cancellationToken);
+            return QueryCommands(args, output, error, cancellationToken, usage);
         }
 
         if (args is ["processes" or "summary" or "dump" or "record" or "launch" or "objects" or "timeline" or "frames" or "interesting", "--help"])
@@ -155,6 +160,11 @@ internal static partial class CliApplication
             error.WriteLine(exception.Message);
             error.WriteLine(Usage);
             return 2;
+        }
+
+        if (usage is not null)
+        {
+            options = Describe(options, usage);
         }
 
         try
@@ -421,13 +431,34 @@ internal static partial class CliApplication
         return options;
     }
 
+    // Tells the usage event what the command read. A session file holds one process and names it; a trace names the
+    // process the command reads in the process's start, when the trace has it.
+    private static Options Describe(Options options, CommandUsage usage)
+    {
+        usage.Input = options.IsSessionFile ? "session" : "etl";
+        if (options.IsSessionFile)
+        {
+            usage.App = () => TelemetryTarget.ForSessionFile(options.InputPath);
+            return options;
+        }
+
+        if (options.ProcessId is null)
+        {
+            return options;
+        }
+
+        string? name = null;
+        usage.App = () => TelemetryTarget.ForProcessName(name);
+        return options with { ProcessStarted = start => name ??= start.Name };
+    }
+
     // A session file holds one process; --pid, if given, must be that process.
     private static ReadResult Read(Options options, int? processId, Action<ProfilerEvent> sink, CancellationToken cancellationToken)
     {
         if (!options.IsSessionFile)
         {
             var result = OfflineEtlSource.Read(options.InputPath, processId, options.Markers!.Providers,
-                sink, null, cancellationToken);
+                sink, options.ProcessStarted, cancellationToken);
             return new(result.EventsDelivered, result.EventsLost, result.SessionDuration);
         }
 
@@ -704,7 +735,11 @@ internal static partial class CliApplication
                 }
 
                 writer.Process(++sequence, profilerEvent);
-            }, writer.SetProcessStart, cancellationToken, cpuSamples ? writer : null, dllEvents: true);
+            }, start =>
+            {
+                options.ProcessStarted?.Invoke(start);
+                writer.SetProcessStart(start);
+            }, cancellationToken, cpuSamples ? writer : null, dllEvents: true);
         }
         finally
         {
