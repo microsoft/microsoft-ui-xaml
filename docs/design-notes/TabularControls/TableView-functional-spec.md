@@ -59,7 +59,7 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Single + multi selection (Ctrl/Shift). — **PR3**
 - Per-row/cell context menus, column-header menus, and table fallback. See [Context menus](#context-menus). — **implemented**
 - Checkbox selection (File-Explorer-specific). — **PR3** / surface
-- Single-level grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
+- Grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
 - Live shaping (reshaping when an item's `PropertyChanged` moves a sort, filter or group value). — *deferred: needs CVS live shaping; call `Refresh()`*
 - Row drag-drop, marquee selection. — *out of scope*
 
@@ -68,8 +68,8 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 Grouping is declared on the data, not on the control: the control renders the groups a
 `CollectionViewSource` view publishes.
 
-- Single-level grouping via `CollectionViewSource.GroupDescriptions` (a `PropertyGroupDescription`
-  path; only the first description is used). Clearing the descriptions removes it. — **shipped**
+- Grouping via `CollectionViewSource.GroupDescriptions` (a `PropertyGroupDescription` path); each
+  further description nests subgroup headers. Clearing the descriptions removes it. — **shipped**
 - Groups are keyed by the **value** at the group path. — **shipped**
 - Composition: the view's `Filter` runs first, and a group whose last row is filtered out
   disappears; `SortDescriptions` order rows within each group. The view regroups on `Refresh()`,
@@ -82,12 +82,12 @@ Grouping is declared on the data, not on the control: the control renders the gr
   inherit the current default rather than an intent nobody expressed. — **shipped**
 - Header presentation: `TableView.GroupHeaderTemplate` fills the content region of the
   control-owned `TableViewGroupHeader`, which keeps the chevron and the themed band. The template
-  binds against a `TableViewGroupInfo` projection (`Key`, `ItemCount`, `Level`, `IsExpandable`,
+  binds against a `TableViewGroupInfo` projection (`Key`, `ItemCount`, `IsExpandable`,
   `IsExpanded`, and the culture-formatted `KeyText` / `ItemCountText`). — **shipped**
 - Accessibility: `TableViewGroupHeaderAutomationPeer` exposes `ExpandCollapse` and `GridItem`; a
   non-expandable group reports `LeafNode` rather than dropping the pattern. — **shipped**
-- Per-group programmatic expand/collapse (by key, from app code), multi-level grouping, and
-  group-level aggregates/summaries. — *deferred*
+- Per-group programmatic expand/collapse (by key, from app code) and group-level
+  aggregates/summaries. — *deferred*
 - Pre-grouped data from an `ICollectionView`: when `ItemsSource` is a view with non-null
   `CollectionGroups` (for example a `CollectionViewSource` with `IsSourceGrouped="True"`), each
   `ICollectionViewGroup` becomes a group header over its `GroupItems`, in the view's order, and

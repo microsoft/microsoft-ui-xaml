@@ -5,7 +5,7 @@
 
 `TableView` is a virtualized tabular control that ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as rows and generates one cell per realized row and column from `Columns`. It is read-only: cell editing is deferred to V2 / a future DataGrid (see [Editing](#editing)).
 
-It provides column width sizing, row virtualization, leading frozen columns, single-row selection, single-column, control-driven sorting, filtering, single-level grouping, column resize, opt-in user column reorder (proposed, pending API review), cell-level keyboard navigation and a UIA grid/table model.
+It provides column width sizing, row virtualization, leading frozen columns, single-row selection, single-column, control-driven sorting, filtering, grouping (nested when the view has several `GroupDescriptions`), column resize, opt-in user column reorder (proposed, pending API review), cell-level keyboard navigation and a UIA grid/table model.
 
 # Design considerations
 
@@ -70,10 +70,9 @@ The full surface, including event args and enums, is in `TableView.idl` and `Tab
 | `TableViewRowInfo`, `RowMetadataProvider` | Row kind, level and position metadata, and the row and group identity contract. |
 | `GridCoordinateHelper` | Row/column ↔ index math for keyboard navigation. Not projected. |
 | `TableView_ContextMenu.cpp`, `TableViewToolTipHelpers.h` | Context-flyout resolution and cell tooltips. |
-| `TableViewCollectionViewGroups` | Wraps an `ICollectionView`'s `CollectionGroups` (`ShapedGroup` over each group's own `GroupItems`) with a group identity by key value, following `CollectionGroups` changes; maps an item to its group for a grouped tree. |
-| `TableViewRowFlattener` | Non-projected row generator over the view `TableView` shows: flat rows (the view itself) or grouped rows. Never sorts, filters or groups. |
+| `TableViewRowFlattener` | Non-projected row generator over the view `TableView` shows: flat rows (the view itself) or grouped rows, read from the view's `CollectionGroups` and their subgroups with a group identity by key value, following their changes. Never sorts, filters or groups. |
 | `ResizeGripper` | Framework-internal drag primitive (see [Column resize](#column-resize)). |
-| `RowExpansionModel` | Expand/collapse intent for groups and tree nodes. |
+| `RowExpansionModel` | Expand/collapse intent for groups. |
 
 ## Visual tree
 
@@ -231,7 +230,7 @@ Shaping is declared on the **data**, never on the control: apps sort, filter and
 
 Group order follows the view. Filtering runs first, and an emptied group disappears. `Refresh()` on the view reshapes on demand.
 
-**Group keys.** Groups from a view are keyed by their key **value** (`TableViewCollectionViewGroups`), so expansion survives the view re-creating its group objects on every refresh.
+**Group keys.** Groups from a view are keyed by their key **value** (`TableViewRowFlattener`), so expansion survives the view re-creating its group objects on every refresh.
 
 **Expansion is intent keyed by group key.** `RowExpansionModel` stores only exceptions to a default, outside the groups, so `ExpandAllGroups`/`CollapseAllGroups` just move the default, `ExpandGroup`/`CollapseGroup` record one exception by group key, new groups take the current default, and a collapse survives a re-sort, filter or refresh. Each such move still runs a synchronous projection rebuild over all groups and rows on the UI thread. `RetainOnly` prunes identities that no longer exist. `GroupExpanding` is raised synchronously before the state change, and the direction is pinned once it is raised: nested requests for the same identity are no-ops, bulk requests made during a raise are queued, and after the handler the state and source generation are re-checked; a request during layout posts the whole operation (weak ref, alive check); the group is re-resolved by key after the handler. Group-event handler exceptions propagate, as Sorting's and Sorted's do (`TableViewTip::RethrowAppFault`); the scope guards restore focus and end the view deferral first.
 
@@ -263,7 +262,6 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 | Row | `Up`/`Down`, `PageUp`/`PageDown` | Move at the same level (row or cell); `Up` from row 0 enters the header. Paging works like `ListView`. |
 | Row | `Home`/`End` | First or last row. |
 | Row | `Right`/`Left` | Drill into the first cell / nothing. |
-| Row | `Multiply` | Expand the subtree. |
 | Group header | `Enter`, `Space` / `Right`/`Left` | Toggle / expand / collapse. |
 | Cell | `Left`/`Right`, `Home`/`End` | Move within the row, no wrap; `Left` on the first cell returns to the row. |
 | Cell | `Ctrl+Home`/`Ctrl+End` | First or last cell of the table. |
@@ -290,9 +288,9 @@ The column-header peer implements `ITransformProvider`, though the IDL lists onl
 - **Visible-column model.** UIA counts only columns with `Visibility.Visible` in `ColumnCount`, `GetItem`, header sets and column indices, unlike WPF, so a collapsed column is never an addressable cell; a visible zero-width column still counts.
 - **Header context from one source.** A cell's header comes from `GetColumnHeaderItems` or its name, never both, so it is not announced twice. With headers hidden, the name becomes "{header}, {value}". An empty cell is "blank". Exception: a cell holding a focusable control (e.g. a Delete `Button`) is named after its column header even while headers are shown, since the control names itself.
 - **Header names** come from a string `Header` or the realized content, never the gridline, glyph or gripper.
-- **Unknown values.** `PositionInSet`, `SizeOfSet` and `Level` report `0` when unknown, and app-set `AutomationProperties` win. The group-header peer computes no `Level`.
+- **Unknown values.** `PositionInSet`, `SizeOfSet` and `Level` report `0` when unknown, and app-set `AutomationProperties` win. With single-level grouping the group-header and row peers compute no `Level`; with nested groups (more than one `GroupDescription`) they report the 1-based depth: a top-level header 1, a subgroup header 2, and a data row one deeper than its header.
 - **Stale items.** A `GridItem` whose row, item or column is gone throws `UIA_E_ELEMENTNOTAVAILABLE` rather than reporting a wrong coordinate.
-- **Row element per binding.** UIA sees a realized row through `TableViewRowItemAutomationPeer`, not `TableViewRowAutomationPeer`. `TableViewRow::SyncItemAutomationPeer` creates one each time the row is bound to an item (`OnCreateAutomationPeer`, owner change, recycle to another item) and installs it as the row peer's `EventsSource`; it clears it when the row goes to the recycle pool and never replaces a source the app installed. The binding holds only weak references. Every member first checks that the row's peer still has this binding as its `EventsSource` and the row is still in the repeater (`BoundRow()`), and throws `UIA_E_ELEMENTNOTAVAILABLE` otherwise, so a held element and its pattern objects go stale instead of retargeting to the row's next item. The shared members forward to the row's peer through `TableViewBindingAutomationPeerT` (`TableViewAutomationHelpers.h`); `SelectionItem`, `ExpandCollapse` and `ScrollItem` are served by the binding itself.
+- **Row element per binding.** UIA sees a realized row through `TableViewRowItemAutomationPeer`, not `TableViewRowAutomationPeer`. `TableViewRow::SyncItemAutomationPeer` creates one each time the row is bound to an item (`OnCreateAutomationPeer`, owner change, recycle to another item) and installs it as the row peer's `EventsSource`; it clears it when the row goes to the recycle pool and never replaces a source the app installed. The binding holds only weak references. Every member first checks that the row's peer still has this binding as its `EventsSource` and the row is still in the repeater (`BoundRow()`), and throws `UIA_E_ELEMENTNOTAVAILABLE` otherwise, so a held element and its pattern objects go stale instead of retargeting to the row's next item. The shared members forward to the row's peer through `TableViewBindingAutomationPeerT` (`TableViewAutomationHelpers.h`); `SelectionItem` and `ScrollItem` are served by the binding itself; a data row offers no `ExpandCollapse`.
 - **Group element per group.** UIA sees a realized group header through `TableViewGroupBindingAutomationPeer` (`TableViewGroupHeader.cpp`), installed as the header peer's `EventsSource` by `SyncGroupAutomationPeerInternal`. Unlike rows, the element is keyed by group identity in `TableView::m_groupAutomationElements`: when another header shows the group, `Retarget` points the same element at it, and `PrepareGroupHeaderElement` creates the header peer early if a client still holds the group's element. The map holds elements strongly (a client's hold does not keep one alive while no header exposes it), past 256 entries prunes those whose group no header shows any more, and is cleared with `m_rowMetadataGeneration` when the projection's row metadata provider is replaced, since identities are only meaningful within one projection. Every member checks that the header's peer still has this element as its `EventsSource` and the header is still in the repeater (`HeaderPeer()`), and throws `UIA_E_ELEMENTNOTAVAILABLE` otherwise. Shared members forward through `TableViewBindingAutomationPeerT`; `ExpandCollapse`, `GridItem` and `ScrollItem` are served by the element.
 - **Selected-item peer.** When the selected row is not realized, `GetSelection` returns the same class in its unbound mode: it tracks the item (or, for a boxed value, the row index) and degrades instead of throwing while its row is unrealized. It offers `VirtualizedItem` until the row is realized.
 - **Resolving a binding.** `ITableViewBindingAutomationPeerAccess` is a private COM tag on the binding base. `TryGetBoundContainer` uses it to type-test an arbitrary peer and read the row or group header it currently speaks for, so `FindItemByProperty` resolves a `startAfter` binding without scanning the repeater or creating peers.
@@ -413,16 +411,16 @@ Code comments link here; keep the reasons intact.
 
 # Telemetry and TiP
 
-TableView reports whether its own work succeeded (seven TiP tests) and how it is used (three events), on the
+TableView reports whether its own work succeeded (four TiP tests) and how it is used (three events), on the
 Tabular providers. It collects no item data and no per-row or per-cell counts (see *Not collected* under
 *Events*), and it blames the app only when app code decided an outcome (see *Who is blamed*).
 
 On success an operation with a TiP test pays for its TiP start and stop and for reading the flow direction and the
-source's row counts for its metrics; a sort or filter, or a request to expand or collapse one group or
-tree node, also sets a used-feature bit. Each shaping verb resets and reads a count of app delegates that threw,
+source's row counts for its metrics; a sort or filter, or a request to expand or collapse one group,
+also sets a used-feature bit. Each shaping verb resets and reads a count of app delegates that threw,
 each call into `SelectionModel` clears a one-entry note, and while a loaded session is active an expansion request
-first looks up whether it changes its group or node. Shaping also keeps two counts for the metrics: the rows the
-last refresh read and, for a tree, the nodes the filter keeps. Attribution work runs only when something throws.
+first looks up whether it changes its group. Shaping also keeps a count for the metrics: the rows the last refresh
+read. Attribution work runs only when something throws.
 
 ## TiP tests
 
@@ -439,14 +437,14 @@ The operation tests share one implementation and report under their own measures
 unloaded while Initialize waits on rows to show and a non-zero body viewport (a realization fault, or a navigation
 faster than the first layout); any other unload closes a running test with `unloaded`. Every test's metrics bucket is the
 flow direction and size when it started: 0 left-to-right, 1 left-to-right with a source of at least 1,000 rows
-before the filter (every node for a tree), 2 right-to-left, 3 right-to-left with at least 1,000; the result's metrics
+before the filter, 2 right-to-left, 3 right-to-left with at least 1,000; the result's metrics
 carry `rightToLeft`, `largeData`, and the `SourceRowsBucket` and `DataRowsBucket` counts as `sourceRowsBucket` and
 `dataRowsBucket`. A source swap before Initialize has its verdict is part of Initialize.
 
-A source swap after Initialize's verdict, selection, group configuration, a subtree expansion and an
-expansion request that changes nothing (its group or node is already in that state, or is gone) run no TiP test; a
+A source swap after Initialize's verdict, selection, group configuration and an
+expansion request that changes nothing (its group is already in that state, or is gone) run no TiP test; a
 failure in one still writes `TableView_Error` while a loaded session is active (a source swap also before the first
-`Loaded`). Measure/arrange, cell realization, and expanding or collapsing all groups or rows are not tracked. A clear
+`Loaded`). Measure/arrange, cell realization, and expanding or collapsing all groups are not tracked. A clear
 verb, or a `Sort` with `SortDirection.None`, that has nothing to remove is not measured either. Scrolling is not
 measured in the field; scroll performance is left to a lab benchmark.
 Internal pipeline builds (`IsInternalWinUIBuild` and `TF_BUILD`) fail when Tabular falls back to the public TiP stub;
@@ -517,9 +515,9 @@ Every event also carries `SchemaVersion`.
 |---|---|
 | `IsFirstLoad` | True for the instance's first loaded session |
 | `ContentShown` | Across the instance's loads: 0 nothing yet; 1 a row or group header was shown; 2 no row was shown and a sample saw a source with no data rows |
-| `EnabledFeatures`, `UsedFeatures` | Sorting 1, filtering 4, grouping 8, live shaping 32 (2 was editing and 16 hierarchy; retired, not reused) |
-| `SourceRowsBucket` | Rows before the filter: every source row, or for a tree every node |
-| `DataRowsBucket` | Data rows after the filter, without group headers and whatever is expanded; for a tree, the nodes the filter keeps |
+| `EnabledFeatures`, `UsedFeatures` | Sorting 1, filtering 4, grouping 8 (2 was editing, 16 hierarchy and 32 live shaping; retired, not reused) |
+| `SourceRowsBucket` | Rows before the filter: every source row |
+| `DataRowsBucket` | Data rows after the filter, without group headers and whatever is expanded |
 | `PeakRealizedRowsBucket` | Containers the rows repeater has created since the template was applied. It creates one only when none is free and keeps them across loads, so this is the most rows realized at once, plus the most group headers, over the instance's loads |
 | `ColumnKinds` | Template 2, app-derived 4 (a column class that is not TableView's), `DisplayMemberBinding` set 8; 1 (text) is retired |
 | `SourceKinds` | A collection TableView projected 1 (2, an app-supplied `TableViewSource`, is retired) |
@@ -531,9 +529,8 @@ the bits and the larger count, as a bucket: 0 for none, k for 2^(k-1) up to 2^k 
 destruction without `Unloaded` carries the `Loaded` sample alone.
 
 Enabled means allowed by the table for sorting (`CanUserSortColumns` and a column that can sort), and declared on
-the internal shaping source for the other four. Used counts only after the instance has shown rows: a sort or filter that ran; a request to expand or collapse one
-group or tree node (expand-all and subtree requests do not count); or an item change that live shaping had to
-reshape for. A used feature is always reported enabled.
+the internal shaping source for the other two. Used counts only after the instance has shown rows: a sort or filter that ran, or a request to expand or collapse one
+group (expand-all requests do not count). A used feature is always reported enabled.
 
 Three counts answer different questions and are never divided into one another: constructions
 (RuntimeProfiler), instances (`TableView_Instance` with `IsFirstLoad`), and TiP results.
@@ -569,7 +566,7 @@ These contracts are documented only here; they belong in the [API spec](../../ap
 - **Fixed columns wider than the viewport** collapse `*` columns to `MinWidth`, as in WPF.
 - **Width-dependent height.** An `Auto` cell that fits its column is not re-measured at the final width.
 - **Resize differs from WPF** next to `Pixel`/`Auto` neighbors: WPF assigns the neighbor a width, while `TableView` only redistributes `*` space, so those layouts pin rather than overflow.
-- **Grouping** is single-level.
+- **Nested groups are not indented.** A subgroup header and its rows use the same lead offset as a top-level group; UIA `Level` carries the depth.
 
 ## Non-goals and deferred work
 
