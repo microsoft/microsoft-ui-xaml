@@ -69,6 +69,7 @@ public sealed partial class MainWindow : Window
         ObjectsPanel.Owner = AppWindow.Id;
         CpuPanel.Owner = AppWindow.Id;
         FramesPanel.Source = session;
+        DllsPanel.SetSource(session);
         ObjectsPanel.Source = session;
         LaunchPanel.Source = session;
         CpuPanel.Source = session;
