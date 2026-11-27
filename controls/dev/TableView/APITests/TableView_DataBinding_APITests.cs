@@ -1663,7 +1663,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an app's ICollectionView that returns new CollectionGroups on every read and raises PropertyChanged(\"CollectionGroups\") during each read does not hang the UI thread: TableView stops re-reading the groups after a bounded number of attempts and the rows show the groups it read last.")]
+        [TestProperty("Description", "Verifies an app's ICollectionView that, once TableView listens to it, returns new CollectionGroups on every read and raises PropertyChanged(\"CollectionGroups\") during each read does not hang the UI thread: TableView stops re-reading the groups after a bounded number of attempts and the rows show the groups it read last.")]
         public void VerifyAppViewWhoseGroupsNeverSettleDoesNotHang()
         {
             TableView tableView = null;
@@ -1674,17 +1674,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 people = MakeShapedPeople().Cast<object>().ToList();
-                view = new AppCollectionView(people);
-                view.OnCollectionGroupsRead = () =>
-                {
-                    reads++;
-                    var groups = new AppObservableVector<object>();
-                    foreach (var department in people.GroupBy(person => ((ShapedPerson)person).DepartmentName))
-                    {
-                        groups.Add(AppViewGroup.WithItems(department.Key, department));
-                    }
-                    return groups;
-                };
+                view = new AppCollectionView(people, MakeDepartmentGroups(people));
                 tableView = CreateBindingTable(view);
                 LoadContent(tableView);
             });
@@ -1693,12 +1683,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // Each re-attach loop stops after 8; nested loops (an attach's Update attaching again) stay well under this.
-                Verify.IsTrue(reads > 1 && reads < 200, $"The groups were read a bounded number of times ({reads}).");
+                Verify.AreEqual(3, GroupHeaderCount(tableView), "Precondition: one header per department.");
+                // TableView subscribed to PropertyChanged when it loaded; from now on every read changes the groups again.
+                view.OnCollectionGroupsRead = () =>
+                {
+                    reads++;
+                    return MakeDepartmentGroups(people);
+                };
+                view.ReplaceGroups(MakeDepartmentGroups(people));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                view.OnCollectionGroupsRead = null;
+                // Each re-attach loop stops after 8; nested loops (an attach's Update attaching again) stay well under 200.
+                Verify.IsTrue(reads >= 8 && reads < 200, $"The groups were re-read until the cap, a bounded number of times ({reads}).");
                 Verify.AreEqual(3, GroupHeaderCount(tableView), "The rows show one consistent set of groups: one header per department.");
                 Verify.AreEqual(people.Count, GetProjectedItems(tableView).OfType<ShapedPerson>().Count(), "Every person is shown once under the groups read last.");
-                view.OnCollectionGroupsRead = null;
             });
+        }
+
+        private static AppObservableVector<object> MakeDepartmentGroups(List<object> people)
+        {
+            var groups = new AppObservableVector<object>();
+            foreach (var department in people.GroupBy(person => ((ShapedPerson)person).DepartmentName))
+            {
+                groups.Add(AppViewGroup.WithItems(department.Key, department));
+            }
+            return groups;
         }
 
         [TestMethod]
