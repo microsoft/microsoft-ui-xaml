@@ -9,10 +9,12 @@
 #include <SafeEventRegistration.h>
 #include <AutomationClient\AutomationClientInitializer.h>
 #include <AutomationClient\AutomationClientManager.h>
+#include <AutomationClient\AutomationEventHandler.h>
 #include "TestCleanupWrapper.h"
 #include <FlyoutHelper.h>
 #include <TreeHelper.h>
 #include <UIAutomationHelper.h>
+#include <ControlHelper.h>
 
 #undef GetClassName // Conflicts with automation peer method of the same name
 
@@ -936,19 +938,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // UIA_E_ELEMENTNOTENABLED from UIAutomationCoreApi.h.
         const int c_splitItemElementNotEnabled = static_cast<int>(0x80040200);
 
-        bool AreSameSplitItemObject(Platform::Object^ first, Platform::Object^ second)
-        {
-            if (first == nullptr || second == nullptr)
-            {
-                return first == nullptr && second == nullptr;
-            }
-            wrl::ComPtr<IUnknown> firstUnknown;
-            wrl::ComPtr<IUnknown> secondUnknown;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(first)->QueryInterface(IID_PPV_ARGS(&firstUnknown)));
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(second)->QueryInterface(IID_PPV_ARGS(&secondUnknown)));
-            return firstUnknown.Get() == secondUnknown.Get();
-        }
-
         xaml_controls::MenuFlyout^ CreateMenuFlyoutWithSplitItem()
         {
             xaml_controls::MenuFlyout^ menuFlyout = nullptr;
@@ -1015,8 +1004,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(xaml_automation_peers::AutomationControlType::MenuItem, peer->GetAutomationControlType());
 
             LOG_OUTPUT(L"The peer itself provides the Invoke and ExpandCollapse patterns.");
-            VERIFY_IS_TRUE(AreSameSplitItemObject(peer, peer->GetPattern(xaml_automation_peers::PatternInterface::Invoke)));
-            VERIFY_IS_TRUE(AreSameSplitItemObject(peer, peer->GetPattern(xaml_automation_peers::PatternInterface::ExpandCollapse)));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(peer, peer->GetPattern(xaml_automation_peers::PatternInterface::Invoke)));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(peer, peer->GetPattern(xaml_automation_peers::PatternInterface::ExpandCollapse)));
 
             LOG_OUTPUT(L"Other patterns come from the base peer, which has no Toggle pattern.");
             VERIFY_IS_NULL(peer->GetPattern(xaml_automation_peers::PatternInterface::Toggle));
@@ -1125,8 +1114,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(xaml::FocusState::Keyboard, secondaryButton->FocusState);
             VERIFY_ARE_EQUAL(xaml::FocusState::Unfocused, primaryButton->FocusState);
             auto peerFromPoint = peer->GetPeerFromPoint(wf::Point(itemRect.X + 1, itemRect.Y + 1));
-            VERIFY_IS_TRUE(AreSameSplitItemObject(primaryPeer, peerFromPoint));
-            VERIFY_IS_TRUE(AreSameSplitItemObject(primaryButton, xaml_input::FocusManager::GetFocusedElement(splitItem->XamlRoot)));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(primaryPeer, peerFromPoint));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(primaryButton, xaml_input::FocusManager::GetFocusedElement(splitItem->XamlRoot)));
             VERIFY_IS_TRUE(peer->HasKeyboardFocus());
             LOG_OUTPUT(L"The primary button was focused programmatically: with Mouse as the last input device the Programmatic request is coerced to Pointer, unlike a Keyboard request.");
             VERIFY_ARE_EQUAL(xaml::FocusState::Pointer, primaryButton->FocusState);
@@ -1166,7 +1155,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             LOG_OUTPUT(L"Create the peer with the public SplitMenuFlyoutItemAutomationPeer constructor.");
             auto peer = ref new xaml_automation_peers::SplitMenuFlyoutItemAutomationPeer(splitItem);
-            VERIFY_IS_TRUE(AreSameSplitItemObject(splitItem, peer->Owner));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(splitItem, peer->Owner));
             VERIFY_ARE_EQUAL(ref new Platform::String(L"SplitMenuFlyoutItem"), peer->GetClassName());
 
             LOG_OUTPUT(L"Without a template there is no primary button, so the peer falls back to its own behavior.");
@@ -1175,7 +1164,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto rect = peer->GetBoundingRectangle();
             VERIFY_ARE_EQUAL(0.0f, rect.Width);
             VERIFY_ARE_EQUAL(0.0f, rect.Height);
-            VERIFY_IS_TRUE(AreSameSplitItemObject(peer, peer->GetPeerFromPoint(wf::Point(1, 1))));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(peer, peer->GetPeerFromPoint(wf::Point(1, 1))));
             VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Collapsed, safe_cast<xaml_automation::Provider::IExpandCollapseProvider^>(peer)->ExpandCollapseState);
 
             LOG_OUTPUT(L"Invoke() on a disabled item fails with UIA_E_ELEMENTNOTENABLED and does not click it.");
@@ -1196,6 +1185,97 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             splitItem->Click -= clickToken;
         });
+    }
+
+    void MenuFlyoutAutomationIntegrationTests::VerifySplitMenuItemPeerRaisesExpandCollapseStateChanged()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Canvas^ rootPanel = SetupRootPanelForSubMenuTest();
+        xaml_controls::MenuFlyout^ menuFlyout = CreateMenuFlyoutWithSplitItem();
+        xaml_controls::Button^ button1 = nullptr;
+        xaml_controls::SplitMenuFlyoutItem^ splitItem = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            button1 = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"button1"));
+            splitItem = safe_cast<xaml_controls::SplitMenuFlyoutItem^>(menuFlyout->Items->GetAt(1));
+        });
+
+        ShowMenuFlyout(menuFlyout, button1, DefaultHorizontalOffset, DefaultVerticalOffset);
+
+        if (PopupHelper::AreWindowedPopupsEnabled())
+        {
+            // Temporary fix for UiaEndpoint synchronization
+            AutomationClient::AutomationClientInitializer::TEMP_WaitForOpenWindowedPopup(button1);
+        }
+
+        Automation::AutomationClient::UIAElementInfo uiaInfo;
+        uiaInfo.m_Name = L"Split item";
+        uiaInfo.m_cType = UIA_MenuItemControlTypeId;
+
+        auto stateChangedEvent = std::make_shared<Event>();
+        wrl::ComPtr<AutomationClient::AutomationPropertyChangedHandler<1>> propertyChangedHandler;
+        HWND handle = FlyoutHelper::GetUIAHandleToUseForWindowedFlyout(menuFlyout);
+
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            const std::array<PROPERTYID, 1> propertyIds = { UIA_ExpandCollapseExpandCollapseStatePropertyId };
+            auto automationClientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(handle, uiaInfo);
+            propertyChangedHandler.Attach(new AutomationClient::AutomationPropertyChangedHandler<1>(automationClientManager, stateChangedEvent, TreeScope_Element, propertyIds));
+            propertyChangedHandler->AttachEventHandler();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto removeHandlerOnExit = wil::scope_exit([&]()
+        {
+            try
+            {
+                UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+                {
+                    propertyChangedHandler->RemoveEventHandler();
+                });
+            }
+            catch (...)
+            {
+                LOG_OUTPUT(L"Cleanup: removing the property changed handler failed.");
+            }
+        });
+
+        xaml_automation::Provider::IExpandCollapseProvider^ expandCollapseProvider = nullptr;
+
+        LOG_OUTPUT(L"Expanding the split item notifies the listener and reports Expanded.");
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(splitItem);
+            expandCollapseProvider = safe_cast<xaml_automation::Provider::IExpandCollapseProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::ExpandCollapse));
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Collapsed, expandCollapseProvider->ExpandCollapseState);
+            expandCollapseProvider->Expand();
+        });
+        stateChangedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Expanded, expandCollapseProvider->ExpandCollapseState);
+        });
+
+        LOG_OUTPUT(L"Collapsing the split item notifies the listener again and reports Collapsed.");
+        stateChangedEvent->Reset();
+        RunOnUIThread([&]()
+        {
+            expandCollapseProvider->Collapse();
+        });
+        stateChangedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Collapsed, expandCollapseProvider->ExpandCollapseState);
+            expandCollapseProvider = nullptr;
+        });
+
+        FlyoutHelper::HideFlyout(menuFlyout);
     }
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::MenuFlyout

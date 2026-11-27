@@ -82,6 +82,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verify the SplitMenuFlyoutItem peer created with its public constructor for an item without a template, and that Invoke fails for a disabled item.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifySplitMenuItemPeerRaisesExpandCollapseStateChanged)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that a UIA client listening for ExpandCollapseState changes on a SplitMenuFlyoutItem is notified when its sub menu is expanded and collapsed.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
         static WCHAR s_automationName[];
         static WCHAR s_automationId[];

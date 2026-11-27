@@ -7,6 +7,7 @@
 #include <generic\DependencyObjectTests.h>
 
 #include <XamlTailored.h>
+#include <BackButtonHelper.h>
 #include <ControlHelper.h>
 #include <TestEvent.h>
 #include <FileLoader.h>
@@ -2459,6 +2460,269 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         closingRegistration.Attach(appBar, [closingCount]() { ++(*closingCount); });
         openAndCloseAppBar();
         RunOnUIThread([&]() { VERIFY_ARE_EQUAL(2, *closingCount); });
+    }
+
+    void AppBarIntegrationTests::CanCloseNonStickyAppBarsByBackButton()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::AppBar^ topAppBar = nullptr;
+        xaml_controls::AppBar^ bottomAppBar = nullptr;
+        xaml_controls::AppBar^ inlineAppBar = nullptr;
+
+        auto topOpenedEvent = std::make_shared<Event>();
+        auto topClosedEvent = std::make_shared<Event>();
+        auto bottomOpenedEvent = std::make_shared<Event>();
+        auto bottomClosedEvent = std::make_shared<Event>();
+        auto inlineOpenedEvent = std::make_shared<Event>();
+        auto inlineClosedEvent = std::make_shared<Event>();
+
+        auto topOpenedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Opened);
+        auto topClosedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Closed);
+        auto bottomOpenedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Opened);
+        auto bottomClosedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Closed);
+        auto inlineOpenedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Opened);
+        auto inlineClosedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Closed);
+
+        RunOnUIThread([&]()
+        {
+            topAppBar = ref new xaml_controls::AppBar();
+            topOpenedRegistration.Attach(topAppBar, [topOpenedEvent]() { topOpenedEvent->Set(); });
+            topClosedRegistration.Attach(topAppBar, [topClosedEvent]() { topClosedEvent->Set(); });
+
+            bottomAppBar = ref new xaml_controls::AppBar();
+            bottomOpenedRegistration.Attach(bottomAppBar, [bottomOpenedEvent]() { bottomOpenedEvent->Set(); });
+            bottomClosedRegistration.Attach(bottomAppBar, [bottomClosedEvent]() { bottomClosedEvent->Set(); });
+
+            inlineAppBar = ref new xaml_controls::AppBar();
+            inlineAppBar->VerticalAlignment = xaml::VerticalAlignment::Center;
+            inlineOpenedRegistration.Attach(inlineAppBar, [inlineOpenedEvent]() { inlineOpenedEvent->Set(); });
+            inlineClosedRegistration.Attach(inlineAppBar, [inlineClosedEvent]() { inlineClosedEvent->Set(); });
+
+            auto page = TestServices::WindowHelper->SetupSimulatedAppPage();
+            auto pageContent = ref new xaml_controls::Grid();
+            pageContent->Children->Append(inlineAppBar);
+            page->Content = pageContent;
+            page->TopAppBar = topAppBar;
+            page->BottomAppBar = bottomAppBar;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"A closed AppBar does not handle a back press.");
+            VERIFY_IS_FALSE(BackButtonHelper::PressBackButton(topAppBar));
+            VERIFY_IS_FALSE(topAppBar->IsOpen);
+
+            LOG_OUTPUT(L"Open the inline AppBar and both page AppBars.");
+            inlineAppBar->IsOpen = true;
+            topAppBar->IsOpen = true;
+            bottomAppBar->IsOpen = true;
+        });
+        inlineOpenedEvent->WaitForDefault();
+        topOpenedEvent->WaitForDefault();
+        bottomOpenedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"A back press on the open, non-sticky inline AppBar is handled and closes only that AppBar.");
+            VERIFY_IS_TRUE(BackButtonHelper::PressBackButton(inlineAppBar));
+            VERIFY_IS_FALSE(inlineAppBar->IsOpen);
+            VERIFY_IS_TRUE(topAppBar->IsOpen);
+            VERIFY_IS_TRUE(bottomAppBar->IsOpen);
+        });
+        inlineClosedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(topAppBar->IsOpen);
+            VERIFY_IS_TRUE(bottomAppBar->IsOpen);
+            VERIFY_IS_FALSE(topClosedEvent->HasFired());
+            VERIFY_IS_FALSE(bottomClosedEvent->HasFired());
+
+            LOG_OUTPUT(L"A back press on the open, non-sticky top AppBar is handled and closes every non-sticky page AppBar.");
+            VERIFY_IS_TRUE(BackButtonHelper::PressBackButton(topAppBar));
+            VERIFY_IS_FALSE(topAppBar->IsOpen);
+            VERIFY_IS_FALSE(bottomAppBar->IsOpen);
+        });
+        topClosedEvent->WaitForDefault();
+        bottomClosedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Make the top AppBar sticky and open both page AppBars again.");
+        topOpenedEvent->Reset();
+        topClosedEvent->Reset();
+        bottomOpenedEvent->Reset();
+        bottomClosedEvent->Reset();
+        RunOnUIThread([&]()
+        {
+            topAppBar->IsSticky = true;
+            topAppBar->IsOpen = true;
+            bottomAppBar->IsOpen = true;
+        });
+        topOpenedEvent->WaitForDefault();
+        bottomOpenedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"A back press on the open, sticky top AppBar is not handled and closes nothing.");
+            VERIFY_IS_FALSE(BackButtonHelper::PressBackButton(topAppBar));
+            VERIFY_IS_TRUE(topAppBar->IsOpen);
+            VERIFY_IS_TRUE(bottomAppBar->IsOpen);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(topClosedEvent->HasFired());
+            VERIFY_IS_FALSE(bottomClosedEvent->HasFired());
+
+            LOG_OUTPUT(L"A back press on the open, non-sticky bottom AppBar closes the non-sticky AppBars and keeps the sticky one open.");
+            VERIFY_IS_TRUE(BackButtonHelper::PressBackButton(bottomAppBar));
+            VERIFY_IS_FALSE(bottomAppBar->IsOpen);
+            VERIFY_IS_TRUE(topAppBar->IsOpen);
+        });
+        bottomClosedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(topAppBar->IsOpen);
+            VERIFY_IS_FALSE(topClosedEvent->HasFired());
+            topAppBar->IsOpen = false;
+        });
+        topClosedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void AppBarIntegrationTests::CanCloseInlineAppBarsByClickingOverlay()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::AppBar^ appBar = nullptr;
+        xaml_controls::Button^ buttonBelowOverlay = nullptr;
+        xaml_controls::AppBar^ appBarInPopup = nullptr;
+        xaml_primitives::Popup^ popup = nullptr;
+
+        auto openedEvent = std::make_shared<Event>();
+        auto closedEvent = std::make_shared<Event>();
+        auto popupAppBarOpenedEvent = std::make_shared<Event>();
+        auto popupAppBarClosedEvent = std::make_shared<Event>();
+        auto buttonClickCount = std::make_shared<int>(0);
+
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Opened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Closed);
+        auto popupAppBarOpenedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Opened);
+        auto popupAppBarClosedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Closed);
+        auto buttonClickRegistration = CreateSafeEventRegistration(xaml_controls::Button, Click);
+
+        RunOnUIThread([&]()
+        {
+            auto rootGrid = ref new xaml_controls::Grid();
+
+            buttonBelowOverlay = ref new xaml_controls::Button();
+            buttonBelowOverlay->Content = L"Below the overlay";
+            buttonBelowOverlay->Width = 200;
+            buttonBelowOverlay->Height = 60;
+            buttonBelowOverlay->HorizontalAlignment = xaml::HorizontalAlignment::Center;
+            buttonBelowOverlay->VerticalAlignment = xaml::VerticalAlignment::Bottom;
+            buttonClickRegistration.Attach(buttonBelowOverlay, [buttonClickCount]() { ++(*buttonClickCount); });
+            rootGrid->Children->Append(buttonBelowOverlay);
+
+            appBar = ref new xaml_controls::AppBar();
+            appBar->VerticalAlignment = xaml::VerticalAlignment::Top;
+            appBar->LightDismissOverlayMode = xaml_controls::LightDismissOverlayMode::On;
+            openedRegistration.Attach(appBar, [openedEvent]() { openedEvent->Set(); });
+            closedRegistration.Attach(appBar, [closedEvent]() { closedEvent->Set(); });
+            rootGrid->Children->Append(appBar);
+
+            TestServices::WindowHelper->WindowContent = rootGrid;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Without an open AppBar, clicking the button clicks it.");
+        TestServices::InputHelper->LeftMouseClick(buttonBelowOverlay);
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1, *buttonClickCount);
+            appBar->IsOpen = true;
+        });
+        openedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"The open inline AppBar shows its light-dismiss overlay.");
+            ValidateVisibilityOfOverlayElement(appBar, true);
+        });
+
+        LOG_OUTPUT(L"Clicking the button under the overlay dismisses the AppBar and does not click the button.");
+        TestServices::InputHelper->LeftMouseClick(buttonBelowOverlay);
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(appBar->IsOpen);
+            VERIFY_ARE_EQUAL(1, *buttonClickCount);
+        });
+
+        LOG_OUTPUT(L"Host an inline AppBar in a Popup that is not light-dismissable.");
+        RunOnUIThread([&]()
+        {
+            appBarInPopup = ref new xaml_controls::AppBar();
+            appBarInPopup->Width = 200;
+            appBarInPopup->LightDismissOverlayMode = xaml_controls::LightDismissOverlayMode::On;
+            popupAppBarOpenedRegistration.Attach(appBarInPopup, [popupAppBarOpenedEvent]() { popupAppBarOpenedEvent->Set(); });
+            popupAppBarClosedRegistration.Attach(appBarInPopup, [popupAppBarClosedEvent]() { popupAppBarClosedEvent->Set(); });
+
+            popup = ref new xaml_primitives::Popup();
+            popup->XamlRoot = TestServices::WindowHelper->WindowContent->XamlRoot;
+            popup->IsLightDismissEnabled = false;
+            popup->Child = appBarInPopup;
+            popup->IsOpen = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto closePopupOnExit = wil::scope_exit([&]()
+        {
+            try
+            {
+                RunOnUIThread([&]() { popup->IsOpen = false; });
+                TestServices::WindowHelper->WaitForIdle();
+            }
+            catch (...)
+            {
+                LOG_OUTPUT(L"Cleanup: closing the Popup failed.");
+            }
+        });
+
+        RunOnUIThread([&]()
+        {
+            appBarInPopup->IsOpen = true;
+        });
+        popupAppBarOpenedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"The AppBar in the Popup opens with its visible light-dismiss overlay.");
+            ValidateVisibilityOfOverlayElement(appBarInPopup, true);
+
+            appBarInPopup->IsOpen = false;
+        });
+        popupAppBarClosedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(appBarInPopup->IsOpen);
+            VERIFY_IS_TRUE(popup->IsOpen);
+        });
     }
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::AppBar

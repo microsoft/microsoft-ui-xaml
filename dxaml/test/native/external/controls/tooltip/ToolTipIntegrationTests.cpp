@@ -3263,22 +3263,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    namespace
-    {
-        bool AreSameToolTipObject(Platform::Object^ first, Platform::Object^ second)
-        {
-            if (first == nullptr || second == nullptr)
-            {
-                return first == nullptr && second == nullptr;
-            }
-            wrl::ComPtr<IUnknown> firstUnknown;
-            wrl::ComPtr<IUnknown> secondUnknown;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(first)->QueryInterface(IID_PPV_ARGS(&firstUnknown)));
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(second)->QueryInterface(IID_PPV_ARGS(&secondUnknown)));
-            return firstUnknown.Get() == secondUnknown.Get();
-        }
-    }
-
     void ToolTipIntegrationTests::ValidateToolTipPropertyIdentifiersAndTemplateSettings()
     {
         TestCleanupWrapper cleanup;
@@ -3298,8 +3282,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             LOG_OUTPUT(L"PlacementTarget accessors and PlacementTargetProperty refer to the same value.");
             VERIFY_IS_NULL(toolTip->PlacementTarget);
             toolTip->PlacementTarget = otherTarget;
-            VERIFY_IS_TRUE(AreSameToolTipObject(otherTarget, toolTip->PlacementTarget));
-            VERIFY_IS_TRUE(AreSameToolTipObject(otherTarget, toolTip->GetValue(xaml_controls::ToolTip::PlacementTargetProperty)));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(otherTarget, toolTip->PlacementTarget));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(otherTarget, toolTip->GetValue(xaml_controls::ToolTip::PlacementTargetProperty)));
             toolTip->SetValue(xaml_controls::ToolTip::PlacementTargetProperty, nullptr);
             VERIFY_IS_NULL(toolTip->PlacementTarget);
 
@@ -3327,7 +3311,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             LOG_OUTPUT(L"TemplateSettings is created by the ToolTip and is stable.");
             auto templateSettings = toolTip->TemplateSettings;
             VERIFY_IS_NOT_NULL(templateSettings);
-            VERIFY_IS_TRUE(AreSameToolTipObject(templateSettings, toolTip->TemplateSettings));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(templateSettings, toolTip->TemplateSettings));
             VERIFY_ARE_EQUAL(0.0, templateSettings->FromHorizontalOffset);
             VERIFY_ARE_EQUAL(0.0, templateSettings->FromVerticalOffset);
 
@@ -3358,6 +3342,253 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             toolTip->IsOpen = false;
             VERIFY_IS_FALSE(safe_cast<bool>(toolTip->GetValue(xaml_controls::ToolTip::IsOpenProperty)));
         });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void ToolTipIntegrationTests::ValidateHoveredSliderThumbToolTipStaysOpenWhileDragging()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Slider^ slider = nullptr;
+        xaml_primitives::Thumb^ thumb = nullptr;
+        xaml_controls::ToolTip^ thumbToolTip = nullptr;
+        wf::Rect thumbBounds = {};
+
+        auto openedEvent = std::make_shared<Event>();
+        auto closedEvent = std::make_shared<Event>();
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::ToolTip, Opened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ToolTip, Closed);
+
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Bisque'>"
+                L"    <Slider x:Name='sliderControl' HorizontalAlignment='Center' VerticalAlignment='Center' Minimum='0' Maximum='100' Width='300' IsThumbToolTipEnabled='True'/>"
+                L"</Grid>"));
+
+            slider = safe_cast<xaml_controls::Slider^>(rootPanel->FindName(L"sliderControl"));
+            VERIFY_IS_NOT_NULL(slider);
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            thumb = safe_cast<xaml_primitives::Thumb^>(TreeHelper::GetVisualChildByName(slider, L"HorizontalThumb"));
+            VERIFY_IS_NOT_NULL(thumb);
+            thumbBounds = ControlHelper::GetBounds(thumb);
+            LOG_OUTPUT(L"Thumb bounds = (%f, %f, %f, %f)", thumbBounds.X, thumbBounds.Y, thumbBounds.Width, thumbBounds.Height);
+
+            thumbToolTip = safe_cast<xaml_controls::ToolTip^>(xaml_controls::ToolTipService::GetToolTip(thumb));
+            VERIFY_IS_NOT_NULL(thumbToolTip);
+            VERIFY_IS_FALSE(thumbToolTip->IsOpen);
+
+            openedRegistration.Attach(thumbToolTip, [openedEvent]() { openedEvent->Set(); });
+            closedRegistration.Attach(thumbToolTip, [closedEvent]() { closedEvent->Set(); });
+        });
+
+        const wf::Point thumbCenter(thumbBounds.X + thumbBounds.Width / 2, thumbBounds.Y + thumbBounds.Height / 2);
+
+        LOG_OUTPUT(L"Hovering the thumb opens its ToolTip automatically.");
+        TestServices::InputHelper->MoveMouse(thumbCenter);
+        openedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(thumbToolTip->IsOpen);
+        });
+
+        bool isMouseButtonPressed = false;
+        auto releaseMouseButtonOnExit = wil::scope_exit([&]()
+        {
+            if (isMouseButtonPressed)
+            {
+                try
+                {
+                    TestServices::InputHelper->MouseButtonUp(thumb, 0, 0, MouseButton::Left);
+                    TestServices::WindowHelper->WaitForIdle();
+                }
+                catch (...)
+                {
+                    LOG_OUTPUT(L"Cleanup: releasing the mouse button failed.");
+                }
+            }
+        });
+
+        LOG_OUTPUT(L"Pressing the thumb and dragging it away keeps the ToolTip open for the whole drag.");
+        TestServices::InputHelper->MouseButtonDown(thumb, 0, 0, MouseButton::Left);
+        isMouseButtonPressed = true;
+        TestServices::InputHelper->MouseDrag(thumbCenter, wf::Point(thumbCenter.X + 100, thumbCenter.Y), MouseButton::Left);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Slider value after the drag: %f", slider->Value);
+            VERIFY_IS_GREATER_THAN(slider->Value, 0.0);
+            VERIFY_IS_TRUE(thumbToolTip->IsOpen);
+            VERIFY_IS_FALSE(closedEvent->HasFired());
+        });
+
+        LOG_OUTPUT(L"Releasing the button ends the drag and closes the ToolTip.");
+        TestServices::InputHelper->MouseButtonUp(thumb, 0, 0, MouseButton::Left);
+        isMouseButtonPressed = false;
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(thumbToolTip->IsOpen);
+        });
+
+        TestServices::InputHelper->MoveMouse(wf::Point(0, 0));
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void ToolTipIntegrationTests::ValidatePlacementRectSidesWhileHoveringWithMouse()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Button^ button = nullptr;
+        xaml_controls::ToolTip^ toolTip = nullptr;
+        wf::Rect buttonBounds = {};
+
+        auto openedEvent = std::make_shared<Event>();
+        auto closedEvent = std::make_shared<Event>();
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::ToolTip, Opened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ToolTip, Closed);
+
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(
+                LR"(<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                        <Button x:Name="ToolTipButton" Content="Button" Width="100" Height="100" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="ToolTip" x:Name="RectToolTip" PlacementRect="0, 0, 100, 100" />
+                            </ToolTipService.ToolTip>
+                        </Button>
+                    </Grid>)"));
+
+            button = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"ToolTipButton"));
+            toolTip = safe_cast<xaml_controls::ToolTip^>(rootPanel->FindName(L"RectToolTip"));
+            openedRegistration.Attach(toolTip, [openedEvent]() { openedEvent->Set(); });
+            closedRegistration.Attach(toolTip, [closedEvent]() { closedEvent->Set(); });
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        buttonBounds = ControlHelper::GetBounds(button);
+        LOG_OUTPUT(L"Button bounds = (%f, %f, %f, %f)", buttonBounds.X, buttonBounds.Y, buttonBounds.Width, buttonBounds.Height);
+
+        TestServices::InputHelper->MoveMouse(wf::Point(0, 0));
+        TestServices::WindowHelper->WaitForIdle();
+
+        // The PlacementRect covers the whole button, so the hover point is inside it.
+        auto hoverAndGetToolTipBounds = [&](xaml_primitives::PlacementMode placement)
+        {
+            RunOnUIThread([&]()
+            {
+                toolTip->Placement = placement;
+            });
+            openedEvent->Reset();
+            closedEvent->Reset();
+
+            TestServices::InputHelper->MoveMouse(button);
+            openedEvent->WaitForDefault();
+            TestServices::WindowHelper->WaitForIdle();
+
+            wf::Rect toolTipBounds = ControlHelper::GetBounds(toolTip);
+            LOG_OUTPUT(L"ToolTip bounds = (%f, %f, %f, %f)", toolTipBounds.X, toolTipBounds.Y, toolTipBounds.Width, toolTipBounds.Height);
+
+            TestServices::InputHelper->MoveMouse(wf::Point(0, 0));
+            closedEvent->WaitForDefault();
+            TestServices::WindowHelper->WaitForIdle();
+
+            return toolTipBounds;
+        };
+
+        const float tolerance = 2.0f;
+
+        LOG_OUTPUT(L"Placement Left: the ToolTip ends at the left edge of the PlacementRect.");
+        auto leftBounds = hoverAndGetToolTipBounds(xaml_primitives::PlacementMode::Left);
+        VERIFY_IS_GREATER_THAN(leftBounds.Width, 0.0f);
+        VERIFY_IS_LESS_THAN_OR_EQUAL(leftBounds.X + leftBounds.Width, buttonBounds.X + tolerance);
+
+        LOG_OUTPUT(L"Placement Right: the ToolTip starts at the right edge of the PlacementRect.");
+        auto rightBounds = hoverAndGetToolTipBounds(xaml_primitives::PlacementMode::Right);
+        VERIFY_IS_GREATER_THAN(rightBounds.Width, 0.0f);
+        VERIFY_IS_GREATER_THAN_OR_EQUAL(rightBounds.X, buttonBounds.X + buttonBounds.Width - tolerance);
+
+        LOG_OUTPUT(L"Placement Bottom: the ToolTip starts at the bottom edge of the PlacementRect.");
+        auto bottomBounds = hoverAndGetToolTipBounds(xaml_primitives::PlacementMode::Bottom);
+        VERIFY_IS_GREATER_THAN(bottomBounds.Height, 0.0f);
+        VERIFY_IS_GREATER_THAN_OR_EQUAL(bottomBounds.Y, buttonBounds.Y + buttonBounds.Height - tolerance);
+    }
+
+    void ToolTipIntegrationTests::ValidateMousePlacementFallsBackToTopWhileOpenedByKeyboard()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Button^ initialFocusButton = nullptr;
+        xaml_controls::Button^ toolTipButton = nullptr;
+        xaml_controls::ToolTip^ toolTip = nullptr;
+
+        auto openedEvent = std::make_shared<Event>();
+        auto closedEvent = std::make_shared<Event>();
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::ToolTip, Opened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ToolTip, Closed);
+
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = safe_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
+                LR"(<StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                        <Button x:Name="InitialFocusButton" Content="Initial focus button" Margin="20" Width="100" Height="100" />
+                        <Button x:Name="ToolTipButton" Content="Mouse ToolTip" Margin="20" Width="100" Height="100">
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="ToolTip" x:Name="MouseToolTip" Placement="Mouse" />
+                            </ToolTipService.ToolTip>
+                        </Button>
+                        <Button Content="Final focus button" Margin="20" Width="100" Height="100" />
+                    </StackPanel>)"));
+
+            initialFocusButton = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"InitialFocusButton"));
+            toolTipButton = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"ToolTipButton"));
+            toolTip = safe_cast<xaml_controls::ToolTip^>(rootPanel->FindName(L"MouseToolTip"));
+            VERIFY_ARE_EQUAL(xaml_primitives::PlacementMode::Mouse, toolTip->Placement);
+
+            openedRegistration.Attach(toolTip, [openedEvent]() { openedEvent->Set(); });
+            closedRegistration.Attach(toolTip, [closedEvent]() { closedEvent->Set(); });
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        TestServices::InputHelper->MoveMouse(wf::Point(0, 0));
+        FocusTestHelper::EnsureFocus(initialFocusButton, FocusState::Keyboard);
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Tab to the button so that keyboard focus opens its ToolTip.");
+        TestServices::KeyboardHelper->Tab();
+        openedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto buttonBounds = ControlHelper::GetBounds(toolTipButton);
+        auto toolTipBounds = ControlHelper::GetBounds(toolTip);
+        LOG_OUTPUT(L"Button bounds = (%f, %f, %f, %f), ToolTip bounds = (%f, %f, %f, %f)",
+            buttonBounds.X, buttonBounds.Y, buttonBounds.Width, buttonBounds.Height,
+            toolTipBounds.X, toolTipBounds.Y, toolTipBounds.Width, toolTipBounds.Height);
+
+        LOG_OUTPUT(L"The keyboard-opened ToolTip is placed above the button, as for Placement=Top.");
+        VERIFY_IS_GREATER_THAN(toolTipBounds.Height, 0.0f);
+        VERIFY_IS_LESS_THAN_OR_EQUAL(toolTipBounds.Y + toolTipBounds.Height, buttonBounds.Y + 2.0f);
+        VERIFY_IS_LESS_THAN(toolTipBounds.X, buttonBounds.X + buttonBounds.Width);
+        VERIFY_IS_GREATER_THAN(toolTipBounds.X + toolTipBounds.Width, buttonBounds.X);
+
+        LOG_OUTPUT(L"Moving keyboard focus away closes the ToolTip.");
+        TestServices::KeyboardHelper->Tab();
         closedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
     }

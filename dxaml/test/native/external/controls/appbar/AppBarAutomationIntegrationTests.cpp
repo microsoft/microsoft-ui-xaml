@@ -12,6 +12,7 @@
 #include "TestCleanupWrapper.h"
 #include "RuntimeEnabledFeaturesEnum.h"
 #include <UIAutomationHelper.h>
+#include <ControlHelper.h>
 
 #undef GetClassName // Conflicts with automation peer method of the same name
 
@@ -258,19 +259,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // UIA_E_ELEMENTNOTENABLED from UIAutomationCoreApi.h.
         const int c_uiaElementNotEnabled = static_cast<int>(0x80040200);
 
-        bool AreSameObject(Platform::Object^ first, Platform::Object^ second)
-        {
-            wrl::ComPtr<IUnknown> firstUnknown;
-            wrl::ComPtr<IUnknown> secondUnknown;
-            if (first == nullptr || second == nullptr)
-            {
-                return first == nullptr && second == nullptr;
-            }
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(first)->QueryInterface(IID_PPV_ARGS(&firstUnknown)));
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(second)->QueryInterface(IID_PPV_ARGS(&secondUnknown)));
-            return firstUnknown.Get() == secondUnknown.Get();
-        }
-
         void VerifyThrowsElementNotEnabled(const wchar_t* operationName, std::function<void()> operation)
         {
             bool threw = false;
@@ -375,7 +363,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         {
             LOG_OUTPUT(L"A peer created with the public AppBarAutomationPeer constructor reports the same owner and state.");
             auto constructedPeer = ref new xaml_automation_peers::AppBarAutomationPeer(appBar);
-            VERIFY_IS_TRUE(AreSameObject(appBar, constructedPeer->Owner));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(appBar, constructedPeer->Owner));
             VERIFY_ARE_EQUAL(ref new Platform::String(L"ApplicationBar"), constructedPeer->GetClassName());
             VERIFY_ARE_EQUAL(xaml_automation_peers::AutomationControlType::AppBar, constructedPeer->GetAutomationControlType());
             VERIFY_ARE_EQUAL(xaml_automation::ToggleState::Off, safe_cast<xaml_automation::Provider::IToggleProvider^>(constructedPeer)->ToggleState);

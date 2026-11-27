@@ -215,6 +215,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates the AppBar IsSticky, ClosedDisplayMode and LightDismissOverlayMode dependency property identifiers and that a removed Closing handler is no longer raised.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CanCloseNonStickyAppBarsByBackButton)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the AppBar back-button listener: a back press closes an open, non-sticky page AppBar together with the other non-sticky page AppBars, closes only the AppBar itself when it is inline, and is not handled by a sticky or closed AppBar.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CanCloseInlineAppBarsByClickingOverlay)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that clicking the visible light-dismiss overlay of an open inline AppBar closes it without the click reaching the content below, and that an inline AppBar hosted in a non-light-dismiss Popup also opens with its overlay and closes.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
+
     private:
         xaml_controls::Page^ SetupClosedDisplayModeTestEnvironment(bool setClosedDisplayModeValues);
         xaml_controls::Page^ SetupFocusShiftTestPage();
