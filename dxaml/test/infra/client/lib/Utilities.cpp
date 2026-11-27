@@ -2575,6 +2575,19 @@ namespace Private { namespace Infrastructure {
         COM_END
     }
 
+    HRESULT Utilities::MarkDeviceInstanceLost()
+    {
+        COM_START
+        {
+            RunOnUIThread([&]()
+            {
+                wrl::ComPtr<IXamlTestHooks> testHooks = WindowHelper::GetTestHooks();
+                testHooks->MarkDeviceInstanceLost();
+            });
+        }
+        COM_END
+    }
+
     HRESULT Utilities::SetForceDebugSettingsTracingEvents(_In_ BOOLEAN value)
     {
         COM_START

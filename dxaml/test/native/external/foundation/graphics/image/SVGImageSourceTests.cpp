@@ -1307,6 +1307,60 @@ void SvgImageSourceTests::DeviceLostOnCreatingSvgDecoder_Stream()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
+// The device is lost (for example, the display driver is locked) during the SVG's first metadata parse.
+// EncodedImageData::Parse reads the SVG's size on a software target instead of failing the image.
+void SvgImageSourceTests::DeviceLostOnFirstMetadataParse()
+{
+    auto openedRegistration = CreateSafeEventRegistration(SvgImageSource, Opened);
+    auto svgImageSourceOpenedEvent = std::make_shared<Event>();
+    auto failedRegistration = CreateSafeEventRegistration(SvgImageSource, OpenFailed);
+    auto svgImageSourceFailedEvent = std::make_shared<Event>();
+
+    SvgImageSource^ svgImageSource = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        auto testImage = ref new xaml_controls::Image();
+        testImage->Width = 150;
+        testImage->Height = 150;
+
+        svgImageSource = ref new SvgImageSource();
+        testImage->Source = svgImageSource;
+
+        openedRegistration.Attach(
+            svgImageSource,
+            ref new wf::TypedEventHandler<SvgImageSource^, SvgImageSourceOpenedEventArgs^>([svgImageSourceOpenedEvent](SvgImageSource^, SvgImageSourceOpenedEventArgs^)
+        {
+            LOG_OUTPUT(L"> SVG image source opened.");
+            svgImageSourceOpenedEvent->Set();
+        }));
+
+        failedRegistration.Attach(
+            svgImageSource,
+            ref new wf::TypedEventHandler<SvgImageSource^, SvgImageSourceFailedEventArgs^>([svgImageSourceFailedEvent](SvgImageSource^, SvgImageSourceFailedEventArgs^)
+        {
+            LOG_OUTPUT(L"> SVG image source failed.");
+            svgImageSourceFailedEvent->Set();
+        }));
+
+        auto stackPanel = ref new StackPanel();
+        stackPanel->Children->Append(testImage);
+        TestServices::WindowHelper->WindowContent = stackPanel;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        TestServices::Utilities->MarkDeviceInstanceLost();
+        svgImageSource->UriSource = ref new Uri(GetResourcesPath() + L"msft.svg");
+    });
+
+    svgImageSourceOpenedEvent->WaitForDefault();
+    TestServices::WindowHelper->WaitForIdle();
+    VERIFY_IS_TRUE(svgImageSourceOpenedEvent->HasFired());
+    VERIFY_IS_FALSE(svgImageSourceFailedEvent->HasFired());
+}
+
 void SvgImageSourceTests::ReloadsOnScaleChange()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);

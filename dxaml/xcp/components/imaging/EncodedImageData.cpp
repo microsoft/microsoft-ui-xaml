@@ -89,7 +89,11 @@ _Check_return_ HRESULT EncodedImageData::Parse(_In_opt_ CD3D11Device* graphicsDe
                     ctl::ComPtr<ID2D1DeviceContext5> d2dDeviceContext5;
                     IFCFAILFAST(ctl::do_query_interface(d2dDeviceContext5, d2dDeviceContextNoRef));
 
-                    IFC_RETURN(ParseSvg(d2dDeviceContext5.Get(), maxBounds));
+                    hr = ParseSvg(d2dDeviceContext5.Get(), maxBounds);
+                    if (!GraphicsUtility::IsDeviceLostError(hr))
+                    {
+                        IFC_RETURN(hr);
+                    }
                 }
             }
 

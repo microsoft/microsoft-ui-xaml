@@ -233,6 +233,7 @@ namespace Private.Infrastructure
         HRESULT SimulateSwallowedDeviceLostOnStartup();
         HRESULT SimulateDeviceLostOnMetadataParse();
         HRESULT SimulateDeviceLostOnCreatingSvgDecoder();
+        HRESULT MarkDeviceInstanceLost();
 
         HRESULT SetDCompDeviceLeakDetectionEnabled([in] BOOLEAN enableLeakDetection);
 
