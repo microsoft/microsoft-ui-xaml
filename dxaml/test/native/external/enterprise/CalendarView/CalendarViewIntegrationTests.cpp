@@ -17,6 +17,7 @@
 #include <ControlHelper.h>
 #include <FileLoader.h>
 #include <RuntimeEnabledFeatureOverride.h>
+#include <DisableErrorReportingScopeGuard.h>
 #include <set>
 
 using namespace std;
@@ -6705,6 +6706,212 @@ VerifyAllTimeZonesPartImpl(19, 20)
         {
             auto focusedItem = safe_cast<xaml_controls::CalendarViewDayItem^>(Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(TestServices::WindowHelper->WindowContent->XamlRoot));
             VERIFY_IS_TRUE(IsSameEnUsGregorianDay(calendarMinDate, focusedItem->Date));
+        });
+    }
+
+    void CalendarViewIntegrationTests::VerifyKeyboardNavigationAfterReplacingTemplateWithoutViewsGrid()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+        const auto november15 = MakeEnUsGregorianDate(2000, 11, 15);
+        const auto november16 = MakeEnUsGregorianDate(2000, 11, 16);
+
+        auto findMonthViewDayItem = [&](::Windows::Foundation::DateTime date) -> xaml_controls::CalendarViewDayItem^
+        {
+            auto panel = safe_cast<xaml_controls::Primitives::CalendarPanel^>(CalendarHelper::GetTemplateChild(cv, L"MonthViewPanel"));
+            for (unsigned i = 0; i < panel->Children->Size; ++i)
+            {
+                auto dayItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(panel->Children->GetAt(i));
+                if (dayItem != nullptr && IsSameEnUsGregorianDay(dayItem->Date, date))
+                {
+                    return dayItem;
+                }
+            }
+            return nullptr;
+        };
+
+        auto verifyFocusedDate = [&](::Windows::Foundation::DateTime expectedDate)
+        {
+            auto focusedItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(cv->XamlRoot));
+            VERIFY_IS_TRUE(focusedItem != nullptr);
+            VERIFY_IS_TRUE(IsSameEnUsGregorianDay(expectedDate, focusedItem->Date));
+        };
+
+        RunOnUIThread([&]()
+        {
+            cv = ref new xaml_controls::CalendarView();
+            cv->Language = L"en-US";
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Gregorian;
+            cv->FirstDayOfWeek = ::Windows::Globalization::DayOfWeek::Sunday;
+            cv->MinDate = MakeEnUsGregorianDate(2000, 11, 1);
+            cv->MaxDate = MakeEnUsGregorianDate(2000, 12, 31);
+            cv->SetDisplayDate(november15);
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(CalendarHelper::GetTemplateChild(cv, L"Views"));
+
+            LOG_OUTPUT(L"Replace the applied default template with one that only has the month view parts.");
+            cv->Template = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                L"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                L"    xmlns:primitives='using:Microsoft.UI.Xaml.Controls.Primitives' TargetType='CalendarView'>"
+                L"  <ScrollViewer x:Name='MonthViewScrollViewer' Width='350' Height='300'>"
+                L"    <primitives:CalendarPanel x:Name='MonthViewPanel'/>"
+                L"  </ScrollViewer>"
+                L"</ControlTemplate>"));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"The new template is applied and its month view panel shows the days.");
+            VERIFY_IS_NULL(CalendarHelper::GetTemplateChild(cv, L"Views"));
+            auto dayItem = findMonthViewDayItem(november15);
+            VERIFY_IS_NOT_NULL(dayItem);
+            VERIFY_IS_TRUE(dayItem->Focus(xaml::FocusState::Keyboard));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Left-to-right: Right moves focus to the next day.");
+        TestServices::KeyboardHelper->Right();
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            verifyFocusedDate(november16);
+            cv->FlowDirection = xaml::FlowDirection::RightToLeft;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Without a Views grid the CalendarView's own FlowDirection applies: in right-to-left, Right moves focus to the previous day.");
+        TestServices::KeyboardHelper->Right();
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            verifyFocusedDate(november15);
+        });
+    }
+
+    void CalendarViewIntegrationTests::VerifyMinDateLaterThanMaxDateFailsMeasure()
+    {
+        TestCleanupWrapper cleanup;
+        DisableErrorReportingScopeGuard disableErrors;
+        xaml_controls::Grid^ root = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            root = ref new xaml_controls::Grid();
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto cv = ref new xaml_controls::CalendarView();
+            cv->Language = L"en-US";
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Gregorian;
+            cv->MinDate = MakeEnUsGregorianDate(2001, 1, 1);
+            cv->MaxDate = MakeEnUsGregorianDate(2000, 1, 1);
+            root->Children->Append(cv);
+
+            LOG_OUTPUT(L"MinDate is later than MaxDate: measuring the CalendarView fails and it is the layout exception element.");
+            VERIFY_THROWS_WINRT(cv->Measure(::Windows::Foundation::Size(400, 400)), Platform::FailureException^);
+            VERIFY_ARE_EQUAL(safe_cast<xaml::UIElement^>(cv), xaml_primitives::LayoutInformation::GetLayoutExceptionElement(TestServices::WindowHelper->CurrentDispatcher));
+
+            LOG_OUTPUT(L"After the range is made valid, the CalendarView measures again.");
+            cv->MaxDate = MakeEnUsGregorianDate(2001, 12, 31);
+            cv->Measure(::Windows::Foundation::Size(400, 400));
+            VERIFY_IS_GREATER_THAN(cv->DesiredSize.Height, 0.0f);
+
+            root->Children->Clear();
+            TestServices::WindowHelper->WindowContent = nullptr;
+        });
+
+        TestServices::WindowHelper->SetLastLayoutExceptionElement(nullptr);
+    }
+
+    void CalendarViewIntegrationTests::VerifyNextButtonCrossesJapaneseEraWithinOneYearViewRow()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+        xaml_controls::Button^ nextButton = nullptr;
+        xaml_controls::ScrollViewer^ yearViewScrollViewer = nullptr;
+
+        // Showa 64 is 1989-01-01..1989-01-07 and Heisei 1 starts on 1989-01-08 (Gregorian dates). Starting at
+        // January 1988, the year view items are Showa 63 Jan-Dec (0-11), Showa 64 Jan (12), Heisei 1 Jan (13), ...
+        // so on a 4 x 4 year view January of both Showa 64 and Heisei 1 are in the same row.
+        const auto showa64 = MakeEnUsGregorianDate(1989, 1, 3);
+        const auto heisei1 = MakeEnUsGregorianDate(1989, 6, 1);
+
+        auto formatJapaneseYear = [](::Windows::Foundation::DateTime date)
+        {
+            auto formatter = ref new ::Windows::Globalization::DateTimeFormatting::DateTimeFormatter(
+                L"year",
+                GetEnUsLanguages(),
+                L"ZZ",
+                ::Windows::Globalization::CalendarIdentifiers::Japanese,
+                ::Windows::Globalization::ClockIdentifiers::TwentyFourHour);
+            return formatter->Format(date);
+        };
+
+        RunOnUIThread([&]()
+        {
+            cv = ref new xaml_controls::CalendarView();
+            cv->Language = L"en-US";
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Japanese;
+            cv->MinDate = MakeEnUsGregorianDate(1988, 1, 15);
+            cv->MaxDate = MakeEnUsGregorianDate(1992, 12, 15);
+            cv->DisplayMode = xaml_controls::CalendarViewDisplayMode::Year;
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            cv->SetYearDecadeDisplayDimensions(4 /*columns*/, 4 /*rows*/);
+            cv->SetDisplayDate(showa64);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            nextButton = safe_cast<xaml_controls::Button^>(CalendarHelper::GetTemplateChild(cv, L"NextButton"));
+            yearViewScrollViewer = safe_cast<xaml_controls::ScrollViewer^>(CalendarHelper::GetTemplateChild(cv, L"YearViewScrollViewer"));
+
+            LOG_OUTPUT(L"The year view starts at Showa 64.");
+            VERIFY_ARE_NOT_EQUAL(formatJapaneseYear(showa64), formatJapaneseYear(heisei1));
+            VERIFY_ARE_EQUAL(formatJapaneseYear(showa64), cv->TemplateSettings->HeaderText);
+        });
+
+        auto viewChangedEvent = std::make_shared<Event>();
+        auto viewChangedRegistration = CreateSafeEventRegistration(xaml_controls::ScrollViewer, ViewChanged);
+        viewChangedRegistration.Attach(yearViewScrollViewer,
+            ref new ::Windows::Foundation::EventHandler<xaml_controls::ScrollViewerViewChangedEventArgs^>(
+            [viewChangedEvent](Platform::Object^, xaml_controls::ScrollViewerViewChangedEventArgs^ e)
+        {
+            if (!e->IsIntermediate)
+            {
+                viewChangedEvent->Set();
+            }
+        }));
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Click Next: the next year, Heisei 1, starts in the same row as Showa 64.");
+            auto nextButtonPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(nextButton);
+            safe_cast<xaml_automation::Provider::IInvokeProvider^>(nextButtonPeer->GetPattern(xaml_automation_peers::PatternInterface::Invoke))->Invoke();
+        });
+
+        LOG_OUTPUT(L"The year view still scrolls down, to Heisei 1.");
+        viewChangedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(formatJapaneseYear(heisei1), cv->TemplateSettings->HeaderText);
         });
     }
 } } } } } } // Microsoft::UI::Xaml::Tests::Enterprise::CalendarView

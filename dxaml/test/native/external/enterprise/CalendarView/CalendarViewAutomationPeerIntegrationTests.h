@@ -75,6 +75,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verify that the Selection Invalidated UIA event is raised only when more than 20 dates change at once.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyCalendarViewPeerAndControlGetIids)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify IInspectable::GetIids of CalendarView, its activation factory and its automation peer lists the interfaces they implement.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCalendarViewItemPeerInvokeAndTableItemInYearView)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify the year view item peer's control type, Invoke and TableItem patterns, and that invoking a month opens that month in month view.")
+        END_TEST_METHOD()
+
     private:
     };
 

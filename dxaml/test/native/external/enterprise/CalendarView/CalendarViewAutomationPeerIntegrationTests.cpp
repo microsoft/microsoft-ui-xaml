@@ -13,6 +13,9 @@
 #include "CalendarHelper.h"
 #include <UIAutomationHelper.h>
 #include <TreeHelper.h>
+#include <roapi.h>
+#include <algorithm>
+#include <vector>
 
 #undef GetClassName // Conflicts with automation peer method of the same name
 
@@ -126,6 +129,33 @@ namespace local {
         auto manager = std::make_shared<AutomationClient::AutomationClientManager>();
         manager->SetCurrentUIAutomationElement(element.Get());
         return manager;
+    }
+
+    // IIDs of the public CalendarView interfaces, from the Microsoft.UI.Xaml.Controls metadata.
+    const GUID c_iidICalendarView = { 0xE786081E, 0xB680, 0x56AB, { 0xBF, 0xBB, 0x52, 0xD5, 0xB1, 0x7C, 0x36, 0x5E } };
+    const GUID c_iidICalendarViewFactory = { 0x2F31D1EB, 0x8229, 0x517C, { 0xB3, 0xA6, 0x5A, 0x5F, 0x28, 0x72, 0x4E, 0x8F } };
+    const GUID c_iidICalendarViewStatics = { 0x9553E6FC, 0xE4DA, 0x57D4, { 0x94, 0x72, 0x7F, 0x8E, 0xD5, 0xFF, 0x72, 0x19 } };
+
+    // Returns the IIDs reported by IInspectable::GetIids and verifies the object implements each of them.
+    std::vector<GUID> GetVerifiedIids(IInspectable* object)
+    {
+        ULONG count = 0;
+        IID* iids = nullptr;
+        VERIFY_SUCCEEDED(object->GetIids(&count, &iids));
+        auto freeIids = wil::scope_exit([&]() { ::CoTaskMemFree(iids); });
+
+        std::vector<GUID> result(iids, iids + count);
+        for (const auto& iid : result)
+        {
+            wrl::ComPtr<IUnknown> unknown;
+            VERIFY_SUCCEEDED(object->QueryInterface(iid, reinterpret_cast<void**>(unknown.GetAddressOf())));
+        }
+        return result;
+    }
+
+    bool ContainsIid(const std::vector<GUID>& iids, const GUID& iid)
+    {
+        return std::find(iids.begin(), iids.end(), iid) != iids.end();
     }
 }
 
@@ -1266,6 +1296,105 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             VERIFY_ARE_EQUAL(0u, calendarView->SelectedDates->Size);
+        });
+    }
+
+    void CalendarViewAutomationPeerIntegrationTests::VerifyCalendarViewPeerAndControlGetIids()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ calendarView = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            calendarView = local::CreatePinnedCalendarView(MakeEnUsGregorianDate(2000, 11, 15), MakeEnUsGregorianDate(2001, 1, 15));
+            TestServices::WindowHelper->WindowContent = calendarView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"CalendarView lists ICalendarView among the interfaces it implements.");
+            auto controlIids = local::GetVerifiedIids(reinterpret_cast<IInspectable*>(calendarView));
+            VERIFY_IS_TRUE(local::ContainsIid(controlIids, local::c_iidICalendarView));
+
+            LOG_OUTPUT(L"The CalendarView activation factory lists its factory and statics interfaces.");
+            wrl::ComPtr<IInspectable> factory;
+            VERIFY_SUCCEEDED(::RoGetActivationFactory(
+                Microsoft::WRL::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Controls.CalendarView").Get(),
+                __uuidof(IInspectable),
+                reinterpret_cast<void**>(factory.GetAddressOf())));
+            auto factoryIids = local::GetVerifiedIids(factory.Get());
+            VERIFY_IS_TRUE(local::ContainsIid(factoryIids, local::c_iidICalendarViewFactory));
+            VERIFY_IS_TRUE(local::ContainsIid(factoryIids, local::c_iidICalendarViewStatics));
+
+            LOG_OUTPUT(L"The CalendarView peer lists the Grid, Selection, Table and Value provider interfaces.");
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            auto peerIids = local::GetVerifiedIids(reinterpret_cast<IInspectable*>(peer));
+            VERIFY_IS_TRUE(local::ContainsIid(peerIids, __uuidof(xaml_automation::Provider::IGridProvider^)));
+            VERIFY_IS_TRUE(local::ContainsIid(peerIids, __uuidof(xaml_automation::Provider::ISelectionProvider^)));
+            VERIFY_IS_TRUE(local::ContainsIid(peerIids, __uuidof(xaml_automation::Provider::ITableProvider^)));
+            VERIFY_IS_TRUE(local::ContainsIid(peerIids, __uuidof(xaml_automation::Provider::IValueProvider^)));
+        });
+    }
+
+    void CalendarViewAutomationPeerIntegrationTests::VerifyCalendarViewItemPeerInvokeAndTableItemInYearView()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ calendarView = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            // Five months (Nov 2000 - Mar 2001) shown on a 3 x 2 year view: January 2001 is the third item of the first row.
+            calendarView = local::CreatePinnedCalendarView(MakeEnUsGregorianDate(2000, 11, 15), MakeEnUsGregorianDate(2001, 3, 15));
+            calendarView->DisplayMode = xaml_controls::CalendarViewDisplayMode::Year;
+            TestServices::WindowHelper->WindowContent = calendarView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            calendarView->SetYearDecadeDisplayDimensions(3 /*columns*/, 2 /*rows*/);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            auto gridProvider = safe_cast<xaml_automation::Provider::IGridProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Grid));
+            auto januaryPeer = local::GetPeerFromProvider(gridProvider->GetItem(0, 2));
+
+            LOG_OUTPUT(L"A month item is a button that supports the Invoke and TableItem patterns.");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"CalendarViewItem"), januaryPeer->GetClassName());
+            VERIFY_ARE_EQUAL(xaml_automation_peers::AutomationControlType::Button, januaryPeer->GetAutomationControlType());
+            VERIFY_IS_TRUE(AreSameObject(januaryPeer, januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::Invoke)));
+            VERIFY_IS_TRUE(AreSameObject(januaryPeer, januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::TableItem)));
+
+            LOG_OUTPUT(L"Other patterns fall back to the base peers, which don't support Toggle or SelectionItem.");
+            VERIFY_IS_TRUE(januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::Toggle) == nullptr);
+            VERIFY_IS_TRUE(januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::SelectionItem) == nullptr);
+
+            LOG_OUTPUT(L"A month item has no column header.");
+            auto tableItemProvider = safe_cast<xaml_automation::Provider::ITableItemProvider^>(januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::TableItem));
+            VERIFY_ARE_EQUAL(0u, local::GetLength(tableItemProvider->GetColumnHeaderItems()));
+
+            LOG_OUTPUT(L"Invoke the January 2001 item.");
+            safe_cast<xaml_automation::Provider::IInvokeProvider^>(januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::Invoke))->Invoke();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Invoking a month switches to month view showing that month, with keyboard focus on a day of that month.");
+            VERIFY_ARE_EQUAL(xaml_controls::CalendarViewDisplayMode::Month, calendarView->DisplayMode);
+            VERIFY_ARE_EQUAL(FormatEnUsGregorian(L"month year", MakeEnUsGregorianDate(2001, 1, 15)), calendarView->TemplateSettings->HeaderText);
+
+            auto focusedItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(calendarView->XamlRoot));
+            VERIFY_IS_TRUE(focusedItem != nullptr);
+            auto focusedDate = CreateEnUsGregorianCalendar();
+            focusedDate->SetDateTime(focusedItem->Date);
+            VERIFY_ARE_EQUAL(2001, focusedDate->Year);
+            VERIFY_ARE_EQUAL(1, focusedDate->Month);
+            VERIFY_ARE_EQUAL(xaml::FocusState::Keyboard, focusedItem->FocusState);
         });
     }
 } } } } } }
