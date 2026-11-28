@@ -303,6 +303,12 @@ void TableViewRow::OnApplyTemplate()
     RebuildCells();
 
     ApplyHierarchyAffordance();
+    if (!m_hierarchyStatesApplied)
+    {
+        // Once per template: a row that is not a tree row is in RowNotHierarchical. The other hierarchy groups are
+        // entered only for tree rows, since their states target the chevron, which would load it.
+        winrt::VisualStateManager::GoToState(*this, L"RowNotHierarchical", false /* useTransitions */);
+    }
 
     UpdateVisualState(false /* useTransitions */);
 }
@@ -1403,12 +1409,22 @@ void TableViewRow::SetIsSelectedInternal(bool isSelected)
 
 void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, bool isExpanded)
 {
-    // A change is announced only for the item the row showed before; a recycled row moving to another item is not a
-    // state change any client saw.
-    const auto item = DataContext();
-    const uintptr_t stampedItem = item ? reinterpret_cast<uintptr_t>(winrt::get_abi(item.as<winrt::Windows::Foundation::IUnknown>())) : 0;
-    const bool isSameItem = std::exchange(m_hierarchyStampedItem, stampedItem) == stampedItem;
     const int32_t previousLevel = Level();
+    const bool isTreeRelated = level > 0 || previousLevel > 0;
+
+    // A change is announced only for the item the row showed before; a recycled row moving to another item is not a
+    // state change any client saw. The item is held, so a new object at a freed address cannot pass for it.
+    bool isSameItem = false;
+    if (isTreeRelated)
+    {
+        auto item = DataContext();
+        isSameItem = item && winrt::get_abi(item) == winrt::get_abi(m_hierarchyStampedItem);
+        m_hierarchyStampedItem = std::move(item);
+    }
+    else
+    {
+        m_hierarchyStampedItem = nullptr;
+    }
     const winrt::ExpandCollapseState oldState = HierarchyExpandCollapseState();
 
     // Guarded: setters box before SetValue, and re-preparing onto the same node is the common case.
@@ -1432,7 +1448,7 @@ void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, b
     ApplyHierarchyAffordance();
 
     // Tree rows only (or a row leaving the tree): a grouped row's set metadata does not change when it is restamped.
-    if (!isSameItem || (level <= 0 && previousLevel <= 0))
+    if (!isSameItem || !isTreeRelated)
     {
         return;
     }
@@ -1440,7 +1456,7 @@ void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, b
     RaiseExpandCollapseStateChanged(oldState, HierarchyExpandCollapseState());
 
     // Only an existing peer can have handed a client cached set metadata.
-    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    if (TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
         if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewRowAutomationPeer>())
         {
@@ -1472,7 +1488,7 @@ void TableViewRow::RaiseExpandCollapseStateChanged(
     }
 
     // Runs on every prepare; avoid forcing peers when no client listens.
-    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    if (!TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
         return;
     }
@@ -1586,7 +1602,7 @@ winrt::FrameworkElement TableViewRow::EnsureExpanderGutter()
     return gutter;
 }
 
-// Level is 1-based (UIA); a root gets no indent beyond the gutter.
+// Level is the 1-based tree depth (0: not a tree row); a root gets no indent beyond the gutter.
 double TableViewRow::HierarchyIndent()
 {
     const int32_t level = Level();

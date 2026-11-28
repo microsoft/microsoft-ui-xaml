@@ -244,9 +244,9 @@ private:
     bool m_rowExpanderGutterResolved{ false };
     // The hierarchy visual states were last set for a tree row; a flat row that never was one skips them.
     bool m_hierarchyStatesApplied{ false };
-    // COM identity of the item the hierarchy state was last stamped for: a change of state is announced to UI Automation
-    // only for the same item, never for a recycled row moving to another one.
-    uintptr_t m_hierarchyStampedItem{ 0 };
+    // The item the hierarchy state was last stamped for (tree rows only): a change of state is announced to UI
+    // Automation only for the same item, never for a recycled row moving to another one.
+    winrt::IInspectable m_hierarchyStampedItem{ nullptr };
     // Transparent cell wrapper fill, created on first use and shared by this row's cells.
     winrt::Brush m_cellWrapperBackground{ nullptr };
     winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};

@@ -86,6 +86,8 @@ public:
 
     // Raised by the owning row on expansion change so clients don't read stale state.
     void RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
+    // After a toggle the table applied by re-realizing rows: raises the change unless this peer already reported it.
+    void RaiseExpandCollapseIfUnreported(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
     // Raised by the owning row on every hierarchy restamp. Clients cache Level/PositionInSet/
     // SizeOfSet, so a reparent or sibling insert must notify; compares against the last values
@@ -103,6 +105,7 @@ private:
     int32_t m_lastReportedLevel{ -1 };
     int32_t m_lastReportedPositionInSet{ -1 };
     int32_t m_lastReportedSizeOfSet{ -1 };
+    std::optional<winrt::ExpandCollapseState> m_lastReportedExpandCollapseState;
 
     // The owning TableView, or null once the row has been recycled out of the tree.
     winrt::TableView GetOwningTableView();

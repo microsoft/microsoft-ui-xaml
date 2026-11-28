@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
@@ -1225,13 +1226,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.ItemsSource = null;
             });
             SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-            });
-            IdleSynchronizer.Wait();
+            WaitForRelease(() => view.VectorChangedHandlers == 0);
             RunOnUIThread.Execute(() => Verify.AreEqual(0, view.VectorChangedHandlers, "No handler stays on the view once the table lets go of it."));
         }
 
@@ -1261,18 +1256,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ReplaceWithStrangers(list);
             });
             SettleLayout(tableView);
+            WaitForRelease(() => weak.All(w => !w.IsAlive));
             RunOnUIThread.Execute(() =>
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-            });
-            IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() =>
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
                 var alive = string.Join(" ", weak.Where(w => w.IsAlive).Select(w => ((TreeEmployee)w.Target)?.Name));
                 Verify.AreEqual(0, weak.Count(w => w.IsAlive), $"No old item stays alive. Alive: [{alive}]");
                 GC.KeepAlive(tableView);
@@ -1338,9 +1324,174 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => VerifyTree(tableView, FullTree, "nothing changed"));
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies rows under nested groups raise no Level, PositionInSet, SizeOfSet or ExpandCollapseState change while the body scrolls (containers recycle) and while a group collapses, with a UI Automation listener.")]
+        public void VerifyGroupedRowsRaiseNoAutomationPropertyChanges()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var people = Enumerable.Range(0, 120)
+                    .Select(i => new ShapedPerson($"P{i:D3}", $"R{i % 3}", $"D{i % 4}"))
+                    .ToList();
+                var cvs = MakeShapingView(people, "DepartmentName");
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("Role"));
+                tableView = CreateTableView(cvs.View, headers: new[] { "Name", "Role" }, width: 500, height: 200);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+
+            var raised = CountRowAutomationPropertyChanges(tableView, () =>
+            {
+                foreach (var offset in new[] { 300.0, 900.0, 0.0 })
+                {
+                    ScrollBodyTo(tableView, ScrollAxis.Vertical, offset);
+                    RunOnUIThread.Execute(() => ReadRowAutomationProperties(tableView));
+                }
+                RunOnUIThread.Execute(() => tableView.CollapseGroup("D0"));
+                SettleLayout(tableView);
+            });
+            Verify.AreEqual(string.Empty, raised, "Grouped rows' set metadata and state do not change when they recycle or move.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies tree rows raise no Level, PositionInSet, SizeOfSet or ExpandCollapseState change while the body scrolls and containers recycle to other items, with a UI Automation listener.")]
+        public void VerifyRecycledTreeRowsRaiseNoAutomationPropertyChanges()
+        {
+            var list = new ObservableCollection<TreeEmployee>();
+            for (var i = 0; i < 60; i++)
+            {
+                list.Add(new TreeEmployee { Id = 1000 + i, Name = $"R{i:D2}" });
+                list.Add(new TreeEmployee { Id = 2000 + i, ManagerId = 1000 + i, Name = $"C{i:D2}" });
+            }
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                tableView = CreateTreeTable(list, IdPath, ManagerPath);
+                tableView.Height = 200;
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+
+            var raised = CountRowAutomationPropertyChanges(tableView, () =>
+            {
+                foreach (var offset in new[] { 400.0, 1200.0, 0.0 })
+                {
+                    ScrollBodyTo(tableView, ScrollAxis.Vertical, offset);
+                    RunOnUIThread.Execute(() => ReadRowAutomationProperties(tableView));
+                }
+            });
+            Verify.AreEqual(string.Empty, raised, "A recycled container moving to another item is not a change of that item.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies expanding through the row peer a node with more children than one splice takes (the table rebuilds its rows) raises ExpandCollapseState once for that item, after the rows settle.")]
+        public void VerifyExpandApplyingByRebuildRaisesExpandCollapseState()
+        {
+            var list = new ObservableCollection<TreeEmployee> { new TreeEmployee { Id = 1, Name = "Big" } };
+            for (var i = 0; i < 70; i++)
+            {
+                list.Add(new TreeEmployee { Id = 100 + i, ManagerId = 1, Name = $"K{i:D2}" });
+            }
+            var tableView = Place(list);
+            var big = list[0];
+            var raised = CountRowAutomationPropertyChanges(tableView, () =>
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = FindTreeRow(tableView, "Big");
+                    Verify.AreEqual(ExpandCollapseState.Collapsed, GetRowExpandCollapse(row).ExpandCollapseState, "Collapsed at first (and reported).");
+                    GetRowExpandCollapse(row).Expand();
+                });
+                SettleLayout(tableView);
+            }, onlyItem: big);
+            Verify.AreEqual("ExpandCollapseState", raised, "One state change for the expanded item.");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(71, GetProjectedCount(tableView), "Big and its 70 children.");
+                Verify.AreEqual(ExpandCollapseState.Expanded, GetRowExpandCollapse(FindTreeRow(tableView, "Big")).ExpandCollapseState, "Expanded.");
+            });
+        }
+
         #endregion
 
         #region Helpers
+
+        // Runs act with a UI Automation listener forced on and returns the property changes rows raised, as "Name" or,
+        // with onlyItem, only those of rows showing that item.
+        private static string CountRowAutomationPropertyChanges(TableView tableView, Action act, List<string> log = null, object onlyItem = null)
+        {
+            log ??= new List<string>();
+            EventHandler<object> handler = (sender, args) =>
+            {
+                var row = sender as TableViewRow;
+                if (onlyItem == null || (row != null && ReferenceEquals(row.DataContext, onlyItem)))
+                {
+                    log.Add($"{args}");
+                }
+            };
+            RunOnUIThread.Execute(() =>
+            {
+                Microsoft.UI.Private.Controls.TableViewTestHooks.SetAutomationListenerForced(true);
+                Microsoft.UI.Private.Controls.TableViewTestHooks.RowAutomationPropertyChanged += handler;
+                ReadRowAutomationProperties(tableView);
+            });
+            try
+            {
+                act();
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Microsoft.UI.Private.Controls.TableViewTestHooks.RowAutomationPropertyChanged -= handler;
+                    Microsoft.UI.Private.Controls.TableViewTestHooks.SetAutomationListenerForced(false);
+                });
+            }
+            return string.Join(",", log);
+        }
+
+        // Makes each realized row's peer and reads what a client caches, so a later change of it would be raised.
+        private static void ReadRowAutomationProperties(TableView tableView)
+        {
+            foreach (var row in GetRealizedRows(tableView))
+            {
+                var peer = GetRowPeer(row);
+                peer.GetLevel();
+                peer.GetPositionInSet();
+                peer.GetSizeOfSet();
+                if (row.IsExpandable)
+                {
+                    _ = ((IExpandCollapseProvider)peer).ExpandCollapseState;
+                }
+            }
+        }
+
+        // Collects until isReleased holds (bounded): a single GC pass can miss objects a pending finalizer or the
+        // dispatcher still holds.
+        private static void WaitForRelease(Func<bool> isReleased)
+        {
+            for (var attempt = 0; attempt < 20; attempt++)
+            {
+                var released = false;
+                RunOnUIThread.Execute(() =>
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                    released = isReleased();
+                });
+                if (released)
+                {
+                    return;
+                }
+                IdleSynchronizer.Wait();
+            }
+        }
 
         // A tree table over a fresh MakeTree, and weak references to its items. Not inlined, so no local here keeps an
         // item alive for the caller's GC.

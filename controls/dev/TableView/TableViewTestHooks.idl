@@ -18,6 +18,13 @@ runtimeclass TableViewTestHooks
 
     // Raised (sender: the row) at the end of each row cell rebuild.
     static event Windows.Foundation.EventHandler<Object> RowCellRebuilt;
+
+    // While set, TableView rows and their peers behave as if a UI Automation client listened for property changes,
+    // so a test can count the property changes they raise (RowAutomationPropertyChanged).
+    static void SetAutomationListenerForced(Boolean isForced);
+    // Raised (sender: the row; args: the property's programmatic name, e.g. "ExpandCollapseState") for each
+    // property change a row peer raises.
+    static event Windows.Foundation.EventHandler<Object> RowAutomationPropertyChanged;
 }
 
 }

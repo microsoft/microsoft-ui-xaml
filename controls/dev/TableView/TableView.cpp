@@ -2225,6 +2225,7 @@ void TableView::RefreshCachedProjection()
     {
         ++m_rowMetadataGeneration;
         m_pendingGroupExpansionStates.clear();
+        m_pendingRowExpansionStates.clear();
         m_groupAutomationElements.clear();
     }
 }
@@ -2246,8 +2247,13 @@ void TableView::OnFlattenedRowsChanged()
     QueueGroupExpansionRowRefresh();
 
     // In-place projection rewrites (e.g. declaring a hierarchy over the same view) re-prepare no
-    // rows, so restamp them. Deferred until the repeater reconciles.
-    QueueRefreshRealizedRowHierarchyState();
+    // rows, so restamp them. Deferred until the repeater reconciles. Flat and grouped rows carry no
+    // tree state, unless they were a tree until now.
+    const bool isTree = IsHierarchicalRowSource();
+    if (const bool wasTree = std::exchange(m_lastProjectionWasTree, isTree); isTree || wasTree)
+    {
+        QueueRefreshRealizedRowHierarchyState();
+    }
 }
 
 void TableView::UpdateRowHierarchyResetSubscription()
@@ -2305,6 +2311,7 @@ void TableView::QueueRefreshRealizedRowHierarchyState()
         {
             strongThis->m_rowHierarchyRefreshQueued = false;
             strongThis->RefreshRealizedRowHierarchyState();
+            strongThis->RaisePendingRowExpansionEvents();
         }
     });
 }

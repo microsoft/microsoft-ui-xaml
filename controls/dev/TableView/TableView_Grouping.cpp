@@ -6,6 +6,8 @@
 #include "GroupedEntry.h"
 #include "TableView.h"
 #include "TableViewRow.h"
+#include "TableViewRowAutomationPeer.h"
+#include "TableViewTestHooks.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
 #include "RowMetadataProvider.h"
@@ -586,10 +588,17 @@ void TableView::ApplyGroupExpansionByIdentity(
     bool targetResolves = provider && generation == m_rowMetadataGeneration;
 
     std::optional<winrt::ExpandCollapseState> groupStateBefore;
-    if (axis == BulkExpansionAxis::Groups && !subtree &&
-        winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    std::optional<winrt::ExpandCollapseState> rowStateBefore;
+    if (!subtree && TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        groupStateBefore = TryGetGroupExpandCollapseState(identity);
+        if (axis == BulkExpansionAxis::Groups)
+        {
+            groupStateBefore = TryGetGroupExpandCollapseState(identity);
+        }
+        else
+        {
+            rowStateBefore = TryGetRowExpandCollapseState(identity);
+        }
     }
 
     // A GroupExpanding handler that changes the source (a lazy load, a Filter) is coalesced into one
@@ -676,6 +685,10 @@ void TableView::ApplyGroupExpansionByIdentity(
             // Keep the earliest state: two toggles before the header is re-prepared net out to no change.
             m_pendingGroupExpansionStates.try_emplace(identity, *groupStateBefore);
         }
+        if (rowStateBefore)
+        {
+            m_pendingRowExpansionStates.try_emplace(identity, *rowStateBefore);
+        }
         QueueGroupExpansionRowRefresh();
         // The toggled row keeps its index, so it is never re-prepared; restamp it here. Rows below the
         // splice may still report pre-reconcile indices, so restamp again once the repeater has
@@ -732,6 +745,61 @@ std::optional<winrt::ExpandCollapseState> TableView::TryGetGroupExpandCollapseSt
     {
     }
     return std::nullopt;
+}
+
+std::optional<winrt::ExpandCollapseState> TableView::TryGetRowExpandCollapseState(winrt::hstring const& identity)
+{
+    try
+    {
+        int32_t index = -1;
+        TableViewRowInfo info{};
+        if (m_tableViewSourceRowMetadata &&
+            m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) &&
+            TryGetRowInfo(index, info) && info.Kind == TableViewRowKind::Data && info.Level > 0)
+        {
+            return GroupExpandCollapseState(info.IsExpandable, info.IsExpanded);
+        }
+    }
+    catch (...)
+    {
+    }
+    return std::nullopt;
+}
+
+// A toggled tree row that the table showed again in another container (a rebuild re-realizes every row) tells UI
+// Automation its new state here, once the rows have settled; a row that already reported it raises nothing.
+void TableView::RaisePendingRowExpansionEvents()
+{
+    if (m_pendingRowExpansionStates.empty())
+    {
+        return;
+    }
+    auto pending = std::exchange(m_pendingRowExpansionStates, {});
+    if (!TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        return;
+    }
+
+    ForEachRealizedRow([this, &pending](winrt::TableViewRow const& row)
+    {
+        auto const identity = TryGetContainerIdentity(row);
+        auto const found = identity.empty() ? pending.end() : pending.find(identity);
+        if (found == pending.end())
+        {
+            return;
+        }
+        auto const newState = winrt::get_self<TableViewRow>(row)->HierarchyExpandCollapseState();
+        auto peer = winrt::FrameworkElementAutomationPeer::FromElement(row);
+        if (!peer)
+        {
+            peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(row);
+        }
+        if (auto const rowPeer = peer.try_as<winrt::TableViewRowAutomationPeer>())
+        {
+            winrt::get_self<TableViewRowAutomationPeer>(rowPeer)->RaiseExpandCollapseIfUnreported(found->second, newState);
+        }
+        pending.erase(found);
+    });
 }
 
 void TableView::AnnounceRowExpansionChange(winrt::hstring const& identity)
@@ -1249,6 +1317,13 @@ void TableView::SetRowExpansionByItem(winrt::IInspectable const& item, bool expa
 
     auto const focusedIdentity = CaptureFocusedContainerForRestore();
     auto const generation = m_rowMetadataGeneration;
+    winrt::hstring identity;
+    std::optional<winrt::ExpandCollapseState> stateBefore;
+    if (TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        identity = flattener->TryGetIdentityForItem(item);
+        stateBefore = identity.empty() ? std::nullopt : TryGetRowExpandCollapseState(identity);
+    }
     bool changed = false;
     {
         // As a chevron or arrow on the row (ApplyGroupExpansionByIdentity): a failure writes TableView_Error, and an
@@ -1272,6 +1347,10 @@ void TableView::SetRowExpansionByItem(winrt::IInspectable const& item, bool expa
 
     if (changed)
     {
+        if (stateBefore)
+        {
+            m_pendingRowExpansionStates.try_emplace(identity, *stateBefore);
+        }
         TableViewTelemetry::MarkUsed(m_telemetrySession, m_telemetrySession.generation, TableViewTelemetry::Feature::Hierarchy);
         RefreshRealizedRowHierarchyState();
         QueueRefreshRealizedRowHierarchyState();

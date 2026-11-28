@@ -272,6 +272,9 @@
     <!-- Chevron glyph size on a tree row; scale it with TableViewRowExpanderSize. -->
     <x:Double x:Key="TableViewRowExpanderGlyphSize">12</x:Double>
 
+    <!-- Chevron glyph size on a group header; scale it with TableViewGroupExpanderSize. -->
+    <x:Double x:Key="TableViewGroupExpanderGlyphSize">12</x:Double>
+
     <!-- Indent added per hierarchy level on a tree row's first column. Override in an app's
          resources to retheme every table, or in one TableView's Resources for a single table. -->
     <x:Double x:Key="TableViewRowIndentSize">16</x:Double>
@@ -496,7 +499,11 @@
 
                             <VisualStateGroup x:Name="RowHierarchyStates">
                                 <!-- TableViewRow sets gutter Visibility directly; these states exist
-                                     for retemplating apps to key off. -->
+                                     for retemplating apps to key off. A row is in RowNotHierarchical from
+                                     template apply; RowExpansionStates and RowExpandabilityStates are
+                                     entered only once it shows a tree row (no state: not a tree row).
+                                     PART_RowExpanderGutter must default to Collapsed: it is loaded and
+                                     shown only for tree rows. -->
                                 <VisualState x:Name="RowNotHierarchical" />
                                 <VisualState x:Name="RowHierarchical" />
                             </VisualStateGroup>
@@ -724,7 +731,7 @@
                                     Grid.Column="0"
                                     Width="{ThemeResource TableViewGroupExpanderSize}">
                                 <FontIcon x:Name="PART_ExpanderIcon"
-                                          FontSize="12"
+                                          FontSize="{ThemeResource TableViewGroupExpanderGlyphSize}"
                                           Foreground="{TemplateBinding Foreground}"
                                           MirroredWhenRightToLeft="True"
                                           HorizontalAlignment="Center"

@@ -14,6 +14,26 @@ namespace
 
     // Leaked, as RepeaterTestHooks is: a handler left registered is never released during DLL unload.
     std::atomic<RowCellRebuiltEvent*> s_rowCellRebuilt{ nullptr };
+    std::atomic<RowCellRebuiltEvent*> s_rowAutomationPropertyChanged{ nullptr };
+    std::atomic<bool> s_isAutomationListenerForced{ false };
+
+    RowCellRebuiltEvent& EnsureEvent(std::atomic<RowCellRebuiltEvent*>& slot)
+    {
+        auto* existing = slot.load(std::memory_order_acquire);
+        if (!existing)
+        {
+            auto* const created = new RowCellRebuiltEvent();
+            if (slot.compare_exchange_strong(existing, created, std::memory_order_acq_rel))
+            {
+                existing = created;
+            }
+            else
+            {
+                delete created;
+            }
+        }
+        return *existing;
+    }
 
     RowCellRebuiltEvent& EnsureRowCellRebuilt()
     {
@@ -88,6 +108,45 @@ void TableViewTestHooks::NoteRowCellRebuild(winrt::IInspectable const& row)
     try
     {
         (*rowCellRebuilt)(row, nullptr);
+    }
+    catch (...)
+    {
+    }
+}
+
+void TableViewTestHooks::SetAutomationListenerForced(bool isForced)
+{
+    s_isAutomationListenerForced.store(isForced, std::memory_order_release);
+}
+
+winrt::event_token TableViewTestHooks::RowAutomationPropertyChanged(winrt::Windows::Foundation::EventHandler<winrt::IInspectable> const& handler)
+{
+    return EnsureEvent(s_rowAutomationPropertyChanged).add(handler);
+}
+
+void TableViewTestHooks::RowAutomationPropertyChanged(winrt::event_token const& token)
+{
+    if (auto* const changed = s_rowAutomationPropertyChanged.load(std::memory_order_acquire))
+    {
+        changed->remove(token);
+    }
+}
+
+bool TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents eventId)
+{
+    return s_isAutomationListenerForced.load(std::memory_order_acquire) || winrt::AutomationPeer::ListenerExists(eventId);
+}
+
+void TableViewTestHooks::NoteRowAutomationPropertyChanged(winrt::IInspectable const& row, wchar_t const* property)
+{
+    auto* const changed = s_rowAutomationPropertyChanged.load(std::memory_order_acquire);
+    if (!changed || !*changed)
+    {
+        return;
+    }
+    try
+    {
+        (*changed)(row, winrt::box_value(winrt::hstring{ property }));
     }
     catch (...)
     {

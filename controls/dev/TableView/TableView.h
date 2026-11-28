@@ -1084,6 +1084,12 @@ private:
     void RaiseGroupStructureChanged();
     void AnnounceRowExpansionChange(winrt::hstring const& identity);
     std::optional<winrt::ExpandCollapseState> TryGetGroupExpandCollapseState(winrt::hstring const& identity);
+    std::optional<winrt::ExpandCollapseState> TryGetRowExpandCollapseState(winrt::hstring const& identity);
+    void RaisePendingRowExpansionEvents();
+    // Tree row identity -> ExpandCollapseState before a toggle, until the rows settle (RaisePendingRowExpansionEvents).
+    std::unordered_map<winrt::hstring, winrt::ExpandCollapseState> m_pendingRowExpansionStates;
+    // The rows were a tree when they last changed, so leaving the tree still restamps them.
+    bool m_lastProjectionWasTree{ false };
 
     // Group identity -> ExpandCollapseState before a toggle that has not reached its header yet.
     std::unordered_map<winrt::hstring, winrt::ExpandCollapseState> m_pendingGroupExpansionStates;

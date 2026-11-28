@@ -8,6 +8,7 @@
 #include "TableViewRowAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
+#include "TableViewTestHooks.h"
 #include "TableViewRowAutomationPeer.properties.cpp"
 
 #include <UIAutomationCore.h>
@@ -816,15 +817,12 @@ void TableViewRowAutomationPeer::ApplySelectionItemActionAt(
 winrt::ExpandCollapseState TableViewRowAutomationPeer::ExpandCollapseState()
 {
     auto const row = GetRow();
-    if (!row || !row.IsExpandable())
-    {
-        // Leaf or recycled row; non-tree rows never expose the pattern.
-        return winrt::ExpandCollapseState::LeafNode;
-    }
-
-    return row.IsExpanded()
-        ? winrt::ExpandCollapseState::Expanded
+    // Leaf or recycled row; non-tree rows never expose the pattern.
+    const auto state = (!row || !row.IsExpandable()) ? winrt::ExpandCollapseState::LeafNode
+        : row.IsExpanded() ? winrt::ExpandCollapseState::Expanded
         : winrt::ExpandCollapseState::Collapsed;
+    m_lastReportedExpandCollapseState = state;
+    return state;
 }
 
 void TableViewRowAutomationPeer::Expand()
@@ -868,22 +866,35 @@ void TableViewRowAutomationPeer::RaiseExpandCollapseAutomationEvent(
         return;
     }
 
-    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    if (!TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
         return;
     }
 
     try
     {
+        m_lastReportedExpandCollapseState = newState;
         RaisePropertyChangedEvent(
             winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
             box_value(oldState),
             box_value(newState));
+        TableViewTestHooks::NoteRowAutomationPropertyChanged(Owner(), L"ExpandCollapseState");
     }
     catch (...)
     {
         // best-effort: the tree may be tearing down.
     }
+}
+
+void TableViewRowAutomationPeer::RaiseExpandCollapseIfUnreported(
+    winrt::ExpandCollapseState oldState,
+    winrt::ExpandCollapseState newState)
+{
+    if (m_lastReportedExpandCollapseState == newState)
+    {
+        return;
+    }
+    RaiseExpandCollapseAutomationEvent(oldState, newState);
 }
 
 void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
@@ -899,18 +910,19 @@ void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
     {
         // Compare against what this peer last reported to a client (recorded by the Get*Core
         // overrides). -1 means never reported, so no client can hold a stale value.
-        auto raiseIfChanged = [this](winrt::AutomationProperty const& property, int32_t& last, int32_t current)
+        auto raiseIfChanged = [this](winrt::AutomationProperty const& property, wchar_t const* name, int32_t& last, int32_t current)
         {
             if (last >= 0 && last != current)
             {
                 RaisePropertyChangedEvent(property, box_value(last), box_value(current));
                 last = current;
+                TableViewTestHooks::NoteRowAutomationPropertyChanged(Owner(), name);
             }
         };
 
-        raiseIfChanged(winrt::AutomationElementIdentifiers::LevelProperty(), m_lastReportedLevel, ComputeLevel());
-        raiseIfChanged(winrt::AutomationElementIdentifiers::PositionInSetProperty(), m_lastReportedPositionInSet, ComputePositionInSet());
-        raiseIfChanged(winrt::AutomationElementIdentifiers::SizeOfSetProperty(), m_lastReportedSizeOfSet, ComputeSizeOfSet());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::LevelProperty(), L"Level", m_lastReportedLevel, ComputeLevel());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::PositionInSetProperty(), L"PositionInSet", m_lastReportedPositionInSet, ComputePositionInSet());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::SizeOfSetProperty(), L"SizeOfSet", m_lastReportedSizeOfSet, ComputeSizeOfSet());
     }
     catch (...)
     {
@@ -923,6 +935,7 @@ void TableViewRowAutomationPeer::ResetReportedHierarchyState()
     m_lastReportedLevel = -1;
     m_lastReportedPositionInSet = -1;
     m_lastReportedSizeOfSet = -1;
+    m_lastReportedExpandCollapseState.reset();
 }
 
 // ----- IAutomationPeerOverrides3 -----

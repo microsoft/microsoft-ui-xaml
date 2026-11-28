@@ -393,6 +393,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Baseline for the per-row prepare cost of flat and grouped (not tree) rows: a settled load and twenty settled scroll steps that recycle every realized row.")]
+        public void BenchFlatAndGroupedPrepare()
+        {
+            const int n = 10_000;
+            foreach (var grouped in new[] { false, true })
+            {
+                var name = grouped ? "Grouped" : "Flat";
+                TableView tableView = null;
+                var rows = MakeTreeRows(n);
+                Report($"{name}.LoadSettled", n, TimeSettled(() =>
+                {
+                    var cvs = new CollectionViewSource { Source = rows };
+                    if (grouped)
+                    {
+                        cvs.GroupDescriptions.Add(new PropertyGroupDescription(nameof(BenchRow.Team100)));
+                    }
+                    tableView = CreateTreeTable(cvs.View);
+                    LoadContent(tableView);
+                }));
+                SettleLayout(tableView);
+
+                var steps = new List<double>();
+                for (var step = 1; step <= 20; step++)
+                {
+                    var offset = step * 2000.0;
+                    steps.Add(TimeSettled(() => GetBodyScroller(tableView).ChangeView(null, offset, null, true)));
+                }
+                steps.Sort();
+                Report($"{name}.ScrollStepSettled", n, steps[steps.Count / 2]);
+                RunOnUIThread.Execute(() => Content = null);
+                IdleSynchronizer.Wait();
+            }
+        }
         private static int CountProjected(TableView tableView)
         {
             var count = 0;
