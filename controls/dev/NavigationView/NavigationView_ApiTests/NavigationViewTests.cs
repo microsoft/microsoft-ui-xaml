@@ -3012,6 +3012,413 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
 
         [TestMethod]
+        public void VerifyHierarchicalFlyoutItemsReenabledWhileClosed()
+        {
+            VerifyHierarchicalFlyoutItemsEnabledState(enableItems: true, updateWhileClosed: true);
+        }
+
+        [TestMethod]
+        public void VerifyHierarchicalFlyoutItemsDisabledWhileClosed()
+        {
+            VerifyHierarchicalFlyoutItemsEnabledState(enableItems: false, updateWhileClosed: true);
+        }
+
+        [TestMethod]
+        public void VerifyHierarchicalFlyoutItemsReenabledWhileOpen()
+        {
+            VerifyHierarchicalFlyoutItemsEnabledState(enableItems: true, updateWhileClosed: false);
+        }
+
+        [TestMethod]
+        public void VerifyHierarchicalFlyoutItemsDisabledWhileOpen()
+        {
+            VerifyHierarchicalFlyoutItemsEnabledState(enableItems: false, updateWhileClosed: false);
+        }
+
+        [TestMethod]
+        public void VerifyHierarchicalFlyoutReloadSynchronizesPresentation()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                VerifyHierarchicalFlyoutReloadPresentation(mode, reapplyTemplate: false, itemCount: 1, reloadCount: 3);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyHierarchicalFlyoutReloadAfterTemplateReapplication()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                VerifyHierarchicalFlyoutReloadPresentation(mode, reapplyTemplate: true, itemCount: 1, reloadCount: 3);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyHierarchicalFlyoutReloadWithoutEnabledChanges()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                VerifyHierarchicalFlyoutReloadPresentation(
+                    mode, reapplyTemplate: false, itemCount: 8, reloadCount: 3, changeEnabledState: false);
+            }
+        }
+
+        private void VerifyHierarchicalFlyoutReloadPresentation(
+            NavigationViewPaneDisplayMode mode, bool reapplyTemplate, int itemCount, int reloadCount,
+            bool changeEnabledState = true)
+        {
+            NavigationViewItem parent = null;
+            NavigationView navView = null;
+            var items = new List<NavigationViewItem>();
+            var statesObservedInLoaded = new List<string>();
+            using var loadedEvent = new ManualResetEvent(false);
+            using var unloadedEvent = new ManualResetEvent(false);
+            using var enabledChangedEvent = new ManualResetEvent(false);
+            using var navigationLoadedEvent = new ManualResetEvent(false);
+            int pointerEvents = 0;
+            RoutedEventHandler onLoaded = (sender, args) =>
+            {
+                statesObservedInLoaded.Add(GetNavigationViewItemDisabledState((NavigationViewItem)sender));
+            };
+            RoutedEventHandler signalLoaded = (sender, args) => loadedEvent.Set();
+            RoutedEventHandler signalUnloaded = (sender, args) => unloadedEvent.Set();
+            RoutedEventHandler signalNavigationLoaded = (sender, args) => navigationLoadedEvent.Set();
+            DependencyPropertyChangedEventHandler signalEnabledChanged = (sender, args) => enabledChangedEvent.Set();
+            RunOnUIThread.Execute(() =>
+            {
+                parent = new NavigationViewItem { Content = "Destinations" };
+                for (int i = 0; i < itemCount; i++)
+                {
+                    var item = new NavigationViewItem { Content = $"Destination {i}" };
+                    item.Loaded += onLoaded;
+                    item.AddHandler(UIElement.PointerEnteredEvent,
+                        new Microsoft.UI.Xaml.Input.PointerEventHandler((sender, args) => pointerEvents++), true);
+                    item.AddHandler(UIElement.PointerMovedEvent,
+                        new Microsoft.UI.Xaml.Input.PointerEventHandler((sender, args) => pointerEvents++), true);
+                    items.Add(item);
+                    parent.MenuItems.Add(item);
+                }
+                items[itemCount - 1].Loaded += signalLoaded;
+                items[itemCount - 1].Unloaded += signalUnloaded;
+                items[0].IsEnabledChanged += signalEnabledChanged;
+                navView = new NavigationView
+                {
+                    PaneDisplayMode = mode,
+                    IsPaneOpen = false,
+                    IsSettingsVisible = false,
+                    Width = 800,
+                    Height = 600
+                };
+                navView.MenuItems.Add(parent);
+                navView.Loaded += signalNavigationLoaded;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            try
+            {
+                Verify.IsTrue(navigationLoadedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for NavigationView initialization.");
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => parent.IsExpanded = true);
+                Verify.IsTrue(loadedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for all flyout items.");
+                IdleSynchronizer.Wait();
+                for (int reload = 0; reload < reloadCount; reload++)
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        unloadedEvent.Reset();
+                        parent.IsExpanded = false;
+                    });
+                    Verify.IsTrue(unloadedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for the flyout to unload.");
+                    IdleSynchronizer.Wait();
+                    bool enabled = !changeEnabledState || reload % 2 != 0;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        foreach (var item in items)
+                        {
+                            Verify.IsFalse(item.IsLoaded);
+                            if (reapplyTemplate)
+                            {
+                                var previousRoot = VisualTreeHelper.GetChild(item, 0);
+                                item.Template = null;
+                                item.ClearValue(Control.TemplateProperty);
+                                Verify.IsTrue(item.ApplyTemplate());
+                                Verify.AreNotEqual(previousRoot, VisualTreeHelper.GetChild(item, 0));
+                            }
+                            item.IsEnabled = enabled;
+                        }
+                        statesObservedInLoaded.Clear();
+                        loadedEvent.Reset();
+                    });
+                    RunOnUIThread.Execute(() => parent.IsExpanded = true);
+                    Verify.IsTrue(loadedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for all items to reload.");
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        // A stationary cursor over the popup can raise synthesized pointer events, so this is informational.
+                        // The state observed in Loaded below is what proves the result does not depend on hover.
+                        if (pointerEvents != 0)
+                        {
+                            Log.Warning($"{pointerEvents} pointer event(s) reached the items; the final state may have been refreshed by hover.");
+                        }
+                        Verify.AreEqual(itemCount, statesObservedInLoaded.Count);
+                        foreach (var state in statesObservedInLoaded)
+                        {
+                            Verify.AreEqual(enabled ? "Enabled" : "Disabled", state,
+                                "Application Loaded handlers must observe the reconciled enabled state.");
+                        }
+                        foreach (var item in items)
+                        {
+                            Verify.AreEqual(enabled ? "Enabled" : "Disabled", GetNavigationViewItemDisabledState(item));
+                        }
+                    });
+                }
+                RunOnUIThread.Execute(() =>
+                {
+                    enabledChangedEvent.Reset();
+                    items[0].IsEnabled = !items[0].IsEnabled;
+                });
+                Verify.IsTrue(enabledChangedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for a live enabled-state change.");
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(items[0].IsEnabled ? "Enabled" : "Disabled", GetNavigationViewItemDisabledState(items[0]),
+                        "Live enabled-state changes must update the presentation.");
+                });
+            }
+            finally
+            {
+                // The flyout may already be closed when a verification fails, so cleanup must not wait for Unloaded.
+                RunOnUIThread.Execute(() => parent.IsExpanded = false);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var item in items)
+                    {
+                        item.Loaded -= onLoaded;
+                    }
+                    items[itemCount - 1].Loaded -= signalLoaded;
+                    items[itemCount - 1].Unloaded -= signalUnloaded;
+                    items[0].IsEnabledChanged -= signalEnabledChanged;
+                    navView.Loaded -= signalNavigationLoaded;
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        private string GetNavigationViewItemDisabledState(NavigationViewItem item)
+        {
+            var presenter = VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+            if (presenter == null)
+            {
+                Verify.Fail("The item must have a presenter before its Loaded handlers run.");
+                return null;
+            }
+            var root = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+            foreach (var group in VisualStateManager.GetVisualStateGroups(root))
+            {
+                if (group.Name == "DisabledStates")
+                {
+                    return group.CurrentState?.Name;
+                }
+            }
+            Verify.Fail("The item presenter must expose its enabled/disabled states.");
+            return null;
+        }
+
+        private void VerifyHierarchicalFlyoutItemsEnabledState(bool enableItems, bool updateWhileClosed)
+        {
+            NavigationViewItem parentItem = null;
+            NavigationViewItem selectedItem = null;
+            NavigationViewItem unselectedItem = null;
+            NavigationViewItem disabledItem = null;
+            using var loadedEvent = new ManualResetEvent(false);
+            using var unloadedEvent = new ManualResetEvent(false);
+            using var enabledChangedEvent = new ManualResetEvent(false);
+            int pointerEvents = 0;
+            int enabledChanges = 0;
+            var statesObservedInLoaded = new Dictionary<NavigationViewItem, string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                selectedItem = new NavigationViewItem { Content = "Selected destination" };
+                unselectedItem = new NavigationViewItem { Content = "Unselected destination" };
+                disabledItem = new NavigationViewItem { Content = "Disabled control", IsEnabled = false };
+                parentItem = new NavigationViewItem { Content = "Destinations" };
+                parentItem.MenuItems.Add(selectedItem);
+                parentItem.MenuItems.Add(unselectedItem);
+                parentItem.MenuItems.Add(disabledItem);
+                var navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsPaneOpen = false,
+                    IsSettingsVisible = false,
+                    Width = 800,
+                    Height = 600
+                };
+                navView.MenuItems.Add(parentItem);
+                navView.SelectedItem = selectedItem;
+
+                foreach (var item in new[] { selectedItem, unselectedItem, disabledItem })
+                {
+                    item.Loaded += (sender, args) =>
+                    {
+                        var loadedItem = (NavigationViewItem)sender;
+                        statesObservedInLoaded[loadedItem] = GetNavigationViewItemDisabledState(loadedItem);
+                    };
+                    item.AddHandler(UIElement.PointerEnteredEvent,
+                        new Microsoft.UI.Xaml.Input.PointerEventHandler((sender, args) => pointerEvents++), true);
+                    item.AddHandler(UIElement.PointerMovedEvent,
+                        new Microsoft.UI.Xaml.Input.PointerEventHandler((sender, args) => pointerEvents++), true);
+                }
+                disabledItem.Loaded += (sender, args) => loadedEvent.Set();
+                disabledItem.Unloaded += (sender, args) => unloadedEvent.Set();
+                Content = navView;
+                Content.UpdateLayout();
+                parentItem.IsExpanded = true;
+            });
+
+            try
+            {
+                Verify.IsTrue(loadedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for the flyout children to load.");
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(selectedItem.IsLoaded);
+                    Verify.IsTrue(unselectedItem.IsLoaded);
+                    Verify.IsTrue(disabledItem.IsLoaded);
+                    foreach (var item in new[] { selectedItem, unselectedItem })
+                    {
+                        item.IsEnabledChanged += (sender, args) =>
+                        {
+                            enabledChanges++;
+                            if (enabledChanges == 2)
+                            {
+                                enabledChangedEvent.Set();
+                            }
+                        };
+                    }
+                    selectedItem.IsEnabled = !enableItems;
+                    unselectedItem.IsEnabled = !enableItems;
+                });
+                if (enableItems)
+                {
+                    Verify.IsTrue(enabledChangedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for both initial disabled-state notifications.");
+                }
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyHierarchicalFlyoutItemsPresentation(selectedItem, unselectedItem, disabledItem, !enableItems);
+                    if (updateWhileClosed)
+                    {
+                        parentItem.IsExpanded = false;
+                    }
+                });
+
+                if (updateWhileClosed)
+                {
+                    Verify.IsTrue(unloadedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for the flyout children to unload.");
+                    IdleSynchronizer.Wait();
+                }
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(!updateWhileClosed, selectedItem.IsLoaded);
+                    Verify.AreEqual(!updateWhileClosed, unselectedItem.IsLoaded);
+                    enabledChanges = 0;
+                    enabledChangedEvent.Reset();
+                    selectedItem.IsEnabled = enableItems;
+                    unselectedItem.IsEnabled = enableItems;
+                    if (updateWhileClosed)
+                    {
+                        statesObservedInLoaded.Clear();
+                        loadedEvent.Reset();
+                        parentItem.IsExpanded = true;
+                    }
+                });
+
+                if (updateWhileClosed)
+                {
+                    Verify.IsTrue(loadedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for the flyout children to reload.");
+                }
+                else
+                {
+                    Verify.IsTrue(enabledChangedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for both live enabled-state notifications.");
+                }
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"IsEnabledChanged notifications for the final update: {enabledChanges}");
+                    // A stationary cursor over the popup can raise synthesized pointer events, so this is informational.
+                    if (pointerEvents != 0)
+                    {
+                        Log.Warning($"{pointerEvents} pointer event(s) reached the items; the final state may have been refreshed by hover.");
+                    }
+                    Verify.IsTrue(selectedItem.IsSelected);
+                    Verify.IsFalse(unselectedItem.IsSelected);
+                    if (updateWhileClosed)
+                    {
+                        // Loaded runs before any pointer input can reach the reopened items.
+                        foreach (var item in new[] { selectedItem, unselectedItem, disabledItem })
+                        {
+                            bool expectedEnabled = item != disabledItem && enableItems;
+                            Verify.IsTrue(statesObservedInLoaded.TryGetValue(item, out var observedState),
+                                "Each reopened item must raise Loaded.");
+                            Verify.AreEqual(expectedEnabled ? "Enabled" : "Disabled", observedState,
+                                "Application Loaded handlers must observe the reconciled enabled state.");
+                        }
+                    }
+                    VerifyHierarchicalFlyoutItemsPresentation(selectedItem, unselectedItem, disabledItem, enableItems);
+                });
+            }
+            finally
+            {
+                // The flyout may already be closed when a verification fails, so cleanup must not wait for Unloaded.
+                RunOnUIThread.Execute(() => parentItem.IsExpanded = false);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => Content = null);
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        private void VerifyHierarchicalFlyoutItemsPresentation(
+            NavigationViewItem selectedItem,
+            NavigationViewItem unselectedItem,
+            NavigationViewItem disabledItem,
+            bool enabled)
+        {
+            var disabledPresenter = VisualTreeUtils.FindVisualChildByName(disabledItem, "NavigationViewItemPresenter");
+            Verify.IsNotNull(disabledPresenter);
+            var disabledRoot = VisualTreeHelper.GetChild(disabledPresenter, 0) as FrameworkElement;
+            Verify.IsNotNull(disabledRoot);
+            Verify.IsTrue(disabledRoot.Opacity > 0 && disabledRoot.Opacity < 1);
+            bool presentationMatches = true;
+            foreach (var item in new[] { selectedItem, unselectedItem, disabledItem })
+            {
+                bool expectedEnabled = item != disabledItem && enabled;
+                Verify.IsTrue(item.IsLoaded);
+                Verify.AreEqual(expectedEnabled, item.IsEnabled);
+                var presenter = VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsNotNull(presenter);
+                var root = VisualTreeHelper.GetChild(presenter, 0) as FrameworkElement;
+                Verify.IsNotNull(root);
+                string state = null;
+                foreach (var group in VisualStateManager.GetVisualStateGroups(root))
+                {
+                    if (group.Name == "DisabledStates")
+                    {
+                        state = group.CurrentState?.Name;
+                    }
+                }
+                string expectedState = expectedEnabled ? "Enabled" : "Disabled";
+                double expectedOpacity = expectedEnabled ? 1 : disabledRoot.Opacity;
+                Log.Comment($"{item.Content}: IsEnabled={item.IsEnabled}, State={state}, ExpectedState={expectedState}, Opacity={root.Opacity}, ExpectedOpacity={expectedOpacity}");
+                presentationMatches &= state == expectedState && Math.Abs(root.Opacity - expectedOpacity) < 0.001;
+            }
+            Verify.IsTrue(presentationMatches, "Every flyout child's enabled visual state and opacity must match IsEnabled.");
+        }
+
+        [TestMethod]
         public void VerifyNavigationItemUIAType()
         {
             RunOnUIThread.Execute(() =>
