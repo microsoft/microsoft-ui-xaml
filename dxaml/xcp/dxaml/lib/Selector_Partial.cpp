@@ -1181,6 +1181,7 @@ _Check_return_
                 INT oldSelectedIndex = -1;
                 UINT nSize = 0;
 
+                IFC(UpdateSelectedRangesForUnselectedItemChange(itemIndex, true));
                 IFC(spItems.Cast<ItemCollection>()->get_Size(&nSize));
 
                 // If the item wasn't added at the end, then check if we need to update the
@@ -1306,6 +1307,7 @@ _Check_return_ HRESULT
             else if (pSelectionChanger != NULL && !IsSelectionReentrancyAllowed())
             {
                 INT oldSelectedIndex = -1;
+                IFC(UpdateSelectedRangesForUnselectedItemChange(itemIndex, false));
                 IFC(get_SelectedIndex(&oldSelectedIndex));
                 if (itemIndex <= oldSelectedIndex && !IsInit())
                 {
@@ -1905,6 +1907,22 @@ _Check_return_
     // other properties from being updated.
     PreventSelectionReentrancy();
 
+    IFC(RebuildSelectedRanges());
+
+Cleanup:
+    AllowSelectionReentrancy();
+    return hr;
+}
+
+_Check_return_ HRESULT Selector::RebuildSelectedRanges()
+{
+    HRESULT hr = S_OK;
+
+    ASSERT(!IsSelectionReentrancyAllowed(), L"Reentrancy lock must be active to rebuild selected ranges");
+
+    std::vector<unsigned int> selectedIndexes;
+    ctl::ComPtr<TrackerCollection<xaml_data::ItemIndexRange*>> spSelectedRanges;
+
     spSelectedRanges = m_tpSelectedRangesImpl.Cast<TrackerCollection<xaml_data::ItemIndexRange*>>();
 
     IFC(spSelectedRanges->Clear());
@@ -1917,8 +1935,98 @@ _Check_return_
     IFC(ItemIndexRange::AppendItemIndexRangesFromSortedVectorToItemIndexRangeCollection(selectedIndexes, spSelectedRanges.Get()));
 
 Cleanup:
-    AllowSelectionReentrancy();
     return hr;
+}
+
+_Check_return_ HRESULT Selector::UpdateSelectedRangesForUnselectedItemChange(UINT index, bool inserted)
+{
+    if (m_isSelectionReentrancyLocked)
+    {
+        return RebuildSelectedRanges();
+    }
+
+    auto ranges = m_tpSelectedRangesImpl.Cast<TrackerCollection<xaml_data::ItemIndexRange*>>();
+    UINT count;
+    IFC_RETURN(ranges->get_Size(&count));
+
+    UINT first = 0;
+    UINT last = count;
+    while (first < last)
+    {
+        const UINT middle = first + (last - first) / 2;
+        ctl::ComPtr<xaml_data::IItemIndexRange> range;
+        int end;
+        IFC_RETURN(ranges->GetAt(middle, &range));
+        IFC_RETURN(range->get_LastIndex(&end));
+        if (static_cast<UINT>(end) < index)
+        {
+            first = middle + 1;
+        }
+        else
+        {
+            last = middle;
+        }
+    }
+
+    const auto makeRange = [](int start, UINT length, ctl::ComPtr<ItemIndexRange>& range) -> HRESULT
+    {
+        IFC_RETURN(ctl::make(&range));
+        IFC_RETURN(range->put_FirstIndex(start));
+        return range->put_Length(length);
+    };
+
+    for (UINT current = first; current < count; ++current)
+    {
+        ctl::ComPtr<xaml_data::IItemIndexRange> oldRange;
+        ctl::ComPtr<ItemIndexRange> replacement;
+        int start;
+        UINT length;
+        IFC_RETURN(ranges->GetAt(current, &oldRange));
+        IFC_RETURN(oldRange->get_FirstIndex(&start));
+        IFC_RETURN(oldRange->get_Length(&length));
+
+        if (inserted && static_cast<UINT>(start) < index)
+        {
+            const UINT prefixLength = index - start;
+            IFC_RETURN(makeRange(start, prefixLength, replacement));
+            IFC_RETURN(ranges->SetAt(current, replacement.Get()));
+            replacement.Reset();
+            IFC_RETURN(makeRange(static_cast<int>(index) + 1, length - prefixLength, replacement));
+            IFC_RETURN(ranges->InsertAt(++current, replacement.Get()));
+            ++count;
+        }
+        else
+        {
+            ASSERT(inserted || static_cast<UINT>(start) > index);
+            IFC_RETURN(makeRange(start + (inserted ? 1 : -1), length, replacement));
+            IFC_RETURN(ranges->SetAt(current, replacement.Get()));
+        }
+    }
+
+    if (!inserted && first > 0 && first < count)
+    {
+        ctl::ComPtr<xaml_data::IItemIndexRange> previous;
+        ctl::ComPtr<xaml_data::IItemIndexRange> next;
+        int previousStart;
+        int previousEnd;
+        int nextStart;
+        UINT nextLength;
+        IFC_RETURN(ranges->GetAt(first - 1, &previous));
+        IFC_RETURN(ranges->GetAt(first, &next));
+        IFC_RETURN(previous->get_FirstIndex(&previousStart));
+        IFC_RETURN(previous->get_LastIndex(&previousEnd));
+        IFC_RETURN(next->get_FirstIndex(&nextStart));
+        IFC_RETURN(next->get_Length(&nextLength));
+        if (previousEnd + 1 == nextStart)
+        {
+            ctl::ComPtr<ItemIndexRange> merged;
+            IFC_RETURN(makeRange(previousStart, nextStart - previousStart + nextLength, merged));
+            IFC_RETURN(ranges->SetAt(first - 1, merged.Get()));
+            IFC_RETURN(ranges->RemoveAt(first));
+        }
+    }
+
+    return S_OK;
 }
 
 // Updates all properties that are publicly visible after a selection change
