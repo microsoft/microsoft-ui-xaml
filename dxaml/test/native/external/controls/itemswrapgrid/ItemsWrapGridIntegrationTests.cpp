@@ -107,4 +107,71 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    // Nine 100x100 items in a 300x300 non-grouped ItemsControl give three items per line and three lines:
+    //   Orientation=Vertical:   item i is in column i / 3, row i % 3 (items stack downward, lines wrap to the right).
+    //   Orientation=Horizontal: item i is in column i % 3, row i / 3 (items stack rightward, lines wrap downward).
+    // A point in the leading half of item k along the stacking direction lies before k; the trailing half lies after k.
+    // Item 4 is in the middle of the middle line, so neither neighbor is on the panel's edge.
+    void ItemsWrapGridIntegrationTests::VerifyGetInsertionIndexesVertical()
+    {
+        TestCleanupWrapper cleanup;
+        const auto probes = ProbeInsertionIndexes(Orientation::Vertical);
+
+        VERIFY_ARE_EQUAL(3, probes.leadingHalfOfItem4.first);
+        VERIFY_ARE_EQUAL(4, probes.leadingHalfOfItem4.second);
+        VERIFY_ARE_EQUAL(4, probes.trailingHalfOfItem4.first);
+        VERIFY_ARE_EQUAL(5, probes.trailingHalfOfItem4.second);
+        VERIFY_ARE_EQUAL(8, probes.trailingHalfOfLastItem.first);
+        VERIFY_ARE_EQUAL(-1, probes.trailingHalfOfLastItem.second);
+    }
+
+    void ItemsWrapGridIntegrationTests::VerifyGetInsertionIndexesHorizontal()
+    {
+        TestCleanupWrapper cleanup;
+        const auto probes = ProbeInsertionIndexes(Orientation::Horizontal);
+
+        VERIFY_ARE_EQUAL(3, probes.leadingHalfOfItem4.first);
+        VERIFY_ARE_EQUAL(4, probes.leadingHalfOfItem4.second);
+        VERIFY_ARE_EQUAL(4, probes.trailingHalfOfItem4.first);
+        VERIFY_ARE_EQUAL(5, probes.trailingHalfOfItem4.second);
+        VERIFY_ARE_EQUAL(8, probes.trailingHalfOfLastItem.first);
+        VERIFY_ARE_EQUAL(-1, probes.trailingHalfOfLastItem.second);
+    }
+
+    ItemsWrapGridIntegrationTests::InsertionIndexProbes ItemsWrapGridIntegrationTests::ProbeInsertionIndexes(xaml_controls::Orientation orientation)
+    {
+        const int itemCount = 9;
+        const bool isVertical = (orientation == Orientation::Vertical);
+        auto itemsControl = PanelsHelper::AddItemsControlWithPanel<ItemsControl, xaml_controls::ItemsWrapGrid>(
+            itemCount,
+            isVertical ? L"Orientation='Vertical'" : L"Orientation='Horizontal'");
+        auto itemsWrapGrid = ItemsControlHelper::GetPanelFromItemsControl<xaml_controls::ItemsWrapGrid>(itemsControl);
+        TestServices::WindowHelper->WaitForIdle();
+
+        // A point inside item 'index', 'stackingOffset' pixels into it along the stacking direction and centered on the other axis.
+        auto pointInItem = [isVertical](int index, float stackingOffset)
+        {
+            const float lineStart = 100.0f * (index / 3);
+            const float stackingStart = 100.0f * (index % 3);
+            return isVertical ?
+                wf::Point(lineStart + 50.0f, stackingStart + stackingOffset) :
+                wf::Point(stackingStart + stackingOffset, lineStart + 50.0f);
+        };
+
+        InsertionIndexProbes probes = {};
+
+        RunOnUIThread([&]()
+        {
+            auto insertionPanel = safe_cast<xaml_controls::IInsertionPanel^>(itemsWrapGrid);
+            insertionPanel->GetInsertionIndexes(pointInItem(4, 20.0f), &probes.leadingHalfOfItem4.first, &probes.leadingHalfOfItem4.second);
+            insertionPanel->GetInsertionIndexes(pointInItem(4, 80.0f), &probes.trailingHalfOfItem4.first, &probes.trailingHalfOfItem4.second);
+            insertionPanel->GetInsertionIndexes(pointInItem(itemCount - 1, 80.0f), &probes.trailingHalfOfLastItem.first, &probes.trailingHalfOfLastItem.second);
+        });
+
+        LOG_OUTPUT(L"Leading half of item 4: first=%d second=%d.", probes.leadingHalfOfItem4.first, probes.leadingHalfOfItem4.second);
+        LOG_OUTPUT(L"Trailing half of item 4: first=%d second=%d.", probes.trailingHalfOfItem4.first, probes.trailingHalfOfItem4.second);
+        LOG_OUTPUT(L"Trailing half of the last item: first=%d second=%d.", probes.trailingHalfOfLastItem.first, probes.trailingHalfOfLastItem.second);
+        return probes;
+    }
+
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::ItemsWrapGrid
