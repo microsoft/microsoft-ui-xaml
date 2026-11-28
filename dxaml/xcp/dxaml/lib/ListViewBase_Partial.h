@@ -177,6 +177,7 @@ namespace DirectUI
 
             // True when items are getting fetched from AcynLoadOperation for Increment Loading
             BOOLEAN m_isLoadAsyncInProgress;
+            BOOLEAN m_isIncrementalLoadingCheckPending;
 
             XDOUBLE m_maxContentWidth;
             XDOUBLE m_maxContentHeight;
