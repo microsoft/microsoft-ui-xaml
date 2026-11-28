@@ -787,7 +787,7 @@ The view builds trees; TableView has no hierarchy of its own. A `CollectionViewS
 (`PropertyHierarchyDescription { ItemKeyPath, ParentKeyPath }`) turns the flat source into a tree: an item whose
 `ParentKeyPath` value equals another item's `ItemKeyPath` value is its child. The view answers the experimental
 `ICollectionViewHierarchy` (`HierarchyDescription`, `CanBuildHierarchy`, `CollectionNodes`, `NodeFromItem`); a node is
-an `ICollectionViewNode` (`Item`, `Key`, `Parent`, `Children`, `IsContext`).
+an `ICollectionViewNode` (`Item`, `Key`, `Parent`, `Children`, `IsContext`, `HasChildren`).
 
 ```xml
 <CollectionViewSource x:Name="Processes" IsLiveSortingRequested="True">
@@ -815,11 +815,16 @@ A `HierarchyDescription` can be shared, as a `GroupDescription` can: one instanc
 
 Engine: one native node per source item (`VectorCollectionView_Hierarchy.cpp`, `_HierarchyInternal.h`): key and
 parent-key maps, waiting orphans by parent key, sorted kept-children lists, kept-subtree counts for pre-order index
-math, and filter counts for context. Public nodes and their `Children` lists are created on first read; `Children.Size`
-reads the store, so a consumer can ask for a child count without creating child nodes.
+math, and filter counts for context. Public nodes and their `Children` lists are created on first read and held
+weakly by the store: one nobody references is released, and the next read makes a new node object (the same `Children`
+list while that is referenced). `HasChildren` (raising `PropertyChanged("HasChildren")` when it changes) tells a consumer
+whether to draw a chevron without making the `Children` list; `Children.Size` and `IndexOf` read the store, and
+`NodeFromItem` uses an identity index built on its first call, so none of them makes other node objects. Changes of one
+source change that move more than 64 rows of the flat list in total are published as one `Reset`.
 
 TableView (`TableViewRowFlattener_Tree.cpp`) shows `CollectionNodes` and the children of each expanded node, follows
-those lists' changes as row splices, and keeps expansion intent keyed by the node's `Key` (collapsed baseline; context
+those lists' changes as row splices (a collapsed row follows only its node's `HasChildren`; subscriptions are kept across
+rebuilds for rows whose node stays), and keeps expansion intent keyed by the node's `Key` (collapsed baseline; context
 rows start expanded). New TableView API: `ExpandRow`/`CollapseRow` (expanding also expands the ancestors),
 `ExpandAllRows`/`CollapseAllRows`, `TableViewRow.Level`/`IsExpandable`/`IsExpanded`, and the row peer's
 `IExpandCollapseProvider`. Two tables over one view keep their own expansion.
