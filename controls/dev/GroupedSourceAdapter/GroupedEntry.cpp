@@ -25,6 +25,11 @@ int32_t GroupedEntry::GroupItemCount() const
     return m_groupItemCount;
 }
 
+void GroupedEntry::GroupItemCount(int32_t value)
+{
+    m_groupItemCount = value;
+}
+
 bool GroupedEntry::IsExpanded() const
 {
     return m_isExpanded;

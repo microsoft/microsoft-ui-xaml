@@ -34,6 +34,7 @@ public:
 
     winrt::IInspectable Group() const;
     int32_t GroupItemCount() const;
+    void GroupItemCount(int32_t value);
     bool IsExpanded() const;
 
 private:

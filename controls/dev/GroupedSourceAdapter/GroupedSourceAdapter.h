@@ -69,7 +69,17 @@ private:
 
     void AttachToSource();
     void DetachFromSource();
-    void SubscribeToGroup(winrt::IInspectable const& group);
+    void SubscribeToGroup(winrt::IInspectable const& group, winrt::hstring const& intentKey);
+    void OnGroupItemsChanged(
+        winrt::hstring const& intentKey,
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items,
+        winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
+    // Splices one item change inside an expanded group into the projection, after the group's header.
+    // Returns false when the projection does not match the change; the caller then rebuilds.
+    bool TryApplyGroupItemsSplice(
+        winrt::hstring const& intentKey,
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items,
+        winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     void UnsubscribeFromAllGroups();
 
     static winrt::hstring GetGroupIntentKey(winrt::IInspectable const& group);
@@ -109,6 +119,8 @@ private:
         winrt::event_token BindableToken{};
     };
     std::vector<InnerGroupSubscription> m_innerSubscriptions;
+    // Header of the last spliced group; consecutive changes in one group skip the header scan.
+    uint32_t m_lastSpliceHeaderIndex{ 0 };
 
     // Simple re-entrancy guard: a change notification raised synchronously inside ReplaceAll must
     // not start a nested Rebuild. The re-entrant request is remembered and run once after unwind.

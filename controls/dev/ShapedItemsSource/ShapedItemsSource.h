@@ -311,6 +311,7 @@ private:
     void ResetHierarchyFilterOverlay();
     // Re-entrancy guard for the re-slice; Refresh defers while set.
     bool m_reslicingGroups{ false };
+    bool m_resliceRequested{ false };
     // Bumped when m_hierarchyGroups changes, so an in-flight re-slice detects staleness.
     uint64_t m_hierarchyGeneration{ 0 };
     void RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason);

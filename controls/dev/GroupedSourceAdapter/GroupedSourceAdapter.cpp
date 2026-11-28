@@ -169,8 +169,8 @@ void GroupedSourceAdapter::Rebuild()
                     }
                 }
 
-                // Subscribe so a change inside the group triggers a rebuild.
-                SubscribeToGroup(group);
+                // Subscribe so a change inside the group reaches the projection.
+                SubscribeToGroup(group, intentKey);
             }
         }
 
@@ -352,6 +352,121 @@ bool GroupedSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& intentK
     return false;
 }
 
+void GroupedSourceAdapter::OnGroupItemsChanged(
+    winrt::hstring const& intentKey,
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items,
+    winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+{
+    AssertRebuildOnUiThread();
+
+    if (m_rebuildInFlight)
+    {
+        m_pendingRebuild = true;
+        return;
+    }
+
+    bool runPending = false;
+    bool applied = false;
+    {
+        m_rebuildInFlight = true;
+        m_pendingRebuild = false;
+        auto resetGuard = wil::scope_exit([this, &runPending]() noexcept
+        {
+            m_rebuildInFlight = false;
+            runPending = m_pendingRebuild;
+            m_pendingRebuild = false;
+        });
+
+        applied = TryApplyGroupItemsSplice(intentKey, items, args);
+    }
+
+    if (runPending || !applied)
+    {
+        Rebuild();
+    }
+}
+
+bool GroupedSourceAdapter::TryApplyGroupItemsSplice(
+    winrt::hstring const& intentKey,
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items,
+    winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+{
+    using winrt::Windows::Foundation::Collections::CollectionChange;
+    const auto change = args.CollectionChange();
+    if (!items || (change != CollectionChange::ItemInserted && change != CollectionChange::ItemRemoved &&
+        change != CollectionChange::ItemChanged))
+    {
+        return false;
+    }
+
+    const uint32_t size = m_entries.Size();
+    auto const groupAt = [&](uint32_t i) -> winrt::com_ptr<GroupedEntry>
+    {
+        auto entry = i < size ? TryGetGroupedEntry(m_entries.GetAt(i)) : nullptr;
+        return entry && GetGroupIntentKey(entry->Group()) == intentKey &&
+            ShapingHelpers::GetGroupItemsObject(entry->Group()) == items ? entry : nullptr;
+    };
+
+    uint32_t header = m_lastSpliceHeaderIndex;
+    auto entry = groupAt(header);
+    for (uint32_t i = 0; !entry && i < size; ++i)
+    {
+        entry = groupAt(i);
+        header = i;
+    }
+    if (!entry)
+    {
+        return false;
+    }
+
+    const int32_t delta = change == CollectionChange::ItemInserted ? 1 : change == CollectionChange::ItemRemoved ? -1 : 0;
+    const int32_t oldCount = entry->GroupItemCount();
+    const int32_t newCount = static_cast<int32_t>(items.Size());
+    const int32_t index = static_cast<int32_t>(args.Index());
+    if (newCount != oldCount + delta || index >= oldCount + std::max(delta, 0))
+    {
+        return false;
+    }
+
+    const bool expanded = entry->IsExpanded();
+    const uint32_t end = header + 1 + static_cast<uint32_t>(oldCount);
+    if (expanded && (end > size || (end < size && !TryGetGroupedEntry(m_entries.GetAt(end)))))
+    {
+        return false;
+    }
+
+    // A header whose count it does not display is updated in place; replacing it would recycle its
+    // container, and with it any focus on it.
+    auto const childCount = entry->Group().try_as<ShapingHelpers::IGroupChildCount>();
+    if (childCount && childCount->GroupChildCount() >= 0 && (oldCount > 0) == (newCount > 0))
+    {
+        entry->GroupItemCount(newCount);
+    }
+    else
+    {
+        m_entries.SetAt(header, winrt::make<::GroupedEntry>(entry->Group(), newCount, expanded));
+    }
+    m_lastSpliceHeaderIndex = header;
+
+    if (expanded)
+    {
+        const uint32_t row = header + 1 + static_cast<uint32_t>(index);
+        if (delta > 0)
+        {
+            m_entries.InsertAt(row, items.GetAt(static_cast<uint32_t>(index)));
+        }
+        else if (delta < 0)
+        {
+            m_entries.RemoveAt(row);
+        }
+        else
+        {
+            m_entries.SetAt(row, items.GetAt(static_cast<uint32_t>(index)));
+        }
+    }
+    return true;
+}
+
 winrt::IInspectable GroupedSourceAdapter::ResolveLiveGroupByIdentity(winrt::hstring const& groupKey) const
 {
     if (groupKey.empty() || m_ambiguousLiveGroupIdentityKeys.find(groupKey) != m_ambiguousLiveGroupIdentityKeys.end())
@@ -454,7 +569,7 @@ void GroupedSourceAdapter::DetachFromSource()
     UnsubscribeFromAllGroups();
 }
 
-void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
+void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group, winrt::hstring const& intentKey)
 {
     if (!group)
     {
@@ -468,8 +583,8 @@ void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
     const auto items = ShapingHelpers::GetGroupItemsObject(group);
     sub.ItemsForRevocation = items;
 
-    // Any change inside a group is a full Rebuild — no fast path, so no weak_ref to the group is
-    // needed inside the callback (it captures only weak_from_this, never a strong back-ref).
+    // An IObservableVector change is spliced; any other is a full Rebuild. Callbacks capture only
+    // weak_from_this and the group's intent key, never a strong back-ref.
     if (auto incc = items.try_as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>())
     {
         sub.CollectionToken = incc.CollectionChanged(
@@ -481,9 +596,9 @@ void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
     else if (auto obs = items.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
     {
         sub.Token = obs.VectorChanged(
-            [weakThis = weak_from_this()](auto&&, auto&&)
+            [weakThis = weak_from_this(), intentKey](auto const& sender, auto const& args)
             {
-                if (auto strongThis = weakThis.lock()) { strongThis->Rebuild(); }
+                if (auto strongThis = weakThis.lock()) { strongThis->OnGroupItemsChanged(intentKey, sender, args); }
             });
     }
     else if (auto bobs = items.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>())

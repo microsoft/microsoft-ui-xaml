@@ -95,3 +95,39 @@ void ShapedGroup::SetItems(std::vector<winrt::IInspectable> const& items)
 {
     m_items.ReplaceAll(items);
 }
+
+void ShapedGroup::SpliceItems(std::vector<winrt::IInspectable> const& items)
+{
+    // Matches HierarchicalSourceAdapter's splice limit: past it, one Reset is cheaper.
+    constexpr uint32_t c_maxSpliceItems{ 64 };
+
+    const uint32_t oldCount = m_items.Size();
+    const uint32_t newCount = static_cast<uint32_t>(items.size());
+    uint32_t prefix = 0;
+    while (prefix < oldCount && prefix < newCount && m_items.GetAt(prefix) == items[prefix])
+    {
+        ++prefix;
+    }
+    uint32_t suffix = 0;
+    while (suffix < oldCount - prefix && suffix < newCount - prefix &&
+        m_items.GetAt(oldCount - 1 - suffix) == items[newCount - 1 - suffix])
+    {
+        ++suffix;
+    }
+
+    const uint32_t removed = oldCount - prefix - suffix;
+    const uint32_t inserted = newCount - prefix - suffix;
+    if (removed + inserted > c_maxSpliceItems)
+    {
+        m_items.ReplaceAll(items);
+        return;
+    }
+    for (uint32_t i = 0; i < removed; ++i)
+    {
+        m_items.RemoveAt(prefix);
+    }
+    for (uint32_t i = 0; i < inserted; ++i)
+    {
+        m_items.InsertAt(prefix + i, items[prefix + i]);
+    }
+}
