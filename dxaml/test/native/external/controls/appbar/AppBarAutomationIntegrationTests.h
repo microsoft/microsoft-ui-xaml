@@ -40,6 +40,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verify that a AppBar implements the Window pattern when AppBar is opened.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyToggleAndExpandCollapsePatternsDriveIsOpen)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that the AppBar peer's Toggle and ExpandCollapse patterns report AppBar.IsOpen and open or close the AppBar.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyPatternMethodsFailWhenAppBarIsDisabled)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that Toggle, Expand and Collapse fail with UIA_E_ELEMENTNOTENABLED and leave IsOpen unchanged when the AppBar is disabled.")
+        END_TEST_METHOD()
+
     private:
         void VerifyAutomationProperties(bool useAppBarAutomationName);
         xaml_controls::AppBar^ SetupAppBar(bool isOpen, bool setAppBarAutomationName = true);

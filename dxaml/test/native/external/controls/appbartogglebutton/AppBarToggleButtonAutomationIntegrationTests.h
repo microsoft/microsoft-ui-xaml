@@ -34,6 +34,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that toggling AppBarToggleButton causes the attached Command to fire.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyAcceleratorKeyFallsBackToKeyboardAcceleratorTextOverride)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the AppBarToggleButton peer reports AutomationProperties.AcceleratorKey when set, and otherwise the KeyboardAcceleratorTextOverride with trailing spaces removed.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyIsKeyboardFocusableOutsideCommandBar)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the peer of an AppBarToggleButton that is not in a CommandBar reports IsKeyboardFocusable from the button's focusability.")
+        END_TEST_METHOD()
     };
 
 } } } } } }

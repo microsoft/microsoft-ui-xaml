@@ -679,6 +679,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateStaticElementRelationshipFollowsScrollOffsets)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a static-element SecondaryContentRelationship translates its auxiliary transform by the scrolled offset (or its inverse) along the static axis and pins the other axis to zero.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateClipTransformRelationshipClampsToScrollableHeight)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a clip-transform SecondaryContentRelationship moves the clip transform with the vertical offset up to the list's scrollable height, and pins its horizontal translation to zero.")
+        END_TEST_METHOD()
+
     private:
         enum ChangeViewDirection
         {

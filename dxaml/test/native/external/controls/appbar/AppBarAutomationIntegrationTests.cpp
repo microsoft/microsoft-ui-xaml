@@ -12,6 +12,9 @@
 #include "TestCleanupWrapper.h"
 #include "RuntimeEnabledFeaturesEnum.h"
 #include <UIAutomationHelper.h>
+#include <ControlHelper.h>
+
+#undef GetClassName // Conflicts with automation peer method of the same name
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace Microsoft::UI::Xaml::Tests::Automation;
@@ -250,6 +253,188 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+
+    namespace
+    {
+        // UIA_E_ELEMENTNOTENABLED from UIAutomationCoreApi.h.
+        const int c_uiaElementNotEnabled = static_cast<int>(0x80040200);
+
+        void VerifyThrowsElementNotEnabled(const wchar_t* operationName, std::function<void()> operation)
+        {
+            bool threw = false;
+            try
+            {
+                operation();
+            }
+            catch (Platform::Exception^ e)
+            {
+                threw = true;
+                LOG_OUTPUT(L"%s failed with 0x%08x.", operationName, e->HResult);
+                VERIFY_ARE_EQUAL(c_uiaElementNotEnabled, e->HResult);
+            }
+            VERIFY_IS_TRUE(threw, operationName);
+        }
+    }
+
+    void AppBarAutomationIntegrationTests::VerifyToggleAndExpandCollapsePatternsDriveIsOpen()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::AppBar^ appBar = SetupAppBar(false /*isOpen*/);
+
+        auto openedEvent = std::make_shared<Event>();
+        auto closedEvent = std::make_shared<Event>();
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Opened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Closed);
+        openedRegistration.Attach(appBar, [openedEvent]() { openedEvent->Set(); });
+        closedRegistration.Attach(appBar, [closedEvent]() { closedEvent->Set(); });
+
+        xaml_automation_peers::AutomationPeer^ peer = nullptr;
+        xaml_automation::Provider::IToggleProvider^ toggleProvider = nullptr;
+        xaml_automation::Provider::IExpandCollapseProvider^ expandCollapseProvider = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(appBar);
+            VERIFY_IS_NOT_NULL(peer);
+
+            toggleProvider = safe_cast<xaml_automation::Provider::IToggleProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Toggle));
+            expandCollapseProvider = safe_cast<xaml_automation::Provider::IExpandCollapseProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::ExpandCollapse));
+
+            LOG_OUTPUT(L"A closed AppBar reports ToggleState.Off and ExpandCollapseState.Collapsed.");
+            VERIFY_IS_FALSE(appBar->IsOpen);
+            VERIFY_ARE_EQUAL(xaml_automation::ToggleState::Off, toggleProvider->ToggleState);
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Collapsed, expandCollapseProvider->ExpandCollapseState);
+
+            LOG_OUTPUT(L"Expand() opens the AppBar.");
+            expandCollapseProvider->Expand();
+            VERIFY_IS_TRUE(appBar->IsOpen);
+            VERIFY_ARE_EQUAL(xaml_automation::ToggleState::On, toggleProvider->ToggleState);
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Expanded, expandCollapseProvider->ExpandCollapseState);
+        });
+        openedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Expand() on an open AppBar keeps it open.");
+            expandCollapseProvider->Expand();
+            VERIFY_IS_TRUE(appBar->IsOpen);
+            VERIFY_ARE_EQUAL(xaml_automation::ToggleState::On, toggleProvider->ToggleState);
+
+            LOG_OUTPUT(L"Collapse() closes the AppBar.");
+            expandCollapseProvider->Collapse();
+            VERIFY_IS_FALSE(appBar->IsOpen);
+            VERIFY_ARE_EQUAL(xaml_automation::ToggleState::Off, toggleProvider->ToggleState);
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Collapsed, expandCollapseProvider->ExpandCollapseState);
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Collapse() on a closed AppBar keeps it closed.");
+            expandCollapseProvider->Collapse();
+            VERIFY_IS_FALSE(appBar->IsOpen);
+            VERIFY_ARE_EQUAL(xaml_automation::ToggleState::Off, toggleProvider->ToggleState);
+
+            LOG_OUTPUT(L"Toggle() on a closed AppBar opens it.");
+            openedEvent->Reset();
+            toggleProvider->Toggle();
+            VERIFY_IS_TRUE(appBar->IsOpen);
+            VERIFY_ARE_EQUAL(xaml_automation::ToggleState::On, toggleProvider->ToggleState);
+        });
+        openedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Toggle() on an open AppBar closes it.");
+            closedEvent->Reset();
+            toggleProvider->Toggle();
+            VERIFY_IS_FALSE(appBar->IsOpen);
+            VERIFY_ARE_EQUAL(xaml_automation::ToggleState::Off, toggleProvider->ToggleState);
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Collapsed, expandCollapseProvider->ExpandCollapseState);
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"A peer created with the public AppBarAutomationPeer constructor reports the same owner and state.");
+            auto constructedPeer = ref new xaml_automation_peers::AppBarAutomationPeer(appBar);
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(appBar, constructedPeer->Owner));
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"ApplicationBar"), constructedPeer->GetClassName());
+            VERIFY_ARE_EQUAL(xaml_automation_peers::AutomationControlType::AppBar, constructedPeer->GetAutomationControlType());
+            VERIFY_ARE_EQUAL(xaml_automation::ToggleState::Off, safe_cast<xaml_automation::Provider::IToggleProvider^>(constructedPeer)->ToggleState);
+
+            peer = nullptr;
+            toggleProvider = nullptr;
+            expandCollapseProvider = nullptr;
+        });
+    }
+
+    void AppBarAutomationIntegrationTests::VerifyPatternMethodsFailWhenAppBarIsDisabled()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::AppBar^ appBar = SetupAppBar(false /*isOpen*/);
+
+        auto openedEvent = std::make_shared<Event>();
+        auto closedEvent = std::make_shared<Event>();
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Opened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Closed);
+        openedRegistration.Attach(appBar, [openedEvent]() { openedEvent->Set(); });
+        closedRegistration.Attach(appBar, [closedEvent]() { closedEvent->Set(); });
+
+        RunOnUIThread([&]()
+        {
+            appBar->IsEnabled = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(appBar);
+            VERIFY_IS_FALSE(peer->IsEnabled());
+
+            auto toggleProvider = safe_cast<xaml_automation::Provider::IToggleProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Toggle));
+            auto expandCollapseProvider = safe_cast<xaml_automation::Provider::IExpandCollapseProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::ExpandCollapse));
+
+            LOG_OUTPUT(L"Expand() and Toggle() on a closed, disabled AppBar fail and leave it closed.");
+            VerifyThrowsElementNotEnabled(L"Expand", [expandCollapseProvider]() { expandCollapseProvider->Expand(); });
+            VERIFY_IS_FALSE(appBar->IsOpen);
+            VerifyThrowsElementNotEnabled(L"Toggle", [toggleProvider]() { toggleProvider->Toggle(); });
+            VERIFY_IS_FALSE(appBar->IsOpen);
+
+            LOG_OUTPUT(L"The toggle state is still reported for a disabled AppBar.");
+            VERIFY_ARE_EQUAL(xaml_automation::ToggleState::Off, toggleProvider->ToggleState);
+
+            LOG_OUTPUT(L"Open the disabled AppBar programmatically.");
+            appBar->IsOpen = true;
+        });
+        openedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(appBar);
+            auto toggleProvider = safe_cast<xaml_automation::Provider::IToggleProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Toggle));
+            auto expandCollapseProvider = safe_cast<xaml_automation::Provider::IExpandCollapseProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::ExpandCollapse));
+
+            LOG_OUTPUT(L"Collapse() and Toggle() on an open, disabled AppBar fail and leave it open.");
+            VERIFY_ARE_EQUAL(xaml_automation::ToggleState::On, toggleProvider->ToggleState);
+            VerifyThrowsElementNotEnabled(L"Collapse", [expandCollapseProvider]() { expandCollapseProvider->Collapse(); });
+            VERIFY_IS_TRUE(appBar->IsOpen);
+            VerifyThrowsElementNotEnabled(L"Toggle", [toggleProvider]() { toggleProvider->Toggle(); });
+            VERIFY_IS_TRUE(appBar->IsOpen);
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Expanded, expandCollapseProvider->ExpandCollapseState);
+
+            appBar->IsOpen = false;
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+    }
 
     xaml_controls::AppBar^ AppBarAutomationIntegrationTests::SetupAppBar(bool isOpen, bool setAppBarAutomationName)
     {

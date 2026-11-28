@@ -83,6 +83,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateLabeledElementReportsLabelOnlyAtEffectivePosition)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that ICommandBarLabeledElement reports a bottom or right label only when the label is set and the effective label position matches.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateOverflowCheckedPointerOverVisualState)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a checked AppBarToggleButton in the CommandBar overflow menu goes to OverflowCheckedPointerOver while the mouse is over it, and back to OverflowChecked when the mouse leaves.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
+
     private:
         static xaml_input::KeyboardAccelerator^ CreateKeyboardAccelerator(::Windows::System::VirtualKey key, ::Windows::System::VirtualKeyModifiers modifiers);
     };

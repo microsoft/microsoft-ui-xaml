@@ -132,6 +132,27 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             return std::abs(x - y) <= tolerance;
         };
 
+        // COM identity: two references denote the same object exactly when QueryInterface(IID_IUnknown) returns the same
+        // pointer. Comparing hats directly is not enough, because two hats obtained through different interfaces of the
+        // same object can differ. Never throws, so it is also safe in cleanup code.
+        static bool AreSameObject(IUnknown* first, IUnknown* second)
+        {
+            if (first == nullptr || second == nullptr)
+            {
+                return first == nullptr && second == nullptr;
+            }
+            wrl::ComPtr<IUnknown> firstUnknown;
+            wrl::ComPtr<IUnknown> secondUnknown;
+            return SUCCEEDED(first->QueryInterface(IID_PPV_ARGS(&firstUnknown)))
+                && SUCCEEDED(second->QueryInterface(IID_PPV_ARGS(&secondUnknown)))
+                && firstUnknown.Get() == secondUnknown.Get();
+        }
+
+        static bool AreSameObject(Platform::Object^ first, Platform::Object^ second)
+        {
+            return AreSameObject(reinterpret_cast<IUnknown*>(first), reinterpret_cast<IUnknown*>(second));
+        }
+
         template<typename T1, typename T2>
         static void RemoveItem(wfc::IVector<T1>^ items, T2 item)
         {

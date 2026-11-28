@@ -14,6 +14,7 @@
 
 #include <TreeHelper.h>
 #include <ControlHelper.h>
+#include <BackButtonHelper.h>
 #include <CommandHelper.h>
 #include "KeyboardInjectionOverride.h"
 
@@ -4099,6 +4100,636 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         contentDialogUnloadedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
         task.wait();
+    }
+
+    namespace
+    {
+        struct ClosingObservations
+        {
+            int count = 0;
+            bool cancelNext = true;
+            xaml_controls::ContentDialogResult lastResult = xaml_controls::ContentDialogResult::Secondary;
+        };
+
+        // An open ContentDialog opens two popups (ContentDialog::PrepareSmokeLayer, PreparePopup and DeferredOpenPopup):
+        // the smoke layer popup and the dialog popup. The dialog popup is the one whose child is the dialog itself
+        // (EntireControlInPopup placement, used when the dialog is not in the visual tree). Must be called on the UI thread.
+        xaml_primitives::Popup^ FindOpenDialogPopup(xaml_controls::ContentDialog^ contentDialog)
+        {
+            xaml_primitives::Popup^ dialogPopup = nullptr;
+            auto popups = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(contentDialog->XamlRoot);
+            for (unsigned int i = 0; i < popups->Size; ++i)
+            {
+                auto popup = popups->GetAt(i);
+                if (ControlHelper::AreSameObject(popup->Child, contentDialog))
+                {
+                    VERIFY_IS_NULL(dialogPopup);
+                    dialogPopup = popup;
+                }
+            }
+            return dialogPopup;
+        }
+
+        // Cleanup helper used from scope_exit: never throws, hides the dialog if it is still showing.
+        void HideContentDialogIfShowing(xaml_controls::ContentDialog^ contentDialog, std::shared_ptr<ClosingObservations> closing)
+        {
+            try
+            {
+                RunOnUIThread([contentDialog, closing]()
+                {
+                    if (closing)
+                    {
+                        closing->cancelNext = false;
+                    }
+                    auto popups = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(contentDialog->XamlRoot);
+                    bool isShowing = false;
+                    for (unsigned int i = 0; i < popups->Size; ++i)
+                    {
+                        if (ControlHelper::AreSameObject(popups->GetAt(i)->Child, contentDialog))
+                        {
+                            isShowing = true;
+                        }
+                    }
+                    if (isShowing)
+                    {
+                        LOG_OUTPUT(L"Cleanup: hiding the ContentDialog that is still showing.");
+                        contentDialog->Hide();
+                    }
+                });
+                TestServices::WindowHelper->WaitForIdle();
+            }
+            catch (...)
+            {
+                LOG_OUTPUT(L"Cleanup: hiding the ContentDialog failed.");
+            }
+        }
+    }
+
+    void ContentDialogIntegrationTests::CanCancelClosingAndRemoveClosingHandler()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto contentDialog = SetupContentDialogTest(ContentDialogContent::Default);
+
+        // Only read and written on the UI thread.
+        auto closing = std::make_shared<ClosingObservations>();
+        auto closedEvent = std::make_shared<Event>();
+        auto completedEvent = std::make_shared<Event>();
+        auto completedResult = std::make_shared<xaml_controls::ContentDialogResult>(xaml_controls::ContentDialogResult::Secondary);
+
+        auto closingRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Closing);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Closed);
+
+        auto closingHandler = [closing](xaml_controls::ContentDialog^, xaml_controls::ContentDialogClosingEventArgs^ args)
+        {
+            closing->count++;
+            closing->lastResult = args->Result;
+            args->Cancel = closing->cancelNext;
+        };
+
+        closingRegistration.Attach(contentDialog, ref new wf::TypedEventHandler<xaml_controls::ContentDialog^, xaml_controls::ContentDialogClosingEventArgs^>(closingHandler));
+        closedRegistration.Attach(contentDialog, [closedEvent]() { closedEvent->Set(); });
+
+        unsigned int openPopupsBeforeShow = 0;
+        RunOnUIThread([&]()
+        {
+            openPopupsBeforeShow = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(contentDialog->XamlRoot)->Size;
+        });
+
+        // Whatever happens below, never leave the dialog showing: a showing dialog blocks the following tests.
+        auto hideDialogOnExit = wil::scope_exit([contentDialog, closing]()
+        {
+            HideContentDialogIfShowing(contentDialog, closing);
+        });
+
+        auto showOperation = OpenContentDialog(contentDialog);
+
+        unsigned int openPopupsWhileShowing = 0;
+        RunOnUIThread([&]()
+        {
+            auto completedHandler = ref new wf::AsyncOperationCompletedHandler<xaml_controls::ContentDialogResult>(
+                [completedEvent, completedResult](wf::IAsyncOperation<xaml_controls::ContentDialogResult>^ operation, wf::AsyncStatus status)
+            {
+                if (status == wf::AsyncStatus::Completed)
+                {
+                    *completedResult = operation->GetResults();
+                }
+                completedEvent->Set();
+            });
+            showOperation->Completed = completedHandler;
+
+            LOG_OUTPUT(L"The Completed property returns the assigned handler.");
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(reinterpret_cast<IUnknown*>(completedHandler), reinterpret_cast<IUnknown*>(showOperation->Completed)));
+
+            LOG_OUTPUT(L"The open dialog is hosted in an open popup.");
+            VERIFY_IS_NOT_NULL(FindOpenDialogPopup(contentDialog));
+            openPopupsWhileShowing = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(contentDialog->XamlRoot)->Size;
+            VERIFY_IS_GREATER_THAN(openPopupsWhileShowing, openPopupsBeforeShow);
+
+            LOG_OUTPUT(L"Hide() raises Closing with result None, and the handler cancels it.");
+            contentDialog->Hide();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1, closing->count);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogResult::None, closing->lastResult);
+            VERIFY_IS_FALSE(closedEvent->HasFired());
+            VERIFY_IS_FALSE(completedEvent->HasFired());
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Started, showOperation->Status);
+
+            LOG_OUTPUT(L"Canceling keeps the dialog popup and every other popup of the dialog open.");
+            VERIFY_IS_NOT_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_ARE_EQUAL(openPopupsWhileShowing, xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(contentDialog->XamlRoot)->Size);
+        });
+
+        RunOnUIThread([&]()
+        {
+            closing->cancelNext = false;
+        });
+
+        LOG_OUTPUT(L"Clicking the primary button raises Closing with result Primary; it is not canceled this time.");
+        auto primaryButton = GetButton(contentDialog, xaml_controls::ContentDialogButton::Primary);
+        VERIFY_IS_NOT_NULL(primaryButton);
+        TestServices::InputHelper->LeftMouseClick(primaryButton);
+        closedEvent->WaitForDefault();
+        completedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(2, closing->count);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogResult::Primary, closing->lastResult);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogResult::Primary, *completedResult);
+            VERIFY_IS_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_ARE_EQUAL(openPopupsBeforeShow, xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(contentDialog->XamlRoot)->Size);
+        });
+
+        LOG_OUTPUT(L"Remove the only Closing handler and show the dialog again.");
+        closingRegistration.Detach();
+        closedEvent->Reset();
+        auto secondShowOperation = OpenContentDialog(contentDialog);
+
+        LOG_OUTPUT(L"Hide() now closes the dialog without raising the removed Closing handler.");
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(FindOpenDialogPopup(contentDialog));
+            contentDialog->Hide();
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(2, closing->count);
+            VERIFY_IS_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Completed, secondShowOperation->Status);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogResult::None, secondShowOperation->GetResults());
+        });
+    }
+
+    void ContentDialogIntegrationTests::ValidatePopupAutomationIdFollowsDialogWhileOpen()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto contentDialog = SetupContentDialogTest(ContentDialogContent::Default);
+
+        auto closedEvent = std::make_shared<Event>();
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Closed);
+        closedRegistration.Attach(contentDialog, [closedEvent]() { closedEvent->Set(); });
+
+        RunOnUIThread([&]()
+        {
+            xaml_automation::AutomationProperties::SetAutomationId(contentDialog, L"InitialDialogId");
+        });
+
+        // Whatever happens below, never leave the dialog showing: a showing dialog blocks the following tests.
+        auto hideDialogOnExit = wil::scope_exit([contentDialog]()
+        {
+            HideContentDialogIfShowing(contentDialog, nullptr);
+        });
+
+        auto showOperation = OpenContentDialog(contentDialog);
+
+        RunOnUIThread([&]()
+        {
+            auto popup = FindOpenDialogPopup(contentDialog);
+            VERIFY_IS_NOT_NULL(popup);
+
+            LOG_OUTPUT(L"The dialog popup takes the dialog's AutomationId when the dialog opens.");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"InitialDialogId"), xaml_automation::AutomationProperties::GetAutomationId(popup));
+
+            LOG_OUTPUT(L"Changing the dialog's AutomationId while it is open updates the dialog popup.");
+            xaml_automation::AutomationProperties::SetAutomationId(contentDialog, L"UpdatedDialogId");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"UpdatedDialogId"), xaml_automation::AutomationProperties::GetAutomationId(popup));
+
+            LOG_OUTPUT(L"Clearing the dialog's AutomationId clears the dialog popup's AutomationId.");
+            xaml_automation::AutomationProperties::SetAutomationId(contentDialog, L"");
+            VERIFY_ARE_EQUAL(0, Platform::String::CompareOrdinal(ref new Platform::String(L""), xaml_automation::AutomationProperties::GetAutomationId(popup)));
+        });
+
+        RunOnUIThread([&]()
+        {
+            contentDialog->Hide();
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Completed, showOperation->Status);
+        });
+    }
+
+    void ContentDialogIntegrationTests::ValidatePositionIsKeptWhenFlowDirectionChangesWhileOpen()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto contentDialog = SetupContentDialogTest(ContentDialogContent::Default);
+
+        auto closedEvent = std::make_shared<Event>();
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Closed);
+        closedRegistration.Attach(contentDialog, [closedEvent]() { closedEvent->Set(); });
+
+        // Whatever happens below, never leave the dialog showing: a showing dialog blocks the following tests.
+        auto hideDialogOnExit = wil::scope_exit([contentDialog]()
+        {
+            HideContentDialogIfShowing(contentDialog, nullptr);
+        });
+
+        auto showOperation = OpenContentDialog(contentDialog);
+
+        wf::Rect ltrBounds = {};
+        auto getBackgroundBounds = [&]()
+        {
+            wf::Rect bounds = {};
+            RunOnUIThread([&]()
+            {
+                auto backgroundElement = safe_cast<xaml::FrameworkElement^>(TreeHelper::GetVisualChildByNameFromOpenPopups(L"BackgroundElement", contentDialog));
+                VERIFY_IS_NOT_NULL(backgroundElement);
+                bounds = ControlHelper::GetBounds(backgroundElement);
+            });
+            LOG_OUTPUT(L"BackgroundElement bounds = (%f, %f, %f, %f)", bounds.X, bounds.Y, bounds.Width, bounds.Height);
+            return bounds;
+        };
+
+        ltrBounds = getBackgroundBounds();
+        VERIFY_IS_GREATER_THAN(ltrBounds.Width, 0.0f);
+        VERIFY_IS_GREATER_THAN_OR_EQUAL(ltrBounds.X, 0.0f);
+
+        LOG_OUTPUT(L"Switch the open dialog to RightToLeft.");
+        RunOnUIThread([&]()
+        {
+            contentDialog->FlowDirection = xaml::FlowDirection::RightToLeft;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto rtlBounds = getBackgroundBounds();
+        VERIFY_ARE_EQUAL(ltrBounds.Left, rtlBounds.Left);
+        VERIFY_ARE_EQUAL(ltrBounds.Top, rtlBounds.Top);
+        VERIFY_ARE_EQUAL(ltrBounds.Right, rtlBounds.Right);
+        VERIFY_ARE_EQUAL(ltrBounds.Bottom, rtlBounds.Bottom);
+
+        LOG_OUTPUT(L"Switch the open dialog back to LeftToRight.");
+        RunOnUIThread([&]()
+        {
+            contentDialog->FlowDirection = xaml::FlowDirection::LeftToRight;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto restoredBounds = getBackgroundBounds();
+        VERIFY_ARE_EQUAL(ltrBounds.Left, restoredBounds.Left);
+        VERIFY_ARE_EQUAL(ltrBounds.Top, restoredBounds.Top);
+        VERIFY_ARE_EQUAL(ltrBounds.Right, restoredBounds.Right);
+        VERIFY_ARE_EQUAL(ltrBounds.Bottom, restoredBounds.Bottom);
+
+        RunOnUIThread([&]() { contentDialog->Hide(); });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Completed, showOperation->Status);
+        });
+    }
+
+    void ContentDialogIntegrationTests::ValidateDependencyPropertyIdentifiers()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            auto contentDialog = ref new xaml_controls::ContentDialog();
+
+            LOG_OUTPUT(L"Button text identifiers.");
+            contentDialog->SetValue(xaml_controls::ContentDialog::PrimaryButtonTextProperty, L"Save");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"Save"), contentDialog->PrimaryButtonText);
+            VERIFY_ARE_EQUAL(0, Platform::String::CompareOrdinal(ref new Platform::String(L""), contentDialog->SecondaryButtonText));
+            VERIFY_ARE_EQUAL(0, Platform::String::CompareOrdinal(ref new Platform::String(L""), contentDialog->CloseButtonText));
+            contentDialog->SetValue(xaml_controls::ContentDialog::SecondaryButtonTextProperty, L"Don't save");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"Don't save"), contentDialog->SecondaryButtonText);
+            contentDialog->CloseButtonText = L"Cancel";
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"Cancel"), safe_cast<Platform::String^>(contentDialog->GetValue(xaml_controls::ContentDialog::CloseButtonTextProperty)));
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"Save"), contentDialog->PrimaryButtonText);
+
+            LOG_OUTPUT(L"Button enabled identifiers.");
+            VERIFY_IS_TRUE(contentDialog->IsPrimaryButtonEnabled);
+            VERIFY_IS_TRUE(contentDialog->IsSecondaryButtonEnabled);
+            contentDialog->SetValue(xaml_controls::ContentDialog::IsPrimaryButtonEnabledProperty, false);
+            VERIFY_IS_FALSE(contentDialog->IsPrimaryButtonEnabled);
+            VERIFY_IS_TRUE(contentDialog->IsSecondaryButtonEnabled);
+            contentDialog->SetValue(xaml_controls::ContentDialog::IsSecondaryButtonEnabledProperty, false);
+            VERIFY_IS_FALSE(contentDialog->IsSecondaryButtonEnabled);
+            contentDialog->IsSecondaryButtonEnabled = true;
+            VERIFY_IS_TRUE(safe_cast<bool>(contentDialog->GetValue(xaml_controls::ContentDialog::IsSecondaryButtonEnabledProperty)));
+            VERIFY_IS_FALSE(safe_cast<bool>(contentDialog->GetValue(xaml_controls::ContentDialog::IsPrimaryButtonEnabledProperty)));
+
+            LOG_OUTPUT(L"FullSizeDesired, DefaultButton and CloseButtonCommandParameter identifiers.");
+            VERIFY_IS_FALSE(contentDialog->FullSizeDesired);
+            contentDialog->SetValue(xaml_controls::ContentDialog::FullSizeDesiredProperty, true);
+            VERIFY_IS_TRUE(contentDialog->FullSizeDesired);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogButton::None, contentDialog->DefaultButton);
+            contentDialog->SetValue(xaml_controls::ContentDialog::DefaultButtonProperty, xaml_controls::ContentDialogButton::Secondary);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogButton::Secondary, contentDialog->DefaultButton);
+            contentDialog->SetValue(xaml_controls::ContentDialog::CloseButtonCommandParameterProperty, 42);
+            VERIFY_ARE_EQUAL(42, safe_cast<int>(contentDialog->CloseButtonCommandParameter));
+            VERIFY_IS_NULL(contentDialog->PrimaryButtonCommandParameter);
+            VERIFY_IS_NULL(contentDialog->SecondaryButtonCommandParameter);
+
+            LOG_OUTPUT(L"Button style identifiers.");
+            auto createButtonStyle = []()
+            {
+                return safe_cast<xaml::Style^>(xaml_markup::XamlReader::Load(
+                    LR"(<Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="Button"/>)"));
+            };
+            auto primaryStyle = createButtonStyle();
+            auto secondaryStyle = createButtonStyle();
+            auto closeStyle = createButtonStyle();
+            VERIFY_IS_NULL(contentDialog->PrimaryButtonStyle);
+            VERIFY_IS_NULL(contentDialog->SecondaryButtonStyle);
+            VERIFY_IS_NULL(contentDialog->CloseButtonStyle);
+            contentDialog->SetValue(xaml_controls::ContentDialog::PrimaryButtonStyleProperty, primaryStyle);
+            contentDialog->SecondaryButtonStyle = secondaryStyle;
+            contentDialog->SetValue(xaml_controls::ContentDialog::CloseButtonStyleProperty, closeStyle);
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(primaryStyle, contentDialog->PrimaryButtonStyle));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(secondaryStyle, contentDialog->GetValue(xaml_controls::ContentDialog::SecondaryButtonStyleProperty)));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(secondaryStyle, contentDialog->SecondaryButtonStyle));
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(closeStyle, contentDialog->CloseButtonStyle));
+
+            LOG_OUTPUT(L"TitleTemplate identifier.");
+            auto titleTemplate = safe_cast<xaml::DataTemplate^>(xaml_markup::XamlReader::Load(
+                LR"(<DataTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><TextBlock Text="{Binding}"/></DataTemplate>)"));
+            VERIFY_IS_NULL(contentDialog->TitleTemplate);
+            contentDialog->TitleTemplate = titleTemplate;
+            VERIFY_IS_TRUE(ControlHelper::AreSameObject(titleTemplate, contentDialog->GetValue(xaml_controls::ContentDialog::TitleTemplateProperty)));
+            contentDialog->ClearValue(xaml_controls::ContentDialog::TitleTemplateProperty);
+            VERIFY_IS_NULL(contentDialog->TitleTemplate);
+        });
+    }
+
+    void ContentDialogIntegrationTests::ValidateBackButtonClosesDialogWhileOpen()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto contentDialog = SetupContentDialogTest(ContentDialogContent::Default);
+
+        // Only read and written on the UI thread.
+        auto closing = std::make_shared<ClosingObservations>();
+        closing->cancelNext = false;
+        auto closeButtonClickCount = std::make_shared<int>(0);
+        auto closedEvent = std::make_shared<Event>();
+
+        auto closingRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Closing);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Closed);
+        auto closeButtonClickRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, CloseButtonClick);
+
+        closingRegistration.Attach(contentDialog, ref new wf::TypedEventHandler<xaml_controls::ContentDialog^, xaml_controls::ContentDialogClosingEventArgs^>(
+            [closing](xaml_controls::ContentDialog^, xaml_controls::ContentDialogClosingEventArgs^ args)
+        {
+            closing->count++;
+            closing->lastResult = args->Result;
+            args->Cancel = closing->cancelNext;
+        }));
+        closedRegistration.Attach(contentDialog, [closedEvent]() { closedEvent->Set(); });
+        closeButtonClickRegistration.Attach(contentDialog, [closeButtonClickCount]() { ++(*closeButtonClickCount); });
+
+        // Whatever happens below, never leave the dialog showing: a showing dialog blocks the following tests.
+        auto hideDialogOnExit = wil::scope_exit([contentDialog, closing]()
+        {
+            HideContentDialogIfShowing(contentDialog, closing);
+        });
+
+        LOG_OUTPUT(L"Without a close button, a back press on the open dialog is handled and hides it with result None.");
+        auto showOperation = OpenContentDialog(contentDialog);
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_IS_TRUE(BackButtonHelper::PressBackButton(contentDialog));
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1, closing->count);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogResult::None, closing->lastResult);
+            VERIFY_ARE_EQUAL(0, *closeButtonClickCount);
+            VERIFY_IS_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Completed, showOperation->Status);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogResult::None, showOperation->GetResults());
+
+            contentDialog->CloseButtonText = L"Close";
+        });
+
+        LOG_OUTPUT(L"With a close button, a back press on the open dialog is handled by invoking the close button, which closes it with result None.");
+        closedEvent->Reset();
+        auto secondShowOperation = OpenContentDialog(contentDialog);
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_IS_TRUE(BackButtonHelper::PressBackButton(contentDialog));
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1, *closeButtonClickCount);
+            VERIFY_ARE_EQUAL(2, closing->count);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogResult::None, closing->lastResult);
+            VERIFY_IS_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Completed, secondShowOperation->Status);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogResult::None, secondShowOperation->GetResults());
+        });
+    }
+
+    void ContentDialogIntegrationTests::ValidateTemplateChangeKeepsInPlaceDialogClosableWhileOpen()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto contentDialog = SetupContentDialogTest(ContentDialogContent::Default, xaml_controls::ContentDialogPlacement::InPlace);
+
+        RunOnUIThread([&]()
+        {
+            TestServices::WindowHelper->WindowContent = contentDialog;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto closedEvent = std::make_shared<Event>();
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Closed);
+        closedRegistration.Attach(contentDialog, [closedEvent]() { closedEvent->Set(); });
+
+        // Whatever happens below, never leave the in-place dialog showing: a showing dialog blocks the following tests.
+        // Hide() does nothing for a dialog that is not showing, so the guard can be armed before ShowAsync.
+        auto hideDialogOnExit = wil::scope_exit([contentDialog]()
+        {
+            try
+            {
+                RunOnUIThread([contentDialog]()
+                {
+                    contentDialog->Hide();
+                });
+                TestServices::WindowHelper->WaitForIdle();
+            }
+            catch (...)
+            {
+                LOG_OUTPUT(L"Cleanup: hiding the ContentDialog failed.");
+            }
+        });
+
+        auto showOperation = OpenContentDialog(contentDialog, xaml_controls::ContentDialogPlacement::InPlace);
+
+        xaml_controls::ControlTemplate^ originalTemplate = nullptr;
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NULL(FindOpenDialogPopup(contentDialog));
+            originalTemplate = contentDialog->Template;
+            VERIFY_IS_NOT_NULL(originalTemplate);
+
+            LOG_OUTPUT(L"Remove the template of the showing in-place dialog.");
+            contentDialog->Template = nullptr;
+            contentDialog->UpdateLayout();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Re-apply the original template while the dialog is still showing.");
+            contentDialog->Template = originalTemplate;
+            contentDialog->UpdateLayout();
+            VERIFY_IS_NOT_NULL(TreeHelper::GetVisualChildByName(contentDialog, L"LayoutRoot"));
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Started, showOperation->Status);
+
+            LOG_OUTPUT(L"Hide() still completes the hide of the re-templated dialog.");
+            contentDialog->Hide();
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Completed, showOperation->Status);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogResult::None, showOperation->GetResults());
+        });
+    }
+
+    void ContentDialogIntegrationTests::ValidateCancelingShowAsyncHidesDialogWhileOpen()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto contentDialog = SetupContentDialogTest(ContentDialogContent::Default);
+
+        // Only read and written on the UI thread. The handler would cancel any Closing it receives.
+        auto closing = std::make_shared<ClosingObservations>();
+        closing->cancelNext = true;
+        auto closedEvent = std::make_shared<Event>();
+
+        auto closingRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Closing);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Closed);
+        closingRegistration.Attach(contentDialog, ref new wf::TypedEventHandler<xaml_controls::ContentDialog^, xaml_controls::ContentDialogClosingEventArgs^>(
+            [closing](xaml_controls::ContentDialog^, xaml_controls::ContentDialogClosingEventArgs^ args)
+        {
+            closing->count++;
+            closing->lastResult = args->Result;
+            args->Cancel = closing->cancelNext;
+        }));
+        closedRegistration.Attach(contentDialog, [closedEvent]() { closedEvent->Set(); });
+
+        // Whatever happens below, never leave the dialog showing: a showing dialog blocks the following tests.
+        auto hideDialogOnExit = wil::scope_exit([contentDialog, closing]()
+        {
+            HideContentDialogIfShowing(contentDialog, closing);
+        });
+
+        auto showOperation = OpenContentDialog(contentDialog);
+
+        LOG_OUTPUT(L"Canceling the ShowAsync operation hides the open dialog without raising Closing.");
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(FindOpenDialogPopup(contentDialog));
+            showOperation->Cancel();
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Canceled, showOperation->Status);
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(0, closing->count);
+            VERIFY_IS_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Canceled, showOperation->Status);
+        });
+    }
+
+    void ContentDialogIntegrationTests::ValidateShowAsyncFailsWhileXamlRootIsNotSet()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto contentDialog = CreateContentDialog(ContentDialogContent::Default);
+
+        RunOnUIThread([&]()
+        {
+            TestServices::WindowHelper->WindowContent = ref new xaml_controls::Grid();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"ShowAsync on a dialog that is not in the tree and has no XamlRoot fails with E_INVALIDARG (\"This element does not have a XamlRoot\").");
+            VERIFY_IS_NULL(contentDialog->XamlRoot);
+            VERIFY_THROWS_SPECIFIC_WINRT(contentDialog->ShowAsync(), Platform::Exception^, [](Platform::Exception^ ex) { return ex->HResult == E_INVALIDARG; });
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto closedEvent = std::make_shared<Event>();
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Closed);
+        closedRegistration.Attach(contentDialog, [closedEvent]() { closedEvent->Set(); });
+
+        // Whatever happens below, never leave the dialog showing: a showing dialog blocks the following tests.
+        auto hideDialogOnExit = wil::scope_exit([contentDialog]()
+        {
+            HideContentDialogIfShowing(contentDialog, nullptr);
+        });
+
+        LOG_OUTPUT(L"After the failure, the same dialog shows and hides normally once its XamlRoot is set.");
+        auto showOperation = OpenContentDialog(contentDialog);
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(FindOpenDialogPopup(contentDialog));
+            contentDialog->Hide();
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NULL(FindOpenDialogPopup(contentDialog));
+            VERIFY_ARE_EQUAL(wf::AsyncStatus::Completed, showOperation->Status);
+            VERIFY_ARE_EQUAL(xaml_controls::ContentDialogResult::None, showOperation->GetResults());
+        });
     }
 
     xaml_controls::ContentDialog^ ContentDialogIntegrationTests::SetupContentDialogTest(ContentDialogContent content, xaml_controls::ContentDialogPlacement placement)

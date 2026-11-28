@@ -484,6 +484,38 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"Validates that the Loaded and Unloaded events arrive in the correct order and at the correct time when a ContentDialog is opened and closed.")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(CanCancelClosingAndRemoveClosingHandler)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that canceling Closing keeps the dialog open, that Closing reports the closing result, and that a removed Closing handler is no longer raised.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidatePopupAutomationIdFollowsDialogWhileOpen)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that changing AutomationProperties.AutomationId on an open ContentDialog updates the AutomationId of its popup.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidatePositionIsKeptWhenFlowDirectionChangesWhileOpen)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that an open ContentDialog stays at the same position when its FlowDirection changes between LeftToRight and RightToLeft.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateDependencyPropertyIdentifiers)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog dependency property identifiers refer to their matching typed properties and to distinct properties.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateBackButtonClosesDialogWhileOpen)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the ContentDialog back-button listener: a back press on an open dialog is handled and closes it with result None, through the close button when the dialog has one.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateTemplateChangeKeepsInPlaceDialogClosableWhileOpen)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that an in-place ContentDialog whose template is re-applied while it is showing still completes hiding: Hide raises Closed and completes ShowAsync with result None.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateCancelingShowAsyncHidesDialogWhileOpen)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that canceling the ShowAsync operation of an open ContentDialog hides the dialog without raising Closing, and that the operation reports Canceled.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateShowAsyncFailsWhileXamlRootIsNotSet)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that ShowAsync fails with E_INVALIDARG for a ContentDialog that is not in the tree and has no XamlRoot, and that the dialog can be shown normally once its XamlRoot is set.")
+    END_TEST_METHOD()
+
 private:
     enum class ContentDialogContent
     {

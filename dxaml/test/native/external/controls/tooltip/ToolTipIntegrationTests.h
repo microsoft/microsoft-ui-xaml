@@ -305,6 +305,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateToolTipPropertyIdentifiersAndTemplateSettings)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the ToolTip dependency property identifiers, the PlacementTarget accessors, and that IsOpenProperty opens and closes an owned ToolTip.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateHoveredSliderThumbToolTipStaysOpenWhileDragging)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a Slider thumb ToolTip opened automatically by mouse hover stops being an automatic ToolTip when the thumb is pressed: it stays open while the thumb is dragged away and closes when the button is released.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidatePlacementRectSidesWhileHoveringWithMouse)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a ToolTip opened by mouse hover inside its PlacementRect is placed outside that rect on the requested side: left of it for Left, right of it for Right and below it for Bottom.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateMousePlacementFallsBackToTopWhileOpenedByKeyboard)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a ToolTip with Placement=Mouse that is opened by keyboard focus is placed above its owner, like Placement=Top.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
     private:
         enum class InputMode
         {
