@@ -24,6 +24,74 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that selecting text with touch shows the selection flyout.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifySelectionStartAndEndTrackSelection)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that SelectionStart and SelectionEnd report the normalized selection edges and are null while selection is disabled.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyGetPositionFromPointMapsToCharacterEdges)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that GetPositionFromPoint maps points to the closest character edge, including line ends and points below the last line.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyBaselineOffsetReflectsPaddingAndFontSize)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that BaselineOffset includes the top padding and grows with the font size.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyDisconnectChildrenRecursiveClearsRichTextBlockContent)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualTreeHelper.DisconnectChildrenRecursive clears the RichTextBlock blocks, nested inlines and embedded elements only inside the disconnected subtree.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifySelectNormalizesToClusterBoundaries)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that Select never splits a surrogate pair or a base character and its combining mark.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCharacterRectsFollowBidiVisualOrder)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that character rectangles of a right-to-left run inside a left-to-right paragraph follow the visual order, also when the run wraps.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyBoundingRectanglesForRangesCrossingBidiRuns)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies the text pattern bounding rectangles of ranges that cross between left-to-right and nested right-to-left runs.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWrapWholeWordsKeepsOverlongWordOnOneLine)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that WrapWholeWords keeps a word wider than the available width on one line while Wrap breaks it.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCharacterRectOfEmptyParagraph)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that an empty paragraph has a character rectangle on its own line at the content origin.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWordNavigationAcrossInlineElementBoundaries)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that text pattern word navigation neither splits nor merges words at Bold, Italic and InlineUIContainer boundaries.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyRichTextBlockPropertiesRoundTripThroughProjection)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies RichTextBlock property defaults, that each property round-trips through its dependency property, and that the dependency property identifiers are distinct.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyAutomationPeerProvidesOnlyTheTextPattern)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that the RichTextBlock automation peer provides the Text pattern for its content and no Invoke or Value pattern.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWrapWholeWordsKeepsOverlongRightToLeftWordOnOneLine)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that WrapWholeWords keeps a right-to-left word wider than the available width on one line inside a left-to-right paragraph while Wrap breaks it.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCharacterEllipsisTrimsLineInsideRightToLeftRun)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that CharacterEllipsis trims a single line that overflows inside a right-to-left run and reports IsTextTrimmed.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyInlineUIContainerInsideRightToLeftRunFollowsVisualOrder)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that an InlineUIContainer between two Hebrew words of a left-to-right paragraph is placed in right-to-left visual order between them.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyDottedLineFocusRectangleOfKeyboardFocusedHyperlink)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that with FocusVisualKind DottedLine a keyboard-focused Hyperlink draws its focus rectangle around its text only, also when the RichTextBlock is mirrored.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifySelectionHighlightOfVerticallyMirroredRichTextBlock)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that the selection highlight of a vertically mirrored RichTextBlock covers the mirrored bounds of the selected characters only.")
+        END_TEST_METHOD()
     };
 
 } } } } } }
