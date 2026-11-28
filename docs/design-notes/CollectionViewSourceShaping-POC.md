@@ -804,12 +804,14 @@ an `ICollectionViewNode` (`Item`, `Key`, `Parent`, `Children`, `IsContext`).
 | Keys | Read once per item with the view's property path reader. Typed: `Int32` 5 ≠ `Int64` 5, strings ordinal, `Guid` by value, other objects by identity. A null or empty parent key, or one no item has, makes a root. |
 | Filter | A node is kept if it matches or a descendant matches; kept non-matching ancestors are `IsContext`. The key index covers the unfiltered source, so a filtered-out parent never orphans its children. |
 | Sort | `SortDescriptions`/`CustomSort` order every sibling list, roots included; ties in source order. |
-| Grouping | Not with a hierarchy (V1): adding the second rule throws `InvalidOperationException`. |
+| Grouping | Not with a hierarchy (V1). The second rule is refused before it is added (`InvalidOperationException`): a `GroupDescription` is not added, a `HierarchyDescription` on a grouping `CollectionViewSource` is undone, and a view whose `CollectionViewSource` declares both is never created half-attached. `CanGroup` is false while a hierarchy is set; `CanBuildHierarchy` is false while grouping. |
 | The view's list | Every kept node, depth first (pre-order), context nodes included; read-only. |
-| Source changes | Add, Remove and Replace update the tree in place: a node and its subtree move as one; a removed parent's children become roots and are adopted again when the key returns. A Replace with the same keys updates in place; a same-object Replace raises `ItemChanged` on the flat list (a refresh, as a flat view does). Changes are published per vector (node lists first, then the flat list; a node arrives with its subtree complete). Over 64 rows of one change, the flat list raises one `Reset`. |
+| Source changes | Add, Remove and Replace update the tree in place: a node and its subtree move as one; a removed parent's children become roots and are adopted again when the key returns. A Replace with the same keys updates in place; a same-object Replace raises `ItemChanged` on the flat list (a refresh, as a flat view does). Changes are published per vector (node lists first, then the flat list; a node arrives with its subtree complete). Over 64 rows of one change, the flat list raises one `Reset`. A node whose parent changes (orphaned or adopted) raises `PropertyChanged("Parent")`. |
 | Live shaping | A live sort moves the node (with its subtree) among its siblings; a live filter change brings context ancestors in or out. Key changes are seen on `Replace`/`Refresh()`, not live (V1). |
-| Bad data | Never throws: a later duplicate key is a root that cannot be a parent; the member of a cycle that comes first in the source becomes a root. Logged once per recompute (binding debug output and a `CollectionViewHierarchyDataError` trace). A change that touches a duplicate owner or a cycle recomputes. |
-| Recompute | `Refresh()`, a rule or description change, or a source `Reset`: one `Reset` on the flat list and on `CollectionNodes`; node objects are new. `CollectionNodes` is one object for the view's lifetime (null while flat), and `PropertyChanged("CollectionNodes")` precedes the `Reset` when the hierarchy is turned on or off. |
+| Bad data | Never throws: a later duplicate key is a root that cannot be a parent, and its node's `Key` is null (only the owner reports the key, so a control that keys rows by `Key` never takes the duplicate for the owner); the member of a cycle that comes first in the source becomes a root. Logged once per recompute (binding debug output and a `CollectionViewHierarchyDataError` trace). A change that touches a duplicate owner or a cycle recomputes. |
+| Recompute | `Refresh()`, a rule or description change, or a source `Reset`: one `Reset` on the flat list and on `CollectionNodes`; node objects are new. The old nodes' `Children` lists then empty and each raises a `Reset` (after the roots' `Reset`, so a consumer that rebuilt from the new roots has already let go of them). `CollectionNodes` is one object for the view's lifetime (null while flat), and `PropertyChanged("CollectionNodes")` precedes the `Reset` when the hierarchy is turned on or off. |
+
+A `HierarchyDescription` can be shared, as a `GroupDescription` can: one instance on several `CollectionViewSource`s (in code or as a markup resource) builds each view's tree, and a key path change rebuilds every view built with it. A view that its `CollectionViewSource` replaced keeps the shared description (it is not copied).
 
 Engine: one native node per source item (`VectorCollectionView_Hierarchy.cpp`, `_HierarchyInternal.h`): key and
 parent-key maps, waiting orphans by parent key, sorted kept-children lists, kept-subtree counts for pre-order index
@@ -1031,6 +1033,13 @@ and `BenchTeardown` on fre and chk):
 
 ## Known risks
 
+- **Stable XBF indexes across the PR stack.** The hierarchy types and properties take stable XBF indexes 989/990 and
+  2492–2494, appended after the base PR's. They are append-only and persist in app `.xbf`: on a rebase onto a `main`
+  where another change took those values, they must be appended again after the new last index (regenerate, then
+  check that no existing index moved), never renumbered.
+- **`HierarchyDescription` factory.** MIDL emits an empty composable factory (`IHierarchyDescriptionFactory`) for any
+  unsealed runtime class, with or without `constructor_name` (as for `SetterBase`, `Transition`, `UIElement`). A
+  protected constructor added later goes into a new, versioned factory interface.
 - **Codegen.** Generated outputs were first hand-written, then regenerated with `dxaml\xcp\runcodegen.cmd`
   (`a78612b94`, and again for `ICollectionViewShaping`). See "Regeneration" below.
 - **Flat/grouped switch.** Adding the first or removing the last `GroupDescription` keeps `View`; ListView, GridView
