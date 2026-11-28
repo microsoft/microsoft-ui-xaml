@@ -1388,11 +1388,71 @@ static inline void UpdateTrackedIndex(
     }
 }
 
-// Reorder the given list of items (given as a list of indexes) to the given index.
-// Items are inserted in their original order.
+// Prefer the expected occurrence, then object identity, before the collection's value-based lookup.
+static _Check_return_ HRESULT FindItemIndex(
+    _In_ wfc::IVector<IInspectable*>* pItems,
+    _In_opt_ IInspectable* pItem,
+    _In_ INT expectedIndex,
+    _Out_ INT* pIndex)
+{
+    UINT size = 0;
+    UINT index = 0;
+    BOOLEAN found = FALSE;
+    ctl::ComPtr<IInspectable> spExpectedItem;
+
+    *pIndex = -1;
+
+    IFC_RETURN(pItems->get_Size(&size));
+    if (expectedIndex >= 0 && static_cast<UINT>(expectedIndex) < size)
+    {
+        IFC_RETURN(pItems->GetAt(expectedIndex, &spExpectedItem));
+        if (ctl::are_equal(spExpectedItem.Get(), pItem))
+        {
+            *pIndex = expectedIndex;
+            return S_OK;
+        }
+    }
+
+    for (UINT i = 0; i < size; ++i)
+    {
+        ctl::ComPtr<IInspectable> spCurrentItem;
+
+        IFC_RETURN(pItems->GetAt(i, &spCurrentItem));
+        if (ctl::are_equal(spCurrentItem.Get(), pItem))
+        {
+            *pIndex = static_cast<INT>(i);
+            return S_OK;
+        }
+    }
+
+    if (spExpectedItem)
+    {
+        bool areEqual = false;
+        IFC_RETURN(PropertyValue::AreEqual(spExpectedItem.Get(), pItem, &areEqual));
+        if (areEqual)
+        {
+            *pIndex = expectedIndex;
+            return S_OK;
+        }
+    }
+
+    IFC_RETURN(pItems->IndexOf(pItem, &index, &found));
+    if (found)
+    {
+        *pIndex = static_cast<INT>(index);
+    }
+
+    return S_OK;
+}
+
+// Reorder the given list of items (given as a list of indexes, sorted in increasing order) to the given index.
+// Items are inserted in their original order, and the moved items that were selected are selected again.
 // Optionally, pTrackedIndex can be specified. It should hold the index of an item you're
 // interested in tracking. When the function returns successfully, pTrackedIndex will be updated
-// with the new index location of the item originally at *pTrackedIndex.
+// with the new index location of the item originally at *pTrackedIndex, or -1 if that item was
+// removed, or ItemsSource was replaced, during the reorder.
+//
+// Restore selection only after all moves, since SelectionChanged handlers can change the items or ItemsSource.
 _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
     _In_ std::vector<UINT>* pReorderItemIndexes,
     _In_ INT insertIndex,
@@ -1440,6 +1500,28 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
         // We need this to account for indexes shifting during reorder.
         INT numItemsReorderedSoFar = 0;
 
+        struct MovedSelectedItem
+        {
+            ctl::ComPtr<IInspectable> item;
+            INT index;
+        };
+        std::vector<MovedSelectedItem> movedSelectedItems;
+
+        // Removing a selected item can raise SelectionChanged, so remember the original selection before any move.
+        for (const UINT index : *pReorderItemIndexes)
+        {
+            UINT ignoredIndexInSelection = 0;
+            BOOLEAN isSelected = FALSE;
+
+            IFC(m_selection.Has(index, ignoredIndexInSelection, isSelected));
+            if (isSelected)
+            {
+                ctl::ComPtr<IInspectable> spItem;
+                IFC(spItemSourceVector->GetAt(index, &spItem));
+                movedSelectedItems.push_back({ spItem, static_cast<INT>(index) });
+            }
+        }
+
         // Increment the Reorder Counter (used for content animations).
         IFC(OnItemsReordered(pReorderItemIndexes->size()));
 
@@ -1471,16 +1553,8 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
             // since the data is provided externally.
             if (insertIndex != realItemIndex)
             {
-                // Whether or not the item we're reordering is selected.
-                BOOLEAN isCurrentReorderedItemSelected = FALSE;
-
-                // Not used. The index of the item we're reordering in the selected items list, if applicable.
-                UINT currentReorderedItemIndexInSelection = 0;
-
-                // The item we're reordering.
                 ctl::ComPtr<IInspectable> spCurrentItem;
 
-                // Update tracked indices, if necessary.
                 UpdateTrackedIndex(
                     realItemIndex,
                     insertIndex,
@@ -1490,25 +1564,100 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                     realItemIndex,
                     insertIndex,
                     pTrackedIndex2);
+                for (auto& movedSelectedItem : movedSelectedItems)
+                {
+                    UpdateTrackedIndex(realItemIndex, insertIndex, &movedSelectedItem.index);
+                }
 
-                IFC(m_selection.Has(realItemIndex, currentReorderedItemIndexInSelection, isCurrentReorderedItemSelected));
                 IFC(spItemSourceVector->GetAt(realItemIndex, &spCurrentItem));
                 {
                     auto peggedCurrentItem = ctl::make_autopeg(spCurrentItem.Get());
                     IFC(spItemSourceVector->RemoveAt(realItemIndex));
                     IFC(spItemSourceVector->InsertAt(insertIndex, spCurrentItem.Get()));
                 }
-
-                // This remove-then-insert step will clear any selection on the current item.
-                // If this item was selected, we need to re-select it.
-                if (isCurrentReorderedItemSelected)
-                {
-                    // call the Selector::SelectOneItemInternal
-                    IFC(SelectOneItemInternal(insertIndex, spCurrentItem.Get(), TRUE /* clearOldSelection */));
-                }
             }
 
             numItemsReorderedSoFar++;
+        }
+
+        if (!movedSelectedItems.empty())
+        {
+            ctl::ComPtr<IInspectable> spTrackedItem1;
+            ctl::ComPtr<IInspectable> spTrackedItem2;
+            UINT itemsCount = 0;
+            UINT reselectedCount = 0;
+
+            IFC(spItemSourceVector->get_Size(&itemsCount));
+            const bool hasTrackedItem1 = pTrackedIndex1 != nullptr && *pTrackedIndex1 >= 0 && static_cast<UINT>(*pTrackedIndex1) < itemsCount;
+            const bool hasTrackedItem2 = pTrackedIndex2 != nullptr && *pTrackedIndex2 >= 0 && static_cast<UINT>(*pTrackedIndex2) < itemsCount;
+            if (hasTrackedItem1)
+            {
+                IFC(spItemSourceVector->GetAt(*pTrackedIndex1, &spTrackedItem1));
+            }
+            if (hasTrackedItem2)
+            {
+                IFC(spItemSourceVector->GetAt(*pTrackedIndex2, &spTrackedItem2));
+            }
+
+            // Each re-selection can invoke app code, so re-check the source, mode and item index.
+            for (const auto& movedSelectedItem : movedSelectedItems)
+            {
+                ctl::ComPtr<wfc::IIterable<IInspectable*>> spCurrentItemsSource;
+                xaml_controls::ListViewSelectionMode selectionMode = xaml_controls::ListViewSelectionMode_None;
+                BOOLEAN canSelectMultiple = FALSE;
+                INT currentIndex = -1;
+
+                IFC(get_ItemsSource(&spCurrentItemsSource));
+                if (!ctl::are_equal(spCurrentItemsSource.Get(), spItemsSource.Get()))
+                {
+                    break;
+                }
+
+                IFC(get_SelectionMode(&selectionMode));
+                IFC(get_CanSelectMultiple(&canSelectMultiple));
+
+                if (selectionMode == xaml_controls::ListViewSelectionMode_None ||
+                    (!canSelectMultiple && reselectedCount > 0))
+                {
+                    break;
+                }
+
+                IFC(FindItemIndex(spItemSourceVector.Get(), movedSelectedItem.item.Get(), movedSelectedItem.index, &currentIndex));
+                if (currentIndex < 0)
+                {
+                    continue;
+                }
+
+                IFC(SelectOneItemInternal(currentIndex, movedSelectedItem.item.Get(), !canSelectMultiple /* clearOldSelection */));
+                ++reselectedCount;
+            }
+
+            ctl::ComPtr<wfc::IIterable<IInspectable*>> spFinalItemsSource;
+            IFC(get_ItemsSource(&spFinalItemsSource));
+            const bool isItemsSourceUnchanged = ctl::are_equal(spFinalItemsSource.Get(), spItemsSource.Get());
+
+            if (hasTrackedItem1)
+            {
+                if (isItemsSourceUnchanged)
+                {
+                    IFC(FindItemIndex(spItemSourceVector.Get(), spTrackedItem1.Get(), *pTrackedIndex1, pTrackedIndex1));
+                }
+                else
+                {
+                    *pTrackedIndex1 = -1;
+                }
+            }
+            if (hasTrackedItem2)
+            {
+                if (isItemsSourceUnchanged)
+                {
+                    IFC(FindItemIndex(spItemSourceVector.Get(), spTrackedItem2.Get(), *pTrackedIndex2, pTrackedIndex2));
+                }
+                else
+                {
+                    *pTrackedIndex2 = -1;
+                }
+            }
         }
     }
 

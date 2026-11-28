@@ -62,6 +62,7 @@
         <ClCompile Include="GridView\GridViewIntegrationTests.cpp" />
         <ClCompile Include="ListView\ListViewIntegrationTests.cpp" />
         <ClCompile Include="rangeselection\RangeSelectionIntegrationTests.cpp" />
+        <ClCompile Include="rangeselection\RangeSelectionReorderIntegrationTests.cpp" />
         <ClCompile Include="SemanticZoom\SemanticZoomIntegrationTests.cpp" />
         <ClCompile Include="stickyheaders\StickyHeadersIntegrationTests.cpp" />
     </ItemGroup>
