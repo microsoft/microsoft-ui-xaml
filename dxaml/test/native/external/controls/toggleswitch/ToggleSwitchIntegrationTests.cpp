@@ -413,7 +413,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     {
         TestCleanupWrapper cleanup;
 
-        double const expectedToggleSwitchWidth = 154;
+        double const expectedToggleSwitchWidth = 72;
         double const expectedToggleSwitchWidth_WithWideHeader = 200;
         double const expectedToggleSwitchWidth_WithWideOnOffContent = 200 + 40 + 12; //content width + switch width + gap width
         double const expectedToggleSwitchTouchableWidth = 72;
