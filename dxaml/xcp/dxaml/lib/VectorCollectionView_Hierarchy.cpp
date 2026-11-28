@@ -2308,8 +2308,9 @@ _Check_return_ HRESULT VectorCollectionView::AllocateHierarchyNode(
 // A source Add, Remove or Replace on a hierarchical view. App code (key and sort getters, the filter) runs before
 // anything changes, and so does the check whether the change needs a recompute (a key taken from a later duplicate, a
 // cycle), which leaves *pIsApplied false and the store untouched. Then the tree is updated in place and each vector
-// raises what changed in it. A change that fails or is overtaken once it began to change the store leaves the store
-// stale and the source indices invalid: only a recompute uses the store again.
+// raises what changed in it. A change the store did not follow leaves it stale: only a recompute uses it again, even if
+// the recompute the caller starts fails (a CurrentChanging handler that throws). One that fails or is overtaken once it
+// began to change the store also invalidates the source indices.
 _Check_return_ HRESULT VectorCollectionView::ProcessHierarchyCollectionChanged(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied)
 {
     auto spStore = m_spHierarchy;
@@ -2320,6 +2321,17 @@ _Check_return_ HRESULT VectorCollectionView::ProcessHierarchyCollectionChanged(w
     bool isMutating = false;
 
     *pIsApplied = false;
+    auto invalidate = wil::scope_exit([&]() noexcept
+    {
+        if (!*pIsApplied && spStore)
+        {
+            spStore->isStale = true;
+            if (isMutating)
+            {
+                m_areSourceIndicesValid = false;
+            }
+        }
+    });
     if (!spStore || spStore->isStale || previousSize != m_sourceListSize
         + ((change == wfc::CollectionChange_ItemRemoved) ? 1 : 0)
         - ((change == wfc::CollectionChange_ItemInserted) ? 1 : 0))
@@ -2340,14 +2352,6 @@ _Check_return_ HRESULT VectorCollectionView::ProcessHierarchyCollectionChanged(w
         return IsSortDirtyAfterSourceChange(change, index, sourceIndex);
     };
     auto clearSkip = wil::scope_exit([&spStore]() noexcept { spStore->isSortSkipped = nullptr; });
-    auto invalidate = wil::scope_exit([&]() noexcept
-    {
-        if (isMutating && !*pIsApplied)
-        {
-            spStore->isStale = true;
-            m_areSourceIndicesValid = false;
-        }
-    });
 
     if (change == wfc::CollectionChange_ItemRemoved)
     {
