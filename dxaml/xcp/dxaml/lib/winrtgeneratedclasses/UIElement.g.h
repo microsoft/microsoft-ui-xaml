@@ -594,6 +594,7 @@ namespace DirectUI
         IFACEMETHOD(RemoveHandler)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEvent* pRoutedEvent, _In_ IInspectable* pHandler) override;
         _Check_return_ HRESULT ResetGlobalScaleFactor();
         IFACEMETHOD(ResumeNewDispatchIfAvailable)() override;
+        IFACEMETHOD(SetValuePreservingBinding)(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pDp, _In_ IInspectable* pValue) override;
         IFACEMETHOD(StartAnimation)(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override;
         IFACEMETHOD(StartBringIntoView)() override;
         IFACEMETHOD(StartBringIntoViewWithOptions)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewOptions* pOptions) override;
