@@ -1445,6 +1445,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 VerifyTree(tableView, FullTree, "precondition");
                 tableView.ItemsSource = null;
+                // The fixture keeps its CollectionViewSource in Tag.
+                tableView.Tag = null;
                 list = null;
             });
             SettleLayout(tableView);
