@@ -588,7 +588,7 @@ void TableView::ApplyGroupExpansionByIdentity(
     bool targetResolves = provider && generation == m_rowMetadataGeneration;
 
     std::optional<winrt::ExpandCollapseState> groupStateBefore;
-    std::optional<winrt::ExpandCollapseState> rowStateBefore;
+    RowExpansionStates rowStatesBefore;
     if (TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
         if (axis == BulkExpansionAxis::Groups)
@@ -600,8 +600,8 @@ void TableView::ApplyGroupExpansionByIdentity(
         }
         else
         {
-            // A subtree request too: its root row was shown, its descendants were not.
-            rowStateBefore = TryGetRowExpandCollapseState(identity);
+            // A subtree request also changes the shown descendants of an expanded root.
+            rowStatesBefore = CaptureRealizedRowExpansionStates(identity, subtree);
         }
     }
 
@@ -689,9 +689,9 @@ void TableView::ApplyGroupExpansionByIdentity(
             // Keep the earliest state: two toggles before the header is re-prepared net out to no change.
             m_pendingGroupExpansionStates.try_emplace(identity, *groupStateBefore);
         }
-        if (rowStateBefore)
+        for (auto const& [rowIdentity, state] : rowStatesBefore)
         {
-            m_pendingRowExpansionStates.try_emplace(identity, *rowStateBefore);
+            m_pendingRowExpansionStates.try_emplace(rowIdentity, state);
         }
         QueueGroupExpansionRowRefresh();
         // The toggled row keeps its index, so it is never re-prepared; restamp it here. Rows below the
@@ -751,23 +751,62 @@ std::optional<winrt::ExpandCollapseState> TableView::TryGetGroupExpandCollapseSt
     return std::nullopt;
 }
 
-std::optional<winrt::ExpandCollapseState> TableView::TryGetRowExpandCollapseState(winrt::hstring const& identity)
+// The states a client may hold for tree rows a container shows now: the root's and, with includeDescendants, its shown
+// descendants'. A row no container shows was never read by a client, so it gets no event when it is shown later.
+TableView::RowExpansionStates TableView::CaptureRealizedRowExpansionStates(winrt::hstring const& rootIdentity, bool includeDescendants)
 {
+    RowExpansionStates states;
+    auto const repeater = m_rowsRepeater.get();
+    auto const provider = m_tableViewSourceRowMetadata;
+    int32_t rootIndex = -1;
+    TableViewRowInfo rootInfo{};
     try
     {
-        int32_t index = -1;
-        TableViewRowInfo info{};
-        if (m_tableViewSourceRowMetadata &&
-            m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) &&
-            TryGetRowInfo(index, info) && info.Kind == TableViewRowKind::Data && info.Level > 0)
+        if (!repeater || !provider || !provider->TryGetIndexForIdentity(rootIdentity, rootIndex) ||
+            !TryGetRowInfo(rootIndex, rootInfo) || rootInfo.Kind != TableViewRowKind::Data || rootInfo.Level <= 0)
         {
-            return GroupExpandCollapseState(info.IsExpandable, info.IsExpanded);
+            return states;
         }
     }
     catch (...)
     {
+        return states;
     }
-    return std::nullopt;
+
+    auto const isDescendant = [&](TableViewRowInfo info)
+    {
+        // Up the parent chain to the root's level + 1, then compare that row's parent with the root.
+        while (info.Level > rootInfo.Level + 1)
+        {
+            int32_t parentIndex = -1;
+            if (!provider->TryGetIndexForIdentity(info.ParentIdentity, parentIndex) || !TryGetRowInfo(parentIndex, info))
+            {
+                return false;
+            }
+        }
+        return info.Level == rootInfo.Level + 1 && info.ParentIdentity == rootIdentity;
+    };
+
+    ForEachRealizedRow([&](winrt::TableViewRow const& row)
+    {
+        try
+        {
+            const auto index = repeater.GetElementIndex(row);
+            TableViewRowInfo info{};
+            if (index < 0 || !TryGetRowInfo(index, info) || info.Kind != TableViewRowKind::Data || info.Level <= 0)
+            {
+                return;
+            }
+            if (index == rootIndex || (includeDescendants && index > rootIndex && isDescendant(info)))
+            {
+                states.emplace_back(provider->GetIdentity(index), GroupExpandCollapseState(info.IsExpandable, info.IsExpanded));
+            }
+        }
+        catch (...)
+        {
+        }
+    });
+    return states;
 }
 
 // A toggled tree row tells UI Automation its new state once a container shows it again: when the row is prepared (a
@@ -1330,12 +1369,13 @@ void TableView::SetRowExpansionByItem(winrt::IInspectable const& item, bool expa
 
     auto const focusedIdentity = CaptureFocusedContainerForRestore();
     auto const generation = m_rowMetadataGeneration;
-    winrt::hstring identity;
-    std::optional<winrt::ExpandCollapseState> stateBefore;
+    RowExpansionStates statesBefore;
     if (TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        identity = flattener->TryGetIdentityForItem(item);
-        stateBefore = identity.empty() ? std::nullopt : TryGetRowExpandCollapseState(identity);
+        if (auto const identity = flattener->TryGetIdentityForItem(item); !identity.empty())
+        {
+            statesBefore = CaptureRealizedRowExpansionStates(identity, false /* includeDescendants */);
+        }
     }
     bool changed = false;
     {
@@ -1360,9 +1400,9 @@ void TableView::SetRowExpansionByItem(winrt::IInspectable const& item, bool expa
 
     if (changed)
     {
-        if (stateBefore)
+        for (auto const& [rowIdentity, state] : statesBefore)
         {
-            m_pendingRowExpansionStates.try_emplace(identity, *stateBefore);
+            m_pendingRowExpansionStates.try_emplace(rowIdentity, state);
         }
         TableViewTelemetry::MarkUsed(m_telemetrySession, m_telemetrySession.generation, TableViewTelemetry::Feature::Hierarchy);
         RefreshRealizedRowHierarchyState();

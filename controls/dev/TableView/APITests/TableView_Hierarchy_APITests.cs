@@ -1426,6 +1426,90 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a subtree expansion of an expanded root whose many collapsed children are shown (the table rebuilds its rows) raises ExpandCollapseState once for each child a container shows.")]
+        public void VerifySubtreeExpandRaisesExpandCollapseStateForShownChildren()
+        {
+            var list = new ObservableCollection<TreeEmployee> { new TreeEmployee { Id = 1, Name = "Top" } };
+            for (var i = 0; i < 70; i++)
+            {
+                list.Add(new TreeEmployee { Id = 100 + i, ManagerId = 1, Name = $"K{i:D2}" });
+                list.Add(new TreeEmployee { Id = 1000 + i, ManagerId = 100 + i, Name = $"G{i:D2}" });
+            }
+            var tableView = Place(list);
+            RunOnUIThread.Execute(() => tableView.ExpandRow(list[0]));
+            SettleLayout(tableView);
+
+            var log = new List<string>();
+            CountRowAutomationPropertyChanges(tableView, () =>
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var top = (TableViewRow)GetRowsRepeater(tableView).TryGetElement(0);
+                    Microsoft.UI.Private.Controls.TableViewTestHooks.ExpandRowSubtree(tableView, top);
+                });
+                SettleLayout(tableView);
+            }, log, withItem: true);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(141, GetProjectedCount(tableView), "Top, its children and their children.");
+                var repeater = GetRowsRepeater(tableView);
+                var shownChildren = GetRealizedRows(tableView)
+                    .Where(r => repeater.GetElementIndex(r) >= 0 && r.Level == 2)
+                    .Select(r => NameOf(r.DataContext))
+                    .OrderBy(n => n)
+                    .ToList();
+                Verify.IsTrue(shownChildren.Count > 0, "Some children are shown.");
+                var events = log.Where(e => e.EndsWith(":ExpandCollapseState")).ToList();
+                foreach (var name in shownChildren)
+                {
+                    Verify.AreEqual(1, events.Count(e => e == $"{name}:ExpandCollapseState"), $"{name} expanded once. Events: [{string.Join(",", events)}]");
+                }
+                Verify.AreEqual(0, events.Count(e => e.StartsWith("Top:") || e.StartsWith("G")), $"Top stayed expanded and grandchildren are leaves. Events: [{string.Join(",", events)}]");
+                Verify.AreEqual(events.Count, events.Distinct().Count(), $"No row twice. Events: [{string.Join(",", events)}]");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ExpandRow and CollapseRow on a row no container shows raise no ExpandCollapseState when the row is later scrolled into view.")]
+        public void VerifyOffScreenToggleRaisesNoEventWhenShown()
+        {
+            var list = new ObservableCollection<TreeEmployee>();
+            for (var i = 0; i < 60; i++)
+            {
+                list.Add(new TreeEmployee { Id = 1000 + i, Name = $"R{i:D2}" });
+                list.Add(new TreeEmployee { Id = 2000 + i, ManagerId = 1000 + i, Name = $"C{i:D2}" });
+            }
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                tableView = CreateTreeTable(list, IdPath, ManagerPath);
+                tableView.Height = 200;
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            var expanded = list[100];
+            var collapsed = list[96];
+            RunOnUIThread.Execute(() => tableView.ExpandRow(collapsed));
+            SettleLayout(tableView);
+
+            var raised = CountRowAutomationPropertyChanges(tableView, () =>
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(GetRealizedRows(tableView).Any(r => ReferenceEquals(r.DataContext, expanded) || ReferenceEquals(r.DataContext, collapsed)), "Precondition: neither row is shown.");
+                    tableView.ExpandRow(expanded);
+                    tableView.CollapseRow(collapsed);
+                });
+                SettleLayout(tableView);
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, 1500);
+                RunOnUIThread.Execute(() => Verify.IsTrue(GetRealizedRows(tableView).Any(r => GetRowsRepeater(tableView).GetElementIndex(r) >= 0 && ReferenceEquals(r.DataContext, expanded)), "Precondition: R50 is shown now."));
+            }, withItem: true);
+            Verify.AreEqual(0, raised.Split(',').Count(e => e.EndsWith(":ExpandCollapseState") && (e.StartsWith("R50") || e.StartsWith("R48"))), $"No client read either row before. Events: [{raised}]");
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies setting ItemsSource to null releases every item an expanded tree showed, while the table stays alive: no recycled row keeps the item it last showed.")]
         public void VerifyClearingItemsSourceReleasesTreeItems()
         {
@@ -1583,7 +1667,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Runs act with a UI Automation listener forced on and returns the property changes rows raised, as "Name" or,
         // with onlyItem, only those of rows showing that item.
-        private static string CountRowAutomationPropertyChanges(TableView tableView, Action act, List<string> log = null, object onlyItem = null)
+        private static string CountRowAutomationPropertyChanges(TableView tableView, Action act, List<string> log = null, object onlyItem = null, bool withItem = false)
         {
             log ??= new List<string>();
             EventHandler<object> handler = (sender, args) =>
@@ -1591,7 +1675,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var row = sender as TableViewRow;
                 if (onlyItem == null || (row != null && ReferenceEquals(row.DataContext, onlyItem)))
                 {
-                    log.Add($"{args}");
+                    log.Add(withItem ? $"{NameOf(row?.DataContext)}:{args}" : $"{args}");
                 }
             };
             try

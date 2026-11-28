@@ -29,6 +29,7 @@ public:
     static void NoteRowAutomationPropertyChanged(winrt::IInspectable const& row, wchar_t const* property);
 
     static uint32_t GetRowHierarchyRestampCount();
+    static void ExpandRowSubtree(winrt::IInspectable const& tableView, winrt::IInspectable const& row);
     // Called by TableView each time it restamps its realized rows.
     static void NoteRowHierarchyRestamp();
 };

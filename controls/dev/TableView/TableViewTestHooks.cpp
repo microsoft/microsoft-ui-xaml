@@ -163,3 +163,11 @@ void TableViewTestHooks::NoteRowHierarchyRestamp()
 {
     s_rowHierarchyRestamps.fetch_add(1, std::memory_order_relaxed);
 }
+
+void TableViewTestHooks::ExpandRowSubtree(winrt::IInspectable const& tableView, winrt::IInspectable const& row)
+{
+    if (auto const table = TableViewFrom(tableView))
+    {
+        table->ExpandRowSubtree(row.as<winrt::UIElement>());
+    }
+}

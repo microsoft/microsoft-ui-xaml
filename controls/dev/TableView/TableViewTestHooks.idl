@@ -28,6 +28,9 @@ runtimeclass TableViewTestHooks
 
     // How many times a TableView restamped the tree state of all its realized rows (process-wide).
     static UInt32 GetRowHierarchyRestampCount();
+
+    // As the * key on the row: expands the row and every row below it.
+    static void ExpandRowSubtree(Object tableView, Object row);
 }
 
 }

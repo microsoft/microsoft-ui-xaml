@@ -1084,7 +1084,8 @@ private:
     void RaiseGroupStructureChanged();
     void AnnounceRowExpansionChange(winrt::hstring const& identity);
     std::optional<winrt::ExpandCollapseState> TryGetGroupExpandCollapseState(winrt::hstring const& identity);
-    std::optional<winrt::ExpandCollapseState> TryGetRowExpandCollapseState(winrt::hstring const& identity);
+    using RowExpansionStates = std::vector<std::pair<winrt::hstring, winrt::ExpandCollapseState>>;
+    RowExpansionStates CaptureRealizedRowExpansionStates(winrt::hstring const& rootIdentity, bool includeDescendants);
     void RaisePendingRowExpansionEvents();
     void RaisePendingRowExpansionEvent(winrt::TableViewRow const& row);
     // Tree row identity -> ExpandCollapseState before a toggle, until the rows settle (RaisePendingRowExpansionEvents).
