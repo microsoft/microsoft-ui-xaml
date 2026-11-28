@@ -10,7 +10,12 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
 //       
 //       Input file:
-//           AnimatedGlobalNavigationButtonVisualSource.json (37639 bytes created 23:37-07:00 Oct 5 2021)
+//           AnimatedGlobalNavigationButtonVisualSource.json (102230 bytes created 20:17+05:30 Nov 26 2026)
+//       
+//       Source:
+//           AnimatedGlobalNavigationButtonVisualSource.json next to this file. It was rebuilt in 2026 from the
+//           2021 LottieGen output (the original .json was not checked in) and its bars were moved onto
+//           whole pixels at 16x16 (#7048). See README.md in this folder to regenerate.
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie

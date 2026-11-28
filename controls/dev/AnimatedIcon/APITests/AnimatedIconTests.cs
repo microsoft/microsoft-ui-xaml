@@ -8,11 +8,13 @@ using Common;
 using Microsoft.UI.Xaml.Markup;
 using System.Collections.Generic;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System.Linq;
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.InteropServices.WindowsRuntime;
 using MUXControlsTestApp;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Private.Controls;
@@ -1118,6 +1120,161 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Foreground applied=True; other name ignored=True", DescribeThemeForeground(source));
         }
 
+        // Scenario: Shows AnimatedGlobalNavigationButtonVisualSource (the NavigationView hamburger) in a black 16x16
+        // AnimatedIcon on white, cuts to the end of each of its six state transitions and measures the bars.
+        // Expected: at every resting frame there are three bars, each exactly 1 px thick at 100% scale, with top and
+        // bottom edges on whole pixels.
+        // Failure means: the bars are a fraction of a pixel thick or sit between pixel rows, so at 100% scale they are
+        // anti-aliased across two rows and the hamburger looks blurry (#7048).
+        [TestMethod]
+        public void AnimatedGlobalNavigationButtonBarsAreOnWholePixelsAtRest()
+        {
+            AnimatedIcon icon = null;
+            Border host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon { Foreground = new SolidColorBrush(Colors.Black) };
+                AnimatedIconTestHooks.SetDurationMultiplier(icon, 0);
+                icon.Source = new AnimatedGlobalNavigationButtonVisualSource();
+
+                // RenderTargetBitmap renders an element's XAML bounds; the background gives the host its 16x16 bounds.
+                host = new Border
+                {
+                    Width = 16,
+                    Height = 16,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Background = new SolidColorBrush(Colors.White),
+                    Child = icon,
+                };
+                Content = host;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            // The first state cuts to a transition that ends in Normal; the others play (cut to the end of) one
+            // transition each, so together they visit the end of all six transitions.
+            var steps = new[]
+            {
+                ("Normal", "PointerOverToNormal_End"),
+                ("PointerOver", "NormalToPointerOver_End"),
+                ("Pressed", "PointerOverToPressed_End"),
+                ("Normal", "PressedToNormal_End"),
+                ("Pressed", "NormalToPressed_End"),
+                ("PointerOver", "PressedToPointerOver_End"),
+                ("Normal", "PointerOverToNormal_End"),
+            };
+            foreach (var (state, endMarker) in steps)
+            {
+                SetStateAndWaitForLayout(icon, state);
+                Verify.IsLessThan(Math.Abs((float)ExpectedMarkers.GlobalNavigationButton[endMarker] - ReadProgress(icon)), c_progressTolerance, state + " rests at " + endMarker);
+                VerifyBarsAreOnWholePixels(host, endMarker);
+            }
+        }
+
+        // Measures the hamburger's bars in the middle columns of an 8x render (so the result doesn't depend on whether
+        // the renderer anti-aliases): there must be three bars, each 1 px thick at 100% scale (1 DIP) with its edges on
+        // whole pixels.
+        private static void VerifyBarsAreOnWholePixels(FrameworkElement host, string label)
+        {
+            var (width, height, ink) = RenderAndLogInk(host, label, 8.0);
+
+            // RenderTargetBitmap also applies the display's rasterization scale, so measure in rendered pixels per DIP.
+            double hostHeight = 0;
+            RunOnUIThread.Execute(() => hostHeight = host.ActualHeight);
+            double scale = height / hostHeight;
+
+            // Coverage (0..1) of each row, averaged over the middle columns.
+            var coverage = new double[height];
+            int left = width * 3 / 8;
+            int right = width * 5 / 8;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = left; x < right; x++)
+                {
+                    coverage[y] += ink[y * width + x] / 255.0;
+                }
+                coverage[y] /= right - left;
+            }
+
+            var bars = new List<string>();
+            for (int y = 0; y < height; y++)
+            {
+                if (coverage[y] < c_emptyCoverage)
+                {
+                    continue;
+                }
+
+                // A bar is a run of covered rows: its thickness is the summed coverage and its centre the weighted mean.
+                double sum = 0;
+                double weightedRows = 0;
+                for (; y < height && coverage[y] >= c_emptyCoverage; y++)
+                {
+                    sum += coverage[y];
+                    weightedRows += (y + 0.5) * coverage[y];
+                }
+                double thickness = sum / scale;
+                double top = weightedRows / sum / scale - thickness / 2;
+                double bottom = top + thickness;
+                bars.Add(string.Format(CultureInfo.InvariantCulture, "{0:0.###}-{1:0.###}", top, bottom));
+
+                var message = label + ": bar " + bars.Count + " spans " + bars[bars.Count - 1] + " px";
+                Verify.IsLessThan(Math.Abs(thickness - 1), c_pixelTolerance, message + " (must be 1 px thick)");
+                Verify.IsLessThan(Math.Abs(top - Math.Round(top)), c_pixelTolerance, message + " (top edge must be on a whole pixel)");
+            }
+
+            Log.Comment(label + " bars (px at 100%): " + string.Join(", ", bars));
+            Verify.AreEqual(3, bars.Count, label + ": number of bars");
+        }
+        // Renders the element at the given scale and logs its "ink" (255 minus the green channel, so 0 is white and 255
+        // is black), base64 encoded, one byte per pixel, row by row.
+        private static (int Width, int Height, byte[] Ink) RenderAndLogInk(FrameworkElement element, string label, double scale)
+        {
+            RenderTargetBitmap bitmap = null;
+            var done = new ManualResetEvent(false);
+            var status = global::Windows.Foundation.AsyncStatus.Started;
+            RunOnUIThread.Execute(() =>
+            {
+                bitmap = new RenderTargetBitmap();
+                bitmap.RenderAsync(element, (int)Math.Round(element.ActualWidth * scale), (int)Math.Round(element.ActualHeight * scale)).Completed = (operation, operationStatus) =>
+                {
+                    status = operationStatus;
+                    done.Set();
+                };
+            });
+            Verify.IsTrue(done.WaitOne(TimeSpan.FromSeconds(10)), "RenderTargetBitmap.RenderAsync should complete");
+            Verify.AreEqual(global::Windows.Foundation.AsyncStatus.Completed, status, "RenderTargetBitmap.RenderAsync status");
+
+            int width = 0;
+            int height = 0;
+            byte[] pixels = null;
+            done.Reset();
+            RunOnUIThread.Execute(() =>
+            {
+                width = bitmap.PixelWidth;
+                height = bitmap.PixelHeight;
+                bitmap.GetPixelsAsync().Completed = (operation, operationStatus) =>
+                {
+                    if (operationStatus == global::Windows.Foundation.AsyncStatus.Completed)
+                    {
+                        pixels = operation.GetResults().ToArray();
+                    }
+                    done.Set();
+                };
+            });
+            Verify.IsTrue(done.WaitOne(TimeSpan.FromSeconds(10)), "RenderTargetBitmap.GetPixelsAsync should complete");
+            Verify.IsTrue(width > 0 && height > 0 && pixels != null && pixels.Length == width * height * 4, "Rendered " + width + "x" + height);
+
+            // BGRA8: green is the 2nd byte of every pixel.
+            var ink = new byte[width * height];
+            for (int i = 0; i < ink.Length; i++)
+            {
+                ink[i] = (byte)(255 - pixels[i * 4 + 1]);
+            }
+            Log.Comment(string.Format(CultureInfo.InvariantCulture, "HamburgerInk {0} scale={1} {2}x{3} {4}", label, scale, width, height, Convert.ToBase64String(ink)));
+            return (width, height, ink);
+        }
+
         // Scenario: Checks the generated AnimatedSettingsVisualSource: its Markers table, an animated visual it
         // creates, and how it applies theme colors.
         // Expected: Markers match the expected table exactly; the visual is 48x48, lasts 20000000 ticks (about 2 s),
@@ -1394,6 +1551,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private const long c_normalSpeedPressedToNormalMinMs = 12000;
         private const int c_normalSpeedPressedToNormalTimeoutMs = 45000;
         private const float c_progressTolerance = 0.0001f;
+        // A row of an 8x render with less coverage than this is empty.
+        private const double c_emptyCoverage = 0.05;
+        // Half a row of an 8x render, in pixels at 100% scale.
+        private const double c_pixelTolerance = 0.07;
         // Stretches the 0.11-progress NormalToPointerOver segment of AnimatedBackVisualSource (1.33s) to about 12s.
         private const float c_slowDurationMultiplier = 80f;
 
