@@ -6,6 +6,7 @@
 #include "ListViewBaseItem.g.h"
 #include "AutomationPeer.g.h"
 #include "ItemCollection.g.h"
+#include "VectorCollectionView.g.h"
 #include "DragStartingEventArgs.g.h"
 #include "DragItemsStartingEventArgs.g.h"
 #include "DragItemsCompletedEventArgs.g.h"
@@ -474,6 +475,10 @@ _Check_return_ HRESULT ListViewBase::OnDropGesture(
         ASSERT(m_tpPrimaryDraggedContainer != nullptr);
         IFC(DXamlCore::GetCurrent()->GetDragDrop()->Drop(pointer != NULL /* shouldFireEvent */));
         IFC(UpdateDragGrabbedItems(FALSE));
+#ifdef MUX_PRERELEASE
+        // The drop decides again: a view sorted or filtered during the drag is not reordered.
+        m_isItemsSourceShapedDuringDragValid = false;
+#endif
         IFC(DropCausesReorder(&dropCausesReorder));
 
         if (!dropCausesReorder)
@@ -848,6 +853,7 @@ IFACEMETHODIMP ListViewBase::OnDragEnter(
     IFCPTR_RETURN(pArgs);
 
     m_isDraggingOverSelf = (m_tpPrimaryDraggedContainer.Get() != NULL);
+    m_isItemsSourceShapedDuringDragValid = false;
 
     IFC_RETURN(DropCausesReorder(&dropCausesReorder));
     if (dropCausesReorder)
@@ -1119,6 +1125,10 @@ IFACEMETHODIMP ListViewBase::OnDrop(
     {
         BOOLEAN dropCausesReorder = FALSE;
 
+#ifdef MUX_PRERELEASE
+        // The drop decides again: a view sorted or filtered during the drag is not reordered.
+        m_isItemsSourceShapedDuringDragValid = false;
+#endif
         IFC(DropCausesReorder(&dropCausesReorder));
         if (dropCausesReorder)
         {
@@ -1214,6 +1224,14 @@ _Check_return_ HRESULT ListViewBase::IsNotGroupingAndHostIsLookupPanel(
 
     if (!isGrouping)
     {
+        // As a grouped view, a sorted or filtered view decides the order itself: it cannot be reordered.
+        bool isShaped = false;
+        IFC(IsItemsSourceSortedOrFiltered(&isShaped));
+        if (isShaped)
+        {
+            goto Cleanup;
+        }
+
         // To match pointer reordering, only allow the action if our panel is an IItemLookupPanel,
         // even though it's technically possible to do keyboard reordering without this interface.
         ctl::ComPtr<IPanel> spItemsHost;
@@ -1223,6 +1241,107 @@ _Check_return_ HRESULT ListViewBase::IsNotGroupingAndHostIsLookupPanel(
 
 Cleanup:
     RRETURN(hr);
+}
+
+// Whether ItemsSource is a collection view that sorts or filters: a shaped VectorCollectionView that does not present
+// its source in order, or (includeAppViews) an app view (ICollectionViewShaping) with SortDescriptions, a CustomSort or
+// a Filter. Views shape only with the experimental shaping API, so other builds never ask.
+_Check_return_ HRESULT ListViewBase::IsItemsSourceSortedOrFiltered(_Out_ bool* pIsShaped, bool includeAppViews, _Out_opt_ bool* pIsChanging)
+{
+#ifdef MUX_PRERELEASE
+    if (includeAppViews && m_isDraggingOverSelf && !pIsChanging)
+    {
+        if (!m_isItemsSourceShapedDuringDragValid)
+        {
+            IFC_RETURN(ComputeIsItemsSourceSortedOrFiltered(&m_isItemsSourceShapedDuringDrag, true /* includeAppViews */, nullptr));
+            m_isItemsSourceShapedDuringDragValid = true;
+        }
+        *pIsShaped = m_isItemsSourceShapedDuringDrag;
+        return S_OK;
+    }
+#endif
+    IFC_RETURN(ComputeIsItemsSourceSortedOrFiltered(pIsShaped, includeAppViews, pIsChanging));
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::ComputeIsItemsSourceSortedOrFiltered(_Out_ bool* pIsShaped, bool includeAppViews, _Out_opt_ bool* pIsChanging)
+{
+    *pIsShaped = false;
+    if (pIsChanging)
+    {
+        *pIsChanging = false;
+    }
+#ifdef MUX_PRERELEASE
+    ctl::ComPtr<IInspectable> spItemsSource;
+    IFC_RETURN(get_ItemsSource(&spItemsSource));
+    auto spVectorView = ctl::query_interface_cast<VectorCollectionView>(spItemsSource.Get());
+    if (spVectorView)
+    {
+        *pIsShaped = spVectorView->IsShaped() && !spVectorView->PresentsSourceOrder();
+        if (pIsChanging)
+        {
+            *pIsChanging = spVectorView->IsChanging();
+        }
+        return S_OK;
+    }
+    if (!includeAppViews)
+    {
+        return S_OK;
+    }
+
+    auto spShaping = ctl::query_interface_cast<xaml_data::ICollectionViewShaping>(spItemsSource.Get());
+    if (!spShaping)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<wfc::IObservableVector<xaml_data::SortDescription*>> spSortDescriptions;
+    ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter;
+    ctl::ComPtr<xaml_data::ICollectionViewComparer> spCustomSort;
+    UINT sortCount = 0;
+    IFC_RETURN(spShaping->get_SortDescriptions(&spSortDescriptions));
+    if (spSortDescriptions)
+    {
+        ctl::ComPtr<wfc::IVector<xaml_data::SortDescription*>> spSortVector;
+        IFC_RETURN(spSortDescriptions.As(&spSortVector));
+        IFC_RETURN(spSortVector->get_Size(&sortCount));
+    }
+    IFC_RETURN(spShaping->get_Filter(&spFilter));
+    IFC_RETURN(spShaping->get_CustomSort(&spCustomSort));
+    *pIsShaped = sortCount > 0 || spFilter || spCustomSort;
+#else
+    UNREFERENCED_PARAMETER(includeAppViews);
+#endif
+    return S_OK;
+}
+
+// CanReorderItems, unless ItemsSource is a view that sorts or filters (the order is the view's). The visual state of
+// every container asks too: it reads a value cached per ItemsSource and items change, and leaves app views (app code)
+// to the drag itself.
+_Check_return_ HRESULT ListViewBase::GetCanReorderItemsOverItemsSource(_Out_ BOOLEAN* pCanReorder, bool isForVisualState)
+{
+    IFC_RETURN(get_CanReorderItems(pCanReorder));
+    if (*pCanReorder)
+    {
+        bool isSortedOrFiltered = false;
+        if (isForVisualState)
+        {
+            if (!m_isReorderBlockedByViewValid)
+            {
+                bool isChanging = false;
+                IFC_RETURN(IsItemsSourceSortedOrFiltered(&m_isReorderBlockedByView, false /* includeAppViews */, &isChanging));
+                // Not kept while the view is changing: it reports source order only once it is up to date.
+                m_isReorderBlockedByViewValid = !isChanging;
+            }
+            isSortedOrFiltered = m_isReorderBlockedByView;
+        }
+        else
+        {
+            IFC_RETURN(IsItemsSourceSortedOrFiltered(&isSortedOrFiltered));
+        }
+        *pCanReorder = !isSortedOrFiltered;
+    }
+    return S_OK;
 }
 
 // Returns TRUE if reordering is enabled. This means CanReorderItems is TRUE,
@@ -1404,6 +1523,12 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
     ctl::ComPtr<wfc::IVector<IInspectable*>> spItemSourceVector;
     ctl::ComPtr<xaml_interop::IBindableVector> spItemSourceBindableVector;
     ctl::ComPtr<wfc::IIterable<IInspectable*>> spItemsSource;
+#ifdef MUX_PRERELEASE
+    ctl::ComPtr<VectorCollectionView> spReorderedView;
+    // The tracked items, to find them in the view if a handler makes it stop presenting source order mid-move.
+    ctl::ComPtr<IInspectable> spTrackedItem1;
+    ctl::ComPtr<IInspectable> spTrackedItem2;
+#endif
 
     IFCPTR(pReorderItemIndexes);
     IFCEXPECT(insertIndex >= 0);
@@ -1430,6 +1555,24 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
         IFC(get_Items(&spItems));
         spItemSourceVector = spItems.AsOrNull<wfc::IVector<IInspectable*>>();
     }
+
+#ifdef MUX_PRERELEASE
+    // A collection view's move goes to one collection for both halves, chosen once (see GetReorderTarget); a view that
+    // sorts or filters is not reordered.
+    spReorderedView = ctl::query_interface_cast<VectorCollectionView>(spItemsSource.Get());
+    if (spReorderedView)
+    {
+        spItemSourceVector = spReorderedView->GetReorderTarget();
+        if (pTrackedIndex1 && *pTrackedIndex1 >= 0)
+        {
+            IGNOREHR(spReorderedView->GetAt(*pTrackedIndex1, &spTrackedItem1));
+        }
+        if (pTrackedIndex2 && *pTrackedIndex2 >= 0)
+        {
+            IGNOREHR(spReorderedView->GetAt(*pTrackedIndex2, &spTrackedItem2));
+        }
+    }
+#endif
 
     if (spItemSourceVector != NULL)
     {
@@ -1469,6 +1612,148 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
             // TODO/REVISIT: This can be slow if the underlying
             // data source is array-based. We can't really detect this though,
             // since the data is provided externally.
+#ifdef MUX_PRERELEASE
+            // With the shaping API, a move can also fail half done or reshape the view; the stable build keeps the
+            // original move below unchanged.
+            if (insertIndex != realItemIndex)
+            {
+                // Whether or not the item we're reordering is selected.
+                BOOLEAN isCurrentReorderedItemSelected = FALSE;
+
+                // Not used. The index of the item we're reordering in the selected items list, if applicable.
+                UINT currentReorderedItemIndexInSelection = 0;
+
+                // The item we're reordering.
+                ctl::ComPtr<IInspectable> spCurrentItem;
+
+                // Whether a handler made the view stop presenting its source in order during the move: source and
+                // view indices then differ, so items are found in the view, and the rest of the move stops.
+                bool isViewReshaped = false;
+
+                // The view index of an item at a source index.
+                auto getViewIndex = [&](INT sourceIndex, _In_ IInspectable* pItem, _Out_ INT* pViewIndex) -> HRESULT
+                {
+                    *pViewIndex = sourceIndex;
+                    if (isViewReshaped && pItem)
+                    {
+                        UINT index = 0;
+                        BOOLEAN found = FALSE;
+                        const HRESULT indexHr = spReorderedView->IndexOf(pItem, &index, &found);
+                        if (FAILED(indexHr))
+                        {
+                            return indexHr;
+                        }
+                        *pViewIndex = found ? static_cast<INT>(index) : -1;
+                    }
+                    return S_OK;
+                };
+
+                auto updateTrackedIndices = [&]() -> HRESULT
+                {
+                    if (isViewReshaped)
+                    {
+                        HRESULT trackedHr = S_OK;
+                        if (pTrackedIndex1 && *pTrackedIndex1 >= 0)
+                        {
+                            trackedHr = getViewIndex(*pTrackedIndex1, spTrackedItem1.Get(), pTrackedIndex1);
+                        }
+                        if (SUCCEEDED(trackedHr) && pTrackedIndex2 && *pTrackedIndex2 >= 0)
+                        {
+                            trackedHr = getViewIndex(*pTrackedIndex2, spTrackedItem2.Get(), pTrackedIndex2);
+                        }
+                        return trackedHr;
+                    }
+
+                    UpdateTrackedIndex(
+                        realItemIndex,
+                        insertIndex,
+                        pTrackedIndex1);
+
+                    UpdateTrackedIndex(
+                        realItemIndex,
+                        insertIndex,
+                        pTrackedIndex2);
+                    return S_OK;
+                };
+
+                IFC(m_selection.Has(realItemIndex, currentReorderedItemIndexInSelection, isCurrentReorderedItemSelected));
+                IFC(spItemSourceVector->GetAt(realItemIndex, &spCurrentItem));
+                {
+                    auto peggedCurrentItem = ctl::make_autopeg(spCurrentItem.Get());
+                    UINT sizeBeforeMove = 0;
+                    IFC(spItemSourceVector->get_Size(&sizeBeforeMove));
+                    IFC(spItemSourceVector->RemoveAt(realItemIndex));
+                    hr = spItemSourceVector->InsertAt(insertIndex, spCurrentItem.Get());
+                    isViewReshaped = spReorderedView && spReorderedView->IsShaped() && !spReorderedView->PresentsSourceOrder();
+                    if (FAILED(hr))
+                    {
+                        // A collection can insert the item and then fail (a change handler failed), so only an item
+                        // that is missing is put back: the app's collection neither loses nor duplicates it.
+                        const HRESULT insertHr = hr;
+                        Microsoft::WRL::ComPtr<IRestrictedErrorInfo> spInsertErrorInfo;
+                        IGNOREHR(::GetRestrictedErrorInfo(&spInsertErrorInfo));
+                        UINT size = 0;
+                        bool isMissing = SUCCEEDED(spItemSourceVector->get_Size(&size)) && size + 1 == sizeBeforeMove;
+                        ctl::ComPtr<IInspectable> spAtInsertIndex;
+                        if (isMissing && static_cast<UINT>(insertIndex) < size && SUCCEEDED(spItemSourceVector->GetAt(insertIndex, &spAtInsertIndex)))
+                        {
+                            isMissing = spAtInsertIndex.Get() != spCurrentItem.Get();
+                        }
+
+                        INT finalIndex = insertIndex;
+                        if (isMissing)
+                        {
+                            finalIndex = static_cast<UINT>(realItemIndex) < size ? realItemIndex : static_cast<INT>(size);
+                            const HRESULT rollbackHr = spItemSourceVector->InsertAt(finalIndex, spCurrentItem.Get());
+                            if (FAILED(rollbackHr))
+                            {
+                                TRACE(TraceAlways, L"ListViewBase::ReorderItemsTo: putting back an item whose move failed with 0x%08X failed with 0x%08X; the item is no longer in the collection.", insertHr, rollbackHr);
+                                finalIndex = -1;
+                            }
+                            isViewReshaped = spReorderedView && spReorderedView->IsShaped() && !spReorderedView->PresentsSourceOrder();
+                        }
+
+                        // The item did not move: tracked indices only change if the view does.
+                        if (!isMissing || isViewReshaped)
+                        {
+                            IGNOREHR(updateTrackedIndices());
+                        }
+                        INT viewIndex = -1;
+                        if (isCurrentReorderedItemSelected && finalIndex >= 0 && SUCCEEDED(getViewIndex(finalIndex, spCurrentItem.Get(), &viewIndex)) && viewIndex >= 0)
+                        {
+                            IGNOREHR(SelectOneItemInternal(viewIndex, spCurrentItem.Get(), TRUE /* clearOldSelection */));
+                        }
+                        if (spInsertErrorInfo)
+                        {
+                            IGNOREHR(::SetRestrictedErrorInfo(spInsertErrorInfo.Get()));
+                        }
+                        hr = insertHr;
+                        goto Cleanup;
+                    }
+                }
+
+                IFC(updateTrackedIndices());
+
+                // This remove-then-insert step will clear any selection on the current item.
+                // If this item was selected, we need to re-select it.
+                if (isCurrentReorderedItemSelected)
+                {
+                    INT viewIndex = -1;
+                    IFC(getViewIndex(insertIndex, spCurrentItem.Get(), &viewIndex));
+                    if (viewIndex >= 0)
+                    {
+                        // call the Selector::SelectOneItemInternal
+                        IFC(SelectOneItemInternal(viewIndex, spCurrentItem.Get(), TRUE /* clearOldSelection */));
+                    }
+                }
+
+                if (isViewReshaped)
+                {
+                    break;
+                }
+            }
+
+#else
             if (insertIndex != realItemIndex)
             {
                 // Whether or not the item we're reordering is selected.
@@ -1507,6 +1792,8 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                     IFC(SelectOneItemInternal(insertIndex, spCurrentItem.Get(), TRUE /* clearOldSelection */));
                 }
             }
+
+#endif
 
             numItemsReorderedSoFar++;
         }
@@ -1582,9 +1869,9 @@ _Check_return_ HRESULT ListViewBase::GetIsDragEnabled(
     IFC(get_IsGrouping(&isGrouping));
 
     IFC(get_CanDragItems(&canDragItems));
-    IFC(get_CanReorderItems(&canReorderItems));
 
-    // Ignore canReorderItems if we're grouping.
+    // Ignore canReorderItems if we're grouping, or if the view sorts or filters.
+    IFC(GetCanReorderItemsOverItemsSource(&canReorderItems));
     reorderActive = canReorderItems && !isGrouping;
     *pDragEnabled = (canDragItems || reorderActive);
 
@@ -1974,7 +2261,7 @@ _Check_return_ HRESULT ListViewBase::IsCurrentlyReordering(_Out_ bool* isReorder
     if (m_isDraggingOverSelf)
     {
         BOOLEAN canReorder = FALSE;
-        IFC_RETURN(get_CanReorderItems(&canReorder));
+        IFC_RETURN(GetCanReorderItemsOverItemsSource(&canReorder));
         *isReordering = !!canReorder;
     }
     return S_OK;
@@ -2002,7 +2289,7 @@ _Check_return_ HRESULT ListViewBase::ShouldPlayLiveReorder(
     }
 
     IFC_RETURN(get_AllowDrop(&allowDrop));
-    IFC_RETURN(get_CanReorderItems(&canReorder));
+    IFC_RETURN(GetCanReorderItemsOverItemsSource(&canReorder));
 
     *pResult = canReorder && allowDrop && isStationary && supportLiveReorder;
 

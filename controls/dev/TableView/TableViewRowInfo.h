@@ -7,6 +7,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include <winrt/Windows.Foundation.h>
 
@@ -19,21 +20,24 @@ enum class TableViewRowKind
 struct TableViewRowInfo
 {
     TableViewRowKind Kind{ TableViewRowKind::Data };
+    // GroupHeader: 0 for a top-level group, one deeper per subgroup level. Data row under groups: one
+    // deeper than its header. Otherwise 0.
     int32_t Level{ 0 };
     bool IsExpandable{ false };
     bool IsExpanded{ false };
-    // GroupHeader: group item count (0 presents a leaf). Hierarchical data row: child count.
-    // Otherwise 0.
+    // GroupHeader: group item count (0 presents a leaf). Otherwise 0.
     int32_t ChildCount{ 0 };
-
-    // Hierarchical data rows only. PositionInSet is 1-based within the sibling set (a root's group
-    // bucket under grouping); ParentIdentity is empty for roots.
-    winrt::hstring ParentIdentity;
-    uint32_t PositionInSet{ 0 };
-    uint32_t SizeOfSet{ 0 };
 };
 
 using TableViewRowItemKeySelector = std::function<winrt::hstring(winrt::IInspectable const&)>;
+
+// A group header's expansion identity (what Expand/Collapse take), its GroupBy key, and its state.
+struct TableViewGroupExpansionInfo
+{
+    winrt::hstring Identity;
+    winrt::Windows::Foundation::IInspectable Key{ nullptr };
+    bool IsExpanded{ false };
+};
 
 struct ITableViewRowMetadataProvider
 {
@@ -52,18 +56,15 @@ struct ITableViewRowMetadataProvider
     // Whether Expand (desired true), Collapse (false) or Toggle (empty) would change the state; true when unsure.
     virtual bool WouldChangeExpansion(winrt::hstring const& key, std::optional<bool> desired) noexcept = 0;
 
-    // One verb per axis: expanding group headers must not materialize the whole tree.
     virtual void ExpandAllGroups() = 0;
     virtual void CollapseAllGroups() = 0;
-    virtual void ExpandAllRows() = 0;
-    virtual void CollapseAllRows() = 0;
 
-    // True for tree projections. Leaf roots must still reserve chevron width, which row info alone
-    // cannot distinguish from grouped data rows.
-    virtual bool IsHierarchicalSource() const { return false; }
-
-    // Expands a tree node and all descendants. No-op for group keys or non-hierarchical sources.
-    virtual void ExpandSubtree(winrt::hstring const&) {}
+    // Every group in the projection, in display order: O(groups). Empty when the source is not grouped.
+    virtual std::vector<TableViewGroupExpansionInfo> GetGroupExpansionInfos() { return {}; }
+    // The expansion identity of the group with this stable identity. Empty when it has none.
+    virtual winrt::hstring GetGroupExpansionIdentity(winrt::hstring const& /*groupIdentity*/) { return {}; }
+    // The group a group expansion identity names. False for unknown groups.
+    virtual bool TryGetGroupExpansionInfo(winrt::hstring const& /*identity*/, TableViewGroupExpansionInfo& /*info*/) { return false; }
 
     // 1-based position among data rows between adjacent header bands, and that count. Returns false
     // if `rows` isn't the provider's projection, or for flat sources, headers, or out of range.
@@ -72,6 +73,17 @@ struct ITableViewRowMetadataProvider
         int32_t /*index*/,
         int32_t& /*positionInGroup*/,
         int32_t& /*groupSize*/)
+    {
+        return false;
+    }
+
+    // A group header's 1-based position and count among the headers between its parent and the parent's next
+    // sibling (all top-level headers for a top-level one). Same `rows` contract as TryGetGroupMembership.
+    virtual bool TryGetGroupHeaderSet(
+        winrt::Windows::Foundation::IInspectable const& /*rows*/,
+        int32_t /*index*/,
+        int32_t& /*position*/,
+        int32_t& /*size*/)
     {
         return false;
     }

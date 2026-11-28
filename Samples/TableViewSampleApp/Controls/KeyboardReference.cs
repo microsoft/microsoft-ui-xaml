@@ -27,12 +27,6 @@ public sealed partial class KeyboardReference : RailSection
         ("Space / Enter", "On a group header: toggles the group"),
     };
 
-    private static readonly (string Keys, string Action)[] HierarchyKeys =
-    {
-        ("Right / Left", "On a parent row: expands / collapses it; Left on a collapsed row moves to its parent"),
-        ("*", "Expands the whole subtree of the focused row"),
-    };
-
     private readonly Grid _grid;
 
     public KeyboardReference()
@@ -53,16 +47,6 @@ public sealed partial class KeyboardReference : RailSection
         BuildRows();
     }
 
-    public bool IncludeHierarchy
-    {
-        get => (bool)GetValue(IncludeHierarchyProperty);
-        set => SetValue(IncludeHierarchyProperty, value);
-    }
-
-    public static readonly DependencyProperty IncludeHierarchyProperty =
-        DependencyProperty.Register(nameof(IncludeHierarchy), typeof(bool), typeof(KeyboardReference),
-            new PropertyMetadata(false, (d, e) => ((KeyboardReference)d).BuildRows()));
-
     private void BuildRows()
     {
         _grid.Children.Clear();
@@ -70,14 +54,6 @@ public sealed partial class KeyboardReference : RailSection
         foreach (var (keys, action) in CommonKeys)
         {
             AddRow(keys, action);
-        }
-
-        if (IncludeHierarchy)
-        {
-            foreach (var (keys, action) in HierarchyKeys)
-            {
-                AddRow(keys, action);
-            }
         }
     }
 

@@ -188,6 +188,7 @@ _Check_return_ HRESULT ListViewBase::OnPropertyChanged2(_In_ const PropertyChang
         // so that when tabbing into the control we dont jump to the remembered index. It
         // is likely not representing the same data item
         SetLastFocusedIndex(0);
+        m_isReorderBlockedByViewValid = false;
     case KnownPropertyIndex::ListViewBase_IncrementalLoadingTrigger:
     case KnownPropertyIndex::ItemsControl_ItemsHost:
         {

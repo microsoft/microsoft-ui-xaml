@@ -224,13 +224,27 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnVisibilityChanged(*this);
         }
     }
-    else if (property == s_CanSortProperty)
+    else if (property == s_CanUserSortProperty)
     {
         // The sort affordance is stamped at header-build time, so opting a column in or out at
         // runtime has to rebuild the headers for the chevron to appear or disappear.
         if (auto owner = GetOwningTableView())
         {
-            winrt::get_self<TableView>(owner)->OnColumnCanSortChanged(*this);
+            winrt::get_self<TableView>(owner)->OnColumnCanUserSortChanged(*this);
+        }
+    }
+    else if (property == s_SortDirectionProperty)
+    {
+        if (auto owner = GetOwningTableView())
+        {
+            auto const ownerImpl = winrt::get_self<TableView>(owner);
+            if (!m_isSettingSortStateInternal)
+            {
+                ownerImpl->OnColumnSortDirectionSetByApp(*this, SortDirection());
+            }
+            ownerImpl->RefreshSortIndicators();
+            ownerImpl->RaiseColumnSortStateAutomationChanged(
+                *this, winrt::unbox_value_or<winrt::SortDirection>(args.OldValue(), winrt::SortDirection::None));
         }
     }
 }
@@ -294,13 +308,22 @@ void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
         return;
     }
 
-    // Read-only DP: same SetValue-via-key convention as ActualWidth.
-    SetValue(s_SortDirectionProperty, winrt::box_value(direction));
-
-    if (auto owner = GetOwningTableView())
+    // The control's own write must not read as the app setting the displayed direction.
+    m_isSettingSortStateInternal = true;
+    auto const resetGuard = wil::scope_exit([this]() noexcept { m_isSettingSortStateInternal = false; });
+    // WinUI has no SetCurrentValue (WPF's DataGrid writes SortDirection with it): a TwoWay binding takes the write and
+    // stays, a OneWay binding or a style setter is replaced by this local value (documented on SortDirection).
+#ifdef DBG
+    if (auto const expression = ReadLocalValue(s_SortDirectionProperty).try_as<winrt::Microsoft::UI::Xaml::Data::BindingExpression>())
     {
-        winrt::get_self<TableView>(owner)->RefreshSortIndicators();
+        auto const binding = expression.ParentBinding();
+        if (binding && binding.Mode() != winrt::Microsoft::UI::Xaml::Data::BindingMode::TwoWay)
+        {
+            TVDiag::DbgLogF(L"[TableView] The table's sort replaces a non-TwoWay binding on TableViewColumn.SortDirection; bind it TwoWay to keep it.");
+        }
     }
+#endif
+    SetValue(s_SortDirectionProperty, winrt::box_value(direction));
 }
 
 // Lets a derived column refresh its realized cells when one of ITS OWN properties changes.

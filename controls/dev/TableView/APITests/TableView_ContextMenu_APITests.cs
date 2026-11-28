@@ -1068,10 +1068,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             "                                HorizontalContentAlignment='Stretch' VerticalContentAlignment='Stretch'>" +
             "                <Grid>" +
             "                  <tv:TableViewCellsPanel x:Name='PART_CellsHost' HorizontalAlignment='Left'/>" +
-            "                  <Border x:Name='PART_RowExpanderGutter' Width='16' Background='Transparent'" +
-            "                          HorizontalAlignment='Left' Visibility='Collapsed'>" +
-            "                    <FontIcon x:Name='PART_RowExpanderIcon' FontSize='12' Glyph='&#xE76C;'/>" +
-            "                  </Border>" +
             "                </Grid>" +
             "              </ContentPresenter>" +
             "              <Rectangle x:Name='PART_SelectionIndicator' Width='3' Height='16' Fill='Blue'" +
@@ -1101,9 +1097,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             object source = f.Items;
             if (grouped)
             {
-                var grouping = TableViewSource.From(f.Items);
-                grouping.GroupBy(item => (object)((Person)item).Role);
-                source = grouping;
+                source = TableViewShapingTestHelpers.MakeShapingView(f.Items, "Role").View;
             }
 
             var cellWidth = new GridLength(150.0, GridUnitType.Pixel);

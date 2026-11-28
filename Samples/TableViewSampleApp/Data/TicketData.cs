@@ -51,12 +51,6 @@ public static class TicketData
         [1] = 0, [5] = 4, [7] = 6, [8] = 6, [12] = 11, [14] = 13, [19] = 16,
     };
 
-    /// <summary>A ticket under the ticket it is a sub-task of (TableViewSource.ParentBy selectors).</summary>
-    public static ParentRelation ParentTicket { get; } = new(
-        "Parent ticket",
-        row => (row as SupportTicket)?.TicketId,
-        row => (row as SupportTicket)?.ParentTicketId);
-
     // Tickets the "File a new ticket" action adds, in turn.
     private static readonly (string Queue, string Summary, string Assignee)[] s_incoming =
     {
@@ -110,7 +104,15 @@ public static class TicketData
         };
     }
 
-    // Never empty: GroupBy fails fast on an empty group identity.
+    /// <summary>The SupportTicket property a group-key Tag groups by.</summary>
+    public static string GroupPathOf(string key) => key switch
+    {
+        nameof(SupportTicket.Priority) => nameof(SupportTicket.Priority),
+        nameof(SupportTicket.Assignee) => nameof(SupportTicket.Assignee),
+        _ => nameof(SupportTicket.Queue),
+    };
+
+    // Never blank, so the readouts name every group.
     public static object GroupKeyOf(SupportTicket? ticket, string key)
     {
         var value = key switch

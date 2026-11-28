@@ -139,8 +139,7 @@ namespace
             TableViewRowItemAutomationPeer,
             winrt::ISelectionItemProvider,
             winrt::IVirtualizedItemProvider,
-            winrt::IScrollItemProvider,
-            winrt::IExpandCollapseProvider>
+            winrt::IScrollItemProvider>
     {
     public:
         TableViewRowItemAutomationPeer(winrt::TableView const& table, winrt::IInspectable const& item, int32_t index, bool byIndex)
@@ -171,6 +170,25 @@ namespace
             return true;
         }
 
+        // Not forwarded like the other members: an unrealized row's set values are known without realizing it.
+        int32_t GetLevelCore()
+        {
+            return ReadSetValue([](auto const& p) { return p.GetLevel(); },
+                [](TableView* table, int32_t index) { return table->GetGroupedRowAutomationLevelInternal(index); });
+        }
+
+        int32_t GetPositionInSetCore()
+        {
+            return ReadSetValue([](auto const& p) { return p.GetPositionInSet(); },
+                [this](TableView*, int32_t index) { return TableViewRowAutomationPeer::PositionInSetAt(m_table.get(), index); });
+        }
+
+        int32_t GetSizeOfSetCore()
+        {
+            return ReadSetValue([](auto const& p) { return p.GetSizeOfSet(); },
+                [this](TableView*, int32_t index) { return TableViewRowAutomationPeer::SizeOfSetAt(m_table.get(), index); });
+        }
+
         winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface)
         {
             bool live = true;
@@ -184,14 +202,6 @@ namespace
                 const int32_t index = ItemIndex();
                 live = index >= 0;
                 rowPeer = RealizedRowPeer(index);
-            }
-            if (patternInterface == winrt::PatternInterface::ExpandCollapse)
-            {
-                if (rowPeer && rowPeer.GetPattern(patternInterface))
-                {
-                    return *this;
-                }
-                return nullptr;
             }
             if (patternInterface == winrt::PatternInterface::SelectionItem ||
                 patternInterface == winrt::PatternInterface::VirtualizedItem)
@@ -390,10 +400,6 @@ namespace
             ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Select);
         }
 
-        winrt::ExpandCollapseState ExpandCollapseState() { return LiveRowPeer().ExpandCollapseState(); }
-        void Expand() { LiveRowPeer().Expand(); }
-        void Collapse() { LiveRowPeer().Collapse(); }
-
         void Realize()
         {
             // An ElementPrepared handler can rebind this peer to another occurrence while the row is created.
@@ -483,6 +489,22 @@ namespace
                 ThrowElementNotAvailable();
             }
             return index;
+        }
+
+        // A stale element throws, as every other member does; a realized row answers through its peer.
+        template <typename FromPeer, typename FromIndex>
+        int32_t ReadSetValue(FromPeer&& fromPeer, FromIndex&& fromIndex)
+        {
+            if (m_bound)
+            {
+                return fromPeer(BoundRow().second);
+            }
+            const int32_t index = RequireIndex();
+            if (auto const rowPeer = RealizedRowPeer(index))
+            {
+                return fromPeer(rowPeer);
+            }
+            return fromIndex(winrt::get_self<TableView>(m_table.get()), index);
         }
 
         bool IsBound(winrt::TableViewRow const& row)

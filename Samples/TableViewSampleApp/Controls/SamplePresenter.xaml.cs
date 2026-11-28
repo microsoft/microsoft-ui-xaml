@@ -84,7 +84,6 @@ public sealed partial class SamplePresenter : UserControl
         LayoutUpdated += OnLayoutUpdated;
         Bindings.Update();
         UpdateOptionsVisibility();
-        UpdateKeyboardReference();
         UpdateSourceVisibility();
         ApplyResponsiveLayout(ActualWidth);
     }
@@ -155,53 +154,9 @@ public sealed partial class SamplePresenter : UserControl
         DependencyProperty.Register(nameof(InfoExtras), typeof(object), typeof(SamplePresenter),
             new PropertyMetadata(null, OnBindingsChanged));
 
-    // Adds the hierarchy keys to the keyboard reference; pages with ShapingOptions get them when it has a parent relation.
-    public bool ShowHierarchyKeys
-    {
-        get => (bool)GetValue(ShowHierarchyKeysProperty);
-        set => SetValue(ShowHierarchyKeysProperty, value);
-    }
-
-    public static readonly DependencyProperty ShowHierarchyKeysProperty =
-        DependencyProperty.Register(nameof(ShowHierarchyKeys), typeof(bool), typeof(SamplePresenter),
-            new PropertyMetadata(false, (d, e) => ((SamplePresenter)d).UpdateKeyboardReference()));
-
-    private void UpdateKeyboardReference() =>
-        KeyboardReferenceSection.IncludeHierarchy = ShowHierarchyKeys || FindShaping(Options)?.Relation is not null;
-
-    private static ShapingOptions? FindShaping(object? node)
-    {
-        switch (node)
-        {
-            case ShapingOptions shaping:
-                return shaping;
-            case Panel panel:
-                foreach (var child in panel.Children)
-                {
-                    if (FindShaping(child) is { } found)
-                    {
-                        return found;
-                    }
-                }
-
-                return null;
-            case ContentControl content:
-                return FindShaping(content.Content);
-            case Border border:
-                return FindShaping(border.Child);
-            default:
-                return null;
-        }
-    }
-
     private void OnRailTabsSelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
     {
         var showInfo = sender.SelectedItem == RailInfoTab;
-        if (showInfo)
-        {
-            UpdateKeyboardReference();
-        }
-
         OptionsHost.Visibility = showInfo ? Visibility.Collapsed : Visibility.Visible;
         InfoPanel.Visibility = showInfo ? Visibility.Visible : Visibility.Collapsed;
         RailScroller.IsTabStop = showInfo;

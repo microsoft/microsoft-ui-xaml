@@ -513,6 +513,14 @@ HRESULT CollectionView::RaiseVectorChanged(_In_ wfc::IVectorChangedEventArgs *pA
     RRETURN(m_vectorChangedHandlers.Raise(this, pArgs));
 }
 
+void CollectionView::SetCurrentNoRaise(_In_opt_ IInspectable* pItem, INT position, UINT size)
+{
+    m_currentPosition = position;
+    SetPtrValue(m_tpCurrentItem, pItem);
+    m_isCurrentAfterLast = (position >= static_cast<INT>(size));
+    m_isCurrentBeforeFirst = (position < 0);
+}
+
 _Check_return_
 HRESULT
 CollectionView::ProcessCollectionChange(_In_ wfc::IVectorChangedEventArgs *pArgs)
@@ -528,6 +536,22 @@ CollectionView::ProcessCollectionChange(_In_ wfc::IVectorChangedEventArgs *pArgs
     ctl::ComPtr<IInspectable> spCurrentItem;
 
     IFC(pArgs->get_CollectionChange(&change));
+
+#ifdef MUX_PRERELEASE
+    {
+        // Only a shaped VectorCollectionView handles the change (VectorCollectionView_Currency.cpp); the base, and an
+        // unshaped view, return isHandled = false, so other views keep the code below.
+        bool isHandled = false;
+        IFC(AdjustCurrencyForChange(pArgs, false /* isRaised */, &isHandled));
+        if (isHandled)
+        {
+            IFC(RaiseVectorChanged(pArgs));
+            IFC(AdjustCurrencyForChange(pArgs, true /* isRaised */, &isHandled));
+            goto Cleanup;
+        }
+    }
+#endif
+
     IFC(RaiseVectorChanged(pArgs));
 
     iCurrentIndex = m_currentPosition;

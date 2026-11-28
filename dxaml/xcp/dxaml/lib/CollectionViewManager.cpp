@@ -19,12 +19,16 @@ HRESULT
 CollectionViewManager::GetViewRecord(
     _In_ IInspectable *pSource,
     _In_ ICollectionViewSource *pCVS,
-    _Outptr_ ICollectionView **ppView)
+    bool isShapingRequested,
+    _Outptr_ ICollectionView **ppView,
+    _Out_ bool *pIsShapeable)
 {
     HRESULT hr = S_OK;
     BOOLEAN fIsSourceGrouped = false;
     IPropertyPath *pItemsPath = NULL;
     ICollectionViewFactory *pCVF = NULL;
+
+    *pIsShapeable = false;
 
     // First thing to try is to see if the source is a collection view factory
     // in which case we need to call it and defer all of the smarts about grouping
@@ -44,7 +48,7 @@ CollectionViewManager::GetViewRecord(
     }
     else
     {
-        IFC(CreateNewView(pSource, ppView));
+        IFC(CreateNewView(pSource, isShapingRequested, ppView, pIsShapeable));
     }
 
 Cleanup:
@@ -59,7 +63,9 @@ _Check_return_
 HRESULT
 CollectionViewManager::CreateNewView(
     _In_ IInspectable *pSource,
-    _Outptr_ ICollectionView **ppResult)
+    bool isShapingRequested,
+    _Outptr_ ICollectionView **ppResult,
+    _Out_ bool *pIsShapeable)
 {
     HRESULT hr = S_OK;
     wfc::IVector<IInspectable *> *pVector = NULL;
@@ -79,12 +85,23 @@ CollectionViewManager::CreateNewView(
         IFC(GetVectorFromSource(pSource, &pVector));
 
         IFC(VectorCollectionView::CreateInstance(pVector, ppResult));
+        *pIsShapeable = true;
     }
     else if ((pBindableVector = ctl::query_interface<IBindableVector>(pSource)) != NULL)
     {
         IFC(GetVectorFromSource(pSource, &pVector));
 
         IFC(VectorCollectionView::CreateInstance(pVector, ppResult));
+        *pIsShapeable = true;
+    }
+    // WPF's ViewManager gives other enumerables a view that cannot shape; here a source that is to be
+    // shaped is copied into a vector instead.
+    else if (isShapingRequested)
+    {
+        IFC(GetVectorFromSource(pSource, &pVector));
+
+        IFC(VectorCollectionView::CreateInstance(pVector, ppResult));
+        *pIsShapeable = true;
     }
       // Vector view interfaces IVectorView<IInspectable *> and IBindableVectorView
     else if ((pVectorView = ctl::query_interface<wfc::IVectorView<IInspectable *>>(pSource)) != NULL)

@@ -89,29 +89,6 @@ namespace MUXControlsTestApp
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    // Data item for the Hierarchy pivot. Flat: the tree comes from ParentBy(Id, ManagerId).
-    public sealed class HierarchyTestEmployee
-    {
-        public HierarchyTestEmployee(int id, int? managerId, string name, string dept, int score)
-        {
-            Id = id;
-            ManagerId = managerId;
-            Name = name;
-            Dept = dept;
-            Score = score;
-        }
-
-        public int Id { get; }
-
-        public int? ManagerId { get; }
-
-        public string Name { get; set; }
-
-        public string Dept { get; set; }
-
-        public int Score { get; }
-    }
-
     [TopLevelTestPage(Name = "TableView")]
     [AxeScanTestPage(Name = "TableView-Axe")]
     public sealed partial class TableViewPage : TestPage
@@ -120,7 +97,7 @@ namespace MUXControlsTestApp
         private readonly ObservableCollection<TableViewTestPerson> _scrollingItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _cellControlsItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _groupedItems = new ObservableCollection<TableViewTestPerson>();
-        private TableViewSource _groupedSource;
+        private CollectionViewSource _groupedSource;
         private int _addedColumnCount;
         private TableViewRow _disabledRow;
         private object _disabledRowItem;
@@ -159,26 +136,24 @@ namespace MUXControlsTestApp
                 _groupedItems.Add(new TableViewTestPerson(i, Facts.GroupedName(i), Facts.GroupedAge(i), Facts.CityOf(i)));
             }
 
-            _groupedSource = TableViewSource.From(_groupedItems)
-                .GroupBy(item => ((TableViewTestPerson)item).City);
+            _groupedSource = new CollectionViewSource { Source = _groupedItems };
+            _groupedSource.GroupDescriptions.Add(new PropertyGroupDescription(nameof(TableViewTestPerson.City)));
 
             var groupedPagingItems = new ObservableCollection<TableViewTestPerson>();
             for (int i = 0; i < Facts.GroupedPagingItemCount; i++)
             {
                 groupedPagingItems.Add(new TableViewTestPerson(i, Facts.GroupedPagingName(i), Facts.GroupedAge(i), Facts.GroupedPagingSection(i)));
             }
-            GroupedPagingTableView.ItemsSource = TableViewSource.From(groupedPagingItems)
-                .GroupBy(item => ((TableViewTestPerson)item).City);
+            GroupedPagingTableView.ItemsSource = GroupedByCity(groupedPagingItems);
 
             BasicTableView.ItemsSource = _basicItems;
             ScrollingTableView.ItemsSource = _scrollingItems;
             RtlTableView.ItemsSource = _scrollingItems;
             CellControlsTableView.ItemsSource = _cellControlsItems;
-            GroupedTableView.ItemsSource = _groupedSource;
+            GroupedTableView.ItemsSource = _groupedSource.View;
 
             ScrollingTableView.LayoutUpdated += OnScrollingTableViewLayoutUpdated;
 
-            HookHierarchyTables();
             InitializeFixtureCells();
             HookContextMenuTable();
         }
@@ -375,7 +350,7 @@ namespace MUXControlsTestApp
             RowStateLogTextBlock.Text += (e.NewState?.Name ?? "null") + ";";
         }
 
-        // Hooks every realized group header's ToggleRequested, and the FIRST header's CommonStates group.
+        // Hooks the grouped table's GroupExpanding/GroupCollapsed, and the FIRST header's CommonStates group.
         // Same in-process visual-tree walk as OnHookRowStatesClick: it creates no automation peers, so it does
         // not trip finding #13.
         private void OnHookGroupHeadersClick(object sender, RoutedEventArgs e)
@@ -392,11 +367,10 @@ namespace MUXControlsTestApp
                 return;
             }
 
-            foreach (var header in headers)
-            {
-                header.ToggleRequested -= OnGroupHeaderToggleRequested;
-                header.ToggleRequested += OnGroupHeaderToggleRequested;
-            }
+            GroupedTableView.GroupExpanding -= OnGroupExpanding;
+            GroupedTableView.GroupExpanding += OnGroupExpanding;
+            GroupedTableView.GroupCollapsed -= OnGroupCollapsed;
+            GroupedTableView.GroupCollapsed += OnGroupCollapsed;
             GroupToggleReportTextBlock.Text = "hooked;";
 
             var first = headers[0];
@@ -430,15 +404,15 @@ namespace MUXControlsTestApp
             GroupHeaderStateLogTextBlock.Text += (e.NewState?.Name ?? "null") + ";";
         }
 
-        // One entry per raise, "<key>|<key>;". The key is read on entry, then the handler MUTATES the header
-        // and reads the key again: TableView.idl:350-355 says the key rides on the args precisely so a
-        // re-entrant handler still sees the key that was actually activated, and that is only observable if
-        // the handler does re-enter.
-        private void OnGroupHeaderToggleRequested(TableViewGroupHeader sender, TableViewGroupHeaderToggleRequestedEventArgs args)
+        // One entry per raise: "E:<key>;" for GroupExpanding, "C:<key>;" for GroupCollapsed.
+        private void OnGroupExpanding(TableView sender, TableViewGroupExpandingEventArgs args)
         {
-            GroupToggleReportTextBlock.Text += (args.GroupKey?.ToString() ?? "null") + "|";
-            sender.IsExpanded = !sender.IsExpanded;
-            GroupToggleReportTextBlock.Text += (args.GroupKey?.ToString() ?? "null") + ";";
+            GroupToggleReportTextBlock.Text += "E:" + (args.GroupKey?.ToString() ?? "null") + ";";
+        }
+
+        private void OnGroupCollapsed(TableView sender, TableViewGroupCollapsedEventArgs args)
+        {
+            GroupToggleReportTextBlock.Text += "C:" + (args.GroupKey?.ToString() ?? "null") + ";";
         }
 
         private static void CollectDescendants<T>(DependencyObject root, List<T> results) where T : class
@@ -477,139 +451,11 @@ namespace MUXControlsTestApp
             return null;
         }
 
-        // ---------- Hierarchy pivot ----------
-
-        private TableViewSource _hierarchySource;
-        private TableViewSource _hierarchyRtlSource;
-        private bool _hierarchyRefreshQueued;
-
-        private static TableViewSource CreateHierarchySource()
+        internal static object GroupedByCity(object items)
         {
-            var items = new ObservableCollection<HierarchyTestEmployee>();
-            for (int i = 0; i < Facts.HierarchyIds.Length; i++)
-            {
-                items.Add(new HierarchyTestEmployee(
-                    Facts.HierarchyIds[i],
-                    Facts.HierarchyManagerIds[i],
-                    Facts.HierarchyNames[i],
-                    Facts.HierarchyDepts[i],
-                    Facts.HierarchyScores[i]));
-            }
-
-            return TableViewSource.From(items).ParentBy(
-                new TableViewKeySelector(item => ((HierarchyTestEmployee)item).Id),
-                new TableViewKeySelector(item => ((HierarchyTestEmployee)item).ManagerId));
-        }
-
-        private void HookHierarchyTables()
-        {
-            HierarchyTable.SelectionChanged += (s, args) => QueueHierarchyReadoutRefresh();
-
-            // Expansion changes re-project rows, which always re-lays out the table.
-            HierarchyTable.LayoutUpdated += (s, args) => RefreshHierarchyReadout();
-            HierarchyRtlTable.LayoutUpdated += (s, args) => RefreshHierarchyReadout();
-
-            ResetHierarchy();
-        }
-
-        // A fresh source per table: every test starts from the same all-collapsed, unshaped, unselected state.
-        private void ResetHierarchy()
-        {
-            _hierarchySource = CreateHierarchySource();
-            _hierarchyRtlSource = CreateHierarchySource();
-            HierarchyTable.ItemsSource = _hierarchySource;
-            HierarchyRtlTable.ItemsSource = _hierarchyRtlSource;
-            if (HierarchyTable.IsLoaded)
-            {
-                HierarchyTable.DeselectAll();
-                HierarchyRtlTable.DeselectAll();
-            }
-
-            QueueHierarchyReadoutRefresh();
-        }
-
-        private void OnResetHierarchyClick(object sender, RoutedEventArgs e) => ResetHierarchy();
-
-        // Low priority so the readout describes the settled state, after focus and layout have moved.
-        private void QueueHierarchyReadoutRefresh()
-        {
-            if (_hierarchyRefreshQueued)
-            {
-                return;
-            }
-
-            _hierarchyRefreshQueued = true;
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-            {
-                _hierarchyRefreshQueued = false;
-                RefreshHierarchyReadout();
-            });
-        }
-
-        // Assigns only on change: the assignment re-lays out the TextBox, which raises LayoutUpdated again.
-        private void RefreshHierarchyReadout()
-        {
-            if (HierarchyReadout == null || HierarchyTable == null || HierarchyRtlTable == null)
-            {
-                return;
-            }
-
-            var selected = HierarchyTable.SelectedItem as HierarchyTestEmployee;
-            string text =
-                Facts.TreeField + "=" + ProjectionLabel(HierarchyTable) + ";" +
-                Facts.RtlTreeField + "=" + ProjectionLabel(HierarchyRtlTable) + ";" +
-                Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name);
-
-            if (HierarchyReadout.Text != text)
-            {
-                HierarchyReadout.Text = text;
-            }
-        }
-
-        // Realized elements in projection order. The fixture is small enough that every row is realized.
-        private static string ProjectionLabel(TableView table)
-        {
-            var repeater = FindDescendantByName<ItemsRepeater>(table, "PART_RowsRepeater");
-            if (repeater == null)
-            {
-                return string.Empty;
-            }
-
-            var entries = new SortedDictionary<int, string>();
-            int count = VisualTreeHelper.GetChildrenCount(repeater);
-            for (int i = 0; i < count; i++)
-            {
-                var element = VisualTreeHelper.GetChild(repeater, i) as UIElement;
-                if (element == null)
-                {
-                    continue;
-                }
-
-                int index = repeater.GetElementIndex(element);
-                if (index < 0)
-                {
-                    continue;
-                }
-
-                entries[index] = DescribeProjectedElement(element);
-            }
-
-            return string.Join(" ", entries.Values);
-        }
-
-        private static string DescribeProjectedElement(UIElement element)
-        {
-            var row = element as TableViewRow;
-            if (row != null)
-            {
-                var employee = row.DataContext as HierarchyTestEmployee;
-                string mark = row.IsExpandable ? (row.IsExpanded ? "-" : "+") : string.Empty;
-                return (employee == null ? "?" : employee.Name) + row.Level + mark;
-            }
-
-            var header = element as TableViewGroupHeader ?? FindDescendant<TableViewGroupHeader>(element);
-            var info = header == null ? null : header.Content as TableViewGroupInfo;
-            return "[" + (info == null || info.Key == null ? "?" : info.Key.ToString()) + "]";
+            var source = new CollectionViewSource { Source = items };
+            source.GroupDescriptions.Add(new PropertyGroupDescription(nameof(TableViewTestPerson.City)));
+            return source.View;
         }
 
         // ---- Context menus ----
@@ -694,8 +540,7 @@ namespace MUXControlsTestApp
         // Groups ContextMenuTable by City; Reset ungroups it.
         private void OnGroupContextMenuTableClick(object sender, RoutedEventArgs e)
         {
-            ContextMenuTable.ItemsSource = TableViewSource.From(_contextMenuItems)
-                .GroupBy(item => ((TableViewTestPerson)item).City);
+            ContextMenuTable.ItemsSource = GroupedByCity(_contextMenuItems);
         }
 
         // Mirrors ContextMenuTable; Reset restores left to right.
@@ -983,27 +828,24 @@ namespace MUXControlsTestApp
         // need actionable cells: these columns get a cell menu (a tooltip on ContextMenuTable's Age, whose
         // tests need a cell without a menu). InactiveCellsCheckBox removes them.
         private readonly List<TableViewColumn> _fixtureMenuColumns = new List<TableViewColumn>();
-        private readonly List<TableViewColumn> _hierarchyFixtureMenuColumns = new List<TableViewColumn>();
         private bool _fixtureCellsInactive;
 
         private void InitializeFixtureCells()
         {
-            foreach (var table in new[] { BasicTableView, RtlTableView, ScrollingTableView, HierarchyTable, HierarchyRtlTable })
+            foreach (var table in new[] { BasicTableView, RtlTableView, ScrollingTableView })
             {
-                var target = ReferenceEquals(table, HierarchyTable) ? _hierarchyFixtureMenuColumns : _fixtureMenuColumns;
                 foreach (var column in table.Columns)
                 {
                     if (column.CellContextFlyout == null && column.CellToolTipBinding == null &&
                         !Equals(column.Header, "ReadOnlyCity") &&
                         (IsFixtureTextColumn(column) || ReferenceEquals(column, TemplateColumn)))
                     {
-                        target.Add(column);
+                        _fixtureMenuColumns.Add(column);
                     }
                 }
             }
 
             ApplyFixtureCells();
-            SetFixtureCellMenus(_hierarchyFixtureMenuColumns, true);
         }
 
         // The text columns are template columns over the page's *TextCellTemplate resources.
@@ -1094,7 +936,7 @@ namespace MUXControlsTestApp
         }
 
         // With InactiveCellsCheckBox set, a menu makes RtlAge, beyond the viewport, the only actionable
-        // column of the RTL table, and the hierarchy table becomes a wide tree of inactive cells.
+        // column of the RTL table.
         private void OnScrollFixturesToggled(object sender, RoutedEventArgs e)
         {
             bool on = ((CheckBox)sender).IsChecked == true;
@@ -1102,8 +944,6 @@ namespace MUXControlsTestApp
             menu.Items.Add(new MenuFlyoutItem { Text = "Age" });
             RtlTableView.Columns[1].Width = new GridLength(on ? 400 : 220);
             RtlTableView.Columns[2].CellContextFlyout = on ? menu : null;
-            HierarchyTable.Columns[2].Width = new GridLength(on ? 500 : 100);
-            SetFixtureCellMenus(_hierarchyFixtureMenuColumns, !on);
             if (on && ScrollingTableView.Columns.Count == 4)
             {
                 ScrollingTableView.Columns.Add(new TableViewTemplateColumn
@@ -1149,8 +989,6 @@ namespace MUXControlsTestApp
 
         private void OnGoToScrollingClick(object sender, RoutedEventArgs e) => ShowTableHost(ScrollingTableHost);
 
-        private void OnGoToHierarchyClick(object sender, RoutedEventArgs e) => ShowTableHost(HierarchyTableHost);
-
         private void OnGoToGroupedPagingClick(object sender, RoutedEventArgs e) => ShowTableHost(GroupedPagingTableHost);
         private void OnGoToContextMenuClick(object sender, RoutedEventArgs e) => ShowTableHost(ContextMenuTableHost);
 
@@ -1170,7 +1008,6 @@ namespace MUXControlsTestApp
             GroupedTableHost.Visibility = Visibility.Collapsed;
             GroupedPagingTableHost.Visibility = Visibility.Collapsed;
             ScrollingTableHost.Visibility = Visibility.Collapsed;
-            HierarchyTableHost.Visibility = Visibility.Collapsed;
             ContextMenuTableHost.Visibility = Visibility.Collapsed;
             CellControlsTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;
@@ -1284,17 +1121,17 @@ namespace MUXControlsTestApp
 
         private void OnFilterSourceClick(object sender, RoutedEventArgs e)
         {
-            _groupedSource.Filter(item => ((TableViewTestPerson)item).City != "Seattle");
+            ((ICollectionViewShaping)_groupedSource.View).Filter = item => ((TableViewTestPerson)item).City != "Seattle";
         }
 
         private void OnClearFilterClick(object sender, RoutedEventArgs e)
         {
-            _groupedSource.ClearFilter();
+            ((ICollectionViewShaping)_groupedSource.View).Filter = null;
         }
 
         private void OnSingleGroupedRowFilterClick(object sender, RoutedEventArgs e)
         {
-            _groupedSource.Filter(item => ((TableViewTestPerson)item).Id == 0);
+            ((ICollectionViewShaping)_groupedSource.View).Filter = item => ((TableViewTestPerson)item).Id == 0;
         }
 
         private void OnSelectScrollingRow3Click(object sender, RoutedEventArgs e)

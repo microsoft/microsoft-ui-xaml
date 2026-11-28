@@ -17,7 +17,7 @@
             <controls:SamplePageHeader
                 Grid.Row="0"
                 Title="About"
-                Description="A samples app that ships alongside the in-development Microsoft.UI.Xaml.Controls.Tabular.TableView control and shows its model-first TableView and TableViewSource surface page by page."/>
+                Description="A samples app that ships alongside the in-development Microsoft.UI.Xaml.Controls.Tabular.TableView control and shows its TableView surface, shaped through CollectionViewSource, page by page."/>
 
             <Grid Grid.Row="1" RowSpacing="12" ColumnSpacing="32">
                 <Grid.ColumnDefinitions>
@@ -38,7 +38,7 @@
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Audience" VerticalAlignment="Top"
                            Style="{ThemeResource BodyStrongTextBlockStyle}"/>
                 <TextBlock Grid.Row="0" Grid.Column="1"
-                           Text="Partner teams (File Explorer, Task Manager, and other Windows surfaces) evaluating the aligned TableView and TableViewSource API surface."
+                           Text="Partner teams (File Explorer, Task Manager, and other Windows surfaces) evaluating the aligned TableView API surface."
                            Style="{ThemeResource BodyTextBlockStyle}"
                            TextWrapping="Wrap"/>
 
@@ -78,7 +78,7 @@
                 <TextBlock Grid.Row="4" Grid.Column="0" Text="API snapshot" VerticalAlignment="Top"
                            Style="{ThemeResource BodyStrongTextBlockStyle}"/>
                 <StackPanel Grid.Row="4" Grid.Column="1" Spacing="2">
-                    <TextBlock Text="ItemsSource is set in code-behind from TableViewSource.From(items).Filter(...).GroupBy(..., identity).Sort(...)."
+                    <TextBlock Text="ItemsSource is a CollectionViewSource View with Filter, GroupDescriptions and SortDescriptions."
                                Style="{ThemeResource BodyTextBlockStyle}"
                                TextWrapping="Wrap"/>
                     <TextBlock Text="Columns: TableViewTemplateColumn (DataTemplate cells; a TextBlock template gives bound text, sortable via SortMemberPath)."

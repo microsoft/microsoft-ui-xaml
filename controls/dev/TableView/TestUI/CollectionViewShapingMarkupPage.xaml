@@ -1,0 +1,24 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="MUXControlsTestApp.CollectionViewShapingMarkupPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Page.Resources>
+        <CollectionViewSource x:Key="People">
+            <CollectionViewSource.SortDescriptions>
+                <SortDescription PropertyName="Name" Direction="Descending" />
+            </CollectionViewSource.SortDescriptions>
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="Team" StringComparison="OrdinalIgnoreCase">
+                    <PropertyGroupDescription.GroupNames>
+                        <x:String>Z</x:String>
+                        <x:String>X</x:String>
+                    </PropertyGroupDescription.GroupNames>
+                </PropertyGroupDescription>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </Page.Resources>
+
+    <Grid />
+</Page>

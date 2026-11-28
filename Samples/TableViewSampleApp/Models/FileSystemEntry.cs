@@ -15,6 +15,9 @@ public class FileSystemEntry
 
     public string FullPath { get; set; } = string.Empty;
 
+    /// <summary>Group key for the Folders/Files grouping.</summary>
+    public string Kind => IsFolder ? "Folders" : "Files";
+
     public string TypeDisplay { get; set; } = string.Empty;
 
     // DateTimeOffset, not DateTime: it projects to Windows.Foundation.DateTime, which the sort
@@ -22,6 +25,17 @@ public class FileSystemEntry
     public DateTimeOffset DateModified { get; set; }
 
     public string DateModifiedDisplay => DateModified.ToString("g", CultureInfo.CurrentCulture);
+
+    /// <summary>Group key for the Date modified grouping: Today, Yesterday, This week, ...</summary>
+    public string ModifiedBucket => (DateTime.Now.Date - DateModified.LocalDateTime.Date).TotalDays switch
+    {
+        < 1 => "Today",
+        < 2 => "Yesterday",
+        < 8 => "Earlier this week",
+        < 31 => "Earlier this month",
+        < 366 => "Earlier this year",
+        _ => "A long time ago",
+    };
 
     public long Size { get; set; }
 

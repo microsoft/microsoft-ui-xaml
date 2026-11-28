@@ -9,12 +9,29 @@ namespace DirectUI
 {
     class GroupedDataCollectionView;
 
-    PARTIAL_CLASS(CollectionViewGroup)
+    // WPF's CollectionViewGroup for a group of an IsSourceGrouped view: the app's group object is Group, its items are
+    // GroupItems, and the group is always a bottom-level group.
+    PARTIAL_CLASS(CollectionViewGroup),
+        public xaml_data::ICollectionViewGroup2
     {
     public:
 
         CollectionViewGroup();
         ~CollectionViewGroup() override;
+
+        // ICollectionViewGroup2
+        IFACEMETHOD(get_ItemCount)(_Out_ INT32* pValue) override;
+        IFACEMETHOD(get_IsBottomLevel)(_Out_ BOOLEAN* pValue) override;
+
+    protected:
+        HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+
+        // GetIids reports ICollectionViewGroup2 when QueryInterfaceImpl answers it; both read m_isGroup2Exposed, so GetIids
+        // sizes and fills its array from one answer. Feature_ExperimentalApi::IsEnabled() is a compile-time true in C++
+        // in every build (FeatureFlags.h), so this answers in stable too, as generated experimental interfaces do: only
+        // the IDL feature hides the interface from the stable WinMD.
+        INT GetImplementedIIDsCount() override;
+        void CopyIIDsToArray(INT first, IID* pResult) override;
 
     public:
 
@@ -56,5 +73,8 @@ namespace DirectUI
         TrackerPtr<IInspectable> m_tpGroupItems;
 
         ctl::EventPtr<VectorChangedEventCallback> m_epVectorChangedHandler;
+
+        // Feature_ExperimentalApi, read once at construction (QueryInterfaceImpl, GetIids).
+        const bool m_isGroup2Exposed;
     };
 }

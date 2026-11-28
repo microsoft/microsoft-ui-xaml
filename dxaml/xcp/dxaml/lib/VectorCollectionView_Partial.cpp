@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "VectorCollectionView.g.h"
+#include "CollectionViewSource.g.h"
 
 using namespace DirectUI;
 using namespace xaml_data;
@@ -21,6 +22,9 @@ VectorCollectionView::~VectorCollectionView()
             VERIFYHR(m_epVectorChangedHandler.DetachEventHandler(spSource.Get()));
         }
     }
+
+    DetachSourceList();
+    ReleaseShapingState();
 }
 
 
@@ -84,34 +88,34 @@ IFACEMETHODIMP VectorCollectionView::SetAt(
     unsigned index,
     _In_opt_ IInspectable *item)
 {
-    RRETURN(m_tpSource->SetAt(index, item));
+    RRETURN(GetWriteTarget()->SetAt(index, item));
 }
 
 IFACEMETHODIMP VectorCollectionView::InsertAt(
     unsigned index,
     _In_ IInspectable *item)
 {
-    RRETURN(m_tpSource->InsertAt(index, item));
+    RRETURN(GetWriteTarget()->InsertAt(index, item));
 }
 
 IFACEMETHODIMP VectorCollectionView::RemoveAt(unsigned index)
 {
-    RRETURN(m_tpSource->RemoveAt(index));
+    RRETURN(GetWriteTarget()->RemoveAt(index));
 }
 
 IFACEMETHODIMP VectorCollectionView::Append(_In_opt_ IInspectable * item)
 {
-    RRETURN(m_tpSource->Append(item));
+    RRETURN(GetWriteTarget()->Append(item));
 }
 
 IFACEMETHODIMP VectorCollectionView::RemoveAtEnd()
 {
-    RRETURN(m_tpSource->RemoveAtEnd());
+    RRETURN(GetWriteTarget()->RemoveAtEnd());
 }
 
 IFACEMETHODIMP VectorCollectionView::Clear()
 {
-    RRETURN(m_tpSource->Clear());
+    RRETURN(GetWriteTarget()->Clear());
 }
 
 // IIterable<IInspectable *>
@@ -146,6 +150,10 @@ VectorCollectionView::get_HasMoreItemsImpl(_Out_ BOOLEAN *value)
     else
     {
         IFC(m_tpSupportIncrementalLoading->get_HasMoreItems(value));
+        if (*value && IsFilterStarvingLoads())
+        {
+            *value = FALSE;
+        }
     }
 
 Cleanup:
@@ -168,11 +176,50 @@ VectorCollectionView::LoadMoreItemsAsyncImpl(
         IFC(E_NOTIMPL);
     }
 
+    if (IsShaped())
+    {
+        UINT size = 0;
+        UINT sourceSize = 0;
+        IFC(get_Size(&size));
+        IFC(m_tpSourceList->get_Size(&sourceSize));
+        if (size != m_sizeAtLastLoad || sourceSize < m_sourceSizeAtLastLoad)
+        {
+            // The view grew, or the source shrank (a Reset or Clear for a new query): loads start over.
+            m_fruitlessLoadCount = 0;
+        }
+        else if (sourceSize != m_sourceSizeAtLastLoad)
+        {
+            ++m_fruitlessLoadCount;
+        }
+        m_sizeAtLastLoad = size;
+        m_sourceSizeAtLastLoad = sourceSize;
+    }
+
     IFC(m_tpSupportIncrementalLoading->LoadMoreItemsAsync(count, operation));
 
 Cleanup:
 
     RRETURN(hr);
+}
+
+// A filter that rejects the items loads bring would make a consumer (ListView) load until the source has no more:
+// once c_maxFruitlessLoads loads in a row grew the source but not the view, it reports no more items (unlike the
+// source's HasMoreItems, and unlike WPF, which has no incremental loading) until the view grows, the source shrinks
+// (a new query) or its rules, its source or a Refresh recompute it. A filter sparser than that many pages per match
+// stops early.
+bool VectorCollectionView::IsFilterStarvingLoads()
+{
+    UINT size = 0;
+    UINT sourceSize = 0;
+    return IsShaped() && m_fruitlessLoadCount >= c_maxFruitlessLoads && SUCCEEDED(get_Size(&size)) && size == m_sizeAtLastLoad &&
+        m_tpSourceList && SUCCEEDED(m_tpSourceList->get_Size(&sourceSize)) && sourceSize >= m_sourceSizeAtLastLoad;
+}
+
+void VectorCollectionView::ResetIncrementalLoadState()
+{
+    m_fruitlessLoadCount = 0;
+    m_sizeAtLastLoad = UINT_MAX;
+    m_sourceSizeAtLastLoad = UINT_MAX;
 }
 
 _Check_return_
@@ -201,6 +248,7 @@ HRESULT VectorCollectionView::SetSource(_In_ wfc::IVector<IInspectable *> *pSour
     ctl::ComPtr<wfc::IObservableVector<IInspectable *>> spObservable;
 
     SetPtrValue(m_tpSource, pSource);
+    ResetIncrementalLoadState();
 
     // Capture the virtualization interface
     SetPtrValueWithQIOrNull(m_tpSupportIncrementalLoading, m_tpSource.Get());
@@ -232,6 +280,48 @@ HRESULT VectorCollectionView::SetSource(_In_ wfc::IVector<IInspectable *> *pSour
 Cleanup:
 
     RRETURN(hr);
+}
+
+_Check_return_
+HRESULT VectorCollectionView::RetargetSource(_In_ wfc::IVector<IInspectable *> *pSource, bool isGroupingChanged)
+{
+    ctl::ComPtr<wfc::IVectorChangedEventArgs> spArgs;
+    VectorChangedEventArgs *pArgs = nullptr;
+
+    if (m_epVectorChangedHandler)
+    {
+        auto spOldSource = m_tpSource.AsOrNull<wfc::IObservableVector<IInspectable *>>();
+        if (spOldSource)
+        {
+            IFC_RETURN(m_epVectorChangedHandler.DetachEventHandler(spOldSource.Get()));
+        }
+        else
+        {
+            m_epVectorChangedHandler = ctl::EventPtr<VectorChangedEventCallback>();
+        }
+    }
+
+    IFC_RETURN(SetSource(pSource));
+
+    // The view presents its shaped list but loads more of the collection it shapes: new items arrive as
+    // source changes.
+    if (m_tpSourceList)
+    {
+        SetPtrValueWithQIOrNull(m_tpSupportIncrementalLoading, m_tpSourceList.Get());
+    }
+
+    // Consumers react to CollectionGroups before the Reset, so they read the new items with the new groups.
+    if (isGroupingChanged)
+    {
+        IFC_RETURN(RaisePropertyChanged(STR_LEN_PAIR(L"CollectionGroups")));
+    }
+
+    IFC_RETURN(ctl::ComObject<VectorChangedEventArgs>::CreateInstance(spArgs.ReleaseAndGetAddressOf()));
+    spArgs.CastTo(&pArgs);
+    IFC_RETURN(pArgs->put_CollectionChange(wfc::CollectionChange_Reset));
+    IFC_RETURN(pArgs->put_Index(0));
+    IFC_RETURN(ProcessCollectionChange(spArgs.Get()));
+    return S_OK;
 }
 
 // Factory static method

@@ -999,6 +999,11 @@ namespace Parser
         SeekSliderAutomationPeer = 981,
         SplitMenuFlyoutItemAutomationPeer = 982,
         SplitMenuFlyoutItem = 983,
+        GroupDescription = 984,
+        SortDescription = 985,
+        PropertyGroupDescription = 986,
+        CollectionViewSortDirection = 987,
+        CollectionViewStringComparison = 988,
     };
 
     enum class StableXbfPropertyIndex: UINT16
@@ -3479,6 +3484,22 @@ namespace Parser
         Window_MinHeight = 2473,
         Window_MinWidth = 2474,
         Window_PlacementId = 2475,
+        CollectionViewSource_GroupDescriptions = 2476,
+        CollectionViewSource_IsLiveFilteringRequested = 2477,
+        CollectionViewSource_IsLiveGroupingRequested = 2478,
+        CollectionViewSource_IsLiveSortingRequested = 2479,
+        CollectionViewSource_LiveFilteringProperties = 2480,
+        CollectionViewSource_LiveGroupingProperties = 2481,
+        CollectionViewSource_LiveSortingProperties = 2482,
+        CollectionViewSource_SortDescriptions = 2483,
+        GroupDescription_SortDescriptions = 2484,
+        SortDescription_Direction = 2485,
+        SortDescription_PropertyName = 2486,
+        PropertyGroupDescription_Converter = 2487,
+        PropertyGroupDescription_PropertyName = 2488,
+        PropertyGroupDescription_StringComparison = 2489,
+        GroupDescription_GroupNames = 2490,
+        CollectionViewSource_Culture = 2491,
     };
 
     enum class StableEventIndex: UINT16
@@ -3823,9 +3844,10 @@ namespace Parser
         FrameworkApplication_ResourceManagerInitializing_Deleted0 = 337,
         FrameworkApplication_ResourceManagerRequested = 338,
         WindowsXamlManager_XamlShutdownCompletedOnThread = 339,
+        CollectionViewSource_Filter = 340,
     };
 
-    static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::SplitMenuFlyoutItem) + 1;
-    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::Window_PlacementId) + 1;
-    static const UINT16 StableEventCount = static_cast<UINT16>(StableEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread) + 1;
+    static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::CollectionViewStringComparison) + 1;
+    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::CollectionViewSource_Culture) + 1;
+    static const UINT16 StableEventCount = static_cast<UINT16>(StableEventIndex::CollectionViewSource_Filter) + 1;
 }

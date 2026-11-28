@@ -161,8 +161,13 @@
         <ClCompile Include="..\characterreceivedeventargs_partial.cpp"/>
         <ClCompile Include="..\FocusManager.cpp"/>
         <ClCompile Include="..\CollectionViewSource_Partial.cpp"/>
+        <ClCompile Include="..\CollectionViewSource_Shaping.cpp"/>
         <ClCompile Include="..\CollectionView_Partial.cpp"/>
         <ClCompile Include="..\VectorCollectionView_Partial.cpp"/>
+        <ClCompile Include="..\VectorCollectionView_Shaping.cpp"/>
+        <ClCompile Include="..\VectorCollectionView_SourceChanges.cpp"/>
+        <ClCompile Include="..\VectorCollectionView_Currency.cpp"/>
+        <ClCompile Include="..\VectorCollectionView_LiveShaping.cpp"/>
         <ClCompile Include="..\IterableCollectionView_Partial.cpp"/>
         <ClCompile Include="..\CollectionViewManager.cpp"/>
         <ClCompile Include="..\GroupedDataCollectionView_Partial.cpp"/>

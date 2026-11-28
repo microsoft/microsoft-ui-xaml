@@ -115,7 +115,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("true")]
-    Boolean CanSort { get; set; };
+    Boolean CanUserSort { get; set; };
 
     [MUX_DEFAULT_VALUE("winrt::TableViewSortCycle::AscendingDescending")]
     TableViewSortCycle SortCycle { get; set; };
@@ -123,8 +123,9 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     String SortMemberPath { get; set; };
     ITableViewSortComparer CustomSortComparer { get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::SortDirection::None")]
-    SortDirection SortDirection { get; };
+    SortDirection SortDirection { get; set; };
 
     Microsoft.UI.Xaml.Data.Binding DisplayMemberBinding;
     Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
@@ -147,7 +148,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     static Microsoft.UI.Xaml.DependencyProperty ActualWidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty CanSortProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanUserSortProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SortCycleProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SortMemberPathProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SortDirectionProperty { get; };
@@ -195,9 +196,15 @@ runtimeclass TableViewColumnReorderedEventArgs
 }
 
 [MUX_PREVIEW]
-[default_interface]
 [webhosthidden]
-runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
+runtimeclass TableViewGroupExpandingEventArgs
+{
+    Object GroupKey { get; };
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewGroupCollapsedEventArgs
 {
     Object GroupKey { get; };
 }
@@ -225,19 +232,7 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsSelected { get; };
 
-    [MUX_DEFAULT_VALUE("0")]
-    Int32 Level { get; };
-
-    [MUX_DEFAULT_VALUE("false")]
-    Boolean IsExpandable { get; };
-
-    [MUX_DEFAULT_VALUE("false")]
-    Boolean IsExpanded { get; };
-
     static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty LevelProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
 }
 
 [MUX_INTERNAL]
@@ -253,7 +248,6 @@ runtimeclass TableViewGroupInfo : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
 {
     Object Key { get; };
     Int32 ItemCount { get; };
-    Int32 Level { get; };
     Boolean IsExpandable { get; };
     Boolean IsExpanded { get; };
     String KeyText { get; };
@@ -268,12 +262,12 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
     TableViewGroupHeader();
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Boolean IsExpanded { get; set; };
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpanded { get; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Boolean IsExpandable { get; set; };
-
-    event Windows.Foundation.TypedEventHandler<TableViewGroupHeader, TableViewGroupHeaderToggleRequestedEventArgs> ToggleRequested;
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpandable { get; };
 
     static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
@@ -344,10 +338,12 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     void Deselect(Int32 index);
     Boolean IsSelected(Int32 index);
     void DeselectAll();
+    Int32 IndexOf(Object item);
+    void StartBringItemIntoView(Int32 index, Microsoft.UI.Xaml.BringIntoViewOptions options);
+    void ExpandGroup(Object groupKey);
+    void CollapseGroup(Object groupKey);
     void ExpandAllGroups();
     void CollapseAllGroups();
-    void ExpandAllRows();
-    void CollapseAllRows();
     Boolean SortByColumn(MU_XC_NAMESPACE.TableViewColumn column, SortDirection direction);
     Boolean ToggleSortDirection(MU_XC_NAMESPACE.TableViewColumn column);
     Boolean ClearSort();
@@ -355,6 +351,8 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewSortingEventArgs> Sorting;
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewSortedEventArgs> Sorted;
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewGroupExpandingEventArgs> GroupExpanding;
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewGroupCollapsedEventArgs> GroupCollapsed;
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewColumnReorderedEventArgs> ColumnReordered;
 
     static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
@@ -410,8 +408,7 @@ unsealed runtimeclass TableViewColumnHeaderAutomationPeer
 [webhosthidden]
 unsealed runtimeclass TableViewRowAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider,
-      Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
 {
     TableViewRowAutomationPeer(MU_XC_NAMESPACE.TableViewRow owner);
 }

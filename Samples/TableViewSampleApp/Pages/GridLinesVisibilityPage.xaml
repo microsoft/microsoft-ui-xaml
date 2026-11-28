@@ -125,7 +125,7 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="GridLinesVisibilityTable"
                 AutomationProperties.Name="People with grid lines"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 GridLinesVisibility="All"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
@@ -136,7 +136,7 @@
                     <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="Transparent"/>
                 </tv:TableView.Resources>
                 -->
-                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
                 <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
                 <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
@@ -202,7 +202,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="GridLinesVisibility"
-                    Description="Grouping adds group header bands, so you can see how row and cell borders meet them. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping adds group header bands, so you can see how row and cell borders meet them. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

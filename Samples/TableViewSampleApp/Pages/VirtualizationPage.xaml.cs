@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
@@ -29,15 +30,15 @@ public sealed partial class VirtualizationPage : SamplePageBase
 {
     private readonly DispatcherTimer _sampler = new() { Interval = TimeSpan.FromMilliseconds(500) };
     private ObservableCollection<Person> _people;
-    private TableViewSource _source;           // one per dataset; reshaped in place, never per shaping change
+    private CollectionViewSource _source;       // one per dataset; reshaped in place, never per shaping change
     private TableViewColumn? _departmentTextColumn;
 
     public VirtualizationPage()
     {
         _people = new ObservableCollection<Person>(PersonData.Many(10_000));
-        _source = TableViewSource.From(_people);
+        _source = new CollectionViewSource { Source = _people };
         InitializeComponent();
-        PeopleTable.ItemsSource = _source;
+        PeopleTable.ItemsSource = _source.View;
         UpdateActionLabels();
 
         InitializeSample(Status, Shaping.Attach(PeopleTable, _source));
@@ -67,8 +68,8 @@ public sealed partial class VirtualizationPage : SamplePageBase
         // TableView virtualizes by default. Build the whole list, then assign it once: adding rows
         // one at a time to a bound collection raises one change notification per row.
         _people = new ObservableCollection<Person>(PersonData.Many(count));
-        _source = TableViewSource.From(_people);
-        PeopleTable.ItemsSource = _source;
+        _source = new CollectionViewSource { Source = _people };
+        PeopleTable.ItemsSource = _source.View;
         // </snippet>
         _peakContainers = 0;
 
@@ -95,7 +96,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
             Header = "Department",
             Width = new GridLength((double)Application.Current.Resources["ColWidthChip"]),
             DisplayMemberBinding = new Binding { Path = new PropertyPath(nameof(Person.Department)) },
-            CanSort = false,
+            CanUserSort = false,
         };
 
         var columns = PeopleTable.Columns;
@@ -166,12 +167,6 @@ public sealed partial class VirtualizationPage : SamplePageBase
             PeopleTable.ExpandAllGroups();
         }
 
-        if (IsHierarchical)
-        {
-            // There is no per-row expand: expanding every row is the only way to reveal a nested row.
-            PeopleTable.ExpandAllRows();
-        }
-
         var indexes = DisplayIndexes();
         var targetIndex = indexes[target];
         PeopleTable.Select(targetIndex);
@@ -210,15 +205,13 @@ public sealed partial class VirtualizationPage : SamplePageBase
         SetLastAction(message + (ReferenceEquals(PeopleTable.SelectedItem, target) ? "; it is selected" : string.Empty));
     }
 
-    // Display index of every row. Flat: the source index. Hierarchy (all expanded): tree order.
-    // Grouped: groups appear in first-encountered order and keep that order inside, and each group
-    // header takes one index before its rows (the same indexes Select uses); under Grouped
-    // hierarchy a row is in its root's group.
+    // Display index of every row. Flat: the source index. Grouped: groups appear in first-encountered
+    // order and keep that order inside, and each group header takes one index before its rows (the
+    // same indexes Select uses).
     private Dictionary<Person, int> DisplayIndexes()
     {
         var map = new Dictionary<Person, int>(_people.Count);
-        var relation = IsHierarchical ? Shaping.Relation : null;
-        IReadOnlyList<Person> rows = relation is null ? _people : relation.TreeOrder(_people);
+        IReadOnlyList<Person> rows = _people;
         if (!IsGrouped)
         {
             for (var i = 0; i < rows.Count; i++)
@@ -229,12 +222,11 @@ public sealed partial class VirtualizationPage : SamplePageBase
             return map;
         }
 
-        Func<Person, Person> rootOf = relation is null ? person => person : relation.RootMap(_people);
         var groups = new Dictionary<string, List<Person>>(StringComparer.Ordinal);
         var order = new List<List<Person>>();
         foreach (var person in rows)
         {
-            var identity = SampleShaping.GroupIdentity(SampleShaping.KeyOf(rootOf(person), AppliedGroupKey));
+            var identity = SampleShaping.GroupIdentity(SampleShaping.KeyOf(person, AppliedGroupKey));
             if (!groups.TryGetValue(identity, out var members))
             {
                 members = new List<Person>();

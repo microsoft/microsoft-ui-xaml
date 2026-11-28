@@ -25,7 +25,7 @@ full `DataGrid` replacement.
 |---|---|
 | PR 1 | Empty `Microsoft.UI.Xaml.Controls.Tabular.dll` scaffolding |
 | **PR 2 (this)** | Display-only baseline: columns/cells/headers, gridlines, density, row virtualization, leading-frozen columns, keyboard row-focus nav, read-only UIA peers |
-| PR 3 | Selection, single-column sort, filtering, grouping, hierarchical rows, column resize/reorder, nav-state; themed rendering. Shipped incrementally: selection, then the shaping engine with filter + sort, then grouping. |
+| PR 3 | Selection, single-column sort, filtering, grouping, column resize/reorder, nav-state; themed rendering. Shipped incrementally: selection, then the shaping engine with filter + sort, then grouping. |
 | PR 4 | Tests + `TableViewSamples` e2e app |
 
 ## Functional requirements
@@ -35,11 +35,11 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 ### Core control & data model
 - Explicit column model (no auto-generation). — **PR2**
 - `ObservableCollection`-backed `ItemsSource`; incremental add/remove/update. — **PR2** render · **PR3** shaped (sort/group)
-- Read-only: cells are display-only and there is no edit mode (see [Editing](#editing)). — **PR2**
+- Read-only: cells are display-only and there is no edit mode in V1 (see [Editing](#editing)). — **PR2**
 - Custom cell templates (`TableViewTemplateColumn`). — **PR2**
-- Text cells through `TableViewColumn.DisplayMemberBinding`: a read-only `TextBlock` per cell, padded for `Density`, with the binding's `Path` as the default sort key. — **PR2**
-- Editable text column (`TableViewTextColumn`). — *not part of TableView*
-- Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**
+- Built-in text column (`TableViewTextColumn`); a text cell is a `TableViewTemplateColumn` with a bound `TextBlock` and `SortMemberPath`. — *deferred to V2*
+- Grouped/banded sections, declared on the data as `CollectionViewSource.GroupDescriptions` rather than as a separate `GroupedItemsSource` property. (The table-specific `TableViewSource` of earlier previews is removed.) — **PR3, shipped**
+- `ICollectionView` / `CollectionViewSource.View` as `ItemsSource`, shown read-only as the view shapes it, including `CollectionGroups` (see [Grouping](#grouping)). — **implemented**
 
 ### Column capabilities
 - Width + `MinWidth`/`MaxWidth` (`Pixel` exact; `Auto` grows to the widest realized cell within a data set; `*` shares the viewport). — **PR2** · UI resize **PR3**
@@ -55,58 +55,69 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Leading-prefix frozen columns; trailing reserved. — **PR2** (leading) · trailing deferred
 - Multi-column sort. — *deferred (P2 / vNext)*
 
-### Row & hierarchy
+### Rows
 - Single + multi selection (Ctrl/Shift). — **PR3**
 - Per-row/cell context menus, column-header menus, and table fallback. See [Context menus](#context-menus). — **implemented**
 - Checkbox selection (File-Explorer-specific). — **PR3** / surface
-- Single-level grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
-- Hierarchical rows from a flat source via `TableViewSource.ParentBy(keySelector, parentKeySelector)` / `ClearParentBy()`, no depth limit; row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`; per-row programmatic expand/collapse is out of scope for v1. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
-- Opt-in live shaping (`TableViewSource.IsLiveShaping`): reshapes when an item's `PropertyChanged` moves a sort, filter, group or parent value. — **PR3**
+- Grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
+- Live shaping (reshaping when an item's `PropertyChanged` moves a sort, filter or group value). — *deferred: needs CVS live shaping; call `Refresh()`*
 - Row drag-drop, marquee selection. — *out of scope*
 
 ### Grouping
 
-Grouping is declared on the data source, not on the control: the control renders whatever shape
-the source publishes, so the same engine serves an app that never touches `TableView`.
+Grouping is declared on the data, not on the control: the control renders the groups a
+`CollectionViewSource` view publishes.
 
-- Single-level grouping via `TableViewSource.GroupBy(keySelector)`; `ClearGroupBy()` removes it.
-  A second `GroupBy` replaces the first — grouping axes never stack. — **shipped**
-- The group key is any object. Its **identity** is what buckets rows, and it must be a stable,
-  non-empty string. Value-typed keys (`String`, `Int32`, `Int64`, `Guid`, `Boolean`, enums) get a
-  built-in identity; a reference-typed key needs the
-  `GroupBy(keySelector, groupIdentitySelector)` overload. — **shipped**
-- An unresolvable or colliding group identity **fails fast** (`hresult_invalid_argument` on the
-  call that builds the projection). It does not silently fall back to an ungrouped table: a
-  grouping request that quietly did nothing is the harder bug to find. A `null` key and an
-  empty-string key are both unresolvable — `String` is a supported key type, but `""` is not a
-  usable identity — so an app grouping on a nullable or blank-able property supplies its own
-  fallback label. — **shipped**
-- Composition with the other shaping verbs is order-sensitive and deliberate: a sort declared
-  **before** `GroupBy` orders the groups themselves; a sort declared **after** `GroupBy` orders
-  rows **within** each group. A filter always runs first, and a group whose last row is filtered
-  out disappears. — **shipped**
+- Grouping via `CollectionViewSource.GroupDescriptions` (a `PropertyGroupDescription` path); each
+  further description nests subgroup headers. Clearing the descriptions removes it. — **shipped**
+- Groups are keyed by the **value** at the group path. — **shipped**
+- Composition: the view's `Filter` runs first, and a group whose last row is filtered out
+  disappears; `SortDescriptions` order rows within each group. The view regroups on `Refresh()`,
+  not on `PropertyChanged`. — **shipped**
 - Every group header is expand/collapse-capable: click or tap the band, or use the
   `ExpandCollapse` UIA pattern. `TableView.ExpandAllGroups()` / `CollapseAllGroups()` are the
   bulk programmatic counterparts and are no-ops when the source is not grouped. — **shipped**
-- Expansion is **intent keyed by group identity**, not state on a group object, so a collapse
-  survives a re-sort, a re-filter and a regroup that re-mints every group. Newly arriving groups
+- Expansion is **intent keyed by group key**, not state on a group object, so a collapse
+  survives a re-sort, a re-filter and a refresh that re-mints every group. Newly arriving groups
   inherit the current default rather than an intent nobody expressed. — **shipped**
 - Header presentation: `TableView.GroupHeaderTemplate` fills the content region of the
   control-owned `TableViewGroupHeader`, which keeps the chevron and the themed band. The template
-  binds against a `TableViewGroupInfo` projection (`Key`, `ItemCount`, `Level`, `IsExpandable`,
+  binds against a `TableViewGroupInfo` projection (`Key`, `ItemCount`, `IsExpandable`,
   `IsExpanded`, and the culture-formatted `KeyText` / `ItemCountText`). — **shipped**
 - Accessibility: `TableViewGroupHeaderAutomationPeer` exposes `ExpandCollapse` and `GridItem`; a
   non-expandable group reports `LeafNode` rather than dropping the pattern. — **shipped**
-- Per-group programmatic expand/collapse (by key, from app code), multi-level grouping, and
-  group-level aggregates/summaries. — *deferred*
+- Per-group programmatic expand/collapse (by key, from app code) and group-level
+  aggregates/summaries. — *deferred*
+- Pre-grouped data from an `ICollectionView`: when `ItemsSource` is a view with non-null
+  `CollectionGroups` (for example a `CollectionViewSource` with `IsSourceGrouped="True"`), each
+  `ICollectionViewGroup` becomes a group header over its `GroupItems`, in the view's order, and
+  item and group changes are followed. The view owns its shaping: TableView does not filter or
+  regroup it. A column sort writes the view's `SortDescriptions` when the view implements
+  `ICollectionViewShaping` (any `CollectionViewSource` view); for other views it raises `Sorting`
+  only so the app can sort the view.
+  Current-item synchronization is out of scope. — **implemented**
+
+  ```xml
+  <CollectionViewSource x:Name="PeopleByTeam" Source="{x:Bind ViewModel.Teams}" IsSourceGrouped="True"/>
+  <tabular:TableView ItemsSource="{x:Bind PeopleByTeam.View}">
+      <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+          <tabular:TableViewTemplateColumn.CellTemplate>
+              <DataTemplate>
+                  <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+              </DataTemplate>
+          </tabular:TableViewTemplateColumn.CellTemplate>
+      </tabular:TableViewTemplateColumn>
+  </tabular:TableView>
+  ```
 - Incremental (non-rebuild) maintenance of a grouped projection: a source change under grouping
   currently rebuilds rather than splicing. Correct, but O(N) per change. — *deferred*
 
 ### Editing
 
-Not part of TableView. TableView is a read-only table with no editing API and no edit mode: no
-`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`
-(and their args and `TableViewEditAction`) or `CellEditingTemplate`, and no built-in text column or `TextBox` editor. The named
+Deferred to V2 / future DataGrid. TableView V1 has no editing API and no edit mode: no
+`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`/
+`CellEditEnded` (and their args and `TableViewEditAction`), `CellEditingTemplate` or
+`CommitCellEditCore`, and no built-in text column or `TextBox` editor. The named
 scenarios need at most an app-owned rename of one field, which composes from a
 `TableViewTemplateColumn` and app code; see
 [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance).
@@ -116,7 +127,7 @@ scenarios need at most an app-owned rename of one field, which composes from a
 - Cell editing: gestures (double-click / double-tap, `F2`, `Enter`, `Esc`, focus-loss commit),
   a programmatic `BeginEdit` and current-cell surface, vetoable and async-deferrable edit events,
   `INotifyDataErrorInfo` validation, buffered rollback, per-row editors, row transactions, and
-  editing a11y announcements. — *not part of TableView; editing scenarios belong to a DataGrid-class control*
+  editing a11y announcements. — *deferred to V2 / future DataGrid*
 
 ### Virtualization & performance
 - Row virtualization (realize only visible rows + cache). — **PR2**
@@ -159,6 +170,8 @@ scenarios need at most an app-owned rename of one field, which composes from a
 
 The whole `TableView` is one tab stop: the column header row. `Tab` and `Shift+Tab` land on the
 header in the current column, else the first actionable one; the next `Tab` leaves the table.
+While a cell is being edited, `Tab` / `Shift+Tab` instead commit and edit the next / previous
+editable cell (see Editing); only past the last (first) editable cell does focus leave the table.
 `Down` moves into the rows (the remembered row if in view, else the selected row, else the first row
 in view; a row selected after the remembered one wins), and `Up` from the first row returns to the
 header row. When no header is actionable or headers are hidden, the rows are the stop, entered in

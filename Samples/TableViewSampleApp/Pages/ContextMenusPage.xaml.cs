@@ -4,10 +4,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -28,7 +30,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
 
     public ContextMenusPage()
     {
-        Source = TableViewSource.From(People);
+        Source = new CollectionViewSource { Source = People };
         InitializeComponent();
 
         _nameCellMenu = NameColumn.CellContextFlyout;
@@ -43,7 +45,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Header menus -------------------------------------------------------------------------
@@ -118,9 +120,9 @@ public sealed partial class ContextMenusPage : SamplePageBase
         var menu = (MenuFlyout)sender;
         _rowMenuItems ??= new List<MenuFlyoutItemBase>(menu.Items);
 
-        // Target is the row, also when the request came from one of its cells. Under Hierarchy, a
-        // row with reports is expandable; Manager-tagged items show only on those rows.
-        var isManager = menu.Target is TableViewRow { IsExpandable: true };
+        // Target is the row, also when the request came from one of its cells. Manager-tagged items
+        // show only on the rows of people with reports.
+        var isManager = menu.Target is TableViewRow { DataContext: Person person } && People.Any(p => p.ManagerId == person.EmployeeId);
         menu.Items.Clear();
         foreach (var item in _rowMenuItems)
         {

@@ -238,8 +238,6 @@ areas:
     reviewers: [dipeshmsft]
     paths:
       - controls/dev/TabularShaping/**
-      - controls/dev/ShapedItemsSource/**
-      - controls/dev/GroupedSourceAdapter/**
 
   # ---------------------------------------------------------------- Tier 3
   - id: T1

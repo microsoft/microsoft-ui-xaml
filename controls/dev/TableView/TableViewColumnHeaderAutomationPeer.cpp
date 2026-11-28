@@ -194,13 +194,22 @@ hstring TableViewColumnHeaderAutomationPeer::GetSortAndToolTipHelpText()
     {
         return __super::GetHelpTextCore();
     }
+    return HelpTextForSortDirection(column.SortDirection());
+}
 
-    // Only a column the control will actually sort reports a sort state; on any other column the
-    // absence of a sort state is the honest answer.
-    winrt::hstring sortText{};
-    if (IsSortableColumn())
+hstring TableViewColumnHeaderAutomationPeer::HelpTextForSortDirection(winrt::SortDirection direction)
+{
+    auto const column = m_column.get();
+    if (!column)
     {
-        switch (column.SortDirection())
+        return __super::GetHelpTextCore();
+    }
+
+    // A column the user can sort always reports its state; any other only while a direction is shown.
+    winrt::hstring sortText{};
+    if (IsSortableColumn() || direction != winrt::SortDirection::None)
+    {
+        switch (direction)
         {
         case winrt::SortDirection::Ascending:
             sortText = TryGetLocalizedString(SR_TableViewSortAscendingHelpText);
@@ -328,7 +337,7 @@ void TableViewColumnHeaderAutomationPeer::Invoke()
     {
         if (auto const owner = m_table.get())
         {
-            winrt::get_self<TableView>(owner)->ToggleSortDirection(column);
+            winrt::get_self<TableView>(owner)->ToggleSortDirectionFromUserInput(column);
             return;
         }
     }

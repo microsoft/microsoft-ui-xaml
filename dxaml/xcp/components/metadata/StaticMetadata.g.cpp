@@ -138,9 +138,33 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::UnknownType, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
     },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.Object]
+    {
+        KnownTypeIndex::IObservableVectorOfObject, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsInterface) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCollection)), // Type flags
+    },
     // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Controls.GroupStyle]
     {
         KnownTypeIndex::IObservableVectorOfGroupStyle, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsInterface) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCollection)), // Type flags
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Data.SortDescription]
+    {
+        KnownTypeIndex::IObservableVectorOfSortDescription, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsInterface) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCollection)), // Type flags
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Data.GroupDescription]
+    {
+        KnownTypeIndex::IObservableVectorOfGroupDescription, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsInterface) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCollection)), // Type flags
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.String]
+    {
+        KnownTypeIndex::IObservableVectorOfString, // Index name
         KnownTypeIndex::UnknownType, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsInterface) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCollection)), // Type flags
     },
@@ -1050,6 +1074,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::DependencyObject, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType)), // Type flags
     },
+    // Microsoft.UI.Xaml.Data.GroupDescription
+    {
+        KnownTypeIndex::GroupDescription, // Index name
+        KnownTypeIndex::DependencyObject, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::RequiresPeerActivation)), // Type flags
+    },
     // Microsoft.UI.Xaml.Controls.GroupStyle
     {
         KnownTypeIndex::GroupStyle, // Index name
@@ -1529,6 +1559,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::Size, // Index name
         KnownTypeIndex::DependencyObject, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType)), // Type flags
+    },
+    // Microsoft.UI.Xaml.Data.SortDescription
+    {
+        KnownTypeIndex::SortDescription, // Index name
+        KnownTypeIndex::DependencyObject, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
     },
     // Microsoft.UI.Xaml.Controls.SplitViewPaneClosingEventArgs
     {
@@ -2812,6 +2848,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
     {
         KnownTypeIndex::PowerEase, // Index name
         KnownTypeIndex::EasingFunctionBase, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
+    },
+    // Microsoft.UI.Xaml.Data.PropertyGroupDescription
+    {
+        KnownTypeIndex::PropertyGroupDescription, // Index name
+        KnownTypeIndex::GroupDescription, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction
@@ -5256,6 +5298,18 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::UnknownType, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
     },
+    // Microsoft.UI.Xaml.Data.CollectionViewSortDirection
+    {
+        KnownTypeIndex::CollectionViewSortDirection, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewStringComparison
+    {
+        KnownTypeIndex::CollectionViewStringComparison, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
+    },
     // Microsoft.UI.Xaml.Media.ColorInterpolationMode
     {
         KnownTypeIndex::ColorInterpolationMode, // Index name
@@ -6119,7 +6173,31 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         { /* empty string */ }, // Full name
         KnownNamespaceIndex::UnknownNamespace, // Declaring namespace index
     },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.Object]
+    {
+        { /* empty string */ }, // Name
+        { /* empty string */ }, // Full name
+        KnownNamespaceIndex::Windows_Foundation_Collections, // Declaring namespace index
+    },
     // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Controls.GroupStyle]
+    {
+        { /* empty string */ }, // Name
+        { /* empty string */ }, // Full name
+        KnownNamespaceIndex::Windows_Foundation_Collections, // Declaring namespace index
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Data.SortDescription]
+    {
+        { /* empty string */ }, // Name
+        { /* empty string */ }, // Full name
+        KnownNamespaceIndex::Windows_Foundation_Collections, // Declaring namespace index
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Data.GroupDescription]
+    {
+        { /* empty string */ }, // Name
+        { /* empty string */ }, // Full name
+        KnownNamespaceIndex::Windows_Foundation_Collections, // Declaring namespace index
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.String]
     {
         { /* empty string */ }, // Name
         { /* empty string */ }, // Full name
@@ -7031,6 +7109,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.GridLength"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.Data.GroupDescription
+    {
+        XSTRING_PTR_STORAGE(L"GroupDescription"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.GroupDescription"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Data, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Controls.GroupStyle
     {
         XSTRING_PTR_STORAGE(L"GroupStyle"), // Name
@@ -7510,6 +7594,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Size"), // Name
         XSTRING_PTR_STORAGE(L"Windows.Foundation.Size"), // Full name
         KnownNamespaceIndex::Windows_Foundation, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.Data.SortDescription
+    {
+        XSTRING_PTR_STORAGE(L"SortDescription"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.SortDescription"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Data, // Declaring namespace index
     },
     // Microsoft.UI.Xaml.Controls.SplitViewPaneClosingEventArgs
     {
@@ -8794,6 +8884,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"PowerEase"), // Name
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Animation.PowerEase"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Media_Animation, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.Data.PropertyGroupDescription
+    {
+        XSTRING_PTR_STORAGE(L"PropertyGroupDescription"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.PropertyGroupDescription"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Data, // Declaring namespace index
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction
     {
@@ -11237,6 +11333,18 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Windows.Foundation.Collections.CollectionChange"), // Full name
         KnownNamespaceIndex::Windows_Foundation_Collections, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.Data.CollectionViewSortDirection
+    {
+        XSTRING_PTR_STORAGE(L"CollectionViewSortDirection"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.CollectionViewSortDirection"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Data, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewStringComparison
+    {
+        XSTRING_PTR_STORAGE(L"CollectionViewStringComparison"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.CollectionViewStringComparison"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Data, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Media.ColorInterpolationMode
     {
         XSTRING_PTR_STORAGE(L"ColorInterpolationMode"), // Name
@@ -12103,7 +12211,43 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First object property = UnknownObject.UnknownProperty
         0, // Property slot count
     },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.Object]
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        0, // Property slot count
+    },
     // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Controls.GroupStyle]
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        0, // Property slot count
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Data.SortDescription]
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        0, // Property slot count
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Data.GroupDescription]
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        0, // Property slot count
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.String]
     {
         KnownPropertyIndex::UnknownType_UnknownProperty, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
@@ -13014,12 +13158,12 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     },
     // Microsoft.UI.Xaml.Data.CollectionViewSource
     {
-        KnownPropertyIndex::CollectionViewSource_IsSourceGrouped, // First property
+        KnownPropertyIndex::CollectionViewSource_Culture, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
-        12, // Property slot count
+        21, // Property slot count
     },
     // Windows.UI.Color
     {
@@ -13465,6 +13609,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     // Microsoft.UI.Xaml.GridLength
     {
         KnownPropertyIndex::GridLength_GridUnitType, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        10, // Property slot count
+    },
+    // Microsoft.UI.Xaml.Data.GroupDescription
+    {
+        KnownPropertyIndex::GroupDescription_GroupNames, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
@@ -14185,6 +14338,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     // Windows.Foundation.Size
     {
         KnownPropertyIndex::Size_Height, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        10, // Property slot count
+    },
+    // Microsoft.UI.Xaml.Data.SortDescription
+    {
+        KnownPropertyIndex::SortDescription_Direction, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
@@ -16116,6 +16278,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
         10, // Property slot count
+    },
+    // Microsoft.UI.Xaml.Data.PropertyGroupDescription
+    {
+        KnownPropertyIndex::PropertyGroupDescription_Converter, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        13, // Property slot count
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction
     {
@@ -19739,6 +19910,22 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First object property
         0, // Property slot count
     },
+    // Microsoft.UI.Xaml.Data.CollectionViewSortDirection
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property
+        0, // First object property
+        0, // Property slot count
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewStringComparison
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property
+        0, // First object property
+        0, // Property slot count
+    },
     // Microsoft.UI.Xaml.Media.ColorInterpolationMode
     {
         KnownPropertyIndex::UnknownType_UnknownProperty, // First property
@@ -20881,7 +21068,11 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
 extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
 {
     GUID{} /*GUID_NULL*/,
+    __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<IInspectable*>),
     __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Controls::GroupStyle*>),
+    __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>),
+    __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::GroupDescription*>),
+    __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>),
     __uuidof(ABI::Windows::Foundation::Collections::IVector<FLOAT>),
     __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Navigation::PageStackEntry*>),
     __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Windows::Foundation::DateTime>),
@@ -21033,6 +21224,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::Printing::IGetPreviewPageEventArgs),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::IGradientStop),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::GridLength>),
+    __uuidof(ABI::Microsoft::UI::Xaml::Data::IGroupDescription),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupStyle),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IHasValidationErrorsChangedEventArgs),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IHubSectionHeaderClickEventArgs),
@@ -21113,6 +21305,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::ISetterBase),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::IShadow),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Size>),
+    __uuidof(ABI::Microsoft::UI::Xaml::Data::ISortDescription),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISplitViewPaneClosingEventArgs),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::ISplitViewTemplateSettings),
     GUID{} /*GUID_NULL*/,
@@ -21327,6 +21520,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::Media::IPolyQuadraticBezierSegment),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPopupThemeTransition),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPowerEase),
+    __uuidof(ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription),
     GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Microsoft::UI::Xaml::Media::IQuadraticBezierSegment),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IQuadraticEase),
@@ -21734,6 +21928,8 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::ClickMode>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Media::Animation::ClockState>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Collections::CollectionChange>),
+    __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection>),
+    __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Media::ColorInterpolationMode>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::ComboBoxSelectionChangedTrigger>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition>),
@@ -21879,7 +22075,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
 };
 
 // Types that can be referenced from XAML.
-extern const MetaDataTypeName c_aTypeNames[942] =
+extern const MetaDataTypeName c_aTypeNames[947] =
 {
     { KnownTypeIndex::UnknownType },
     { KnownTypeIndex::Hub },
@@ -22220,6 +22416,7 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::ScrollEventArgs },
     { KnownTypeIndex::ScrollEventType },
     { KnownTypeIndex::SolidColorBrush },
+    { KnownTypeIndex::SortDescription },
     { KnownTypeIndex::TemplateBinding },
     { KnownTypeIndex::TemplateContent },
     { KnownTypeIndex::TextDecorations },
@@ -22242,6 +22439,7 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::FontNumeralStyle },
     { KnownTypeIndex::FrameworkElement },
     { KnownTypeIndex::GeneralTransform },
+    { KnownTypeIndex::GroupDescription },
     { KnownTypeIndex::InlineCollection },
     { KnownTypeIndex::IsTypeNotPresent },
     { KnownTypeIndex::ListViewBaseItem },
@@ -22587,6 +22785,7 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::MenuPopupThemeTransition },
     { KnownTypeIndex::NavigationTransitionInfo },
     { KnownTypeIndex::ObjectKeyFrameCollection },
+    { KnownTypeIndex::PropertyGroupDescription },
     { KnownTypeIndex::RepositionThemeAnimation },
     { KnownTypeIndex::SeekSliderAutomationPeer },
     { KnownTypeIndex::SplitCloseThemeAnimation },
@@ -22660,6 +22859,7 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::ValidationErrorsCollection },
     { KnownTypeIndex::VisualStateGroupCollection },
     { KnownTypeIndex::VisualTransitionCollection },
+    { KnownTypeIndex::CollectionViewSortDirection },
     { KnownTypeIndex::CommandBarElementCollection },
     { KnownTypeIndex::CommandBarOverflowPresenter },
     { KnownTypeIndex::ConnectedAnimationComponent },
@@ -22718,6 +22918,7 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::ApplicationRequiresPointerMode },
     { KnownTypeIndex::AutomationAnnotationCollection },
     { KnownTypeIndex::CalendarViewItemAutomationPeer },
+    { KnownTypeIndex::CollectionViewStringComparison },
     { KnownTypeIndex::ComboBoxItemDataAutomationPeer },
     { KnownTypeIndex::ComboBoxTextSubmittedEventArgs },
     { KnownTypeIndex::CommandBarDefaultLabelPosition },
@@ -24004,6 +24205,46 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::CalendarViewTemplateSettings, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
     },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.Culture
+    {
+        KnownPropertyIndex::CollectionViewSource_Culture, // Index name
+        KnownTypeIndex::String, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.GroupDescriptions
+    {
+        KnownPropertyIndex::CollectionViewSource_GroupDescriptions, // Index name
+        KnownTypeIndex::IObservableVectorOfGroupDescription, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveFilteringRequested
+    {
+        KnownPropertyIndex::CollectionViewSource_IsLiveFilteringRequested, // Index name
+        KnownTypeIndex::Boolean, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveGroupingRequested
+    {
+        KnownPropertyIndex::CollectionViewSource_IsLiveGroupingRequested, // Index name
+        KnownTypeIndex::Boolean, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveSortingRequested
+    {
+        KnownPropertyIndex::CollectionViewSource_IsLiveSortingRequested, // Index name
+        KnownTypeIndex::Boolean, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
     // Microsoft.UI.Xaml.Data.CollectionViewSource.IsSourceGrouped
     {
         KnownPropertyIndex::CollectionViewSource_IsSourceGrouped, // Index name
@@ -24019,6 +24260,38 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::CollectionViewSource, // Declaring type
         KnownTypeIndex::CollectionViewSource, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsVisualTreeProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.LiveFilteringProperties
+    {
+        KnownPropertyIndex::CollectionViewSource_LiveFilteringProperties, // Index name
+        KnownTypeIndex::IObservableVectorOfString, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.LiveGroupingProperties
+    {
+        KnownPropertyIndex::CollectionViewSource_LiveGroupingProperties, // Index name
+        KnownTypeIndex::IObservableVectorOfString, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.LiveSortingProperties
+    {
+        KnownPropertyIndex::CollectionViewSource_LiveSortingProperties, // Index name
+        KnownTypeIndex::IObservableVectorOfString, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.SortDescriptions
+    {
+        KnownPropertyIndex::CollectionViewSource_SortDescriptions, // Index name
+        KnownTypeIndex::IObservableVectorOfSortDescription, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Data.CollectionViewSource.Source
     {
@@ -24523,6 +24796,22 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::GridLength, // Declaring type
         KnownTypeIndex::GridLength, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::StoreDoubleAsFloat)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.GroupDescription.GroupNames
+    {
+        KnownPropertyIndex::GroupDescription_GroupNames, // Index name
+        KnownTypeIndex::IObservableVectorOfObject, // Property type
+        KnownTypeIndex::GroupDescription, // Declaring type
+        KnownTypeIndex::GroupDescription, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.GroupDescription.SortDescriptions
+    {
+        KnownPropertyIndex::GroupDescription_SortDescriptions, // Index name
+        KnownTypeIndex::IObservableVectorOfSortDescription, // Property type
+        KnownTypeIndex::GroupDescription, // Declaring type
+        KnownTypeIndex::GroupDescription, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.GroupStyle.ContainerStyle
     {
@@ -25331,6 +25620,22 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::Size, // Declaring type
         KnownTypeIndex::Size, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::StoreDoubleAsFloat)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.SortDescription.Direction
+    {
+        KnownPropertyIndex::SortDescription_Direction, // Index name
+        KnownTypeIndex::CollectionViewSortDirection, // Property type
+        KnownTypeIndex::SortDescription, // Declaring type
+        KnownTypeIndex::SortDescription, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.SortDescription.PropertyName
+    {
+        KnownPropertyIndex::SortDescription_PropertyName, // Index name
+        KnownTypeIndex::String, // Property type
+        KnownTypeIndex::SortDescription, // Declaring type
+        KnownTypeIndex::SortDescription, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.Primitives.SplitViewTemplateSettings.CompactPaneGridLength
     {
@@ -28451,6 +28756,30 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::PowerEase, // Declaring type
         KnownTypeIndex::PowerEase, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::StoreDoubleAsFloat)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.PropertyGroupDescription.Converter
+    {
+        KnownPropertyIndex::PropertyGroupDescription_Converter, // Index name
+        KnownTypeIndex::IValueConverter, // Property type
+        KnownTypeIndex::PropertyGroupDescription, // Declaring type
+        KnownTypeIndex::PropertyGroupDescription, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.PropertyGroupDescription.PropertyName
+    {
+        KnownPropertyIndex::PropertyGroupDescription_PropertyName, // Index name
+        KnownTypeIndex::String, // Property type
+        KnownTypeIndex::PropertyGroupDescription, // Declaring type
+        KnownTypeIndex::PropertyGroupDescription, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.PropertyGroupDescription.StringComparison
+    {
+        KnownPropertyIndex::PropertyGroupDescription_StringComparison, // Index name
+        KnownTypeIndex::CollectionViewStringComparison, // Property type
+        KnownTypeIndex::PropertyGroupDescription, // Declaring type
+        KnownTypeIndex::PropertyGroupDescription, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction.Delay
     {
@@ -38628,8 +38957,17 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::CalendarViewTemplateSettings_WeekDay6, // CalendarViewTemplateSettings_WeekDay5
     KnownPropertyIndex::CalendarViewTemplateSettings_WeekDay7, // CalendarViewTemplateSettings_WeekDay6
     KnownPropertyIndex::DependencyObject_Column, // CalendarViewTemplateSettings_WeekDay7
+    KnownPropertyIndex::CollectionViewSource_GroupDescriptions, // CollectionViewSource_Culture
+    KnownPropertyIndex::CollectionViewSource_IsLiveFilteringRequested, // CollectionViewSource_GroupDescriptions
+    KnownPropertyIndex::CollectionViewSource_IsLiveGroupingRequested, // CollectionViewSource_IsLiveFilteringRequested
+    KnownPropertyIndex::CollectionViewSource_IsLiveSortingRequested, // CollectionViewSource_IsLiveGroupingRequested
+    KnownPropertyIndex::CollectionViewSource_IsSourceGrouped, // CollectionViewSource_IsLiveSortingRequested
     KnownPropertyIndex::CollectionViewSource_ItemsPath, // CollectionViewSource_IsSourceGrouped
-    KnownPropertyIndex::CollectionViewSource_Source, // CollectionViewSource_ItemsPath
+    KnownPropertyIndex::CollectionViewSource_LiveFilteringProperties, // CollectionViewSource_ItemsPath
+    KnownPropertyIndex::CollectionViewSource_LiveGroupingProperties, // CollectionViewSource_LiveFilteringProperties
+    KnownPropertyIndex::CollectionViewSource_LiveSortingProperties, // CollectionViewSource_LiveGroupingProperties
+    KnownPropertyIndex::CollectionViewSource_SortDescriptions, // CollectionViewSource_LiveSortingProperties
+    KnownPropertyIndex::CollectionViewSource_Source, // CollectionViewSource_SortDescriptions
     KnownPropertyIndex::CollectionViewSource_View, // CollectionViewSource_Source
     KnownPropertyIndex::DependencyObject_Column, // CollectionViewSource_View
     KnownPropertyIndex::Color_B, // Color_A
@@ -38693,6 +39031,8 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::DependencyObject_Column, // GradientStop_Offset
     KnownPropertyIndex::GridLength_Value, // GridLength_GridUnitType
     KnownPropertyIndex::DependencyObject_Column, // GridLength_Value
+    KnownPropertyIndex::GroupDescription_SortDescriptions, // GroupDescription_GroupNames
+    KnownPropertyIndex::DependencyObject_Column, // GroupDescription_SortDescriptions
     KnownPropertyIndex::GroupStyle_ContainerStyleSelector, // GroupStyle_ContainerStyle
     KnownPropertyIndex::GroupStyle_HeaderContainerStyle, // GroupStyle_ContainerStyleSelector
     KnownPropertyIndex::GroupStyle_HeaderTemplate, // GroupStyle_HeaderContainerStyle
@@ -38794,6 +39134,8 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::DependencyObject_Column, // SetterBase_IsSealed
     KnownPropertyIndex::Size_Width, // Size_Height
     KnownPropertyIndex::DependencyObject_Column, // Size_Width
+    KnownPropertyIndex::SortDescription_PropertyName, // SortDescription_Direction
+    KnownPropertyIndex::DependencyObject_Column, // SortDescription_PropertyName
     KnownPropertyIndex::SplitViewTemplateSettings_NegativeOpenPaneLength, // SplitViewTemplateSettings_CompactPaneGridLength
     KnownPropertyIndex::SplitViewTemplateSettings_NegativeOpenPaneLengthMinusCompactLength, // SplitViewTemplateSettings_NegativeOpenPaneLength
     KnownPropertyIndex::SplitViewTemplateSettings_OpenPaneGridLength, // SplitViewTemplateSettings_NegativeOpenPaneLengthMinusCompactLength
@@ -39184,6 +39526,9 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::PopupThemeTransition_FromVerticalOffset, // PopupThemeTransition_FromHorizontalOffset
     KnownPropertyIndex::Transition_GeneratedStaggerFunction, // PopupThemeTransition_FromVerticalOffset
     KnownPropertyIndex::EasingFunctionBase_EasingMode, // PowerEase_Power
+    KnownPropertyIndex::PropertyGroupDescription_PropertyName, // PropertyGroupDescription_Converter
+    KnownPropertyIndex::PropertyGroupDescription_StringComparison, // PropertyGroupDescription_PropertyName
+    KnownPropertyIndex::GroupDescription_GroupNames, // PropertyGroupDescription_StringComparison
     KnownPropertyIndex::PVLStaggerFunction_DelayReduce, // PVLStaggerFunction_Delay
     KnownPropertyIndex::PVLStaggerFunction_Maximum, // PVLStaggerFunction_DelayReduce
     KnownPropertyIndex::PVLStaggerFunction_Reverse, // PVLStaggerFunction_Maximum
@@ -40589,10 +40934,19 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     20, // CalendarViewTemplateSettings_WeekDay5
     21, // CalendarViewTemplateSettings_WeekDay6
     22, // CalendarViewTemplateSettings_WeekDay7
-    8, // CollectionViewSource_IsSourceGrouped
-    9, // CollectionViewSource_ItemsPath
-    10, // CollectionViewSource_Source
-    11, // CollectionViewSource_View
+    8, // CollectionViewSource_Culture
+    9, // CollectionViewSource_GroupDescriptions
+    10, // CollectionViewSource_IsLiveFilteringRequested
+    11, // CollectionViewSource_IsLiveGroupingRequested
+    12, // CollectionViewSource_IsLiveSortingRequested
+    13, // CollectionViewSource_IsSourceGrouped
+    14, // CollectionViewSource_ItemsPath
+    15, // CollectionViewSource_LiveFilteringProperties
+    16, // CollectionViewSource_LiveGroupingProperties
+    17, // CollectionViewSource_LiveSortingProperties
+    18, // CollectionViewSource_SortDescriptions
+    19, // CollectionViewSource_Source
+    20, // CollectionViewSource_View
     8, // Color_A
     9, // Color_B
     10, // Color_ContentProperty
@@ -40654,6 +41008,8 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     9, // GradientStop_Offset
     8, // GridLength_GridUnitType
     9, // GridLength_Value
+    8, // GroupDescription_GroupNames
+    9, // GroupDescription_SortDescriptions
     8, // GroupStyle_ContainerStyle
     9, // GroupStyle_ContainerStyleSelector
     10, // GroupStyle_HeaderContainerStyle
@@ -40755,6 +41111,8 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     8, // SetterBase_IsSealed
     8, // Size_Height
     9, // Size_Width
+    8, // SortDescription_Direction
+    9, // SortDescription_PropertyName
     8, // SplitViewTemplateSettings_CompactPaneGridLength
     9, // SplitViewTemplateSettings_NegativeOpenPaneLength
     10, // SplitViewTemplateSettings_NegativeOpenPaneLengthMinusCompactLength
@@ -41145,6 +41503,9 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     9, // PopupThemeTransition_FromHorizontalOffset
     10, // PopupThemeTransition_FromVerticalOffset
     9, // PowerEase_Power
+    10, // PropertyGroupDescription_Converter
+    11, // PropertyGroupDescription_PropertyName
+    12, // PropertyGroupDescription_StringComparison
     8, // PVLStaggerFunction_Delay
     9, // PVLStaggerFunction_DelayReduce
     10, // PVLStaggerFunction_Maximum
@@ -42550,8 +42911,17 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"WeekDay5"),
     XSTRING_PTR_STORAGE(L"WeekDay6"),
     XSTRING_PTR_STORAGE(L"WeekDay7"),
+    XSTRING_PTR_STORAGE(L"Culture"),
+    XSTRING_PTR_STORAGE(L"GroupDescriptions"),
+    XSTRING_PTR_STORAGE(L"IsLiveFilteringRequested"),
+    XSTRING_PTR_STORAGE(L"IsLiveGroupingRequested"),
+    XSTRING_PTR_STORAGE(L"IsLiveSortingRequested"),
     XSTRING_PTR_STORAGE(L"IsSourceGrouped"),
     XSTRING_PTR_STORAGE(L"ItemsPath"),
+    XSTRING_PTR_STORAGE(L"LiveFilteringProperties"),
+    XSTRING_PTR_STORAGE(L"LiveGroupingProperties"),
+    XSTRING_PTR_STORAGE(L"LiveSortingProperties"),
+    XSTRING_PTR_STORAGE(L"SortDescriptions"),
     XSTRING_PTR_STORAGE(L"Source"),
     XSTRING_PTR_STORAGE(L"View"),
     XSTRING_PTR_STORAGE(L"A"),
@@ -42615,6 +42985,8 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"Offset"),
     XSTRING_PTR_STORAGE(L"GridUnitType"),
     XSTRING_PTR_STORAGE(L"Value"),
+    XSTRING_PTR_STORAGE(L"GroupNames"),
+    XSTRING_PTR_STORAGE(L"SortDescriptions"),
     XSTRING_PTR_STORAGE(L"ContainerStyle"),
     XSTRING_PTR_STORAGE(L"ContainerStyleSelector"),
     XSTRING_PTR_STORAGE(L"HeaderContainerStyle"),
@@ -42716,6 +43088,8 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"IsSealed"),
     XSTRING_PTR_STORAGE(L"Height"),
     XSTRING_PTR_STORAGE(L"Width"),
+    XSTRING_PTR_STORAGE(L"Direction"),
+    XSTRING_PTR_STORAGE(L"PropertyName"),
     XSTRING_PTR_STORAGE(L"CompactPaneGridLength"),
     XSTRING_PTR_STORAGE(L"NegativeOpenPaneLength"),
     XSTRING_PTR_STORAGE(L"NegativeOpenPaneLengthMinusCompactLength"),
@@ -43106,6 +43480,9 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"FromHorizontalOffset"),
     XSTRING_PTR_STORAGE(L"FromVerticalOffset"),
     XSTRING_PTR_STORAGE(L"Power"),
+    XSTRING_PTR_STORAGE(L"Converter"),
+    XSTRING_PTR_STORAGE(L"PropertyName"),
+    XSTRING_PTR_STORAGE(L"StringComparison"),
     XSTRING_PTR_STORAGE(L"Delay"),
     XSTRING_PTR_STORAGE(L"DelayReduce"),
     XSTRING_PTR_STORAGE(L"Maximum"),
@@ -44403,98 +44780,98 @@ UINT MapTypeNameLengthToSearchRange(_In_ UINT nLength, _Out_ UINT* pnEndIndex)
             *pnEndIndex = 299;
             return 261;
         case 15:
-            *pnEndIndex = 345;
+            *pnEndIndex = 346;
             return 299;
         case 16:
-            *pnEndIndex = 383;
-            return 345;
+            *pnEndIndex = 385;
+            return 346;
         case 17:
-            *pnEndIndex = 417;
-            return 383;
+            *pnEndIndex = 419;
+            return 385;
         case 18:
-            *pnEndIndex = 457;
-            return 417;
+            *pnEndIndex = 459;
+            return 419;
         case 19:
-            *pnEndIndex = 510;
-            return 457;
+            *pnEndIndex = 512;
+            return 459;
         case 20:
-            *pnEndIndex = 558;
-            return 510;
+            *pnEndIndex = 560;
+            return 512;
         case 21:
-            *pnEndIndex = 592;
-            return 558;
+            *pnEndIndex = 594;
+            return 560;
         case 22:
-            *pnEndIndex = 643;
-            return 592;
+            *pnEndIndex = 645;
+            return 594;
         case 23:
-            *pnEndIndex = 683;
-            return 643;
+            *pnEndIndex = 685;
+            return 645;
         case 24:
-            *pnEndIndex = 716;
-            return 683;
+            *pnEndIndex = 719;
+            return 685;
         case 25:
-            *pnEndIndex = 751;
-            return 716;
+            *pnEndIndex = 754;
+            return 719;
         case 26:
-            *pnEndIndex = 779;
-            return 751;
+            *pnEndIndex = 782;
+            return 754;
         case 27:
-            *pnEndIndex = 793;
-            return 779;
+            *pnEndIndex = 797;
+            return 782;
         case 28:
-            *pnEndIndex = 814;
-            return 793;
+            *pnEndIndex = 818;
+            return 797;
         case 29:
-            *pnEndIndex = 834;
-            return 814;
+            *pnEndIndex = 838;
+            return 818;
         case 30:
-            *pnEndIndex = 855;
-            return 834;
+            *pnEndIndex = 860;
+            return 838;
         case 31:
-            *pnEndIndex = 867;
-            return 855;
+            *pnEndIndex = 872;
+            return 860;
         case 32:
-            *pnEndIndex = 884;
-            return 867;
+            *pnEndIndex = 889;
+            return 872;
         case 33:
-            *pnEndIndex = 898;
-            return 884;
+            *pnEndIndex = 903;
+            return 889;
         case 34:
-            *pnEndIndex = 911;
-            return 898;
+            *pnEndIndex = 916;
+            return 903;
         case 35:
-            *pnEndIndex = 917;
-            return 911;
+            *pnEndIndex = 922;
+            return 916;
         case 36:
-            *pnEndIndex = 923;
-            return 917;
-        case 37:
             *pnEndIndex = 928;
-            return 923;
-        case 38:
-            *pnEndIndex = 931;
+            return 922;
+        case 37:
+            *pnEndIndex = 933;
             return 928;
-        case 39:
+        case 38:
             *pnEndIndex = 936;
-            return 931;
-        case 40:
-            *pnEndIndex = 937;
-            return 936;
-        case 41:
-            *pnEndIndex = 938;
-            return 937;
-        case 42:
-            *pnEndIndex = 939;
-            return 938;
-        case 43:
-            *pnEndIndex = 940;
-            return 939;
-        case 49:
+            return 933;
+        case 39:
             *pnEndIndex = 941;
-            return 940;
-        case 50:
+            return 936;
+        case 40:
             *pnEndIndex = 942;
             return 941;
+        case 41:
+            *pnEndIndex = 943;
+            return 942;
+        case 42:
+            *pnEndIndex = 944;
+            return 943;
+        case 43:
+            *pnEndIndex = 945;
+            return 944;
+        case 49:
+            *pnEndIndex = 946;
+            return 945;
+        case 50:
+            *pnEndIndex = 947;
+            return 946;
         default:
             *pnEndIndex = 0;
             return 0;
@@ -44669,6 +45046,14 @@ _Check_return_ HRESULT GetEnumValueTable(_In_ KnownTypeIndex nTypeIndex, _Out_ U
         case KnownTypeIndex::CollectionChange:
             *pnCount = ARRAY_SIZE(satCollectionChange);
             *ppTable = satCollectionChange;
+            return S_OK;
+        case KnownTypeIndex::CollectionViewSortDirection:
+            *pnCount = ARRAY_SIZE(satCollectionViewSortDirection);
+            *ppTable = satCollectionViewSortDirection;
+            return S_OK;
+        case KnownTypeIndex::CollectionViewStringComparison:
+            *pnCount = ARRAY_SIZE(satCollectionViewStringComparison);
+            *ppTable = satCollectionViewStringComparison;
             return S_OK;
         case KnownTypeIndex::ColorInterpolationMode:
             *pnCount = ARRAY_SIZE(satColorInterpolationMode);

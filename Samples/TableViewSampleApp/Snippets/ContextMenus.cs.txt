@@ -1,6 +1,6 @@
 public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 // A header menu item has no row item to bind to, so each column gets its own menu and the
 // handler closes over that column.
@@ -57,9 +57,9 @@ private void OnRowMenuOpening(object sender, object e)
     var menu = (MenuFlyout)sender;
     _rowMenuItems ??= new List<MenuFlyoutItemBase>(menu.Items);
 
-    // Target is the row, also when the request came from one of its cells. Under Hierarchy, a
-    // row with reports is expandable; Manager-tagged items show only on those rows.
-    var isManager = menu.Target is TableViewRow { IsExpandable: true };
+    // Target is the row, also when the request came from one of its cells. Manager-tagged items
+    // show only on the rows of people with reports.
+    var isManager = menu.Target is TableViewRow { DataContext: Person person } && People.Any(p => p.ManagerId == person.EmployeeId);
     menu.Items.Clear();
     foreach (var item in _rowMenuItems)
     {

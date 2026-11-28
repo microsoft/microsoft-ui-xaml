@@ -12,6 +12,8 @@
 #include <limits>
 #include <new>
 #include <numeric>
+#include <optional>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include "winnls.h"
@@ -40,6 +42,34 @@ namespace ShapingHelpers
 
         int CompareFloating(double a, double b);
         int CompareObjectLookupKeys(winrt::IInspectable const& a, winrt::IInspectable const& b);
+
+        // Enum sort keys normalized once when the keys are extracted, so comparisons never re-read a
+        // box. Comparing two normalized keys is exactly what ValueComparer::Compare does for them.
+        struct NormalizedEnumKeys
+        {
+            // Sized on the first enum key, so sorts without one pay nothing.
+            std::vector<EnumValue> Values;
+            std::vector<char> IsEnum;
+
+            void Capture(size_t index, size_t count, winrt::IInspectable const& key)
+            {
+                EnumValue value;
+                auto const propertyValue = key ? key.try_as<winrt::Windows::Foundation::IPropertyValue>() : nullptr;
+                if (!propertyValue || !EnumValue::TryGet(propertyValue, value, false))
+                {
+                    return;
+                }
+                if (Values.empty())
+                {
+                    Values.resize(count);
+                    IsEnum.assign(count, 0);
+                }
+                Values[index] = std::move(value);
+                IsEnum[index] = 1;
+            }
+
+            bool Has(size_t index) const noexcept { return !IsEnum.empty() && IsEnum[index]; }
+        };
 
         NumericKind ClassifyNumeric(
             winrt::Windows::Foundation::IPropertyValue const& propertyValue,
@@ -282,6 +312,16 @@ namespace ShapingHelpers
                 const int width = CompareFloating(va.Width, vb.Width);
                 return width != 0 ? width : CompareFloating(va.Height, vb.Height);
             }
+            case winrt::Windows::Foundation::PropertyType::OtherType:
+            {
+                EnumValue enumA;
+                EnumValue enumB;
+                if (EnumValue::TryGet(a, enumA, false) && EnumValue::TryGet(b, enumB, false))
+                {
+                    return EnumValue::Compare(enumA, enumB);
+                }
+                return CompareObjectLookupKeys(a, b);
+            }
             default:
                 return CompareObjectLookupKeys(a, b);
             }
@@ -509,9 +549,240 @@ namespace ShapingHelpers
             key = winrt::hstring{ buffer };
             return true;
         }
+        case winrt::Windows::Foundation::PropertyType::OtherType:
+        {
+            EnumValue value;
+            if (!EnumValue::TryGet(propertyValue, value))
+            {
+                return false;
+            }
+            key = L"e:" + value.TypeName + L":" +
+                (value.IsUnsigned ? L"u" + winrt::to_hstring(value.Unsigned) : winrt::to_hstring(value.Signed));
+            return true;
+        }
         default:
             return false;
         }
+    }
+
+    namespace
+    {
+        enum class EnumGetter : uint8_t { NotEnum, Int32, UInt32, Int64, UInt64 };
+
+        // Which getter a boxed OtherType answers, per runtime class name, so a box type throws on the probe at most
+        // once per getter per process. Plain data only; an empty class name is never cached.
+        struct EnumGetterCache
+        {
+            SRWLOCK Lock = SRWLOCK_INIT;
+            std::unordered_map<std::wstring, EnumGetter> ByClassName;
+        };
+
+        EnumGetterCache& GetEnumGetterCache()
+        {
+            static EnumGetterCache cache;
+            return cache;
+        }
+
+        // Per-thread hint from a box's IPropertyValue vtable to the getter it answered, so a run of keys of one enum
+        // type reads without a class name or a lock. A stale or shared vtable only costs a read that fails (then the
+        // class-name path runs) or one that converts to the same value, so the hint never changes a result. Enum
+        // getters only: "not an enum" always takes the class-name path.
+        struct EnumGetterHint
+        {
+            void const* VTable{ nullptr };
+            EnumGetter Getter{ EnumGetter::NotEnum };
+        };
+        constexpr size_t c_enumGetterHintCount = 8;
+        thread_local EnumGetterHint t_enumGetterHints[c_enumGetterHintCount]{};
+        thread_local size_t t_nextEnumGetterHint{ 0 };
+
+        void const* VTableOf(winrt::Windows::Foundation::IPropertyValue const& propertyValue) noexcept
+        {
+            return *static_cast<void const* const*>(winrt::get_abi(propertyValue));
+        }
+
+        EnumGetter FindEnumGetterHint(void const* vtable) noexcept
+        {
+            for (auto const& hint : t_enumGetterHints)
+            {
+                if (hint.VTable == vtable)
+                {
+                    return hint.Getter;
+                }
+            }
+            return EnumGetter::NotEnum;
+        }
+
+        void RememberEnumGetterHint(void const* vtable, EnumGetter getter) noexcept
+        {
+            for (auto& hint : t_enumGetterHints)
+            {
+                if (hint.VTable == vtable)
+                {
+                    hint.Getter = getter;
+                    return;
+                }
+            }
+            t_enumGetterHints[t_nextEnumGetterHint] = { vtable, getter };
+            t_nextEnumGetterHint = (t_nextEnumGetterHint + 1) % c_enumGetterHintCount;
+        }
+
+        std::optional<EnumGetter> FindCachedEnumGetter(std::wstring const& className) noexcept
+        {
+            auto& cache = GetEnumGetterCache();
+            std::optional<EnumGetter> getter;
+            AcquireSRWLockShared(&cache.Lock);
+            if (auto const it = cache.ByClassName.find(className); it != cache.ByClassName.end())
+            {
+                getter = it->second;
+            }
+            ReleaseSRWLockShared(&cache.Lock);
+            return getter;
+        }
+
+        void CacheEnumGetter(std::wstring const& className, EnumGetter getter) noexcept
+        {
+            auto& cache = GetEnumGetterCache();
+            AcquireSRWLockExclusive(&cache.Lock);
+            try { cache.ByClassName.insert_or_assign(className, getter); } catch (...) {}
+            ReleaseSRWLockExclusive(&cache.Lock);
+        }
+
+        void StoreEnumUnsigned(EnumValue& value, uint64_t raw) noexcept
+        {
+            if (raw > static_cast<uint64_t>((std::numeric_limits<int64_t>::max)()))
+            {
+                value.IsUnsigned = true;
+                value.Unsigned = raw;
+            }
+            else
+            {
+                value.Signed = static_cast<int64_t>(raw);
+            }
+        }
+
+        // Throws when the box does not answer getter.
+        void ReadEnumValue(winrt::Windows::Foundation::IPropertyValue const& propertyValue, EnumGetter getter, EnumValue& value)
+        {
+            switch (getter)
+            {
+            case EnumGetter::Int32: value.Signed = propertyValue.GetInt32(); break;
+            case EnumGetter::UInt32: StoreEnumUnsigned(value, propertyValue.GetUInt32()); break;
+            case EnumGetter::Int64: value.Signed = propertyValue.GetInt64(); break;
+            case EnumGetter::UInt64: StoreEnumUnsigned(value, propertyValue.GetUInt64()); break;
+            default: throw winrt::hresult_not_implemented();
+            }
+        }
+
+        bool TryReadEnumValue(winrt::Windows::Foundation::IPropertyValue const& propertyValue, EnumGetter getter, EnumValue& value) noexcept
+        {
+            try
+            {
+                ReadEnumValue(propertyValue, getter, value);
+                return true;
+            }
+            catch (...)
+            {
+                value = {};
+                return false;
+            }
+        }
+
+        std::wstring ClassNameOf(winrt::Windows::Foundation::IPropertyValue const& propertyValue) noexcept
+        {
+            try { return std::wstring{ winrt::get_class_name(propertyValue) }; } catch (...) { return {}; }
+        }
+    }
+
+    bool EnumValue::TryGet(winrt::Windows::Foundation::IPropertyValue const& propertyValue, EnumValue& value, bool includeTypeName) noexcept
+    {
+        value = {};
+        try
+        {
+            if (propertyValue.Type() != winrt::Windows::Foundation::PropertyType::OtherType)
+            {
+                return false;
+            }
+        }
+        catch (...)
+        {
+            return false;
+        }
+
+        auto const vtable = VTableOf(propertyValue);
+        bool read = false;
+        if (auto const hinted = FindEnumGetterHint(vtable); hinted != EnumGetter::NotEnum)
+        {
+            read = TryReadEnumValue(propertyValue, hinted, value);
+        }
+
+        std::wstring className;
+        if (!read)
+        {
+            className = ClassNameOf(propertyValue);
+            auto known = className.empty() ? std::nullopt : FindCachedEnumGetter(className);
+            if (known == EnumGetter::NotEnum)
+            {
+                return false;
+            }
+            if (known && TryReadEnumValue(propertyValue, *known, value))
+            {
+                RememberEnumGetterHint(vtable, *known);
+                read = true;
+            }
+            else
+            {
+                // A box only answers the getter of its underlying type (C++/WinRT) or converts (CsWinRT). WinRT enums
+                // are Int32, flags UInt32; the 64-bit getters cover converting boxes of wider app enums.
+                EnumGetter found = EnumGetter::NotEnum;
+                for (auto const getter : { EnumGetter::Int32, EnumGetter::UInt32, EnumGetter::Int64, EnumGetter::UInt64 })
+                {
+                    if (TryReadEnumValue(propertyValue, getter, value))
+                    {
+                        found = getter;
+                        break;
+                    }
+                }
+                if (!className.empty())
+                {
+                    CacheEnumGetter(className, found);
+                }
+                if (found == EnumGetter::NotEnum)
+                {
+                    return false;
+                }
+                RememberEnumGetterHint(vtable, found);
+                read = true;
+            }
+        }
+
+        // Always the box's own class name, never inferred from the vtable hint: a boxing vtable can be shared by
+        // several enum types (CsWinRT, XAML), so only the getter, whose result is a value either way, is hinted.
+        // Caching the name per vtable (even confirmed once per pass) would merge equal values of two such types into
+        // one group identity, so identity keys pay one GetRuntimeClassName per enum key by design.
+        if (includeTypeName)
+        {
+            try
+            {
+                value.TypeName = className.empty() ? winrt::get_class_name(propertyValue) : winrt::hstring{ className };
+            }
+            catch (...) {}
+        }
+        return true;
+    }
+
+    int EnumValue::Compare(EnumValue const& a, EnumValue const& b) noexcept
+    {
+        if (a.IsUnsigned != b.IsUnsigned)
+        {
+            // Only values above INT64_MAX are held unsigned.
+            return a.IsUnsigned ? 1 : -1;
+        }
+        if (a.IsUnsigned)
+        {
+            return a.Unsigned < b.Unsigned ? -1 : (a.Unsigned > b.Unsigned ? 1 : 0);
+        }
+        return a.Signed < b.Signed ? -1 : (a.Signed > b.Signed ? 1 : 0);
     }
 
     bool ValueKey::TryGetStablePropertyKey(
@@ -870,715 +1141,5 @@ namespace ShapingHelpers
         // ran out of memory is tagged already (Count, GetAtUnchecked).
         if (m_callerOwned && winrt::to_hresult() != E_OUTOFMEMORY) { RethrowAsCallerError(c_callerDataFault); }
         throw;
-    }
-
-    void ApplyPredicateFilter(
-        std::vector<winrt::IInspectable>& items,
-        std::function<bool(winrt::IInspectable const& item)> const& predicate,
-        SwallowedFaults* contained)
-    {
-        if (!predicate)
-        {
-            return;
-        }
-
-        std::vector<winrt::IInspectable> kept;
-        kept.reserve(items.size());
-        for (auto const& item : items)
-        {
-            bool keep = false;
-            try
-            {
-                keep = predicate(item);
-            }
-            catch (...)
-            {
-                if (contained) { contained->Note(); }
-                keep = false;
-            }
-
-            if (keep)
-            {
-                kept.push_back(item);
-            }
-        }
-        items = std::move(kept);
-    }
-
-    void StableSortByKeys(
-        std::vector<winrt::IInspectable>& items,
-        size_t axisCount,
-        std::function<winrt::IInspectable(winrt::IInspectable const& item, size_t axisIndex)> const& extractKey,
-        std::function<winrt::SortDirection(size_t axisIndex)> const& axisDirection)
-    {
-        if (axisCount == 0 || items.size() < 2)
-        {
-            return;
-        }
-
-        // Decorate-sort-undecorate: extract each item's keys once up front (key extraction can be
-        // O(reflection)), then run a cheap stable_sort over an index permutation. stable_sort
-        // preserves the relative order of equal-key items (indices start in original order).
-        //
-        // The decoration is held as flat row-major arrays rather than a per-row struct of three
-        // vectors: at 100k rows the latter is ~300k separate heap allocations before the sort even
-        // starts, which dominates the sort itself.
-        //
-        // Reference keys fall through to a ToString-based tiebreak that may call app code.
-        // FallbackKeys materializes it once here so the comparator stays cheap and, more
-        // importantly, sees a frozen key set — a non-deterministic app ToString would otherwise
-        // break the strict-weak-ordering precondition of stable_sort. The entry is empty (and its
-        // HasFallbackKey flag false) for IPropertyValue keys, which never reach that tiebreak.
-        const size_t n = items.size();
-        std::vector<winrt::IInspectable> keys(n * axisCount);
-        std::vector<winrt::hstring> fallbackKeys(n * axisCount);
-        std::vector<char> hasFallbackKey(n * axisCount, 0);
-
-        for (size_t i = 0; i < n; ++i)
-        {
-            const size_t rowBase = i * axisCount;
-            for (size_t s = 0; s < axisCount; ++s)
-            {
-                auto key = extractKey(items[i], s);
-                const bool needsFallback = ValueComparer::UsesFallbackKey(key);
-                if (needsFallback)
-                {
-                    fallbackKeys[rowBase + s] = ValueKey::ToString(key);
-                }
-                hasFallbackKey[rowBase + s] = needsFallback ? 1 : 0;
-                keys[rowBase + s] = std::move(key);
-            }
-        }
-
-        std::vector<size_t> order(n);
-        for (size_t i = 0; i < n; ++i)
-        {
-            order[i] = i;
-        }
-
-        std::stable_sort(order.begin(), order.end(),
-            [&](size_t a, size_t b)
-            {
-                const size_t aBase = a * axisCount;
-                const size_t bBase = b * axisCount;
-                for (size_t s = 0; s < axisCount; ++s)
-                {
-                    const int cmp = ValueComparer::Compare(
-                        keys[aBase + s],
-                        keys[bBase + s],
-                        hasFallbackKey[aBase + s] ? &fallbackKeys[aBase + s] : nullptr,
-                        hasFallbackKey[bBase + s] ? &fallbackKeys[bBase + s] : nullptr);
-                    if (cmp != 0)
-                    {
-                        return axisDirection(s) == winrt::SortDirection::Ascending ? (cmp < 0) : (cmp > 0);
-                    }
-                }
-                return false;
-            });
-
-        std::vector<winrt::IInspectable> sorted;
-        sorted.reserve(n);
-        for (auto const index : order)
-        {
-            sorted.push_back(items[index]);
-        }
-        items = std::move(sorted);
-    }
-
-    bool BucketizeToGroups(
-        std::vector<winrt::IInspectable> const& items,
-        std::function<winrt::IInspectable(winrt::IInspectable const& item)> const& resolveKey,
-        std::function<bool(winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason)> const& resolveIdentity,
-        std::function<bool(winrt::IInspectable const& existingKey, winrt::IInspectable const& newKey)> const& keysConsideredEqual,
-        std::vector<KeyedBucket>& outBuckets,
-        wchar_t const*& rejectReason)
-    {
-        outBuckets.clear();
-        // identity string -> index into outBuckets, so first-seen group order is preserved by
-        // outBuckets itself (no separate order vector needed).
-        std::unordered_map<winrt::hstring, size_t> indexByIdentity;
-
-        for (auto const& item : items)
-        {
-            winrt::IInspectable key = resolveKey ? resolveKey(item) : winrt::IInspectable{ nullptr };
-
-            winrt::hstring identity;
-            wchar_t const* reason = nullptr;
-            if (!resolveIdentity || !resolveIdentity(key, identity, reason))
-            {
-                rejectReason = reason;
-                return false;
-            }
-
-            auto it = indexByIdentity.find(identity);
-            if (it == indexByIdentity.end())
-            {
-                indexByIdentity.emplace(identity, outBuckets.size());
-                outBuckets.push_back(KeyedBucket{ key, identity, std::vector<winrt::IInspectable>{ item } });
-            }
-            else
-            {
-                auto& bucket = outBuckets[it->second];
-                // A genuine identity COLLISION (two logically-different keys mapping to the same
-                // identity string) fails the bucketization; keysConsideredEqual lets the adapter
-                // treat intentional shared identities (e.g. an app-supplied identity selector) as
-                // the same group instead.
-                if (keysConsideredEqual && !keysConsideredEqual(bucket.Key, key))
-                {
-                    rejectReason = L"duplicate group identity";
-                    return false;
-                }
-                bucket.Items.push_back(item);
-            }
-        }
-
-        return true;
-    }
-
-    uint32_t UpperBoundInsertIndex(
-        uint32_t count,
-        std::function<int(uint32_t existingIndex)> const& compareNewToExisting)
-    {
-        uint32_t lo = 0;
-        uint32_t hi = count;
-        while (lo < hi)
-        {
-            const uint32_t mid = lo + (hi - lo) / 2;
-            if (compareNewToExisting(mid) < 0)
-            {
-                hi = mid;
-            }
-            else
-            {
-                lo = mid + 1;
-            }
-        }
-        return lo;
-    }
-
-    int32_t CustomSortRankAdapter::SafeCompare(
-        winrt::IInspectable const& left,
-        winrt::IInspectable const& right) const
-    {
-        if (!m_comparer)
-        {
-            return 0;
-        }
-
-        try
-        {
-            const auto result = m_comparer(left, right);
-            return result < 0 ? -1 : (result > 0 ? 1 : 0);
-        }
-        catch (...)
-        {
-            m_swallowedFaults.Note();
-            return 0;
-        }
-    }
-
-    bool CustomSortRankAdapter::IndexComesBefore(
-        std::vector<winrt::IInspectable> const& rows,
-        uint64_t generation,
-        size_t leftIndex,
-        size_t rightIndex,
-        bool& staleState) const
-    {
-        if (leftIndex == rightIndex)
-        {
-            return false;
-        }
-
-        const int32_t comparison = SafeCompare(rows[leftIndex], rows[rightIndex]);
-        if (m_generation != generation)
-        {
-            staleState = true;
-            return false;
-        }
-        if (comparison != 0)
-        {
-            return comparison < 0;
-        }
-
-        // Equal keys keep source order, which is what makes the sort stable.
-        return leftIndex < rightIndex;
-    }
-
-    bool CustomSortRankAdapter::StableMergeSortOrder(
-        std::vector<size_t>& order,
-        std::vector<winrt::IInspectable> const& rows,
-        uint64_t generation) const
-    {
-        order.resize(rows.size());
-        std::iota(order.begin(), order.end(), size_t{ 0 });
-        if (order.size() < 2)
-        {
-            return true;
-        }
-
-        std::vector<size_t> scratch(order.size());
-        for (size_t width = 1; width < order.size(); width *= 2)
-        {
-            for (size_t lo = 0; lo < order.size(); lo += 2 * width)
-            {
-                const size_t mid = std::min(lo + width, order.size());
-                const size_t hi = std::min(lo + 2 * width, order.size());
-                size_t left = lo;
-                size_t right = mid;
-                size_t out = lo;
-                while (left < mid && right < hi)
-                {
-                    bool staleState = false;
-                    const bool takeRight = IndexComesBefore(rows, generation, order[right], order[left], staleState);
-                    if (staleState)
-                    {
-                        return false;
-                    }
-                    scratch[out++] = takeRight ? order[right++] : order[left++];
-                }
-                while (left < mid)
-                {
-                    scratch[out++] = order[left++];
-                }
-                while (right < hi)
-                {
-                    scratch[out++] = order[right++];
-                }
-            }
-            order.swap(scratch);
-        }
-
-        return true;
-    }
-
-    void CustomSortRankAdapter::ClearRanks()
-    {
-        ++m_generation;
-        m_ranks.clear();
-        m_rankByIdentity.clear();
-        m_evicted.clear();
-        m_rerankAllPending = false;
-    }
-
-    void* CustomSortRankAdapter::IdentityOf(winrt::IInspectable const& item)
-    {
-        // The entry's Item keeps the object alive, so the raw identity stays valid while ranked.
-        auto const unknown = item.try_as<::IUnknown>();
-        return unknown ? unknown.get() : nullptr;
-    }
-
-    void CustomSortRankAdapter::AddRanked(winrt::IInspectable const& item, int32_t rank)
-    {
-        InsertRanked(m_ranks.size(), item, rank);
-    }
-
-    void CustomSortRankAdapter::InsertRanked(size_t position, winrt::IInspectable const& item, int32_t rank)
-    {
-        void* const identity = IdentityOf(item);
-        m_ranks.insert(m_ranks.begin() + position, RankEntry{ item, rank, identity });
-        if (identity)
-        {
-            m_rankByIdentity[identity] = rank;
-        }
-    }
-
-    void CustomSortRankAdapter::Reset()
-    {
-        m_comparer = nullptr;
-        ClearRanks();
-    }
-
-    void CustomSortRankAdapter::InvalidateRanks() noexcept
-    {
-        if (m_comparer && !m_ranks.empty())
-        {
-            m_rerankAllPending = true;
-        }
-    }
-
-    void CustomSortRankAdapter::Forget(winrt::IInspectable const& item)
-    {
-        if (m_comparerActive || !item)
-        {
-            return;
-        }
-
-        void* const identity = IdentityOf(item);
-        auto const isItem = [&](winrt::IInspectable const& candidate, void* candidateIdentity)
-        {
-            return candidate == item || (identity && candidateIdentity == identity);
-        };
-        m_ranks.erase(
-            std::remove_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry) { return isItem(entry.Item, entry.Identity); }),
-            m_ranks.end());
-        m_evicted.erase(
-            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return isItem(evicted, IdentityOf(evicted)); }),
-            m_evicted.end());
-        if (identity)
-        {
-            m_rankByIdentity.erase(identity);
-        }
-    }
-
-    void CustomSortRankAdapter::RetainOnly(std::vector<winrt::IInspectable> const& liveRows)
-    {
-        if (m_comparerActive || (m_ranks.empty() && m_evicted.empty()))
-        {
-            return;
-        }
-
-        std::unordered_set<void*> live;
-        live.reserve(liveRows.size());
-        for (auto const& row : liveRows)
-        {
-            if (void* const identity = row ? IdentityOf(row) : nullptr)
-            {
-                live.insert(identity);
-            }
-        }
-        auto const isLive = [&](void* identity) { return identity && live.find(identity) != live.end(); };
-
-        m_ranks.erase(
-            std::remove_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry)
-            {
-                if (isLive(entry.Identity))
-                {
-                    return false;
-                }
-                if (entry.Identity)
-                {
-                    m_rankByIdentity.erase(entry.Identity);
-                }
-                return true;
-            }),
-            m_ranks.end());
-        m_evicted.erase(
-            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return !isLive(IdentityOf(evicted)); }),
-            m_evicted.end());
-    }
-
-    void CustomSortRankAdapter::Rank(
-        PairwiseComparer const& comparer,
-        std::vector<winrt::IInspectable> const& rows)
-    {
-        // Set the flag before ClearRanks so a reentrant path cannot observe a torn intermediate.
-        if (m_comparerActive)
-        {
-            MUX_ASSERT_MSG(false, "TableView custom sort comparer re-entered rank population. A sort predicate must be a pure function of its inputs.");
-            return;
-        }
-        m_comparerActive = true;
-        auto comparerGuard = wil::scope_exit([this]() noexcept
-        {
-            m_comparerActive = false;
-        });
-
-        m_comparer = comparer;
-        ClearRanks();
-
-        if (!m_comparer)
-        {
-            return;
-        }
-        PopulateRanks(rows, m_generation);
-    }
-
-    void CustomSortRankAdapter::PopulateRanks(
-        std::vector<winrt::IInspectable> const& rows,
-        uint64_t generation)
-    {
-        std::vector<size_t> order;
-        if (!StableMergeSortOrder(order, rows, generation))
-        {
-            return;
-        }
-
-        // Rank, not position: equal items must share a rank or the projection would impose an
-        // arbitrary order on a tie the comparer called equal.
-        int32_t rank = 0;
-        for (size_t i = 0; i < order.size(); ++i)
-        {
-            if (i > 0)
-            {
-                const int32_t comparison = SafeCompare(rows[order[i - 1]], rows[order[i]]);
-                if (m_generation != generation)
-                {
-                    return;
-                }
-                if (comparison != 0)
-                {
-                    ++rank;
-                }
-            }
-
-            AddRanked(rows[order[i]], rank);
-        }
-    }
-
-    winrt::IInspectable CustomSortRankAdapter::KeyFor(winrt::IInspectable const& item)
-    {
-        if (!m_comparer)
-        {
-            return nullptr;
-        }
-
-        if (m_comparerActive)
-        {
-            MUX_ASSERT_MSG(false, "TableView custom sort comparer re-entered the sort infrastructure. A sort predicate must be a pure function of its inputs.");
-            return nullptr;
-        }
-        m_comparerActive = true;
-        auto comparerGuard = wil::scope_exit([this]() noexcept
-        {
-            m_comparerActive = false;
-        });
-
-        if (m_rerankAllPending || !m_evicted.empty())
-        {
-            PlaceEvicted();
-        }
-
-        const auto generation = m_generation;
-
-        if (auto unknown = item.try_as<::IUnknown>())
-        {
-            auto const found = m_rankByIdentity.find(unknown.get());
-            if (found != m_rankByIdentity.end())
-            {
-                return winrt::box_value(found->second);
-            }
-        }
-
-        // A row the rank pass never saw - added after the sort was applied.
-        int32_t rank = 0;
-        bool tied = false;
-        if (!PlaceUnranked(item, generation, rank, tied))
-        {
-            return nullptr;
-        }
-        return winrt::box_value(rank);
-    }
-
-    bool CustomSortRankAdapter::PlaceUnranked(
-        winrt::IInspectable const& item,
-        uint64_t generation,
-        int32_t& rank,
-        bool& tied)
-    {
-        // m_ranks is ordered by rank, so a binary search finds the slot in O(log n) comparer calls;
-        // this can run inside the app's PropertyChanged setter. Find the first entry not below item.
-        rank = 0;
-        tied = false;
-        size_t low = 0;
-        size_t high = m_ranks.size();
-        bool highIsEqual = false;
-        while (low < high)
-        {
-            const size_t mid = low + (high - low) / 2;
-            // Copied: the comparer is app code and must not see a reference into m_ranks.
-            auto const entryItem = m_ranks[mid].Item;
-            const int32_t comparison = SafeCompare(entryItem, item);
-            if (m_generation != generation)
-            {
-                return false;
-            }
-            if (comparison < 0)
-            {
-                low = mid + 1;
-            }
-            else
-            {
-                high = mid;
-                highIsEqual = comparison == 0;
-            }
-        }
-
-        if (low < m_ranks.size() && highIsEqual)
-        {
-            rank = m_ranks[low].Rank;
-            tied = true;
-            InsertRanked(low, item, rank);
-            return true;
-        }
-
-        rank = low > 0 ? m_ranks[low - 1].Rank + 1 : 0;
-        for (size_t i = low; i < m_ranks.size(); ++i)
-        {
-            auto& entry = m_ranks[i];
-            ++entry.Rank;
-            if (entry.Identity)
-            {
-                m_rankByIdentity[entry.Identity] = entry.Rank;
-            }
-        }
-
-        InsertRanked(low, item, rank);
-        return true;
-    }
-
-    bool CustomSortRankAdapter::Reposition(winrt::IInspectable const& item, bool deferPlacement)
-    {
-        // A comparer call that mutates its inputs must not reshuffle the ranks under the pass
-        // that is reading them.
-        if (!m_comparer || m_comparerActive || !item)
-        {
-            return false;
-        }
-
-        if (deferPlacement)
-        {
-            // A full re-rank is already due, and it re-orders this item too.
-            if (m_rerankAllPending)
-            {
-                return false;
-            }
-
-            int32_t oldRank = 0;
-            bool wasShared = false;
-            EvictEntry(item, oldRank, wasShared);
-            m_rerankAllPending = ShouldRerankAll();
-            return false;
-        }
-
-        m_comparerActive = true;
-        auto comparerGuard = wil::scope_exit([this]() noexcept
-        {
-            m_comparerActive = false;
-        });
-
-        // Items left over from a coalesced batch whose reshape never asked for a key; settle them
-        // first so the comparison below is against a complete ranking.
-        const bool hadPending = m_rerankAllPending || !m_evicted.empty();
-        if (hadPending)
-        {
-            PlaceEvicted();
-        }
-
-        int32_t oldRank = 0;
-        bool wasShared = false;
-        if (!EvictEntry(item, oldRank, wasShared))
-        {
-            return hadPending;
-        }
-        m_evicted.pop_back();
-
-        const auto generation = m_generation;
-        int32_t newRank = 0;
-        bool tied = false;
-        if (!PlaceUnranked(item, generation, newRank, tied))
-        {
-            return true;
-        }
-
-        // The item's own key is not enough: an item that leaves a tie for a slot just below its
-        // old partner keeps its rank while the partner's moves up. Every other row keeps its key
-        // only when the item lands on the same rank the same way it left it.
-        return hadPending || newRank != oldRank || tied != wasShared;
-    }
-
-    bool CustomSortRankAdapter::EvictEntry(
-        winrt::IInspectable const& item,
-        int32_t& oldRank,
-        bool& wasShared)
-    {
-
-        void* const identity = IdentityOf(item);
-        auto const found = std::find_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry)
-        {
-            return entry.Item == item || (identity && entry.Identity == identity);
-        });
-        if (found == m_ranks.end())
-        {
-            return false;
-        }
-
-        const int32_t rank = found->Rank;
-        oldRank = rank;
-        m_ranks.erase(found);
-        if (identity)
-        {
-            m_rankByIdentity.erase(identity);
-        }
-
-        // Keep the ranks dense: re-placing an item that did not move must hand every row back the
-        // key it had, or the reshape would see a change where there was none.
-        const bool rankStillHeld = std::any_of(m_ranks.begin(), m_ranks.end(), [rank](RankEntry const& entry)
-        {
-            return entry.Rank == rank;
-        });
-        wasShared = rankStillHeld;
-        if (!rankStillHeld)
-        {
-            for (auto& entry : m_ranks)
-            {
-                if (entry.Rank > rank)
-                {
-                    --entry.Rank;
-                    if (entry.Identity)
-                    {
-                        m_rankByIdentity[entry.Identity] = entry.Rank;
-                    }
-                }
-            }
-        }
-
-        m_evicted.push_back(item);
-        return true;
-    }
-
-    bool CustomSortRankAdapter::ShouldRerankAll() const noexcept
-    {
-        // Re-placing costs about log n comparer calls plus an O(n) rank shift per item; a full
-        // re-rank about n log n.
-        size_t log2Count = 0;
-        for (size_t remaining = m_ranks.size(); remaining > 0; remaining >>= 1)
-        {
-            ++log2Count;
-        }
-        return m_evicted.size() > log2Count;
-    }
-
-    void CustomSortRankAdapter::PlaceEvicted()
-    {
-        if (m_rerankAllPending || ShouldRerankAll())
-        {
-            RerankAll();
-            return;
-        }
-
-        auto evicted = std::move(m_evicted);
-        m_evicted.clear();
-        const auto generation = m_generation;
-        for (auto const& item : evicted)
-        {
-            int32_t rank = 0;
-            bool tied = false;
-            if (!PlaceUnranked(item, generation, rank, tied))
-            {
-                return;
-            }
-        }
-    }
-
-    void CustomSortRankAdapter::RerankAll()
-    {
-        std::stable_sort(m_ranks.begin(), m_ranks.end(), [](RankEntry const& left, RankEntry const& right)
-        {
-            return left.Rank < right.Rank;
-        });
-
-        std::vector<winrt::IInspectable> rows;
-        rows.reserve(m_ranks.size() + m_evicted.size());
-        for (auto const& entry : m_ranks)
-        {
-            rows.push_back(entry.Item);
-        }
-        for (auto const& item : m_evicted)
-        {
-            rows.push_back(item);
-        }
-
-        ClearRanks();
-        PopulateRanks(rows, m_generation);
     }
 }

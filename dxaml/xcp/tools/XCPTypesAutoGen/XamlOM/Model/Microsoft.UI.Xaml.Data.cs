@@ -522,6 +522,7 @@ namespace Microsoft.UI.Xaml.Data
     [CodeGen(partial: true)]
     [NativeName("CCollectionViewSource")]
     [Guids(ClassGuid = "a7dfaf16-d646-4018-99b6-a35729153b5f")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public sealed class CollectionViewSource
      : Microsoft.UI.Xaml.DependencyObject
     {
@@ -554,7 +555,479 @@ namespace Microsoft.UI.Xaml.Data
             set;
         }
 
+        // Opt-in shaping; see docs\design-notes\CollectionViewSourceShaping-POC.md. The descriptor collections are
+        // read-only DependencyProperties so markup can fill them (<CollectionViewSource.SortDescriptions>), like
+        // ItemsControl.GroupStyle.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        [CollectionType(CollectionKind.Observable, NewCodeGenCollectionType = typeof(Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription>))]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions
+        {
+            get;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        [CollectionType(CollectionKind.Observable, NewCodeGenCollectionType = typeof(Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.GroupDescription>))]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.GroupDescription> GroupDescriptions
+        {
+            get;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort
+        {
+            get;
+            set;
+        }
+
+        // WPF's CollectionViewSource.Culture (a DependencyProperty), as a BCP-47 language tag.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        public Windows.Foundation.String Culture
+        {
+            get;
+            set;
+        }
+
+        // WPF's CollectionViewSource.IsLive*Requested (DependencyProperties) and Live*Properties, applied to View's
+        // ICollectionViewLiveShaping.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [TypeTable(IsExcludedFromCore = true)]
+        public Windows.Foundation.Boolean IsLiveSortingRequested
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [TypeTable(IsExcludedFromCore = true)]
+        public Windows.Foundation.Boolean IsLiveFilteringRequested
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [TypeTable(IsExcludedFromCore = true)]
+        public Windows.Foundation.Boolean IsLiveGroupingRequested
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        [CollectionType(CollectionKind.Observable, NewCodeGenCollectionType = typeof(Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String>))]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveSortingProperties
+        {
+            get;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        [CollectionType(CollectionKind.Observable, NewCodeGenCollectionType = typeof(Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String>))]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveFilteringProperties
+        {
+            get;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        [CollectionType(CollectionKind.Observable, NewCodeGenCollectionType = typeof(Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String>))]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveGroupingProperties
+        {
+            get;
+        }
+
+        // WPF's CollectionViewSource.Filter event. As in WPF the delegate form is the view's Filter
+        // (ICollectionViewShaping.Filter); the CollectionViewSource has only the event.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.Idl)]
+        [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+        public event Microsoft.UI.Xaml.Data.FilterEventHandler Filter;
+
         public CollectionViewSource() { }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public void Refresh()
+        {
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public Windows.Foundation.IClosable DeferRefresh()
+        {
+            return null;
+        }
+    }
+
+    // WPF's System.ComponentModel.ListSortDirection, renamed like CollectionViewStringComparison: a
+    // Microsoft.UI.Xaml.Data.CollectionViewSortDirection would be ambiguous in every C# file that also uses System.ComponentModel
+    // (INotifyPropertyChanged).
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [DXamlIdlGroup("coretypes2")]
+    [TypeTable(IsExcludedFromCore = true)]
+    public enum CollectionViewSortDirection
+    {
+        Ascending = 0,
+        Descending = 1,
+    }
+
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(CodeGenLevel.LookupOnly)]
+    [ReturnTypeParameterName("accepted")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    public delegate Windows.Foundation.Boolean CollectionViewFilter(Windows.Foundation.Object item);
+
+    // WPF's ListCollectionView.CustomSort (IComparer) as a delegate: negative, zero or positive as x sorts before, with or after y.
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(CodeGenLevel.LookupOnly)]
+    [ReturnTypeParameterName("result")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    public delegate Windows.Foundation.Int32 CollectionViewComparer(Windows.Foundation.Object x, Windows.Foundation.Object y);
+
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(CodeGenLevel.LookupOnly)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    public delegate void FilterEventHandler(Windows.Foundation.Object sender, Microsoft.UI.Xaml.Data.FilterEventArgs e);
+
+    [DXamlIdlGroup("coretypes2")]
+    [TypeFlags(IsCreateableFromXAML = false)]
+    [FrameworkTypePattern]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Guids(ClassGuid = "4c2e9d39-8a3b-4b8e-9f43-5a0c2f7e1d61")]
+    public sealed class FilterEventArgs
+        : Windows.Foundation.Object
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.Object Item
+        {
+            get;
+            internal set;
+        }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.Boolean Accepted
+        {
+            get;
+            set;
+        }
+
+        internal FilterEventArgs() { }
+    }
+
+    // WPF's System.StringComparison, for PropertyGroupDescription.StringComparison.
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [DXamlIdlGroup("coretypes2")]
+    [TypeTable(IsExcludedFromCore = true)]
+    public enum CollectionViewStringComparison
+    {
+        CurrentCulture = 0,
+        CurrentCultureIgnoreCase = 1,
+        InvariantCulture = 2,
+        InvariantCultureIgnoreCase = 3,
+        Ordinal = 4,
+        OrdinalIgnoreCase = 5,
+    }
+
+    // Optional capability of an ICollectionView (like ICollectionViewFactory or ISupportIncrementalLoading):
+    // a view a CollectionViewSource shapes forwards these to the owning CollectionViewSource.
+    [DXamlIdlGroup("coretypes2")]
+    [HideFromOldCodeGen]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public interface ICollectionViewShaping
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(0)]
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(1)]
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.GroupDescription> GroupDescriptions { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(2)]
+        Microsoft.UI.Xaml.Data.CollectionViewFilter Filter { get; set; }
+
+        [OrderHint(3)]
+        void Refresh();
+
+        [OrderHint(4)]
+        Windows.Foundation.IClosable DeferRefresh();
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(5)]
+        Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort { get; set; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(6)]
+        Windows.Foundation.Object SourceCollection { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(7)]
+        Windows.Foundation.String Culture { get; set; }
+
+        // WPF's ICollectionView.CanSort / CanFilter / CanGroup: which of the rules above the view applies.
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(8)]
+        Windows.Foundation.Boolean CanSort { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(9)]
+        Windows.Foundation.Boolean CanFilter { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(10)]
+        Windows.Foundation.Boolean CanGroup { get; }
+    }
+
+    // What WPF's CollectionViewGroup adds to ICollectionViewGroup for the groups of an ICollectionView: ItemCount and
+    // IsBottomLevel. WPF's Name and Items are ICollectionViewGroup.Group and GroupItems (and, for bindings, the group's
+    // Name and Items custom properties). An interface rather than WPF's abstract class: the groups are created by the
+    // view, and an app's view can implement it.
+    [Implements(typeof(Microsoft.UI.Xaml.Data.ICollectionViewGroup))]
+    [DXamlIdlGroup("coretypes2")]
+    [HideFromOldCodeGen]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public interface ICollectionViewGroup2
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(0)]
+        Windows.Foundation.Int32 ItemCount { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(1)]
+        Windows.Foundation.Boolean IsBottomLevel { get; }
+    }
+
+    // WPF's ICollectionViewLiveShaping: re-sort, re-filter and re-group an item when one of its properties changes.
+    [DXamlIdlGroup("coretypes2")]
+    [HideFromOldCodeGen]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public interface ICollectionViewLiveShaping
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(0)]
+        Windows.Foundation.Boolean CanChangeLiveSorting { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(1)]
+        Windows.Foundation.Boolean CanChangeLiveFiltering { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(2)]
+        Windows.Foundation.Boolean CanChangeLiveGrouping { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(3)]
+        Windows.Foundation.Boolean? IsLiveSorting { get; set; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(4)]
+        Windows.Foundation.Boolean? IsLiveFiltering { get; set; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(5)]
+        Windows.Foundation.Boolean? IsLiveGrouping { get; set; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(6)]
+        Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveSortingProperties { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(7)]
+        Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveFilteringProperties { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(8)]
+        Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveGroupingProperties { get; }
+    }
+
+    // WPF's SortDescription. WPF's is a struct; a WinRT struct cannot be created and filled in markup, so this is a
+    // DependencyObject (like Setter). As in WPF it is sealed once a SortDescriptions collection holds it: a change then throws.
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(partial: true)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Guids(ClassGuid = "cb728e57-5e5e-48ee-8eb9-ec1fde42d732")]
+    public sealed class SortDescription
+        : Microsoft.UI.Xaml.DependencyObject
+    {
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        public Windows.Foundation.String PropertyName
+        {
+            get;
+            set;
+        }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        public Microsoft.UI.Xaml.Data.CollectionViewSortDirection Direction
+        {
+            get;
+            set;
+        }
+
+        public SortDescription() { }
+
+        [FactoryMethodName("CreateInstanceWithPropertyNameAndDirection")]
+        public SortDescription([Optional] Windows.Foundation.String propertyName, Microsoft.UI.Xaml.Data.CollectionViewSortDirection direction) { }
+    }
+
+    // WPF's System.ComponentModel.GroupDescription: how a level of groups divides items. Derive from it and override
+    // GroupNameFromItemCore (and NamesMatchCore) for custom grouping; PropertyGroupDescription groups by a property.
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(partial: true)]
+    [FrameworkTypePattern]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Guids(ClassGuid = "5a0f4f7e-2a41-4f3e-9b8d-6c1e7d2f9a43")]
+    public abstract class GroupDescription
+        : Microsoft.UI.Xaml.DependencyObject
+    {
+        protected GroupDescription() { }
+
+        // WPF's GroupDescription.GroupNames: groups that exist, in this order and before the others, even when empty. A
+        // read-only DependencyProperty, so markup can fill it.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        [CollectionType(CollectionKind.Observable, NewCodeGenCollectionType = typeof(Windows.Foundation.Collections.IObservableVector<Windows.Foundation.Object>))]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Windows.Foundation.Object> GroupNames
+        {
+            get;
+        }
+
+        // WPF's GroupDescription.SortDescriptions: orders the groups at this level by their properties (Name, ItemCount).
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        [CollectionType(CollectionKind.Observable, NewCodeGenCollectionType = typeof(Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription>))]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions
+        {
+            get;
+        }
+
+        // WPF's GroupDescription.CustomSort; compares two group names.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort
+        {
+            get;
+            set;
+        }
+
+        // WPF's GroupDescription.GroupNameFromItem: the name of the group the item belongs to at this level. culture is the
+        // view's Culture (empty when unset). Public, so any ICollectionView can group by a description; it calls
+        // GroupNameFromItemCore, which a derived class overrides (the AutomationPeer pattern).
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public Windows.Foundation.Object GroupNameFromItem([Optional] Windows.Foundation.Object item, Windows.Foundation.Int32 level, [Optional] Windows.Foundation.String culture)
+        {
+            return default(Windows.Foundation.Object);
+        }
+
+        // WPF's GroupDescription.NamesMatch: whether an item whose group name is itemName belongs to the group groupName.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public Windows.Foundation.Boolean NamesMatch([Optional] Windows.Foundation.Object groupName, [Optional] Windows.Foundation.Object itemName)
+        {
+            return default(Windows.Foundation.Boolean);
+        }
+
+        protected virtual Windows.Foundation.Object GroupNameFromItemCore([Optional] Windows.Foundation.Object item, Windows.Foundation.Int32 level, [Optional] Windows.Foundation.String culture)
+        {
+            return default(Windows.Foundation.Object);
+        }
+
+        protected virtual Windows.Foundation.Boolean NamesMatchCore([Optional] Windows.Foundation.Object groupName, [Optional] Windows.Foundation.Object itemName)
+        {
+            return default(Windows.Foundation.Boolean);
+        }
+
+        // WPF's GroupDescription.OnPropertyChanged: a derived class whose grouping changed regroups the views that use it.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        protected void OnPropertyChanged([Optional] Microsoft.UI.Xaml.Data.PropertyChangedEventArgs e)
+        {
+        }
+    }
+
+    // WPF's PropertyGroupDescription: groups by a property path, optionally through a Converter.
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(partial: true)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Guids(ClassGuid = "b161bc24-b3b5-4e1a-93e7-4174c0db7990")]
+    public sealed class PropertyGroupDescription
+        : Microsoft.UI.Xaml.Data.GroupDescription
+    {
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        public Windows.Foundation.String PropertyName
+        {
+            get;
+            set;
+        }
+
+        // WPF's PropertyGroupDescription.Converter: maps the property value to the group name. Convert gets the level as
+        // its parameter and the view's Culture as its language, as in WPF.
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        public Microsoft.UI.Xaml.Data.IValueConverter Converter
+        {
+            get;
+            set;
+        }
+
+        // WPF's PropertyGroupDescription.StringComparison: how string group names match. Ordinal unless set.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        public Microsoft.UI.Xaml.Data.CollectionViewStringComparison StringComparison
+        {
+            get;
+            set;
+        }
+
+        public PropertyGroupDescription() { }
+
+        [FactoryMethodName("CreateInstanceWithPropertyName")]
+        public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName) { }
+
+        [FactoryMethodName("CreateInstanceWithConverter")]
+        public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName, [Optional] Microsoft.UI.Xaml.Data.IValueConverter converter) { }
+
+        [FactoryMethodName("CreateInstanceWithConverterAndStringComparison")]
+        public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName, [Optional] Microsoft.UI.Xaml.Data.IValueConverter converter, Microsoft.UI.Xaml.Data.CollectionViewStringComparison stringComparison) { }
     }
 
     [CodeGen(CodeGenLevel.CoreOnly)]

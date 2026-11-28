@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -20,7 +21,7 @@ using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 namespace TableViewSampleApp.Pages;
 
 // Template columns sort through SortMemberPath, by the value behind the control. Grouped, a sort
-// declared after GroupBy sorts within each group; one declared before it orders the groups too.
+// orders the rows within each group and the groups follow their first rows.
 public sealed partial class SortPage : SamplePageBase
 {
     private bool _isResorting;
@@ -37,11 +38,11 @@ public sealed partial class SortPage : SamplePageBase
     public SortPage()
     {
         // <snippet>
-        Source = TableViewSource.From(Teams);     // created once; reshaped in place, never rebuilt
+        Source = new CollectionViewSource { Source = Teams };     // created once; TableView shows its View
         InitializeComponent();
         // </snippet>
         TeamsTable.SelectionChanged += OnTeamsSelectionChanged;
-        InitializeSample(Status, Shaping.Attach(TeamsTable, Source, (row, key) => LeagueData.GroupKeyOf(row as LeagueTeam, key), LeagueData.ParentClub));
+        InitializeSample(Status, Shaping.Attach(TeamsTable, Source, LeagueData.GroupPathOf));
         TrackItems(Teams, OnTeamChanged);
 
         // A callback queued just before the page unloaded never runs; start clean on the next Loaded.
@@ -53,7 +54,7 @@ public sealed partial class SortPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Programmatic sort: one column at a time; a new sort replaces the previous one -------
@@ -147,13 +148,11 @@ public sealed partial class SortPage : SamplePageBase
             return false;
         }
 
-        // SortByColumn ignores a request for the sort already applied; re-declaring the same path on the
-        // source re-reads every key. That is a new declaration after any GroupBy, hence OnSortRedeclared.
+        // SortByColumn ignores a request for the sort already applied; Refresh() re-reads every key.
         _isResorting = true;
         try
         {
-            Source.Sort(SampleShaping.SortPathOf(column)!, column.SortDirection);
-            OnSortRedeclared();
+            Source.Refresh();
         }
         finally
         {

@@ -20,15 +20,12 @@
             HorizontalAlignment="Stretch">
             <ComboBoxItem Content="Flat" Tag="flat"/>
             <ComboBoxItem Content="Grouped" Tag="grouped"/>
-            <!-- Enabled once the page attaches a ParentRelation; otherwise disabled with the page's reason. -->
-            <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"/>
-            <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"/>
         </ComboBox>
         <ComboBox
             x:Name="GroupKeySelector"
             Header="Group key"
             IsEnabled="False"
-            AutomationProperties.HelpText="Available in the Grouped and Grouped hierarchy shaping modes."
+            AutomationProperties.HelpText="Available in the Grouped shaping mode."
             SelectionChanged="OnGroupKeyChanged"
             HorizontalAlignment="Stretch"/>
         <Button
@@ -37,7 +34,7 @@
             Click="OnExpandAllClick"
             IsEnabled="False"
             ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
-            AutomationProperties.HelpText="Available in every shaping mode except Flat."
+            AutomationProperties.HelpText="Available in the Grouped shaping mode."
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Center"/>
         <Button
@@ -46,10 +43,10 @@
             Click="OnCollapseAllClick"
             IsEnabled="False"
             ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
-            AutomationProperties.HelpText="Available in every shaping mode except Flat."
+            AutomationProperties.HelpText="Available in the Grouped shaping mode."
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Center"/>
         <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                   Text="Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat."/>
+                   Text="Group key, Expand all and Collapse all need the Grouped mode."/>
     </StackPanel>
 </UserControl>

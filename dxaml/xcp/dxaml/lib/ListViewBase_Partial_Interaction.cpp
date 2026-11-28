@@ -2440,8 +2440,12 @@ _Check_return_ HRESULT ListViewBase::GetGroupInformation(
     IFC(get_CollectionView(&spCollectionView));
     IFC(spCollectionView->get_CollectionGroups(&spCollectionGroups));
 
-    IFC(spCollectionGroups.As<wfc::IVector<IInspectable*>>(&spCollectionGroupsAsV));
-    IFC(spCollectionGroupsAsV->get_Size(&groupCount));
+    // A view can stop grouping in place, before the next measure updates IsGrouping.
+    if (spCollectionGroups)
+    {
+        IFC(spCollectionGroups.As<wfc::IVector<IInspectable*>>(&spCollectionGroupsAsV));
+        IFC(spCollectionGroupsAsV->get_Size(&groupCount));
+    }
 
     if (groupCount > groupIndex)
     {
@@ -2796,8 +2800,12 @@ _Check_return_ HRESULT ListViewBase::GetGroupCount(
     IFC(get_CollectionView(&spCollectionView));
     IFC(spCollectionView->get_CollectionGroups(&spCollectionGroups));
 
-    IFC(spCollectionGroups.As<wfc::IVector<IInspectable*>>(&spCollectionGroupsAsV));
-    IFC(spCollectionGroupsAsV->get_Size(&groupCount));
+    // A view can stop grouping in place, before the next measure updates IsGrouping.
+    if (spCollectionGroups)
+    {
+        IFC(spCollectionGroups.As<wfc::IVector<IInspectable*>>(&spCollectionGroupsAsV));
+        IFC(spCollectionGroupsAsV->get_Size(&groupCount));
+    }
 
     *pGroupCount = (INT)groupCount;
 

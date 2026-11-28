@@ -49,7 +49,7 @@ public sealed class Person : INotifyPropertyChanged
         set => Set(ref _lastName, value);
     }
 
-    // <snippet Groups Hierarchy>
+    // <snippet Groups>
     // The Name column binds FullName. Its setter lets page actions rename a person: the first word
     // becomes FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
     public string FullName
@@ -158,6 +158,9 @@ public sealed class Person : INotifyPropertyChanged
         get => _isActive;
         set => Set(ref _isActive, value);
     }
+
+    /// <summary>Group key for the Active/Inactive grouping.</summary>
+    public string ActiveStatus => _isActive ? "Active" : "Inactive";
 
     /// <summary>
     /// Optional photo as an <c>ms-appx:///</c> URI string, or null. Bind it only through

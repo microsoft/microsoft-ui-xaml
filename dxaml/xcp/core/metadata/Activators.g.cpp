@@ -1562,6 +1562,14 @@ HRESULT OnCoreCreateCollectionChange(_Outptr_ CDependencyObject **ppObject, _In_
 {
     RRETURN(CCollectionChange::Create(ppObject, pCreate));
 }
+HRESULT OnCoreCreateCollectionViewSortDirection(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CCollectionViewSortDirection::Create(ppObject, pCreate));
+}
+HRESULT OnCoreCreateCollectionViewStringComparison(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CCollectionViewStringComparison::Create(ppObject, pCreate));
+}
 HRESULT OnCoreCreateColorInterpolationMode(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
     RRETURN(CColorInterpolationMode::Create(ppObject, pCreate));

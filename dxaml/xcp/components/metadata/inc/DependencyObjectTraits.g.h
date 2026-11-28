@@ -287,6 +287,12 @@ struct DependencyObjectTraits<CGridLength>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::GridLength;
 };
+class CGroupDescription;
+template<>
+struct DependencyObjectTraits<CGroupDescription>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::GroupDescription;
+};
 class CGroupStyle;
 template<>
 struct DependencyObjectTraits<CGroupStyle>
@@ -622,6 +628,12 @@ template<>
 struct DependencyObjectTraits<CSize>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::Size;
+};
+class CSortDescription;
+template<>
+struct DependencyObjectTraits<CSortDescription>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::SortDescription;
 };
 class CSplitViewTemplateSettings;
 template<>
@@ -1360,6 +1372,12 @@ template<>
 struct DependencyObjectTraits<CPowerInterpolator>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::PowerEase;
+};
+class CPropertyGroupDescription;
+template<>
+struct DependencyObjectTraits<CPropertyGroupDescription>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::PropertyGroupDescription;
 };
 class CPVLStaggerFunction;
 template<>

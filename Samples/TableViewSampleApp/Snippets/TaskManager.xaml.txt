@@ -41,7 +41,7 @@
 <tv:TableView
     x:Name="ProcessTable"
     AutomationProperties.Name="Processes"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     CanUserReorderColumns="{x:Bind ReorderColumnsToggle.IsOn, Mode=OneWay}"
     SelectionMode="Single">
     <!-- SortMemberPath names the raw value behind each template; a cell is announced by its value. -->

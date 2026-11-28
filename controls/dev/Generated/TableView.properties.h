@@ -93,6 +93,10 @@ public:
 
     winrt::event_token ColumnReordered(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewColumnReorderedEventArgs> const& value);
     void ColumnReordered(winrt::event_token const& token);
+    winrt::event_token GroupCollapsed(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupCollapsedEventArgs> const& value);
+    void GroupCollapsed(winrt::event_token const& token);
+    winrt::event_token GroupExpanding(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupExpandingEventArgs> const& value);
+    void GroupExpanding(winrt::event_token const& token);
     winrt::event_token SelectionChanged(winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs> const& value);
     void SelectionChanged(winrt::event_token const& token);
     winrt::event_token Sorted(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs> const& value);
@@ -101,6 +105,8 @@ public:
     void Sorting(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewColumnReorderedEventArgs>> m_columnReorderedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupCollapsedEventArgs>> m_groupCollapsedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupExpandingEventArgs>> m_groupExpandingEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs>> m_selectionChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs>> m_sortedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortingEventArgs>> m_sortingEventSource;

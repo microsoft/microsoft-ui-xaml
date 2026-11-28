@@ -131,6 +131,13 @@ CDependencyProperty::GetDefaultValue(
     case KnownPropertyIndex::CalendarView_CalendarIdentifier:
     case KnownPropertyIndex::CalendarView_NumberOfWeeksInView:
     case KnownPropertyIndex::Hub_SectionHeaders:
+    case KnownPropertyIndex::CollectionViewSource_SortDescriptions:
+    case KnownPropertyIndex::CollectionViewSource_GroupDescriptions:
+    case KnownPropertyIndex::CollectionViewSource_LiveSortingProperties:
+    case KnownPropertyIndex::CollectionViewSource_LiveFilteringProperties:
+    case KnownPropertyIndex::CollectionViewSource_LiveGroupingProperties:
+    case KnownPropertyIndex::GroupDescription_SortDescriptions:
+    case KnownPropertyIndex::GroupDescription_GroupNames:
     case KnownPropertyIndex::ToggleSwitch_OnContent:
     case KnownPropertyIndex::ToggleSwitch_OffContent:
     {
@@ -482,6 +489,11 @@ CDependencyProperty::GetDefaultValue(
 
     case KnownPropertyIndex::Slider_Orientation:
         defaultValue->Set(SLIDER_DEFAULT_ORIENTATION, typeIndex);
+        return S_OK;
+
+    // WPF's PropertyGroupDescription.StringComparison defaults to Ordinal.
+    case KnownPropertyIndex::PropertyGroupDescription_StringComparison:
+        defaultValue->Set(xaml_data::CollectionViewStringComparison_Ordinal, typeIndex);
         return S_OK;
 
     case KnownPropertyIndex::Slider_SnapsTo:

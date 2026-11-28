@@ -42,7 +42,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People with context menus"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single">
     <!-- Rows and group headers get their menus from implicit styles. -->
     <tv:TableView.Resources>
@@ -66,7 +66,7 @@
     </tv:TableView.ContextFlyout>
     <!-- Each header gets its own HeaderContextFlyout in code, so its items know the column. -->
     <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
-                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                                 CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
     <tv:TableViewColumn x:Name="NameColumn" Header="Name" Width="160"
                              CellContextFlyout="{StaticResource NameCellMenu}" DisplayMemberBinding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"

@@ -170,6 +170,113 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a sorted column moved by a drag or by the app keeps the table's own sort, not a display-only one: SortByColumn in the same direction does nothing, and a sort the app then writes to the view moves the arrow. A column with no sort key that only the app lit keeps its display-only arrow through a move.")]
+        public void VerifyMovedSortedColumnKeepsTableSort()
+        {
+            foreach (var move in new[] { "drag", "app move" })
+            {
+                TableView tableView = null;
+                Microsoft.UI.Xaml.Data.CollectionViewSource source = null;
+                TableViewColumn name = null;
+                TableViewColumn role = null;
+                int sorting = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    source = TableViewShapingTestHelpers.MakeShapingView(TableViewShapingTestHelpers.MakeShapedPeople());
+                    tableView = TableViewSortingTestHelpers.CreateSortTable(source.View);
+                    tableView.CanUserReorderColumns = true;
+                    name = tableView.Columns[0];
+                    role = tableView.Columns[1];
+                    LoadContent(tableView);
+                });
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(role, SortDirection.Ascending), $"{move}: precondition: Role sorts."));
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView.Sorting += (s, e) => sorting++;
+                    if (move == "drag")
+                    {
+                        var travel = TravelInto(tableView, role, name, 0.75);
+                        Verify.IsTrue(TableViewTestHooks.BeginColumnReorderDrag(tableView, role), "The drag starts.");
+                        Verify.IsTrue(TableViewTestHooks.CompleteColumnReorderDrag(tableView, travel), "The drop is taken.");
+                    }
+                    else
+                    {
+                        tableView.Columns.RemoveAt(1);
+                        tableView.Columns.Insert(0, role);
+                    }
+                });
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyOrder(tableView, "Role,Name", $"after the {move}");
+                    Verify.AreEqual(SortDirection.Ascending, role.SortDirection, $"{move}: the sort follows the moved column.");
+                    Verify.IsFalse(tableView.SortByColumn(role, SortDirection.Ascending), $"{move}: the table's own sort in the same direction is not applied again.");
+                    Verify.AreEqual(0, sorting, $"{move}: no Sorting is raised.");
+                    TableViewSortingTestHelpers.SetAppSort(source, "Name", Microsoft.UI.Xaml.Data.CollectionViewSortDirection.Ascending);
+                });
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(SortDirection.Ascending, name.SortDirection, $"{move}: the arrow follows the sort the app wrote to the view.");
+                    Verify.AreEqual(SortDirection.None, role.SortDirection, $"{move}: the moved column is no longer lit.");
+                });
+            }
+
+            // A column with no sort key that only the app lit (display only) keeps its arrow through a move, and stays
+            // display only: the rows do not move, and the table's next sort clears it.
+            foreach (var move in new[] { "drag", "app move" })
+            {
+                TableView tableView = null;
+                TableViewColumn name = null;
+                TableViewColumn team = null;
+                List<object> rowsBefore = null;
+                int sorting = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    var source = TableViewShapingTestHelpers.MakeShapingView(TableViewShapingTestHelpers.MakeShapedPeople());
+                    tableView = TableViewSortingTestHelpers.CreateSortTable(source.View);
+                    tableView.CanUserReorderColumns = true;
+                    team = MakeTextTemplateColumn("Team", bound: false);
+                    tableView.Columns.Add(team);
+                    name = tableView.Columns[0];
+                    LoadContent(tableView);
+                });
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() => team.SortDirection = SortDirection.Descending);
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(SortDirection.Descending, team.SortDirection, $"{move}: precondition: the app lit Team.");
+                    rowsBefore = GetProjectedItems(tableView);
+                    tableView.Sorting += (s, e) => sorting++;
+                    if (move == "drag")
+                    {
+                        var travel = TravelInto(tableView, team, name, 0.75);
+                        Verify.IsTrue(TableViewTestHooks.BeginColumnReorderDrag(tableView, team), "The drag starts.");
+                        Verify.IsTrue(TableViewTestHooks.CompleteColumnReorderDrag(tableView, travel), "The drop is taken.");
+                    }
+                    else
+                    {
+                        tableView.Columns.RemoveAt(2);
+                        tableView.Columns.Insert(0, team);
+                    }
+                });
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyOrder(tableView, "Team,Name,Role", $"after the {move} of the app-lit column");
+                    Verify.AreEqual(SortDirection.Descending, team.SortDirection, $"{move}: the app-lit column keeps its arrow.");
+                    Verify.AreEqual(0, sorting, $"{move}: no Sorting is raised.");
+                    Verify.IsTrue(rowsBefore.SequenceEqual(GetProjectedItems(tableView)), $"{move}: the rows do not move.");
+                    Verify.IsTrue(tableView.SortByColumn(name, SortDirection.Ascending), $"{move}: the table's own sort applies.");
+                    Verify.AreEqual(SortDirection.None, team.SortDirection, $"{move}: the table's sort clears the restored arrow.");
+                });
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a drag of a sortable header raises no Sorting and sorts nothing, and the moved header still sorts afterwards.")]
         public void VerifyHookDragWithSortingOnDoesNotSort()
         {

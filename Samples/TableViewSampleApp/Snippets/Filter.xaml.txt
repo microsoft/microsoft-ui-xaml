@@ -14,10 +14,10 @@
 <tv:TableView
     x:Name="FilterTable"
     AutomationProperties.Name="Filtered people"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single"
     EmptyTemplate="{StaticResource FilterEmptyTemplate}">
-    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
     <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
     <!-- A template column sorts by SortMemberPath, the value behind the template. -->
     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>

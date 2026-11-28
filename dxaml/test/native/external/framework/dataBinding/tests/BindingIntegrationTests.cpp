@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -3548,6 +3548,2028 @@ namespace Framework { namespace DataBinding {
 
             customCollectionView->MoveCurrentToPosition(1);
             VERIFY_ARE_EQUAL(textBlock->Text, s2);
+        });
+    }
+
+    namespace
+    {
+        InpcDataSource^ MakeShapingItem(Platform::String^ name, int32 value)
+        {
+            auto item = ref new InpcDataSource;
+            item->StringProperty = name;
+            item->Int32Property = value;
+            return item;
+        }
+
+        Platform::String^ ShapingNamesOf(::Windows::Foundation::Collections::IVector<Object^>^ items)
+        {
+            Platform::String^ result = L"";
+            for (unsigned int i = 0; i < items->Size; i++)
+            {
+                result += safe_cast<InpcDataSource^>(items->GetAt(i))->StringProperty;
+            }
+            return result;
+        }
+
+        // b1 d2 a1 c0
+        Platform::Collections::Vector<Object^>^ MakeShapingSource()
+        {
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(MakeShapingItem(L"b", 1));
+            source->Append(MakeShapingItem(L"d", 2));
+            source->Append(MakeShapingItem(L"a", 1));
+            source->Append(MakeShapingItem(L"c", 0));
+            return source;
+        }
+
+        struct VectorChangeCounts
+        {
+            int resets = 0;
+            int inserted = 0;
+            int removed = 0;
+            int changed = 0;
+            std::wstring log; // "+i" inserted, "-i" removed, "~i" changed, "R" reset
+
+            int Total() const { return resets + inserted + removed + changed; }
+        };
+
+        ::Windows::Foundation::EventRegistrationToken CountVectorChanges(::Windows::Foundation::Collections::IObservableVector<Object^>^ vector, std::shared_ptr<VectorChangeCounts> counts)
+        {
+            return vector->VectorChanged += ref new ::Windows::Foundation::Collections::VectorChangedEventHandler<Object^>(
+                [counts](::Windows::Foundation::Collections::IObservableVector<Object^>^, ::Windows::Foundation::Collections::IVectorChangedEventArgs^ args)
+                {
+                    switch (args->CollectionChange)
+                    {
+                    case ::Windows::Foundation::Collections::CollectionChange::Reset: counts->resets++; counts->log += L"R"; return;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemInserted: counts->inserted++; counts->log += L"+"; break;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemRemoved: counts->removed++; counts->log += L"-"; break;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemChanged: counts->changed++; counts->log += L"~"; break;
+                    }
+                    counts->log += std::to_wstring(args->Index);
+                });
+        }
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceShaping()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto makeItem = [](Platform::String^ name, int32 group)
+            {
+                auto item = ref new InpcDataSource;
+                item->StringProperty = name;
+                item->Int32Property = group;
+                return item;
+            };
+
+            auto namesOf = [](::Windows::Foundation::Collections::IVector<Object^>^ items)
+            {
+                Platform::String^ result = L"";
+                for (unsigned int i = 0; i < items->Size; i++)
+                {
+                    result += safe_cast<InpcDataSource^>(items->GetAt(i))->StringProperty;
+                }
+                return result;
+            };
+
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(makeItem(L"b", 1));
+            source->Append(makeItem(L"d", 2));
+            source->Append(makeItem(L"a", 1));
+            source->Append(makeItem(L"c", 0));
+
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+
+            LOG_OUTPUT(L"No descriptors: View is the unshaped source.");
+            VERIFY_ARE_STRINGS_EQUAL(L"bdac", namesOf(cvs->View)->Data());
+            VERIFY_IS_NULL(cvs->View->CollectionGroups);
+
+            LOG_OUTPUT(L"Filter removes items without touching the source.");
+            safe_cast<ICollectionViewShaping^>(cvs->View)->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
+            });
+            VERIFY_ARE_STRINGS_EQUAL(L"bda", namesOf(cvs->View)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"bdac", namesOf(source)->Data());
+
+            LOG_OUTPUT(L"SortDescriptions order the view by property path.");
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Descending));
+            VERIFY_ARE_STRINGS_EQUAL(L"dba", namesOf(cvs->View)->Data());
+
+            LOG_OUTPUT(L"Source changes refresh the view and keep the current item.");
+            VERIFY_IS_TRUE(cvs->View->MoveCurrentToPosition(1));
+            source->Append(makeItem(L"e", 2));
+            VERIFY_ARE_STRINGS_EQUAL(L"edba", namesOf(cvs->View)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"b", safe_cast<InpcDataSource^>(cvs->View->CurrentItem)->StringProperty->Data());
+
+            LOG_OUTPUT(L"GroupDescriptions produce ICollectionViewGroup entries in first-appearance order.");
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            VERIFY_ARE_STRINGS_EQUAL(L"edba", namesOf(cvs->View)->Data());
+            auto groups = cvs->View->CollectionGroups;
+            VERIFY_IS_NOT_NULL(groups);
+            VERIFY_ARE_EQUAL(2u, groups->Size);
+
+            auto firstGroup = safe_cast<ICollectionViewGroup^>(groups->GetAt(0));
+            auto keyProvider = safe_cast<ICustomPropertyProvider^>(firstGroup->Group);
+            VERIFY_ARE_EQUAL(2, safe_cast<int32>(keyProvider->GetCustomProperty(L"Key")->GetValue(firstGroup->Group)));
+            VERIFY_ARE_STRINGS_EQUAL(L"ed", namesOf(firstGroup->GroupItems)->Data());
+
+            LOG_OUTPUT(L"Removing all descriptors restores the source order and drops the groups.");
+            cvs->GroupDescriptions->Clear();
+            cvs->SortDescriptions->Clear();
+            safe_cast<ICollectionViewShaping^>(cvs->View)->Filter = nullptr;
+            VERIFY_ARE_STRINGS_EQUAL(L"bdace", namesOf(cvs->View)->Data());
+            VERIFY_IS_NULL(cvs->View->CollectionGroups);
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewShapingInterface()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto makeItem = [](Platform::String^ name, int32 group)
+            {
+                auto item = ref new InpcDataSource;
+                item->StringProperty = name;
+                item->Int32Property = group;
+                return item;
+            };
+
+            auto namesOf = [](::Windows::Foundation::Collections::IVector<Object^>^ items)
+            {
+                Platform::String^ result = L"";
+                for (unsigned int i = 0; i < items->Size; i++)
+                {
+                    result += safe_cast<InpcDataSource^>(items->GetAt(i))->StringProperty;
+                }
+                return result;
+            };
+
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(makeItem(L"b", 1));
+            source->Append(makeItem(L"d", 2));
+            source->Append(makeItem(L"a", 1));
+            source->Append(makeItem(L"c", 0));
+
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+
+            LOG_OUTPUT(L"A view over a vector offers ICollectionViewShaping before any descriptor is set.");
+            auto unshapedView = cvs->View;
+            VERIFY_IS_NOT_NULL(dynamic_cast<ICollectionViewShaping^>(unshapedView));
+
+            LOG_OUTPUT(L"An IsSourceGrouped view does not.");
+            auto groupedSource = ref new CollectionViewSource();
+            groupedSource->IsSourceGrouped = true;
+            groupedSource->Source = ref new Platform::Collections::Vector<Object^>();
+            VERIFY_IS_NULL(dynamic_cast<ICollectionViewShaping^>(groupedSource->View));
+
+            LOG_OUTPUT(L"Shaping started through the view keeps that view, and the view shares the CollectionViewSource's descriptors.");
+            auto unshapedCounts = std::make_shared<VectorChangeCounts>();
+            auto unshapedToken = CountVectorChanges(unshapedView, unshapedCounts);
+            VERIFY_IS_TRUE(unshapedView->MoveCurrentToPosition(1)); // d
+            dynamic_cast<ICollectionViewShaping^>(unshapedView)->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
+            });
+            auto view = cvs->View;
+            VERIFY_IS_TRUE(view == unshapedView);
+            VERIFY_ARE_STRINGS_EQUAL(L"R", unshapedCounts->log.c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"d", safe_cast<InpcDataSource^>(view->CurrentItem)->StringProperty->Data());
+            unshapedView->VectorChanged -= unshapedToken;
+            auto shaping = dynamic_cast<ICollectionViewShaping^>(view);
+            VERIFY_IS_NOT_NULL(shaping);
+            VERIFY_IS_TRUE(shaping->SortDescriptions == cvs->SortDescriptions);
+            VERIFY_IS_TRUE(shaping->GroupDescriptions == cvs->GroupDescriptions);
+            VERIFY_IS_NOT_NULL(shaping->Filter);
+            VERIFY_ARE_STRINGS_EQUAL(L"bda", namesOf(view)->Data());
+
+            LOG_OUTPUT(L"Sorting through the view reshapes the same view in place.");
+            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"abd", namesOf(view)->Data());
+            VERIFY_ARE_EQUAL(1u, cvs->SortDescriptions->Size);
+
+            shaping->SortDescriptions->Clear();
+            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Descending));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"dba", namesOf(view)->Data());
+
+            LOG_OUTPUT(L"Filter is the view's (WPF: ICollectionView.Filter); the CollectionViewSource has only the Filter event.");
+            shaping->Filter = nullptr;
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"dcba", namesOf(view)->Data());
+
+            LOG_OUTPUT(L"Refresh re-reads property values that changed without a collection change.");
+            safe_cast<InpcDataSource^>(source->GetAt(2))->StringProperty = L"z";
+            VERIFY_ARE_STRINGS_EQUAL(L"dcbz", namesOf(view)->Data());
+            shaping->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"zdcb", namesOf(view)->Data());
+
+            LOG_OUTPUT(L"Clearing every descriptor keeps the shaped view, in source order.");
+            shaping->SortDescriptions->Clear();
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_NOT_NULL(dynamic_cast<ICollectionViewShaping^>(cvs->View));
+            VERIFY_ARE_STRINGS_EQUAL(L"bdzc", namesOf(view)->Data());
+
+            LOG_OUTPUT(L"Grouping through the view groups that same view in place, and it stays shapeable.");
+            shaping->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            auto groupedView = cvs->View;
+            VERIFY_IS_TRUE(groupedView == view);
+            VERIFY_IS_NOT_NULL(groupedView->CollectionGroups);
+            VERIFY_ARE_EQUAL(3u, groupedView->CollectionGroups->Size);
+            auto groupedShaping = dynamic_cast<ICollectionViewShaping^>(groupedView);
+            VERIFY_IS_NOT_NULL(groupedShaping);
+
+            groupedShaping->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property == 1;
+            });
+            VERIFY_IS_TRUE(cvs->View == groupedView);
+            VERIFY_ARE_EQUAL(1u, groupedView->CollectionGroups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"bz", namesOf(groupedView)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceDeferRefresh()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource();
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+
+            LOG_OUTPUT(L"Descriptors set under a deferral shape View only when the deferral closes.");
+            auto deferral = cvs->DeferRefresh();
+            safe_cast<ICollectionViewShaping^>(cvs->View)->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
+            });
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Descending));
+            auto view = cvs->View;
+            VERIFY_ARE_STRINGS_EQUAL(L"bdac", ShapingNamesOf(view)->Data());
+            delete deferral;
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_NOT_NULL(dynamic_cast<ICollectionViewShaping^>(view));
+            VERIFY_ARE_STRINGS_EQUAL(L"dba", ShapingNamesOf(view)->Data());
+
+            auto counts = std::make_shared<VectorChangeCounts>();
+            auto token = CountVectorChanges(view, counts);
+
+            LOG_OUTPUT(L"Nested deferrals: descriptor and source changes recompute once, when the outermost closes.");
+            auto shaping = dynamic_cast<ICollectionViewShaping^>(view);
+            auto outer = shaping->DeferRefresh();
+            auto inner = cvs->DeferRefresh();
+            cvs->SortDescriptions->Clear();
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
+            shaping->Filter = nullptr;
+            source->Append(MakeShapingItem(L"e", 2));
+            shaping->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"dba", ShapingNamesOf(view)->Data());
+            delete inner;
+            VERIFY_ARE_EQUAL(0, counts->Total());
+            delete outer;
+            VERIFY_ARE_EQUAL(1, counts->resets);
+            VERIFY_ARE_EQUAL(1, counts->Total());
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"abcde", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"A deferral closed without changes does not refresh.");
+            auto idle = cvs->DeferRefresh();
+            delete idle;
+            VERIFY_ARE_EQUAL(1, counts->Total());
+
+            view->VectorChanged -= token;
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceCustomSort()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto byValue = ref new CollectionViewComparer([](Object^ x, Object^ y)
+            {
+                return safe_cast<InpcDataSource^>(x)->Int32Property - safe_cast<InpcDataSource^>(y)->Int32Property;
+            });
+
+            LOG_OUTPUT(L"A CustomSort alone shapes the view; ties keep source order.");
+            auto source = MakeShapingSource();
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->CustomSort = byValue;
+            auto view = cvs->View;
+            auto shaping = dynamic_cast<ICollectionViewShaping^>(view);
+            VERIFY_IS_NOT_NULL(shaping);
+            VERIFY_IS_TRUE(shaping->CustomSort == byValue);
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Adding a SortDescription drops the CustomSort.");
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Descending));
+            VERIFY_IS_NULL(cvs->CustomSort);
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"dcba", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Setting a CustomSort clears the SortDescriptions and reshapes once.");
+            auto counts = std::make_shared<VectorChangeCounts>();
+            auto token = CountVectorChanges(view, counts);
+            shaping->CustomSort = byValue;
+            VERIFY_ARE_EQUAL(0u, cvs->SortDescriptions->Size);
+            VERIFY_ARE_EQUAL(1, counts->Total());
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"A comparer that throws fails the change and leaves the view's rows.");
+            bool threw = false;
+            try
+            {
+                cvs->CustomSort = ref new CollectionViewComparer([](Object^, Object^) -> int32
+                {
+                    throw ref new Platform::InvalidArgumentException();
+                });
+            }
+            catch (Platform::Exception^)
+            {
+                threw = true;
+            }
+            VERIFY_IS_TRUE(threw);
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Clearing the CustomSort restores source order.");
+            cvs->CustomSort = nullptr;
+            VERIFY_ARE_STRINGS_EQUAL(L"bdac", ShapingNamesOf(view)->Data());
+
+            view->VectorChanged -= token;
+        });
+    }
+
+    ref class ParityGroupKeyConverter sealed : public IValueConverter
+    {
+    public:
+        virtual Object^ Convert(Object^ value, wxaml_interop::TypeName, Object^ parameter, String^ language)
+        {
+            LastParameter = parameter;
+            LastLanguage = language;
+            return (safe_cast<int32>(value) % 2 == 0) ? ref new String(L"even") : ref new String(L"odd");
+        }
+
+        property Object^ LastParameter;
+        property String^ LastLanguage;
+
+        virtual Object^ ConvertBack(Object^, wxaml_interop::TypeName, Object^, String^)
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+    };
+
+    void BindingIntegrationTests::CollectionViewSourceGroupConverter()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto groupKeyOf = [](Object^ group)
+            {
+                auto provider = safe_cast<ICustomPropertyProvider^>(group);
+                return safe_cast<String^>(provider->GetCustomProperty(L"Key")->GetValue(group));
+            };
+
+            VERIFY_IS_NULL((ref new PropertyGroupDescription(L"Int32Property"))->Converter);
+
+            auto converter = ref new ParityGroupKeyConverter();
+            auto description = ref new PropertyGroupDescription(L"Int32Property", converter);
+            VERIFY_IS_TRUE(description->Converter == converter);
+            VERIFY_ARE_STRINGS_EQUAL(L"Int32Property", description->PropertyName->Data());
+
+            LOG_OUTPUT(L"The converter maps each property value to its group key.");
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = MakeShapingSource();
+            cvs->GroupDescriptions->Append(description);
+            auto groups = cvs->View->CollectionGroups;
+            VERIFY_IS_NOT_NULL(groups);
+            VERIFY_ARE_EQUAL(2u, groups->Size);
+
+            auto odd = safe_cast<ICollectionViewGroup^>(groups->GetAt(0));
+            auto even = safe_cast<ICollectionViewGroup^>(groups->GetAt(1));
+            VERIFY_ARE_STRINGS_EQUAL(L"odd", groupKeyOf(odd->Group)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(odd->GroupItems)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"even", groupKeyOf(even->Group)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"dc", ShapingNamesOf(even->GroupItems)->Data());
+
+            LOG_OUTPUT(L"As in WPF, Convert gets the level as its parameter and the view's Culture as its language.");
+            VERIFY_ARE_EQUAL(0, safe_cast<int32>(converter->LastParameter));
+            VERIFY_IS_TRUE(converter->LastLanguage == nullptr || converter->LastLanguage->Length() == 0);
+            auto innerConverter = ref new ParityGroupKeyConverter();
+            cvs->Culture = L"de-DE";
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property", innerConverter));
+            VERIFY_ARE_EQUAL(1, safe_cast<int32>(innerConverter->LastParameter));
+            VERIFY_ARE_STRINGS_EQUAL(L"de-DE", innerConverter->LastLanguage->Data());
+            VERIFY_ARE_EQUAL(0, safe_cast<int32>(converter->LastParameter));
+            VERIFY_ARE_STRINGS_EQUAL(L"de-DE", converter->LastLanguage->Data());
+
+            LOG_OUTPUT(L"PropertyGroupDescription is settable, as in WPF: a change regroups the views that use it.");
+            auto settable = ref new PropertyGroupDescription();
+            VERIFY_IS_NULL(settable->PropertyName);
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::Ordinal, settable->StringComparison);
+            auto other = ref new CollectionViewSource();
+            other->Source = MakeShapingSource(); // b1 d2 a1 c0
+            other->GroupDescriptions->Append(settable);
+            VERIFY_ARE_EQUAL(4u, other->View->CollectionGroups->Size);
+            settable->PropertyName = L"Int32Property";
+            VERIFY_ARE_EQUAL(3u, other->View->CollectionGroups->Size);
+            settable->Converter = converter;
+            VERIFY_ARE_EQUAL(2u, other->View->CollectionGroups->Size);
+        });
+    }
+
+    // WPF's GroupDescription subclass pattern: groups by the first letter, matched case-insensitively.
+    ref class FirstLetterGroupDescription sealed : public GroupDescription
+    {
+    public:
+        property int Calls;
+
+    protected:
+        virtual Object^ GroupNameFromItemCore(Object^ item, int level, String^ culture) override
+        {
+            Calls++;
+            auto name = safe_cast<InpcDataSource^>(item)->StringProperty;
+            return ref new String(name->Data(), 1);
+        }
+
+        virtual bool NamesMatchCore(Object^ groupName, Object^ itemName) override
+        {
+            return _wcsicmp(safe_cast<String^>(groupName)->Data(), safe_cast<String^>(itemName)->Data()) == 0;
+        }
+    };
+
+    void BindingIntegrationTests::CollectionViewSourceCustomGroupDescription()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(MakeShapingItem(L"apple", 1));
+            source->Append(MakeShapingItem(L"Bean", 2));
+            source->Append(MakeShapingItem(L"Avocado", 3));
+            source->Append(MakeShapingItem(L"banana", 4));
+
+            auto description = ref new FirstLetterGroupDescription();
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->GroupDescriptions->Append(description);
+
+            LOG_OUTPUT(L"The view groups by the derived class's GroupNameFromItem and NamesMatch.");
+            VERIFY_IS_TRUE(description->Calls >= 4);
+            auto groups = cvs->View->CollectionGroups;
+            VERIFY_ARE_EQUAL(2u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"appleAvocado", ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(0))->GroupItems)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"Beanbanana", ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(1))->GroupItems)->Data());
+
+            LOG_OUTPUT(L"An added item joins the group its name matches; a new name starts a group.");
+            source->Append(MakeShapingItem(L"Cherry", 5));
+            source->Append(MakeShapingItem(L"bramble", 6));
+            VERIFY_ARE_EQUAL(3u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"Beanbananabramble", ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(1))->GroupItems)->Data());
+
+            LOG_OUTPUT(L"GroupDescription's SortDescriptions order its groups, as on PropertyGroupDescription.");
+            description->SortDescriptions->Append(ref new SortDescription(L"Name", CollectionViewSortDirection::Descending));
+            VERIFY_ARE_EQUAL(3u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"Cherry", ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(0))->GroupItems)->Data());
+        });
+    }
+
+    // A GroupDescription whose grouping changes with its own state, which it announces with OnPropertyChanged (WPF).
+    ref class ThresholdGroupDescription sealed : public GroupDescription
+    {
+    public:
+        property int Threshold
+        {
+            int get() { return m_threshold; }
+            void set(int value)
+            {
+                m_threshold = value;
+                OnPropertyChanged(ref new PropertyChangedEventArgs(L"Threshold"));
+            }
+        }
+
+    protected:
+        virtual Object^ GroupNameFromItemCore(Object^ item, int level, String^ culture) override
+        {
+            return safe_cast<InpcDataSource^>(item)->Int32Property >= m_threshold ? L"high" : L"low";
+        }
+
+    private:
+        int m_threshold = 2;
+    };
+
+    void BindingIntegrationTests::CollectionViewSourceWpfParityMembers()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            LOG_OUTPUT(L"CanSort, CanFilter and CanGroup are true on the view a CollectionViewSource creates over a list.");
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = MakeShapingSource(); // b1 d2 a1 c0
+            auto shaping = safe_cast<ICollectionViewShaping^>(cvs->View);
+            VERIFY_IS_TRUE(shaping->CanSort);
+            VERIFY_IS_TRUE(shaping->CanFilter);
+            VERIFY_IS_TRUE(shaping->CanGroup);
+
+            LOG_OUTPUT(L"Culture is a DependencyProperty, as in WPF; set through it, it reaches the view.");
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
+            VERIFY_IS_NOT_NULL(CollectionViewSource::CultureProperty);
+            cvs->SetValue(CollectionViewSource::CultureProperty, L"sv-SE");
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", cvs->Culture->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", shaping->Culture->Data());
+            LOG_OUTPUT(L"An invalid tag set through the property system is undone.");
+            cvs->SetValue(CollectionViewSource::CultureProperty, L"not a culture");
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", cvs->Culture->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", shaping->Culture->Data());
+            LOG_OUTPUT(L"As in WPF, a Culture set on the view is the view's: the CollectionViewSource keeps its own.");
+            shaping->Culture = L"en-US";
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", cvs->Culture->Data());
+
+            LOG_OUTPUT(L"Groups answer ICollectionViewGroup2 (WPF CollectionViewGroup.ItemCount and IsBottomLevel), which requires ICollectionViewGroup. The WPF group is a CollectionGroups entry's Group (the entry's GroupItems are its leaves); it is its own Group, and its Name custom property is WPF's Name.");
+            auto nameOf = [](Object^ group)
+            {
+                return safe_cast<ICustomPropertyProvider^>(group)->GetCustomProperty(L"Name")->GetValue(group);
+            };
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"StringProperty"));
+            auto top = safe_cast<ICollectionViewGroup2^>(safe_cast<ICollectionViewGroup^>(cvs->View->CollectionGroups->GetAt(0))->Group);
+            VERIFY_ARE_EQUAL(1, safe_cast<int32>(nameOf(top)));
+            VERIFY_ARE_EQUAL(2, top->ItemCount);
+            VERIFY_IS_FALSE(top->IsBottomLevel);
+            VERIFY_ARE_EQUAL(2u, top->GroupItems->Size);
+            auto bottom = safe_cast<ICollectionViewGroup2^>(top->GroupItems->GetAt(0));
+            VERIFY_IS_TRUE(bottom->IsBottomLevel);
+            VERIFY_ARE_EQUAL(1, bottom->ItemCount);
+            VERIFY_ARE_STRINGS_EQUAL(L"a", safe_cast<String^>(nameOf(bottom->Group))->Data());
+
+            LOG_OUTPUT(L"An IsSourceGrouped view's groups answer it too.");
+            auto groupedSource = ref new Platform::Collections::Vector<Object^>();
+            auto firstGroup = ref new InpcDataSource();
+            firstGroup->StringProperty = L"g";
+            auto groupItems = MakeShapingSource();
+            firstGroup->ObjectProperty = groupItems;
+            groupedSource->Append(firstGroup);
+            auto sourceGrouped = ref new CollectionViewSource();
+            sourceGrouped->IsSourceGrouped = true;
+            sourceGrouped->ItemsPath = ref new PropertyPath(L"ObjectProperty");
+            sourceGrouped->Source = groupedSource;
+            auto sourceGroup = safe_cast<ICollectionViewGroup2^>(sourceGrouped->View->CollectionGroups->GetAt(0));
+            VERIFY_IS_TRUE(sourceGroup->Group == firstGroup);
+            VERIFY_ARE_EQUAL(4, sourceGroup->ItemCount);
+            VERIFY_IS_TRUE(sourceGroup->IsBottomLevel);
+            {
+                LOG_OUTPUT(L"GetIids reports ICollectionViewGroup2 on a group that answers it.");
+                ULONG iidCount = 0;
+                IID* iids = nullptr;
+                VERIFY_SUCCEEDED(reinterpret_cast<IInspectable*>(sourceGroup)->GetIids(&iidCount, &iids));
+                bool isListed = false;
+                for (ULONG i = 0; i < iidCount; ++i)
+                {
+                    isListed = isListed || InlineIsEqualGUID(iids[i], __uuidof(ICollectionViewGroup2^));
+                }
+                CoTaskMemFree(iids);
+                VERIFY_IS_TRUE(isListed);
+            }
+
+            LOG_OUTPUT(L"A group name that is a collection puts the item in each of its groups, as in WPF.");
+            auto tagged = ref new Platform::Collections::Vector<Object^>();
+            auto both = MakeShapingItem(L"x", 0);
+            auto xTags = ref new Platform::Collections::Vector<Object^>();
+            xTags->Append(L"red");
+            xTags->Append(L"blue");
+            both->ObjectProperty = xTags;
+            auto one = MakeShapingItem(L"y", 0);
+            one->ObjectProperty = L"blue";
+            auto none = MakeShapingItem(L"z", 0);
+            none->ObjectProperty = ref new Platform::Collections::Vector<Object^>();
+            tagged->Append(both);
+            tagged->Append(one);
+            tagged->Append(none);
+            auto tags = ref new CollectionViewSource();
+            tags->Source = tagged;
+            tags->GroupDescriptions->Append(ref new PropertyGroupDescription(L"ObjectProperty"));
+            auto tagGroups = tags->View->CollectionGroups;
+            VERIFY_ARE_EQUAL(2u, tagGroups->Size);
+            auto red = safe_cast<ICollectionViewGroup2^>(tagGroups->GetAt(0));
+            auto blue = safe_cast<ICollectionViewGroup2^>(tagGroups->GetAt(1));
+            VERIFY_ARE_STRINGS_EQUAL(L"red", safe_cast<String^>(nameOf(red->Group))->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"x", ShapingNamesOf(red->GroupItems)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"blue", safe_cast<String^>(nameOf(blue->Group))->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"xy", ShapingNamesOf(blue->GroupItems)->Data());
+            VERIFY_ARE_EQUAL(3u, tags->View->Size);
+
+            LOG_OUTPUT(L"A source change while an item is in several groups recomputes the groups.");
+            auto added = MakeShapingItem(L"w", 0);
+            added->ObjectProperty = L"red";
+            tagged->Append(added);
+            VERIFY_ARE_STRINGS_EQUAL(L"xw", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(tags->View->CollectionGroups->GetAt(0))->GroupItems)->Data());
+            tagged->RemoveAt(0);
+            VERIFY_ARE_EQUAL(2u, tags->View->CollectionGroups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"w", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(tags->View->CollectionGroups->GetAt(1))->GroupItems)->Data());
+
+            LOG_OUTPUT(L"GroupDescription.OnPropertyChanged regroups the views that use the description.");
+            auto threshold = ref new ThresholdGroupDescription();
+            auto byThreshold = ref new CollectionViewSource();
+            byThreshold->Source = MakeShapingSource(); // b1 d2 a1 c0
+            byThreshold->GroupDescriptions->Append(threshold);
+            VERIFY_ARE_STRINGS_EQUAL(L"d", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(byThreshold->View->CollectionGroups->GetAt(1))->GroupItems)->Data());
+            threshold->Threshold = 1;
+            VERIFY_ARE_STRINGS_EQUAL(L"bda", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(byThreshold->View->CollectionGroups->GetAt(0))->GroupItems)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceGroupNames()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto keyOf = [](Object^ group)
+            {
+                auto provider = safe_cast<ICustomPropertyProvider^>(safe_cast<ICollectionViewGroup^>(group)->Group);
+                return safe_cast<int32>(provider->GetCustomProperty(L"Key")->GetValue(safe_cast<ICollectionViewGroup^>(group)->Group));
+            };
+            auto namesAt = [](::Windows::Foundation::Collections::IObservableVector<Object^>^ groups, unsigned int index)
+            {
+                return ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(index))->GroupItems);
+            };
+
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            auto description = ref new PropertyGroupDescription(L"Int32Property");
+            description->GroupNames->Append(3);
+            description->GroupNames->Append(1);
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->GroupDescriptions->Append(description);
+
+            LOG_OUTPUT(L"As in WPF, the GroupNames groups come first, in order, even when empty; the others follow their first item.");
+            auto groups = cvs->View->CollectionGroups;
+            VERIFY_ARE_EQUAL(4u, groups->Size);
+            VERIFY_ARE_EQUAL(3, keyOf(groups->GetAt(0)));
+            VERIFY_ARE_EQUAL(1, keyOf(groups->GetAt(1)));
+            VERIFY_ARE_EQUAL(2, keyOf(groups->GetAt(2)));
+            VERIFY_ARE_EQUAL(0, keyOf(groups->GetAt(3)));
+            VERIFY_ARE_STRINGS_EQUAL(L"", namesAt(groups, 0)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"ba", namesAt(groups, 1)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"badc", ShapingNamesOf(cvs->View)->Data());
+
+            LOG_OUTPUT(L"An item joins its explicit group; the group stays when it empties, other groups go.");
+            source->Append(MakeShapingItem(L"e", 3));
+            VERIFY_ARE_EQUAL(4u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"e", namesAt(groups, 0)->Data());
+            source->RemoveAt(4);
+            VERIFY_ARE_EQUAL(4u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"", namesAt(groups, 0)->Data());
+            source->RemoveAt(1); // d, the only item of group 2
+            VERIFY_ARE_EQUAL(3u, groups->Size);
+            VERIFY_ARE_EQUAL(0, keyOf(groups->GetAt(2)));
+
+            LOG_OUTPUT(L"A new non-explicit group goes after the explicit ones.");
+            source->InsertAt(0, MakeShapingItem(L"f", 7));
+            VERIFY_ARE_EQUAL(4u, groups->Size);
+            VERIFY_ARE_EQUAL(3, keyOf(groups->GetAt(0)));
+            VERIFY_ARE_EQUAL(1, keyOf(groups->GetAt(1)));
+            VERIFY_ARE_EQUAL(7, keyOf(groups->GetAt(2)));
+
+            LOG_OUTPUT(L"Changing GroupNames regroups.");
+            description->GroupNames->Clear();
+            VERIFY_ARE_EQUAL(3u, groups->Size);
+            VERIFY_ARE_EQUAL(7, keyOf(groups->GetAt(0)));
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceMarkup()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto panel = safe_cast<StackPanel^>(XamlReader::Load(
+                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel.Resources>"
+                L"    <CollectionViewSource x:Key='People' IsLiveSortingRequested='True'>"
+                L"      <CollectionViewSource.SortDescriptions>"
+                L"        <SortDescription PropertyName='StringProperty' Direction='Descending'/>"
+                L"      </CollectionViewSource.SortDescriptions>"
+                L"      <CollectionViewSource.GroupDescriptions>"
+                L"        <PropertyGroupDescription PropertyName='Int32Property' StringComparison='OrdinalIgnoreCase'/>"
+                L"      </CollectionViewSource.GroupDescriptions>"
+                L"      <CollectionViewSource.LiveSortingProperties>"
+                L"        <x:String>StringProperty</x:String>"
+                L"      </CollectionViewSource.LiveSortingProperties>"
+                L"    </CollectionViewSource>"
+                L"  </StackPanel.Resources>"
+                L"</StackPanel>"));
+            auto cvs = safe_cast<CollectionViewSource^>(panel->Resources->Lookup(L"People"));
+
+            LOG_OUTPUT(L"Markup fills the descriptor collections and sets IsLive*Requested, as WPF's idiom does.");
+            VERIFY_IS_TRUE(cvs->IsLiveSortingRequested);
+            VERIFY_ARE_EQUAL(1u, cvs->SortDescriptions->Size);
+            auto sort = cvs->SortDescriptions->GetAt(0);
+            VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
+            VERIFY_ARE_EQUAL(CollectionViewSortDirection::Descending, sort->Direction);
+            VERIFY_ARE_EQUAL(1u, cvs->GroupDescriptions->Size);
+            auto group = safe_cast<PropertyGroupDescription^>(cvs->GroupDescriptions->GetAt(0));
+            VERIFY_ARE_STRINGS_EQUAL(L"Int32Property", group->PropertyName->Data());
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, group->StringComparison);
+            VERIFY_ARE_EQUAL(1u, cvs->LiveSortingProperties->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", cvs->LiveSortingProperties->GetAt(0)->Data());
+
+            LOG_OUTPUT(L"The rules shape the view once Source is set.");
+            cvs->Source = MakeShapingSource(); // b1 d2 a1 c0
+            VERIFY_ARE_STRINGS_EQUAL(L"dcba", ShapingNamesOf(cvs->View)->Data());
+            VERIFY_ARE_EQUAL(3u, cvs->View->CollectionGroups->Size);
+            auto live = safe_cast<ICollectionViewLiveShaping^>(cvs->View);
+            VERIFY_IS_TRUE(live->IsLiveSorting->Value);
+            VERIFY_ARE_EQUAL(1u, live->LiveSortingProperties->Size);
+
+            LOG_OUTPUT(L"As in WPF, a SortDescription a collection holds is sealed.");
+            bool threw = false;
+            try
+            {
+                sort->Direction = CollectionViewSortDirection::Ascending;
+            }
+            catch (Platform::Exception^)
+            {
+                threw = true;
+            }
+            VERIFY_IS_TRUE(threw);
+            VERIFY_ARE_EQUAL(CollectionViewSortDirection::Descending, sort->Direction);
+
+            auto ascending = ref new SortDescription();
+            ascending->PropertyName = L"StringProperty";
+            ascending->Direction = CollectionViewSortDirection::Ascending;
+            cvs->SortDescriptions->SetAt(0, ascending);
+            VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(cvs->View)->Data());
+
+            LOG_OUTPUT(L"IsLiveSortingRequested is a DependencyProperty, so it can be bound.");
+            VERIFY_IS_NOT_NULL(CollectionViewSource::IsLiveSortingRequestedProperty);
+            cvs->ClearValue(CollectionViewSource::IsLiveSortingRequestedProperty);
+            VERIFY_IS_FALSE(cvs->IsLiveSortingRequested);
+            VERIFY_IS_FALSE(live->IsLiveSorting->Value);
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceIncrementalUpdates()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            safe_cast<ICollectionViewShaping^>(cvs->View)->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
+            });
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
+            auto view = cvs->View;
+            VERIFY_ARE_STRINGS_EQUAL(L"abd", ShapingNamesOf(view)->Data());
+
+            auto counts = std::make_shared<VectorChangeCounts>();
+            auto token = CountVectorChanges(view, counts);
+            auto step = [&](Platform::String^ expectedNames, const wchar_t* expectedLog)
+            {
+                VERIFY_ARE_STRINGS_EQUAL(expectedNames->Data(), ShapingNamesOf(view)->Data());
+                VERIFY_ARE_STRINGS_EQUAL(expectedLog, counts->log.c_str());
+                counts->log.clear();
+            };
+
+            LOG_OUTPUT(L"An added item is inserted at its sorted position.");
+            source->Append(MakeShapingItem(L"e", 2));
+            step(L"abde", L"+3");
+
+            LOG_OUTPUT(L"An item the filter rejects raises nothing, added or removed.");
+            source->InsertAt(0, MakeShapingItem(L"f", 0));
+            step(L"abde", L"");
+
+            LOG_OUTPUT(L"A removed item is removed from its position, and currency stays on its item.");
+            VERIFY_IS_TRUE(view->MoveCurrentToPosition(1));
+            source->RemoveAt(2); // d
+            step(L"abe", L"-2");
+            VERIFY_ARE_STRINGS_EQUAL(L"b", safe_cast<InpcDataSource^>(view->CurrentItem)->StringProperty->Data());
+
+            LOG_OUTPUT(L"A replaced item that sorts elsewhere moves.");
+            source->SetAt(1, MakeShapingItem(L"g", 1)); // b -> g
+            step(L"aeg", L"-1+2");
+
+            LOG_OUTPUT(L"A replaced item that sorts in place is an ItemChanged.");
+            source->SetAt(4, MakeShapingItem(L"c", 2)); // e -> c
+            step(L"acg", L"~1");
+
+            LOG_OUTPUT(L"A replaced item the filter now accepts is inserted.");
+            source->SetAt(3, MakeShapingItem(L"b", 1)); // c0 -> b1
+            step(L"abcg", L"+1");
+
+            LOG_OUTPUT(L"The incremental result matches a full recompute.");
+            cvs->Refresh();
+            step(L"abcg", L"R");
+
+            LOG_OUTPUT(L"A source Reset recomputes fully.");
+            source->Clear();
+            step(L"", L"R");
+
+            view->VectorChanged -= token;
+
+            LOG_OUTPUT(L"A grouped view applies a source change incrementally too.");
+            auto grouped = ref new CollectionViewSource();
+            auto groupedSource = MakeShapingSource();
+            grouped->Source = groupedSource;
+            grouped->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            auto groupedView = grouped->View;
+            auto groupedCounts = std::make_shared<VectorChangeCounts>();
+            auto groupedToken = CountVectorChanges(groupedView, groupedCounts);
+            groupedSource->Append(MakeShapingItem(L"e", 2));
+            VERIFY_ARE_STRINGS_EQUAL(L"badec", ShapingNamesOf(groupedView)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"+3", groupedCounts->log.c_str());
+            groupedView->VectorChanged -= groupedToken;
+        });
+    }
+
+    namespace
+    {
+        // "key:items" per group, space separated; a group above the bottom level lists its subgroups in braces.
+        std::wstring DescribeGroups(::Windows::Foundation::Collections::IObservableVector<Object^>^ groups)
+        {
+            std::wstring result;
+            for (unsigned int i = 0; i < groups->Size; i++)
+            {
+                auto entry = groups->GetAt(i);
+                auto viewGroup = dynamic_cast<ICollectionViewGroup^>(entry);
+                auto group = viewGroup ? viewGroup->Group : entry;
+                auto provider = safe_cast<ICustomPropertyProvider^>(group);
+                auto key = provider->GetCustomProperty(L"Key")->GetValue(group);
+                auto items = safe_cast<ICollectionViewGroup^>(group)->GroupItems;
+
+                result += (i > 0) ? L" " : L"";
+                result += key ? key->ToString()->Data() : L"null";
+                result += L":";
+                if (items->Size > 0 && dynamic_cast<ICollectionViewGroup^>(items->GetAt(0)))
+                {
+                    result += L"{" + DescribeGroups(items) + L"}";
+                }
+                else
+                {
+                    result += ShapingNamesOf(items)->Data();
+                }
+            }
+            return result;
+        }
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceGroupedIncrementalUpdates()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(MakeShapingItem(L"b", 1));
+            source->Append(MakeShapingItem(L"f", 2));
+            source->Append(MakeShapingItem(L"a", 1));
+            source->Append(MakeShapingItem(L"d", 0));
+
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            auto view = cvs->View;
+            auto groups = view->CollectionGroups;
+            VERIFY_ARE_STRINGS_EQUAL(L"abdf", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ab 0:d 2:f", DescribeGroups(groups).c_str());
+
+            auto firstGroupItems = safe_cast<ICollectionViewGroup^>(groups->GetAt(0))->GroupItems;
+            auto counts = std::make_shared<VectorChangeCounts>();
+            auto groupCounts = std::make_shared<VectorChangeCounts>();
+            auto itemCounts = std::make_shared<VectorChangeCounts>();
+            auto token = CountVectorChanges(view, counts);
+            auto groupsToken = CountVectorChanges(groups, groupCounts);
+            auto itemsToken = CountVectorChanges(firstGroupItems, itemCounts);
+            auto step = [&](const wchar_t* expectedNames, const wchar_t* expectedGroups, const wchar_t* expectedLog, const wchar_t* expectedGroupLog, const wchar_t* expectedItemLog)
+            {
+                VERIFY_ARE_STRINGS_EQUAL(expectedNames, ShapingNamesOf(view)->Data());
+                VERIFY_ARE_STRINGS_EQUAL(expectedGroups, DescribeGroups(groups).c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedLog, counts->log.c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedGroupLog, groupCounts->log.c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedItemLog, itemCounts->log.c_str());
+                counts->log.clear();
+                groupCounts->log.clear();
+                itemCounts->log.clear();
+            };
+
+            LOG_OUTPUT(L"An added item joins its group at its sorted position.");
+            source->Append(MakeShapingItem(L"c", 1));
+            step(L"abcdf", L"1:abc 0:d 2:f", L"+2", L"", L"+2");
+
+            LOG_OUTPUT(L"An item with a new group name starts a group, placed before the first group whose first item sorts after it.");
+            source->InsertAt(0, MakeShapingItem(L"e", 3));
+            step(L"abcdef", L"1:abc 0:d 3:e 2:f", L"+4", L"+2", L"");
+
+            LOG_OUTPUT(L"Removing the last item of a group removes the group.");
+            source->RemoveAt(4); // d
+            step(L"abcef", L"1:abc 3:e 2:f", L"-3", L"-1", L"");
+
+            LOG_OUTPUT(L"A replaced item that changes group leaves one and joins the other.");
+            source->SetAt(1, MakeShapingItem(L"g", 2)); // b1 -> g2
+            step(L"acefg", L"1:ac 3:e 2:fg", L"-1+4", L"", L"-1");
+
+            LOG_OUTPUT(L"A replaced item that stays in place is an ItemChanged.");
+            source->SetAt(4, MakeShapingItem(L"c", 1));
+            step(L"acefg", L"1:ac 3:e 2:fg", L"~1", L"", L"~1");
+
+            LOG_OUTPUT(L"The view, its groups and the incremental result survive a full recompute unchanged.");
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_TRUE(view->CollectionGroups == groups);
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"acefg", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ac 3:e 2:fg", DescribeGroups(groups).c_str());
+
+            view->VectorChanged -= token;
+            groups->VectorChanged -= groupsToken;
+            firstGroupItems->VectorChanged -= itemsToken;
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceMultiLevelGroups()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto makeItem = [](Platform::String^ name, int32 group, int16 subgroup)
+            {
+                auto item = MakeShapingItem(name, group);
+                item->Int16Property = subgroup;
+                return item;
+            };
+
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(makeItem(L"a", 1, 0));
+            source->Append(makeItem(L"b", 1, 1));
+            source->Append(makeItem(L"c", 2, 0));
+            source->Append(makeItem(L"d", 1, 0));
+            source->Append(makeItem(L"e", 2, 1));
+
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int16Property"));
+            auto view = cvs->View;
+            auto groups = view->CollectionGroups;
+
+            LOG_OUTPUT(L"The view's items are the leaves in group order; each top-level group's GroupItems are its leaves.");
+            VERIFY_ARE_STRINGS_EQUAL(L"adbce", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:{0:ad 1:b} 2:{0:c 1:e}", DescribeGroups(groups).c_str());
+            auto first = safe_cast<ICollectionViewGroup^>(groups->GetAt(0));
+            VERIFY_ARE_STRINGS_EQUAL(L"adb", ShapingNamesOf(first->GroupItems)->Data());
+
+            LOG_OUTPUT(L"The group object is a CollectionViewGroup: Items are its subgroups, ItemCount its leaves.");
+            auto group = first->Group;
+            auto provider = safe_cast<ICustomPropertyProvider^>(group);
+            VERIFY_ARE_EQUAL(3, safe_cast<int32>(provider->GetCustomProperty(L"ItemCount")->GetValue(group)));
+            VERIFY_IS_FALSE(safe_cast<bool>(provider->GetCustomProperty(L"IsBottomLevel")->GetValue(group)));
+            auto subgroups = safe_cast<ICollectionViewGroup^>(group)->GroupItems;
+            VERIFY_ARE_EQUAL(2u, subgroups->Size);
+            auto subgroup = subgroups->GetAt(0);
+            VERIFY_IS_TRUE(safe_cast<bool>(safe_cast<ICustomPropertyProvider^>(subgroup)->GetCustomProperty(L"IsBottomLevel")->GetValue(subgroup)));
+            VERIFY_IS_TRUE(safe_cast<ICollectionViewGroup^>(subgroup)->Group == subgroup);
+
+            auto counts = std::make_shared<VectorChangeCounts>();
+            auto groupCounts = std::make_shared<VectorChangeCounts>();
+            auto subgroupCounts = std::make_shared<VectorChangeCounts>();
+            auto token = CountVectorChanges(view, counts);
+            auto groupsToken = CountVectorChanges(groups, groupCounts);
+            auto secondSubgroups = safe_cast<ICollectionViewGroup^>(safe_cast<ICollectionViewGroup^>(groups->GetAt(1))->Group)->GroupItems;
+            auto subgroupsToken = CountVectorChanges(secondSubgroups, subgroupCounts);
+            auto step = [&](const wchar_t* expectedNames, const wchar_t* expectedGroups, const wchar_t* expectedLog, const wchar_t* expectedGroupLog, const wchar_t* expectedSubgroupLog)
+            {
+                VERIFY_ARE_STRINGS_EQUAL(expectedNames, ShapingNamesOf(view)->Data());
+                VERIFY_ARE_STRINGS_EQUAL(expectedGroups, DescribeGroups(groups).c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedLog, counts->log.c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedGroupLog, groupCounts->log.c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedSubgroupLog, subgroupCounts->log.c_str());
+                counts->log.clear();
+                groupCounts->log.clear();
+                subgroupCounts->log.clear();
+            };
+
+            LOG_OUTPUT(L"An added item joins its bottom-level group.");
+            source->Append(makeItem(L"f", 1, 1));
+            step(L"adbfce", L"1:{0:ad 1:bf} 2:{0:c 1:e}", L"+3", L"", L"");
+
+            LOG_OUTPUT(L"A new subgroup is inserted under its existing parent.");
+            source->Append(makeItem(L"g", 2, 2));
+            step(L"adbfceg", L"1:{0:ad 1:bf} 2:{0:c 1:e 2:g}", L"+6", L"", L"+2");
+
+            LOG_OUTPUT(L"Removing the last item of a subgroup removes only that subgroup.");
+            source->RemoveAt(2); // c
+            step(L"adbfeg", L"1:{0:ad 1:bf} 2:{1:e 2:g}", L"-4", L"", L"-0");
+
+            LOG_OUTPUT(L"An item with a new top-level name starts a branch of new groups.");
+            source->Append(makeItem(L"h", 3, 0));
+            step(L"adbfegh", L"1:{0:ad 1:bf} 2:{1:e 2:g} 3:{0:h}", L"+6", L"+2", L"");
+
+            LOG_OUTPUT(L"The incremental result matches a full recompute.");
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"adbfegh", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:{0:ad 1:bf} 2:{1:e 2:g} 3:{0:h}", DescribeGroups(view->CollectionGroups).c_str());
+
+            view->VectorChanged -= token;
+            groups->VectorChanged -= groupsToken;
+            secondSubgroups->VectorChanged -= subgroupsToken;
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceGroupSort()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            auto description = ref new PropertyGroupDescription(L"Int32Property");
+            VERIFY_ARE_EQUAL(0u, description->SortDescriptions->Size);
+            VERIFY_IS_NULL(description->CustomSort);
+
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->GroupDescriptions->Append(description);
+            auto view = cvs->View;
+            auto groups = view->CollectionGroups;
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ba 2:d 0:c", DescribeGroups(groups).c_str());
+
+            LOG_OUTPUT(L"Group SortDescriptions order the groups by a group property, in the same view.");
+            description->SortDescriptions->Append(ref new SortDescription(L"Name", CollectionViewSortDirection::Ascending));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"0:c 1:ba 2:d", DescribeGroups(groups).c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", ShapingNamesOf(view)->Data());
+
+            description->SortDescriptions->Clear();
+            description->SortDescriptions->Append(ref new SortDescription(L"Key", CollectionViewSortDirection::Descending));
+            VERIFY_ARE_STRINGS_EQUAL(L"2:d 1:ba 0:c", DescribeGroups(groups).c_str());
+
+            LOG_OUTPUT(L"A new group is inserted at its place in the group order.");
+            auto groupCounts = std::make_shared<VectorChangeCounts>();
+            auto groupsToken = CountVectorChanges(groups, groupCounts);
+            source->Append(MakeShapingItem(L"e", 3));
+            VERIFY_ARE_STRINGS_EQUAL(L"3:e 2:d 1:ba 0:c", DescribeGroups(groups).c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"+0", groupCounts->log.c_str());
+            groups->VectorChanged -= groupsToken;
+
+            LOG_OUTPUT(L"A group CustomSort compares group names and replaces the group SortDescriptions.");
+            description->CustomSort = ref new CollectionViewComparer([](Object^ x, Object^ y)
+            {
+                return safe_cast<int32>(x) - safe_cast<int32>(y);
+            });
+            VERIFY_ARE_EQUAL(0u, description->SortDescriptions->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"0:c 1:ba 2:d 3:e", DescribeGroups(groups).c_str());
+
+            LOG_OUTPUT(L"Adding a group SortDescription drops the CustomSort.");
+            description->SortDescriptions->Append(ref new SortDescription(L"ItemCount", CollectionViewSortDirection::Descending));
+            VERIFY_IS_NULL(description->CustomSort);
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ba", DescribeGroups(groups).substr(0, 4).c_str());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceCultureAndStringComparison()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            LOG_OUTPUT(L"Culture orders strings in that culture: Swedish sorts a-umlaut after z.");
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(MakeShapingItem(L"z", 0));
+            source->Append(MakeShapingItem(L"\u00E4", 0));
+            source->Append(MakeShapingItem(L"a", 0));
+
+            auto cvs = ref new CollectionViewSource();
+            VERIFY_IS_NULL(cvs->Culture);
+            cvs->Culture = L"en-US";
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
+            auto view = cvs->View;
+            VERIFY_ARE_STRINGS_EQUAL(L"a\u00E4z", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"en-US", safe_cast<ICollectionViewShaping^>(view)->Culture->Data());
+
+            cvs->Culture = L"sv-SE";
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"az\u00E4", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", safe_cast<ICollectionViewShaping^>(view)->Culture->Data());
+
+            bool threw = false;
+            try
+            {
+                cvs->Culture = L"not a culture";
+            }
+            catch (Platform::InvalidArgumentException^)
+            {
+                threw = true;
+            }
+            VERIFY_IS_TRUE(threw);
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", cvs->Culture->Data());
+
+            LOG_OUTPUT(L"StringComparison decides which string group names match; Ordinal unless set.");
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::Ordinal, (ref new PropertyGroupDescription(L"StringProperty"))->StringComparison);
+
+            auto names = ref new Platform::Collections::Vector<Object^>();
+            names->Append(MakeShapingItem(L"a", 0));
+            names->Append(MakeShapingItem(L"A", 0));
+            names->Append(MakeShapingItem(L"b", 0));
+
+            auto ordinal = ref new CollectionViewSource();
+            ordinal->Source = names;
+            ordinal->GroupDescriptions->Append(ref new PropertyGroupDescription(L"StringProperty"));
+            VERIFY_ARE_STRINGS_EQUAL(L"a:a A:A b:b", DescribeGroups(ordinal->View->CollectionGroups).c_str());
+
+            auto ignoreCase = ref new CollectionViewSource();
+            ignoreCase->Source = names;
+            auto description = ref new PropertyGroupDescription(L"StringProperty", nullptr, CollectionViewStringComparison::OrdinalIgnoreCase);
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, description->StringComparison);
+            ignoreCase->GroupDescriptions->Append(description);
+            VERIFY_ARE_STRINGS_EQUAL(L"a:aA b:b", DescribeGroups(ignoreCase->View->CollectionGroups).c_str());
+
+            LOG_OUTPUT(L"An item added later joins the group whose name matches it.");
+            names->Append(MakeShapingItem(L"B", 0));
+            VERIFY_ARE_STRINGS_EQUAL(L"a:aA b:bB", DescribeGroups(ignoreCase->View->CollectionGroups).c_str());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewShapingSourceCollection()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource();
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            auto shaping = safe_cast<ICollectionViewShaping^>(cvs->View);
+            VERIFY_IS_TRUE(shaping->SourceCollection == source);
+
+            LOG_OUTPUT(L"Shaping does not change it.");
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            VERIFY_IS_TRUE(safe_cast<ICollectionViewShaping^>(cvs->View)->SourceCollection == source);
+
+            LOG_OUTPUT(L"A new Source gives a view over it.");
+            auto other = MakeShapingSource();
+            cvs->Source = other;
+            VERIFY_IS_TRUE(safe_cast<ICollectionViewShaping^>(cvs->View)->SourceCollection == other);
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceFilterEvent()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            auto view = cvs->View;
+
+            LOG_OUTPUT(L"A handler alone shapes the view: Accepted starts true and the handler decides.");
+            int raised = 0;
+            bool sawAcceptedByDefault = true;
+            auto token = cvs->Filter += ref new FilterEventHandler([&](Object^ sender, FilterEventArgs^ e)
+            {
+                raised++;
+                sawAcceptedByDefault = sawAcceptedByDefault && e->Accepted;
+                e->Accepted = safe_cast<InpcDataSource^>(e->Item)->Int32Property == 1;
+            });
+            VERIFY_ARE_EQUAL(4, raised);
+            VERIFY_IS_TRUE(sawAcceptedByDefault);
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"While the event has handlers it replaces the view's Filter delegate.");
+            safe_cast<ICollectionViewShaping^>(view)->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property == 2;
+            });
+            VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(view)->Data());
+            source->Append(MakeShapingItem(L"e", 1));
+            VERIFY_ARE_STRINGS_EQUAL(L"bae", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Removing the last handler hands filtering back to the delegate.");
+            cvs->Filter -= token;
+            VERIFY_ARE_STRINGS_EQUAL(L"d", ShapingNamesOf(view)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceFilterEventDoesNotLeak()
+    {
+        TestCleanupWrapper cleanup;
+        Platform::WeakReference cvsRef;
+        Platform::WeakReference viewRef;
+        Platform::WeakReference keptCvsRef;
+        ::Windows::Foundation::Collections::IObservableVector<Object^>^ source = nullptr;
+        ICollectionView^ keptView = nullptr;
+        auto sender = std::make_shared<Platform::WeakReference>();
+        auto raised = std::make_shared<int>(0);
+
+        RunOnUIThread([&]()
+        {
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = MakeShapingSource(); // b1 d2 a1 c0
+            cvs->Filter += ref new FilterEventHandler([](Object^, FilterEventArgs^ e)
+            {
+                e->Accepted = safe_cast<InpcDataSource^>(e->Item)->Int32Property == 1;
+            });
+            VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(cvs->View)->Data());
+            cvsRef = cvs;
+            viewRef = cvs->View;
+
+            source = MakeShapingSource();
+            auto kept = ref new CollectionViewSource();
+            kept->Source = source;
+            kept->Filter += ref new FilterEventHandler([sender, raised](Object^ eventSender, FilterEventArgs^ e)
+            {
+                *sender = eventSender ? Platform::WeakReference(eventSender) : Platform::WeakReference();
+                ++*raised;
+                e->Accepted = safe_cast<InpcDataSource^>(e->Item)->Int32Property == 1;
+            });
+            keptView = kept->View;
+            keptCvsRef = kept;
+            VERIFY_IS_TRUE(sender->Resolve<CollectionViewSource>() == kept);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Released, the CollectionViewSource and its view are destroyed: the view holds the handlers, not the source.");
+            VERIFY_IS_NULL(cvsRef.Resolve<CollectionViewSource>());
+            VERIFY_IS_NULL(viewRef.Resolve<Object>());
+
+            LOG_OUTPUT(L"A view kept alone keeps filtering through the handlers; the released source is no longer the sender.");
+            VERIFY_IS_NULL(keptCvsRef.Resolve<CollectionViewSource>());
+            *raised = 0;
+            source->Append(MakeShapingItem(L"e", 1));
+            source->Append(MakeShapingItem(L"f", 2));
+            VERIFY_ARE_EQUAL(2, *raised);
+            VERIFY_ARE_STRINGS_EQUAL(L"bae", ShapingNamesOf(keptView)->Data());
+            VERIFY_IS_NULL(sender->Resolve<Object>());
+            keptView = nullptr;
+            source = nullptr;
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceFilterEventsUnderGCStress()
+    {
+        TestCleanupWrapper cleanup;
+        Microsoft::UI::Dispatching::DispatcherQueue^ queue = nullptr;
+        auto kept = std::make_shared<std::vector<ICollectionView^>>();
+        RunOnUIThread([&]()
+        {
+            queue = Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+        });
+
+        for (int round = 0; round < 20; ++round)
+        {
+            VERIFY_IS_TRUE(queue->TryEnqueue(ref new Microsoft::UI::Dispatching::DispatcherQueueHandler([kept]()
+            {
+                for (int i = 0; i < 25; ++i)
+                {
+                    auto cvs = ref new CollectionViewSource();
+                    cvs->Source = MakeShapingSource();
+                    auto token = cvs->Filter += ref new FilterEventHandler([](Object^, FilterEventArgs^ e)
+                    {
+                        e->Accepted = safe_cast<InpcDataSource^>(e->Item)->Int32Property != 0;
+                    });
+                    auto view = cvs->View;
+                    cvs->Filter += ref new FilterEventHandler([](Object^, FilterEventArgs^) {});
+                    cvs->Filter -= token;
+                    if (i % 5 == 0)
+                    {
+                        kept->push_back(view);
+                    }
+                    else if (i % 5 == 1 && !kept->empty())
+                    {
+                        kept->erase(kept->begin());
+                    }
+                }
+            })));
+            TestServices::WindowHelper->GCCollect();
+            TestServices::WindowHelper->GCCollect();
+        }
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            for (auto const& view : *kept)
+            {
+                VERIFY_IS_TRUE(view->Size > 0);
+            }
+            kept->clear();
+        });
+        TestServices::WindowHelper->GCCollect();
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceDescriptorPropertySystem()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto panel = safe_cast<StackPanel^>(XamlReader::Load(
+                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel.Resources>"
+                L"    <Border x:Key='Holder' Tag='StringProperty'/>"
+                L"    <Border x:Key='ComparisonHolder'/>"
+                L"    <PropertyGroupDescription x:Key='Bound' PropertyName='StringProperty' StringComparison='{Binding Tag, Source={StaticResource ComparisonHolder}}'/>"
+                L"    <Border x:Key='TwoWayHolder'/>"
+                L"    <PropertyGroupDescription x:Key='TwoWayBound' PropertyName='StringProperty' StringComparison='{Binding Tag, Source={StaticResource TwoWayHolder}, Mode=TwoWay}'/>"
+                L"    <CollectionViewSource x:Key='People'>"
+                L"      <CollectionViewSource.SortDescriptions>"
+                L"        <SortDescription PropertyName='{Binding Tag, Source={StaticResource Holder}}'/>"
+                L"      </CollectionViewSource.SortDescriptions>"
+                L"      <CollectionViewSource.GroupDescriptions>"
+                L"        <PropertyGroupDescription PropertyName='Int32Property'>"
+                L"          <PropertyGroupDescription.GroupNames>"
+                L"            <x:Int32>3</x:Int32>"
+                L"            <x:Int32>1</x:Int32>"
+                L"          </PropertyGroupDescription.GroupNames>"
+                L"        </PropertyGroupDescription>"
+                L"      </CollectionViewSource.GroupDescriptions>"
+                L"    </CollectionViewSource>"
+                L"  </StackPanel.Resources>"
+                L"</StackPanel>"));
+            auto cvs = safe_cast<CollectionViewSource^>(panel->Resources->Lookup(L"People"));
+            auto holder = safe_cast<Border^>(panel->Resources->Lookup(L"Holder"));
+            auto sort = cvs->SortDescriptions->GetAt(0);
+            auto group = safe_cast<PropertyGroupDescription^>(cvs->GroupDescriptions->GetAt(0));
+            cvs->Source = MakeShapingSource(); // b1 d2 a1 c0
+
+            LOG_OUTPUT(L"GroupNames declared in markup are the explicit groups, first and in order.");
+            VERIFY_ARE_EQUAL(2u, group->GroupNames->Size);
+            auto groups = cvs->View->CollectionGroups;
+            VERIFY_ARE_EQUAL(4u, groups->Size);
+            VERIFY_ARE_EQUAL(0u, safe_cast<ICollectionViewGroup^>(groups->GetAt(0))->GroupItems->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"ab", ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(1))->GroupItems)->Data());
+
+            LOG_OUTPUT(L"A binding cannot change a SortDescription a collection holds: it stays sealed.");
+            VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
+            holder->Tag = L"Int32Property";
+            VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(cvs->View)->Data());
+            holder->Tag = L"Name";
+            VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
+
+            LOG_OUTPUT(L"A rejected value from a binding keeps the binding: the next valid value flows.");
+            auto comparisonHolder = safe_cast<Border^>(panel->Resources->Lookup(L"ComparisonHolder"));
+            auto bound = safe_cast<PropertyGroupDescription^>(panel->Resources->Lookup(L"Bound"));
+            comparisonHolder->Tag = CollectionViewStringComparison::OrdinalIgnoreCase;
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, bound->StringComparison);
+            comparisonHolder->Tag = static_cast<CollectionViewStringComparison>(99);
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, bound->StringComparison);
+            comparisonHolder->Tag = CollectionViewStringComparison::CurrentCultureIgnoreCase;
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::CurrentCultureIgnoreCase, bound->StringComparison);
+
+            LOG_OUTPUT(L"The same with a TwoWay binding: the binding stays, and the restored value does not flow back to the source.");
+            auto twoWayHolder = safe_cast<Border^>(panel->Resources->Lookup(L"TwoWayHolder"));
+            auto twoWayBound = safe_cast<PropertyGroupDescription^>(panel->Resources->Lookup(L"TwoWayBound"));
+            twoWayHolder->Tag = CollectionViewStringComparison::OrdinalIgnoreCase;
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, twoWayBound->StringComparison);
+            twoWayHolder->Tag = static_cast<CollectionViewStringComparison>(99);
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, twoWayBound->StringComparison);
+            VERIFY_IS_NOT_NULL(twoWayHolder->Tag);
+            const auto twoWaySource = safe_cast<CollectionViewStringComparison>(twoWayHolder->Tag);
+            LOG_OUTPUT(L"Source after the rejected value: %d", static_cast<int>(twoWaySource));
+            VERIFY_ARE_EQUAL(static_cast<CollectionViewStringComparison>(99), twoWaySource,
+                L"The restored value does not flow back: the binding is updating the target, so the source keeps its value.");
+            twoWayHolder->Tag = CollectionViewStringComparison::CurrentCultureIgnoreCase;
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::CurrentCultureIgnoreCase, twoWayBound->StringComparison);
+
+            LOG_OUTPUT(L"An invalid StringComparison is rejected and not stored.");
+            bool threw = false;
+            try
+            {
+                group->StringComparison = static_cast<CollectionViewStringComparison>(99);
+            }
+            catch (Platform::Exception^)
+            {
+                threw = true;
+            }
+            VERIFY_IS_TRUE(threw);
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::Ordinal, group->StringComparison);
+
+            LOG_OUTPUT(L"The public GroupNameFromItem and NamesMatch call the description's overridables.");
+            auto item = MakeShapingItem(L"z", 7);
+            VERIFY_ARE_EQUAL(7, safe_cast<int32>(group->GroupNameFromItem(item, 0, nullptr)));
+            VERIFY_IS_TRUE(group->NamesMatch(7, 7));
+            VERIFY_IS_FALSE(group->NamesMatch(7, 8));
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceGroupingKeepsView()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            auto view = cvs->View;
+
+            // "P" PropertyChanged(CollectionGroups), "R" / "c" a Reset / other change of the view,
+            // "g" / "x" a Reset / other change of its CollectionGroups.
+            auto log = std::make_shared<std::wstring>();
+            auto propertyToken = safe_cast<INotifyPropertyChanged^>(view)->PropertyChanged += ref new PropertyChangedEventHandler(
+                [log](Object^, PropertyChangedEventArgs^ args)
+                {
+                    if (args->PropertyName == L"CollectionGroups")
+                    {
+                        *log += L"P";
+                    }
+                });
+            auto viewToken = view->VectorChanged += ref new ::Windows::Foundation::Collections::VectorChangedEventHandler<Object^>(
+                [log](::Windows::Foundation::Collections::IObservableVector<Object^>^, ::Windows::Foundation::Collections::IVectorChangedEventArgs^ args)
+                {
+                    *log += (args->CollectionChange == ::Windows::Foundation::Collections::CollectionChange::Reset) ? L"R" : L"c";
+                });
+
+            LOG_OUTPUT(L"Grouping starts on the same view: CollectionGroups turns non-null, announced before the Reset.");
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"PR", log->c_str());
+            auto groups = view->CollectionGroups;
+            VERIFY_IS_NOT_NULL(groups);
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ba 2:d 0:c", DescribeGroups(groups).c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"badc", ShapingNamesOf(view)->Data());
+
+            auto groupsToken = groups->VectorChanged += ref new ::Windows::Foundation::Collections::VectorChangedEventHandler<Object^>(
+                [log](::Windows::Foundation::Collections::IObservableVector<Object^>^, ::Windows::Foundation::Collections::IVectorChangedEventArgs^ args)
+                {
+                    *log += (args->CollectionChange == ::Windows::Foundation::Collections::CollectionChange::Reset) ? L"g" : L"x";
+                });
+
+            LOG_OUTPUT(L"A regroup keeps the view and its CollectionGroups: one Reset of complete groups, then one of the view.");
+            log->clear();
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_TRUE(view->CollectionGroups == groups);
+            VERIFY_ARE_STRINGS_EQUAL(L"gR", log->c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ab 0:c 2:d", DescribeGroups(groups).c_str());
+            VERIFY_ARE_EQUAL(4u, view->Size);
+
+            log->clear();
+            auto deferral = cvs->DeferRefresh();
+            cvs->GroupDescriptions->Clear();
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"StringProperty"));
+            delete deferral;
+            VERIFY_IS_TRUE(view->CollectionGroups == groups);
+            VERIFY_ARE_STRINGS_EQUAL(L"gR", log->c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"a:a b:b c:c d:d", DescribeGroups(groups).c_str());
+
+            LOG_OUTPUT(L"Source changes on the grouped view stay incremental.");
+            log->clear();
+            source->Append(MakeShapingItem(L"e", 0));
+            VERIFY_ARE_STRINGS_EQUAL(L"a:a b:b c:c d:d e:e", DescribeGroups(groups).c_str());
+            VERIFY_IS_TRUE(log->find(L'R') == std::wstring::npos);
+            VERIFY_IS_TRUE(log->find(L'g') == std::wstring::npos);
+
+            LOG_OUTPUT(L"Grouping stops on the same view: CollectionGroups turns null, announced before the Reset; the groups let go of their items.");
+            log->clear();
+            cvs->GroupDescriptions->Clear();
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_NULL(view->CollectionGroups);
+            VERIFY_ARE_STRINGS_EQUAL(L"PRg", log->c_str());
+            VERIFY_ARE_EQUAL(0u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"abcde", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Grouping again brings back the same CollectionGroups object.");
+            log->clear();
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_TRUE(view->CollectionGroups == groups);
+            VERIFY_ARE_STRINGS_EQUAL(L"gPR", log->c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ab 0:ce 2:d", DescribeGroups(groups).c_str());
+
+            LOG_OUTPUT(L"A view created grouped answers CollectionGroups from the start.");
+            auto groupedCvs = ref new CollectionViewSource();
+            groupedCvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            groupedCvs->Source = MakeShapingSource();
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ba 2:d 0:c", DescribeGroups(groupedCvs->View->CollectionGroups).c_str());
+
+            groups->VectorChanged -= groupsToken;
+            view->VectorChanged -= viewToken;
+            safe_cast<INotifyPropertyChanged^>(view)->PropertyChanged -= propertyToken;
+        });
+    }
+
+    // An item whose PropertyChanged handlers are counted, so a test can see what live shaping observes.
+    ref class LiveShapingTestItem sealed : public ICustomPropertyProvider, public INotifyPropertyChanged
+    {
+    public:
+        LiveShapingTestItem(Platform::String^ name, int32 value, Platform::String^ group)
+            : m_name(name), m_value(value), m_group(group), m_handlerCount(0)
+        {
+        }
+
+        property Platform::String^ Name
+        {
+            Platform::String^ get() { return m_name; }
+            void set(Platform::String^ value) { m_name = value; PropertyChanged(this, ref new PropertyChangedEventArgs(L"Name")); }
+        }
+
+        property int32 Value
+        {
+            int32 get() { return m_value; }
+            void set(int32 value) { m_value = value; PropertyChanged(this, ref new PropertyChangedEventArgs(L"Value")); }
+        }
+
+        property Platform::String^ Group
+        {
+            Platform::String^ get() { return m_group; }
+            void set(Platform::String^ value) { m_group = value; PropertyChanged(this, ref new PropertyChangedEventArgs(L"Group")); }
+        }
+
+        property int32 HandlerCount
+        {
+            int32 get() { return m_handlerCount; }
+        }
+
+        virtual event PropertyChangedEventHandler^ PropertyChanged
+        {
+            virtual ::Windows::Foundation::EventRegistrationToken add(PropertyChangedEventHandler^ handler)
+            {
+                ++m_handlerCount;
+                return m_propertyChanged += handler;
+            }
+            virtual void remove(::Windows::Foundation::EventRegistrationToken token)
+            {
+                --m_handlerCount;
+                m_propertyChanged -= token;
+            }
+
+        protected:
+            virtual void raise(Platform::Object^ sender, PropertyChangedEventArgs^ args)
+            {
+                m_propertyChanged(sender, args);
+            }
+        }
+
+        virtual ICustomProperty^ GetCustomProperty(Platform::String^ name)
+        {
+            if (name == L"Name")
+            {
+                return ref new CustomProperty(ref new PropertyInfo(name, Platform::String::typeid,
+                    ref new PropertyGetValue([](Platform::Object^ target) -> Platform::Object^ { return safe_cast<LiveShapingTestItem^>(target)->Name; }), nullptr));
+            }
+            if (name == L"Value")
+            {
+                return ref new CustomProperty(ref new PropertyInfo(name, int::typeid,
+                    ref new PropertyGetValue([](Platform::Object^ target) -> Platform::Object^ { return safe_cast<LiveShapingTestItem^>(target)->Value; }), nullptr));
+            }
+            if (name == L"Group")
+            {
+                return ref new CustomProperty(ref new PropertyInfo(name, Platform::String::typeid,
+                    ref new PropertyGetValue([](Platform::Object^ target) -> Platform::Object^ { return safe_cast<LiveShapingTestItem^>(target)->Group; }), nullptr));
+            }
+            return nullptr;
+        }
+
+        virtual ICustomProperty^ GetIndexedProperty(Platform::String^ name, ::Windows::UI::Xaml::Interop::TypeName typeName)
+        {
+            return nullptr;
+        }
+
+        virtual Platform::String^ GetStringRepresentation()
+        {
+            return m_name;
+        }
+
+        virtual property ::Windows::UI::Xaml::Interop::TypeName Type
+        {
+            ::Windows::UI::Xaml::Interop::TypeName get()
+            {
+                ::Windows::UI::Xaml::Interop::TypeName typeName;
+                typeName.Name = L"Object";
+                typeName.Kind = ::Windows::UI::Xaml::Interop::TypeKind::Primitive;
+                return typeName;
+            }
+        }
+
+    private:
+        Platform::String^ m_name;
+        int32 m_value;
+        Platform::String^ m_group;
+        int32 m_handlerCount;
+        event PropertyChangedEventHandler^ m_propertyChanged;
+    };
+
+    namespace
+    {
+        // b1 d2 a1 c0, groups x y x z
+        Platform::Collections::Vector<Object^>^ MakeLiveShapingSource()
+        {
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(ref new LiveShapingTestItem(L"b", 1, L"x"));
+            source->Append(ref new LiveShapingTestItem(L"d", 2, L"y"));
+            source->Append(ref new LiveShapingTestItem(L"a", 1, L"x"));
+            source->Append(ref new LiveShapingTestItem(L"c", 0, L"z"));
+            return source;
+        }
+
+        LiveShapingTestItem^ LiveItem(::Windows::Foundation::Collections::IVector<Object^>^ source, const wchar_t* name)
+        {
+            for (unsigned int i = 0; i < source->Size; i++)
+            {
+                auto item = safe_cast<LiveShapingTestItem^>(source->GetAt(i));
+                if (item->Name == ref new Platform::String(name))
+                {
+                    return item;
+                }
+            }
+            return nullptr;
+        }
+
+        Platform::String^ LiveNamesOf(::Windows::Foundation::Collections::IVector<Object^>^ items)
+        {
+            Platform::String^ result = L"";
+            for (unsigned int i = 0; i < items->Size; i++)
+            {
+                result += safe_cast<LiveShapingTestItem^>(items->GetAt(i))->Name;
+            }
+            return result;
+        }
+
+        Platform::String^ LiveGroupsOf(::Windows::Foundation::Collections::IObservableVector<Object^>^ groups)
+        {
+            Platform::String^ result = L"";
+            for (unsigned int i = 0; i < groups->Size; i++)
+            {
+                auto group = safe_cast<ICollectionViewGroup^>(groups->GetAt(i));
+                auto key = safe_cast<ICustomPropertyProvider^>(group->Group)->GetCustomProperty(L"Key")->GetValue(group->Group);
+                if (i > 0)
+                {
+                    result += L" ";
+                }
+                result += safe_cast<Platform::String^>(key);
+                result += L":";
+                result += LiveNamesOf(group->GroupItems);
+            }
+            return result;
+        }
+
+        Platform::String^ HandlerCountsOf(::Windows::Foundation::Collections::IVector<Object^>^ items)
+        {
+            Platform::String^ result = L"";
+            for (unsigned int i = 0; i < items->Size; i++)
+            {
+                result += ref new Platform::String(std::to_wstring(safe_cast<LiveShapingTestItem^>(items->GetAt(i))->HandlerCount).c_str());
+            }
+            return result;
+        }
+    }
+
+    void BindingIntegrationTests::CollectionViewLiveSorting()
+    {
+        TestCleanupWrapper cleanup;
+        Platform::Collections::Vector<Object^>^ source;
+        CollectionViewSource^ cvs;
+        ICollectionView^ view;
+        auto counts = std::make_shared<VectorChangeCounts>();
+
+        RunOnUIThread([&]()
+        {
+            source = MakeLiveShapingSource();
+            cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", CollectionViewSortDirection::Ascending));
+            view = cvs->View;
+            CountVectorChanges(view, counts);
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", LiveNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"The view can change live shaping, which is off by default.");
+            auto live = safe_cast<ICollectionViewLiveShaping^>(view);
+            VERIFY_IS_TRUE(live->CanChangeLiveSorting);
+            VERIFY_IS_TRUE(live->CanChangeLiveFiltering);
+            VERIFY_IS_TRUE(live->CanChangeLiveGrouping);
+            VERIFY_IS_FALSE(live->IsLiveSorting->Value);
+            VERIFY_IS_FALSE(cvs->IsLiveSortingRequested);
+            VERIFY_ARE_EQUAL(0u, live->LiveSortingProperties->Size);
+            VERIFY_THROWS_WINRT(live->IsLiveSorting = nullptr, Platform::Exception^, L"As in WPF, IsLiveSorting cannot be set to null.");
+
+            LOG_OUTPUT(L"Without live sorting a property change does not move the item.");
+            LiveItem(source, L"b")->Value = 5;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"cadb", LiveNamesOf(view)->Data());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"IsLiveSortingRequested turns it on; with no LiveSortingProperties the SortDescriptions' properties are observed.");
+            cvs->IsLiveSortingRequested = true;
+            VERIFY_IS_TRUE(safe_cast<ICollectionViewLiveShaping^>(view)->IsLiveSorting->Value);
+            LiveItem(source, L"a")->Value = 9;
+            LiveItem(source, L"c")->Value = 1; // still first: in order, so nothing is raised for it
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"cdba", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"-1+3", counts->log.c_str());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"Explicit LiveSortingProperties replace the SortDescriptions' properties.");
+            cvs->LiveSortingProperties->Append(L"Name");
+            LiveItem(source, L"d")->Value = 10; // Value is no longer observed
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"cdba", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+            LiveItem(source, L"d")->Name = L"e"; // observed: the item is placed by its Value, 10
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"cbae", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"-1+3", counts->log.c_str());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"Several changes in one turn are restored together, ignoring the items not yet placed.");
+            cvs->LiveSortingProperties->Clear();
+            LiveItem(source, L"b")->Value = 20;
+            LiveItem(source, L"c")->Value = 15;
+            LiveItem(source, L"e")->Value = 3;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"eacb", LiveNamesOf(view)->Data());
+            VERIFY_IS_TRUE(counts->log.find(L'R') == std::wstring::npos);
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"eacb", LiveNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Turning live sorting off on the view stops it.");
+            safe_cast<ICollectionViewLiveShaping^>(view)->IsLiveSorting = false;
+            counts->log.clear();
+            LiveItem(source, L"e")->Value = 100;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"eacb", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewLiveFiltering()
+    {
+        TestCleanupWrapper cleanup;
+        Platform::Collections::Vector<Object^>^ source;
+        CollectionViewSource^ cvs;
+        ICollectionView^ view;
+        auto counts = std::make_shared<VectorChangeCounts>();
+
+        RunOnUIThread([&]()
+        {
+            source = MakeLiveShapingSource();
+            cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            safe_cast<ICollectionViewShaping^>(cvs->View)->Filter = ref new CollectionViewFilter([](Object^ item) { return safe_cast<LiveShapingTestItem^>(item)->Value != 0; });
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Name", CollectionViewSortDirection::Ascending));
+            cvs->IsLiveFilteringRequested = true;
+            view = cvs->View;
+            CountVectorChanges(view, counts);
+            VERIFY_ARE_STRINGS_EQUAL(L"abd", LiveNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"As in WPF, live filtering observes only LiveFilteringProperties, so with none nothing is filtered live.");
+            LiveItem(source, L"b")->Value = 0;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"abd", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+
+            LOG_OUTPUT(L"Observing Value catches up on b, changed while it was not observed (WPF: RebuildLocalArray).");
+            cvs->LiveFilteringProperties->Append(L"Value");
+            VERIFY_ARE_STRINGS_EQUAL(L"ad", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"R", counts->log.c_str());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"With Value observed, an item the filter now rejects leaves the view.");
+            LiveItem(source, L"d")->Value = 0;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"a", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"-1", counts->log.c_str());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"An item the filter now accepts joins the view at its sorted position.");
+            LiveItem(source, L"c")->Value = 4;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"ac", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"+1", counts->log.c_str());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"A change that does not affect the filter raises nothing.");
+            LiveItem(source, L"a")->Value = 7;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"ac", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"ac", LiveNamesOf(view)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewLiveGrouping()
+    {
+        TestCleanupWrapper cleanup;
+        Platform::Collections::Vector<Object^>^ source;
+        CollectionViewSource^ cvs;
+        ICollectionView^ view;
+
+        RunOnUIThread([&]()
+        {
+            source = MakeLiveShapingSource();
+            cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Name", CollectionViewSortDirection::Ascending));
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Group"));
+            cvs->IsLiveGroupingRequested = true;
+            view = cvs->View;
+            VERIFY_ARE_STRINGS_EQUAL(L"x:ab z:c y:d", LiveGroupsOf(view->CollectionGroups)->Data());
+
+            LOG_OUTPUT(L"With no LiveGroupingProperties the GroupDescriptions' properties are observed: the item moves to its new group.");
+            LiveItem(source, L"b")->Group = L"y";
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"x:a z:c y:bd", LiveGroupsOf(view->CollectionGroups)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"acbd", LiveNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"A group the item empties is removed.");
+            LiveItem(source, L"c")->Group = L"x";
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"x:ac y:bd", LiveGroupsOf(view->CollectionGroups)->Data());
+
+            LOG_OUTPUT(L"A group the item starts is inserted before the first group whose first item sorts after it.");
+            LiveItem(source, L"a")->Group = L"w";
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"w:a x:c y:bd", LiveGroupsOf(view->CollectionGroups)->Data());
+
+            LOG_OUTPUT(L"Explicit LiveGroupingProperties replace the GroupDescriptions' properties; the change regroups, so groups follow their first item.");
+            cvs->LiveGroupingProperties->Append(L"Name");
+            VERIFY_ARE_STRINGS_EQUAL(L"w:a y:bd x:c", LiveGroupsOf(view->CollectionGroups)->Data());
+            LiveItem(source, L"d")->Group = L"x";
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"w:a y:bd x:c", LiveGroupsOf(view->CollectionGroups)->Data());
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"w:a y:b x:cd", LiveGroupsOf(view->CollectionGroups)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewLiveShapingObservedItems()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeLiveShapingSource();
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", CollectionViewSortDirection::Ascending));
+            auto view = cvs->View;
+            VERIFY_ARE_STRINGS_EQUAL(L"0000", HandlerCountsOf(source)->Data());
+
+            LOG_OUTPUT(L"Live sorting observes each source item with one PropertyChanged handler, whatever the number of live properties that are plain names on an INotifyPropertyChanged item.");
+            cvs->IsLiveSortingRequested = true;
+            VERIFY_ARE_STRINGS_EQUAL(L"1111", HandlerCountsOf(source)->Data());
+            cvs->LiveSortingProperties->Append(L"Value");
+            cvs->LiveSortingProperties->Append(L"Name");
+            VERIFY_ARE_STRINGS_EQUAL(L"1111", HandlerCountsOf(source)->Data());
+            cvs->LiveSortingProperties->Clear();
+
+            LOG_OUTPUT(L"A removed item is no longer observed; an added one is.");
+            auto removed = safe_cast<LiveShapingTestItem^>(source->GetAt(1));
+            source->RemoveAt(1);
+            VERIFY_ARE_EQUAL(0, removed->HandlerCount);
+            auto added = ref new LiveShapingTestItem(L"e", 3, L"x");
+            source->Append(added);
+            VERIFY_ARE_EQUAL(1, added->HandlerCount);
+
+            LOG_OUTPUT(L"A replaced item is no longer observed; its replacement is.");
+            auto replaced = safe_cast<LiveShapingTestItem^>(source->GetAt(0));
+            auto replacement = ref new LiveShapingTestItem(L"f", 4, L"y");
+            source->SetAt(0, replacement);
+            VERIFY_ARE_EQUAL(0, replaced->HandlerCount);
+            VERIFY_ARE_EQUAL(1, replacement->HandlerCount);
+            VERIFY_ARE_STRINGS_EQUAL(L"1111", HandlerCountsOf(source)->Data());
+
+            LOG_OUTPUT(L"Turning live shaping off stops observing.");
+            cvs->IsLiveSortingRequested = false;
+            VERIFY_ARE_STRINGS_EQUAL(L"0000", HandlerCountsOf(source)->Data());
+
+            LOG_OUTPUT(L"A source Reset observes the new items only.");
+            cvs->IsLiveSortingRequested = true;
+            auto items = ref new Platform::Collections::Vector<Object^>();
+            for (unsigned int i = 0; i < source->Size; i++)
+            {
+                items->Append(source->GetAt(i));
+            }
+            source->Clear();
+            VERIFY_ARE_STRINGS_EQUAL(L"0000", HandlerCountsOf(items)->Data());
+
+            LOG_OUTPUT(L"A view the CollectionViewSource lets go of keeps its own rules, as a WPF view does, until they are turned off.");
+            source->Append(items->GetAt(0));
+            VERIFY_ARE_EQUAL(1, safe_cast<LiveShapingTestItem^>(items->GetAt(0))->HandlerCount);
+            cvs->Source = nullptr;
+            VERIFY_ARE_EQUAL(1, safe_cast<LiveShapingTestItem^>(items->GetAt(0))->HandlerCount);
+            safe_cast<ICollectionViewLiveShaping^>(view)->IsLiveSorting = false;
+            VERIFY_ARE_EQUAL(0, safe_cast<LiveShapingTestItem^>(items->GetAt(0))->HandlerCount);
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewLiveShapingDeferRefresh()
+    {
+        TestCleanupWrapper cleanup;
+        Platform::Collections::Vector<Object^>^ source;
+        CollectionViewSource^ cvs;
+        ICollectionView^ view;
+        std::function<void()> closeDeferral;
+        auto counts = std::make_shared<VectorChangeCounts>();
+
+        RunOnUIThread([&]()
+        {
+            source = MakeLiveShapingSource();
+            cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", CollectionViewSortDirection::Ascending));
+            cvs->IsLiveSortingRequested = true;
+            view = cvs->View;
+            CountVectorChanges(view, counts);
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", LiveNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Live changes made under DeferRefresh wait for the deferral.");
+            auto deferral = cvs->DeferRefresh();
+            closeDeferral = [deferral]() mutable { delete deferral; };
+            LiveItem(source, L"a")->Value = 9;
+            LiveItem(source, L"b")->Value = 7;
+            LiveItem(source, L"c")->Value = 8;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+
+            LOG_OUTPUT(L"Closing it restores them at once, incrementally.");
+            closeDeferral();
+            closeDeferral = nullptr;
+            VERIFY_ARE_STRINGS_EQUAL(L"dbca", LiveNamesOf(view)->Data());
+            VERIFY_IS_FALSE(counts->log.empty());
+            VERIFY_IS_TRUE(counts->log.find(L'R') == std::wstring::npos);
+            counts->log.clear();
+
+            LOG_OUTPUT(L"With a rule change pending as well, closing recomputes once.");
+            auto deferral = cvs->DeferRefresh();
+            LiveItem(source, L"d")->Value = 50;
+            cvs->SortDescriptions->Clear();
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", CollectionViewSortDirection::Descending));
+            delete deferral;
+            VERIFY_ARE_STRINGS_EQUAL(L"dacb", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"R", counts->log.c_str());
         });
     }
 

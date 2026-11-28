@@ -129,7 +129,7 @@ public:
     void SetResolvedActualWidthInternal(double width);
 
     // Internal - sorting: the owning TableView owns sort policy and pushes the resulting direction
-    // into this read-only DP, then republishes it to the realized header chevrons. The push is
+    // into the DP; OnPropertyChanged republishes it to the realized header chevrons. The push is
     // required rather than a binding: SortIndicatorDirection and SortDirection are distinct WinRT
     // enums, so a {Binding} between them silently does nothing.
     void SetSortStateInternal(winrt::SortDirection direction);
@@ -173,6 +173,7 @@ private:
     bool m_cellContentChangePosted{ false };
     bool m_cellContentChangePending{ false };
     bool m_hasBeenOwned{ false };
+    bool m_isSettingSortStateInternal{ false };
     bool m_queuedCellContentResetAutoWidth{ false };
     uint32_t m_cellContentChangeGeneration{ 0 };
 

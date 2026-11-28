@@ -2,10 +2,10 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People density"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     Style="{StaticResource DefaultTableViewStyle}"
     SelectionMode="Single">
-    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
     <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
     <tv:TableViewTemplateColumn Header="Status" Width="120" CellTemplate="{StaticResource ActiveStatusChipTemplate}" SortMemberPath="IsActive"/>

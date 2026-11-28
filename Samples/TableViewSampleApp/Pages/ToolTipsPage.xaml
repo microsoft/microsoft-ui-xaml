@@ -38,16 +38,16 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="ToolTipsTable"
                 AutomationProperties.Name="People with tooltips"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
                 <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
-                                             CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                                             CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
                 <tv:TableViewColumn x:Name="NameColumn" Header="Name" Width="160"
                                          HeaderToolTip="Full name, as entered" DisplayMemberBinding="{Binding FullName}"/>
-                <tv:TableViewColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="140" CanSort="False" DisplayMemberBinding="{Binding Bio}"/>
+                <tv:TableViewColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="140" CanUserSort="False" DisplayMemberBinding="{Binding Bio}"/>
                 <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"
                                              CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"
                                              HeaderToolTip="Team the person reports into"/>
@@ -55,7 +55,7 @@
                 <tv:TableViewColumn x:Name="SalaryColumn" Header="Salary" Width="100"
                                          HeaderToolTip="Salary" DisplayMemberBinding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
                 <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="74"
-                                             CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
+                                             CellTemplate="{StaticResource EmailIconCellTemplate}" CanUserSort="False"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>
@@ -93,7 +93,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="ToolTips"
-                    Description="Grouping leaves the columns alone, so every tooltip survives it, and group header bands are not cells, so they never get a cell tooltip. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping leaves the columns alone, so every tooltip survives it, and group header bands are not cells, so they never get a cell tooltip. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                 </controls:ShapingOptions>

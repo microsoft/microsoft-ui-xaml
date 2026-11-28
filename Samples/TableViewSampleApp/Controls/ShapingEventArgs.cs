@@ -37,9 +37,7 @@ public sealed class ShapingAppliedEventArgs : EventArgs
 
     public string KeyLabel { get; }
 
-    public bool IsGrouped => Mode is "grouped" or "groupedHierarchy";
-
-    public bool IsHierarchical => Mode is "hierarchy" or "groupedHierarchy";
+    public bool IsGrouped => Mode is "grouped";
 
     public bool Announce { get; }
 

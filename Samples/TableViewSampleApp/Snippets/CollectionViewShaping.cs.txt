@@ -1,0 +1,52 @@
+// The CollectionViewSource, its GroupDescriptions and its Filter handler are declared in the page's markup.
+InitializeComponent();
+Shaped.Source = Processes;
+// A view the CollectionViewSource shapes implements ICollectionViewShaping, so a header
+// click writes the view's SortDescriptions.
+ProcessTable.ItemsSource = Shaped.View;
+
+public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
+
+private string Query => FilterBox?.Text?.Trim() ?? string.Empty;
+
+// WPF's CollectionViewSource.Filter event: the handler decides, item by item, what the view shows.
+private void OnShapedFilter(object sender, FilterEventArgs e) =>
+    e.Accepted = Query.Length == 0 || ((ProcessItem)e.Item).Name.Contains(Query, StringComparison.CurrentCultureIgnoreCase);
+
+private void OnFilterChanged(object sender, TextChangedEventArgs e)
+{
+    // The handler reads the query again on Refresh.
+    Shaped.Refresh();
+}
+
+private void OnGroupToggled(object sender, RoutedEventArgs e)
+{
+    if (GroupToggle.IsOn)
+    {
+        Shaped.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProcessItem.Category)));
+    }
+    else
+    {
+        Shaped.GroupDescriptions.Clear();
+    }
+
+    // Switching between flat and grouped output gives the CollectionViewSource a new View.
+    ProcessTable.ItemsSource = Shaped.View;
+}
+
+private void OnSortByMemoryClick(object sender, RoutedEventArgs e)
+{
+    Shaped.SortDescriptions.Clear();
+    Shaped.SortDescriptions.Add(new SortDescription(nameof(ProcessItem.MemoryMB), CollectionViewSortDirection.Descending));
+}
+
+private void OnRefreshClick(object sender, RoutedEventArgs e)
+{
+    foreach (var process in Processes)
+    {
+        UpdateValues(process);
+    }
+
+    // A property edit is not a collection change: Refresh() sorts, filters and groups again.
+    ((ICollectionViewShaping)Shaped.View).Refresh();
+}

@@ -135,52 +135,5 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 AxeTestHelper.TestForAxeIssues();
             }
         }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies an Axe scan reports no issues with a hierarchy root expanded.")]
-        public void VerifyAxeScanPassesWithHierarchyExpanded()
-        {
-            using (var setup = new TestSetupHelper(AxePageName))
-            {
-                UIObject tableView = TableViewHierarchyInteractionTests.SelectHierarchyPivotAndGetTable();
-                if (tableView == null) { return; }
-
-                UIObject rowsHost = GetRowsHost(tableView);
-                int collapsedRows = CountRows(rowsHost);
-
-                UIObject ada = FindRowStartingWith(rowsHost, "Ada");
-                if (ada == null) { Verify.Fail("Row 'Ada' was not found in HierarchyTable."); return; }
-
-                var expandCollapse = new ExpandCollapseImplementation(ada);
-                if (!expandCollapse.IsAvailable) { Verify.Fail("Ada's row must expose the ExpandCollapse pattern."); return; }
-
-                expandCollapse.Expand();
-                Wait.ForIdle();
-
-                // The expand reshapes the rows, so Ada's container is re-read rather than reused.
-                int expandedRows = CountRows(rowsHost);
-                ada = FindRowStartingWith(GetRowsHost(tableView), "Ada");
-                if (ada == null) { Verify.Fail("Row 'Ada' must still be realized after expanding it."); return; }
-                Log.Comment("HierarchyTable realized rows: {0} collapsed, {1} after expanding Ada.", collapsedRows, expandedRows);
-                Verify.AreEqual(ExpandCollapseState.Expanded, new ExpandCollapseImplementation(ada).ExpandCollapseState, "Precondition: Ada must report Expanded.");
-                Verify.IsGreaterThan(expandedRows, collapsedRows, "Precondition: expanding Ada must realize its children.");
-
-                AxeTestHelper.TestForAxeIssues();
-            }
-        }
-
-        // The realized row whose Name (its cell texts) starts with prefix, or null.
-        private static UIObject FindRowStartingWith(UIObject rowsHost, string prefix)
-        {
-            foreach (UIObject child in rowsHost.Children)
-            {
-                if (IsRow(child) && child.Name != null && child.Name.StartsWith(prefix, StringComparison.Ordinal))
-                {
-                    return child;
-                }
-            }
-
-            return null;
-        }
     }
 }

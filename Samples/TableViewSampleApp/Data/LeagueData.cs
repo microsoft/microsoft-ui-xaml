@@ -36,7 +36,7 @@ namespace TableViewSampleApp.Data;
 /// Each group's seed also fields a reserve side (B) and an academy side (U21), listed after
 /// the group's four clubs. They share the club's Group and Country but play their own
 /// reserve and youth leagues, so the group-stage sums above hold over the senior clubs only.
-/// ParentId names the club, which gives the Hierarchy shaping modes a parent relation.
+/// ParentId names the club.
 /// </summary>
 public static class LeagueData
 {
@@ -68,18 +68,12 @@ public static class LeagueData
         "Copper Herons", "Jade Lynxes", "Opal Badgers", "Bronze Kestrels", "Silver Ibis", "Umber Jackals",
     };
 
-    /// <summary>A reserve or academy side under its senior club (TableViewSource.ParentBy selectors).</summary>
-    public static ParentRelation ParentClub { get; } = new(
-        "Parent club",
-        row => (row as LeagueTeam)?.Id,
-        row => (row as LeagueTeam)?.ParentId);
-
     /// <summary>Returns a fresh ObservableCollection so each consumer can
     /// mutate its own copy without disturbing shared state.</summary>
     public static ObservableCollection<LeagueTeam> All() =>
         new(s_rows.Select(Clone));
 
-    // Never empty, so it is also safe as a GroupBy key.
+    // Never empty, so it is also safe as a group key.
     public static string Band(object? value) => value switch
     {
         int points when points >= 12 => "Qualified",
@@ -88,7 +82,16 @@ public static class LeagueData
         _ => SampleShaping.NoneKey,
     };
 
-    // Never blank: an empty group identity fails fast.
+    /// <summary>The LeagueTeam property a group-key Tag groups by.</summary>
+    public static string GroupPathOf(string key) => key switch
+    {
+        "Standing" => nameof(LeagueTeam.Standing),
+        nameof(LeagueTeam.Country) => nameof(LeagueTeam.Country),
+        nameof(LeagueTeam.IsSeeded) => nameof(LeagueTeam.Seeding),
+        _ => nameof(LeagueTeam.GroupLabel),
+    };
+
+    // Never blank, so the readouts name every group.
     public static object GroupKeyOf(LeagueTeam? team, string key)
     {
         if (team is null)

@@ -19,8 +19,8 @@ namespace TableViewTelemetry
         // 1u << 1 was Editing; do not reuse it.
         constexpr uint32_t Filtering = 1u << 2;
         constexpr uint32_t Grouping = 1u << 3;
-        constexpr uint32_t Hierarchy = 1u << 4;
-        constexpr uint32_t LiveShaping = 1u << 5;
+        // 1u << 4 was Hierarchy; do not reuse it.
+        // 1u << 5 was LiveShaping; do not reuse it.
     }
     // TableView_Instance's ColumnKinds bits. A column whose class is not one of ours is the app's.
     namespace ColumnKind
@@ -30,7 +30,8 @@ namespace TableViewTelemetry
         constexpr uint32_t AppDerived = 1u << 2;
         constexpr uint32_t DisplayMemberBinding = 1u << 3;
     }
-    // TableView_Instance's SourceKinds bits: a plain collection TableView projected, or the app's own TableViewSource.
+    // TableView_Instance's SourceKinds bits: a collection TableView wrapped in its own view (Projected), or an
+    // ICollectionView the app supplied (AppSupplied).
     namespace SourceKind
     {
         constexpr uint32_t Projected = 1u << 0;
@@ -46,7 +47,7 @@ namespace TableViewTelemetry
         uint32_t enabledFeatures{};
         uint32_t columnKinds{};
         uint32_t sourceKinds{};
-        // TableViewSource's rows before and after the filter, and the containers the rows repeater has created. It
+        // The view's rows, the data rows shown (the view's rows), and the containers the rows repeater has created. It
         // creates one only when none is free, so this is the most rows realized at once, plus the most group headers
         // (they pool separately).
         uint32_t sourceRows{};

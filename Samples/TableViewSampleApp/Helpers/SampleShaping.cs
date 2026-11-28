@@ -31,15 +31,23 @@ public static class SampleShaping
     public static string Label(ComboBox? comboBox) =>
         comboBox?.SelectedItem is ComboBoxItem item ? item.Content?.ToString() ?? string.Empty : string.Empty;
 
-    // <snippet Groups>
-    // GroupBy identity selector: it receives the group key (never the row) and must not return an
-    // empty string, because TableViewSource fails fast on an empty identity.
+    // Display name of a group key, as the readouts track it.
     public static string GroupIdentity(object? groupKey) =>
         groupKey?.ToString() is { Length: > 0 } s ? s : NoneKey;
+
+    // <snippet Groups>
+    // The Person property a group-key Tag groups by: IsActive groups by its Active/Inactive label.
+    public static string GroupPathOf(string key) => key switch
+    {
+        nameof(Person.Office) => nameof(Person.Office),
+        nameof(Person.Role) => nameof(Person.Role),
+        nameof(Person.IsActive) => nameof(Person.ActiveStatus),
+        _ => nameof(Person.Department),
+    };
     // </snippet>
 
     /// <summary>
-    /// GroupBy key selector body for <see cref="Person"/>. <paramref name="key"/> is the
+    /// The group key of a <see cref="Person"/> as the readouts name it. <paramref name="key"/> is the
     /// group-key ComboBoxItem Tag (a property name): Department, Office, Role or IsActive.
     /// Blank values are coalesced to <see cref="NoneKey"/>; the bool maps to Active/Inactive.
     /// </summary>
@@ -197,13 +205,12 @@ public static class SampleShaping
         : null;
 
     // Approximates the table's row order for the readouts only: TableView v1 does not expose its
-    // projection. A sort declared before GroupBy orders the groups; one declared after sorts within them.
+    // projection. The active sort orders the rows, and each group sits where its first sorted row falls.
     public static IEnumerable<T> InViewOrder<T>(
         TableView? table,
         IEnumerable<T> rows,
         Func<T, string, IComparable?> sortKey,
-        Func<T, object>? groupKey,
-        bool sortOrdersGroups)
+        Func<T, object>? groupKey)
     {
         var column = ActiveSortColumn(table);
         Func<IEnumerable<T>, IEnumerable<T>> sort = r => r;
@@ -219,9 +226,7 @@ public static class SampleShaping
             return sort(rows);
         }
 
-        return sortOrdersGroups
-            ? sort(rows).GroupBy(groupKey).SelectMany(g => g)
-            : rows.GroupBy(groupKey).SelectMany(g => sort(g));
+        return sort(rows).GroupBy(groupKey).SelectMany(g => g);
     }
 
     private sealed class SortKeyComparer : IComparer<IComparable?>

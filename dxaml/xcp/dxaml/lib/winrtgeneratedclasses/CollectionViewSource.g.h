@@ -11,8 +11,44 @@
 
 #pragma once
 
-
+#include <FeatureFlags.h>
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
+#else
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE
+#endif
 #define __CollectionViewSource_GUID "a7dfaf16-d646-4018-99b6-a35729153b5f"
+
+#pragma region forwarders
+namespace ctl
+{
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_Culture)(_Out_ HSTRING* pValue) override { return This()->get_Culture(pValue); }
+        IFACEMETHOD(put_Culture)(_In_opt_ HSTRING value) override { return This()->put_Culture(value); }
+        IFACEMETHOD(get_CustomSort)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue) override { return This()->get_CustomSort(ppValue); }
+        IFACEMETHOD(put_CustomSort)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue) override { return This()->put_CustomSort(pValue); }
+        IFACEMETHOD(get_GroupDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::GroupDescription*>** ppValue) override { return This()->get_GroupDescriptions(ppValue); }
+        IFACEMETHOD(get_IsLiveFilteringRequested)(_Out_ BOOLEAN* pValue) override { return This()->get_IsLiveFilteringRequested(pValue); }
+        IFACEMETHOD(put_IsLiveFilteringRequested)(BOOLEAN value) override { return This()->put_IsLiveFilteringRequested(value); }
+        IFACEMETHOD(get_IsLiveGroupingRequested)(_Out_ BOOLEAN* pValue) override { return This()->get_IsLiveGroupingRequested(pValue); }
+        IFACEMETHOD(put_IsLiveGroupingRequested)(BOOLEAN value) override { return This()->put_IsLiveGroupingRequested(value); }
+        IFACEMETHOD(get_IsLiveSortingRequested)(_Out_ BOOLEAN* pValue) override { return This()->get_IsLiveSortingRequested(pValue); }
+        IFACEMETHOD(put_IsLiveSortingRequested)(BOOLEAN value) override { return This()->put_IsLiveSortingRequested(value); }
+        IFACEMETHOD(get_LiveFilteringProperties)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue) override { return This()->get_LiveFilteringProperties(ppValue); }
+        IFACEMETHOD(get_LiveGroupingProperties)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue) override { return This()->get_LiveGroupingProperties(ppValue); }
+        IFACEMETHOD(get_LiveSortingProperties)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue) override { return This()->get_LiveSortingProperties(ppValue); }
+        IFACEMETHOD(get_SortDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue) override { return This()->get_SortDescriptions(ppValue); }
+        IFACEMETHOD(DeferRefresh)(_Outptr_ ABI::Windows::Foundation::IClosable** ppReturnValue) override { return This()->DeferRefresh(ppReturnValue); }
+        IFACEMETHOD(Refresh)() override { return This()->Refresh(); }
+        IFACEMETHOD(add_Filter)(_In_ ABI::Microsoft::UI::Xaml::Data::IFilterEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_Filter(pValue, pToken); }
+        IFACEMETHOD(remove_Filter)(EventRegistrationToken token) override { return This()->remove_Filter(token); }
+    };
+}
+#pragma endregion
 
 namespace DirectUI
 {
@@ -22,6 +58,9 @@ namespace DirectUI
     class __declspec(novtable) CollectionViewSourceGenerated:
         public DirectUI::DependencyObject
         , public ABI::Microsoft::UI::Xaml::Data::ICollectionViewSource
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi, CollectionViewSourceGenerated >
+#endif
     {
         friend class DirectUI::CollectionViewSource;
 
@@ -29,6 +68,9 @@ namespace DirectUI
 
         BEGIN_INTERFACE_MAP(CollectionViewSourceGenerated, DirectUI::DependencyObject)
             INTERFACE_ENTRY(CollectionViewSourceGenerated, ABI::Microsoft::UI::Xaml::Data::ICollectionViewSource)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(CollectionViewSourceGenerated, ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(CollectionViewSourceGenerated, DirectUI::DependencyObject)
 
     public:
@@ -48,17 +90,42 @@ namespace DirectUI
         }
 
         // Properties.
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_Culture(_Out_ HSTRING* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Culture(_In_opt_ HSTRING value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_CustomSort(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_CustomSort(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_GroupDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::GroupDescription*>** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_IsLiveFilteringRequested(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsLiveFilteringRequested(BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_IsLiveGroupingRequested(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsLiveGroupingRequested(BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_IsLiveSortingRequested(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsLiveSortingRequested(BOOLEAN value);
         IFACEMETHOD(get_IsSourceGrouped)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(put_IsSourceGrouped)(BOOLEAN value) override;
         IFACEMETHOD(get_ItemsPath)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IPropertyPath** ppValue) override;
         IFACEMETHOD(put_ItemsPath)(_In_opt_ ABI::Microsoft::UI::Xaml::IPropertyPath* pValue) override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_LiveFilteringProperties(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_LiveGroupingProperties(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_LiveSortingProperties(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_SortDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue);
         IFACEMETHOD(get_Source)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Source)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_View)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionView** ppValue) override;
 
         // Events.
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE add_Filter(_In_ ABI::Microsoft::UI::Xaml::Data::IFilterEventHandler* pValue, _Out_ EventRegistrationToken* pToken);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_Filter(EventRegistrationToken token);
+#endif
 
         // Methods.
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE DeferRefresh(_Outptr_ ABI::Windows::Foundation::IClosable** ppReturnValue);
+#endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE Refresh();
+#endif
 
 
     protected:
@@ -83,9 +150,15 @@ namespace DirectUI
     class __declspec(novtable) CollectionViewSourceFactory:
        public ctl::BetterCoreObjectActivationFactory
         , public ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStatics
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStaticsFeature_ExperimentalApi
+#endif
     {
         BEGIN_INTERFACE_MAP(CollectionViewSourceFactory, ctl::BetterCoreObjectActivationFactory)
             INTERFACE_ENTRY(CollectionViewSourceFactory, ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStatics)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(CollectionViewSourceFactory, ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStaticsFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(CollectionViewSourceFactory, ctl::BetterCoreObjectActivationFactory)
 
     public:
@@ -98,6 +171,15 @@ namespace DirectUI
         IFACEMETHOD(get_ViewProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(get_IsSourceGroupedProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(get_ItemsPathProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
+        
+        
+        IFACEMETHOD(get_CultureProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(get_IsLiveSortingRequestedProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(get_IsLiveFilteringRequestedProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(get_IsLiveGroupingRequestedProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        
+        
+        
 
         // Attached properties.
 

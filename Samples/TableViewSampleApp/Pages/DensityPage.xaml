@@ -14,7 +14,7 @@
         Snippet="Density"
         StretchExample="True"
         TryIt="Choose Compact, Standard, then Comfortable and compare the rows and column headers. Switch Shaping to Grouped and change the density again to compare the group headers too. Then select a row and move it to the next group."
-        WhatToLookFor="Rows, column headers and group headers follow the density preset, with 24, 32 and 40 px minimum heights for Compact, Standard and Comfortable. Custom template content can make rows taller. Grouped, moving a row re-applies GroupBy, so the row jumps to its new group, and a group that loses its last row disappears.">
+        WhatToLookFor="Rows, column headers and group headers follow the density preset, with 24, 32 and 40 px minimum heights for Compact, Standard and Comfortable. Custom template content can make rows taller. Grouped, moving a row refreshes the view, so the row jumps to its new group, and a group that loses its last row disappears.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -23,12 +23,12 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="DensityTable"
                 AutomationProperties.Name="People density"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 Style="{StaticResource DefaultTableViewStyle}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
                 <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
                 <tv:TableViewTemplateColumn Header="Status" Width="120" CellTemplate="{StaticResource ActiveStatusChipTemplate}" SortMemberPath="IsActive"/>
@@ -61,7 +61,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Density"
-                    Description="Grouped, compare the row height with the group-header height as you change the density. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouped, compare the row height with the group-header height as you change the density. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>
@@ -76,7 +76,7 @@
                             AutomationProperties.AutomationId="DensityMoveGroupButton"
                             Content="Move selected row to the next group"
                             Click="OnMoveGroupClick"
-                            ToolTipService.ToolTip="Changes the grouped-on value (Department when flat) to the next real value, then re-applies GroupBy so the row moves to its new group."
+                            ToolTipService.ToolTip="Changes the grouped-on value (Department when flat) to the next real value, then refreshes the view so the row moves to its new group."
                             AutomationProperties.HelpText="Select a row first."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>

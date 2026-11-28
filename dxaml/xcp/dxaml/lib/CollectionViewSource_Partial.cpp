@@ -5,6 +5,7 @@
 #include "CollectionViewSource.g.h"
 #include "PropertyPath.g.h"
 #include "CollectionViewManager.h"
+#include "VectorCollectionView.g.h"
 
 using namespace DirectUI;
 using namespace xaml_data;
@@ -66,6 +67,16 @@ DirectUI::CollectionViewSource::OnPropertyChanged2(
 
     case KnownPropertyIndex::CollectionViewSource_ItemsPath:
         IFC(OnItemsPathChanged());
+        break;
+
+    case KnownPropertyIndex::CollectionViewSource_IsLiveSortingRequested:
+    case KnownPropertyIndex::CollectionViewSource_IsLiveFilteringRequested:
+    case KnownPropertyIndex::CollectionViewSource_IsLiveGroupingRequested:
+        IFC(ApplyLiveShapingToView());
+        break;
+
+    case KnownPropertyIndex::CollectionViewSource_Culture:
+        IFC(OnCultureChanged(args));
         break;
     }
 
@@ -154,16 +165,34 @@ DirectUI::CollectionViewSource::EnsureView(_In_ IInspectable *pNewSource)
     HRESULT hr = S_OK;
     ICollectionView *pView = NULL;
     BOOLEAN valid = false;
+    bool isShapingRequested = false;
+    bool isShapeable = false;
+
+    IFC(DetachShapingView());
 
     // Only try to create a collection view if we have a source
     // otherwise we will just set the value to NULL
     if (pNewSource != NULL)
     {
-        IFC(CollectionViewManager::GetViewRecord(pNewSource, this, &pView));
+#ifdef MUX_PRERELEASE
+        IFC(CheckShapingSupported(pNewSource));
+        IFC(IsShapingRequested(pNewSource, &isShapingRequested));
+#endif
+        IFC(CollectionViewManager::GetViewRecord(pNewSource, this, isShapingRequested, &pView, &isShapeable));
 
         // A view should have been created by now, or we would have failed
         // if the source is not supported
         IFCEXPECT(pView);
+
+#ifdef MUX_PRERELEASE
+        // Shaping (an experimental API) changes nothing for a CollectionViewSource in a release build.
+        if (isShapeable)
+        {
+            auto pShapingView = static_cast<VectorCollectionView*>(static_cast<CollectionView*>(pView));
+            pShapingView->SetSourceCollection(pNewSource);
+            IFC(ApplyPropertiesToView(pShapingView));
+        }
+#endif
 
         // Move the item to the first position on the newly created collection
         // if we have one
@@ -227,6 +256,11 @@ DirectUI::CollectionViewSource::OnReferenceTrackerWalk(INT walkType )
 {
     if( m_pCVSViewChangedEventSource )
         m_pCVSViewChangedEventSource->ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
+
+    if (m_spFilterEventSource)
+    {
+        m_spFilterEventSource->ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
+    }
 
     CollectionViewSourceGenerated::OnReferenceTrackerWalk( walkType );
 

@@ -60,15 +60,15 @@
                     SelectionMode="Single"
                     Height="360">
                     <!-- Decorative: the avatar template is never a tab stop. -->
-                    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
                     <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
                     <!-- Sortable template column: Enter or Space on its focused header sorts by Department. -->
                     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
                     <!-- Controls in cells: arrow to the cell, Enter moves into the control, Esc returns to the cell.
                          The table body is one tab stop, so Tab leaves the table. -->
-                    <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
-                    <tv:TableViewTemplateColumn Header="Office" Width="150" CellTemplate="{StaticResource OfficeComboTemplate}" CanSort="False"/>
-                    <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
+                    <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanUserSort="False"/>
+                    <tv:TableViewTemplateColumn Header="Office" Width="150" CellTemplate="{StaticResource OfficeComboTemplate}" CanUserSort="False"/>
+                    <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanUserSort="False"/>
                 </tv:TableView>
                 <!-- /snippet -->
                 <Button Grid.Row="2" Content="After table" HorizontalAlignment="Left"
@@ -108,7 +108,7 @@
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
                     <TextBlock
-                        Text="The Group by department switch uses TableViewSource.GroupBy on Department. Inspect the group headers' ExpandCollapse pattern and the row positions within groups; group headers are not selectable records. Query the providers again after each reshape. The source count is not the grouped UI Automation row count."
+                        Text="The Group by department switch adds a PropertyGroupDescription on Department. Inspect the group headers' ExpandCollapse pattern and the row positions within groups; group headers are not selectable records. Query the providers again after each reshape. The source count is not the grouped UI Automation row count."
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
                     <TextBlock
@@ -168,7 +168,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="KeyboardNav"
-                    Description="Shapes the first table. When grouped, check how Up and Down treat the group header rows. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Shapes the first table. When grouped, check how Up and Down treat the group header rows. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

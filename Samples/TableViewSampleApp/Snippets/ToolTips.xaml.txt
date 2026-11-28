@@ -12,14 +12,14 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People with tooltips"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single">
     <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
     <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
-                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                                 CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
     <tv:TableViewColumn x:Name="NameColumn" Header="Name" Width="160"
                              HeaderToolTip="Full name, as entered" DisplayMemberBinding="{Binding FullName}"/>
-    <tv:TableViewColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="140" CanSort="False" DisplayMemberBinding="{Binding Bio}"/>
+    <tv:TableViewColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="140" CanUserSort="False" DisplayMemberBinding="{Binding Bio}"/>
     <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"
                                  CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"
                                  HeaderToolTip="Team the person reports into"/>
@@ -27,5 +27,5 @@
     <tv:TableViewColumn x:Name="SalaryColumn" Header="Salary" Width="100"
                              HeaderToolTip="Salary" DisplayMemberBinding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
     <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="74"
-                                 CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
+                                 CellTemplate="{StaticResource EmailIconCellTemplate}" CanUserSort="False"/>
 </tv:TableView>

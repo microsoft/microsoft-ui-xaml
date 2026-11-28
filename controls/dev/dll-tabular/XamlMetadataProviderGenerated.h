@@ -229,8 +229,8 @@ Entry c_typeEntries[] =
                     winrt::ITableViewColumnStatics statics = GetFactory<winrt::ITableViewColumnStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn");
                     {
                         xamlType.AddDPMember(L"ActualWidth", L"Double", statics.ActualWidthProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"CanSort", L"Boolean", statics.CanSortProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanUserResize", L"Boolean", statics.CanUserResizeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanUserSort", L"Boolean", statics.CanUserSortProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CellContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.CellContextFlyoutProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"FrozenEdge", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge", statics.FrozenEdgeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.HeaderContextFlyoutProperty(), false /* isContent */);
@@ -460,14 +460,6 @@ Entry c_typeEntries[] =
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"Level", /* propertyName */
-                        L"Int32", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewGroupInfo>().Level()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
@@ -511,10 +503,7 @@ Entry c_typeEntries[] =
                 {
                     winrt::ITableViewRowStatics statics = GetFactory<winrt::ITableViewRowStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewRow");
                     {
-                        xamlType.AddDPMember(L"IsExpandable", L"Boolean", statics.IsExpandableProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"IsExpanded", L"Boolean", statics.IsExpandedProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsSelected", L"Boolean", statics.IsSelectedProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"Level", L"Int32", statics.LevelProperty(), false /* isContent */);
                     }
 
                 });
@@ -582,35 +571,6 @@ Entry c_typeEntries[] =
                 });
 
             return xamlType;
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSource",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSource",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Object",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    xamlType.AddMember(
-                        L"IsLiveShaping", /* propertyName */
-                        L"Boolean", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewSource>().IsLiveShaping()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewSource>().IsLiveShaping(unbox_value<bool>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
         }
     },
     {

@@ -120,6 +120,50 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that cvs.source can be set and collection changes can happen when listview is collapsed")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ListViewFollowsCollectionViewSourceGrouping)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a ListView shows groups when its CollectionViewSource view starts grouping, regroups, and shows flat items when it stops, with the same ItemsSource")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GridViewFollowsCollectionViewSourceGrouping)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a GridView shows groups when its CollectionViewSource view starts grouping, regroups, and shows flat items when it stops, with the same ItemsSource")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GroupingOffInPlaceWithFocusedItem)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a ListView whose CollectionViewSource view stops grouping in place updates IsGrouping at once and handles keyboard navigation before the next measure")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GroupingToggledFromCallbacks)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a ListView follows a CollectionViewSource view whose grouping starts in a source VectorChanged handler and stops in a ContainerContentChanging handler")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReorderOverSortedViewByPointer)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a pointer drag starts no reorder on a ListView over a sorted CollectionViewSource view")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DragOverSortedViewDoesNotReorder)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that with CanDragItems a drag starts on a ListView over a sorted CollectionViewSource view, and dropping it on the list reorders nothing")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReorderWorksAgainWithoutRules)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates keyboard reorder moves the source item once a sorted CollectionViewSource view has no rule left")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReorderKeepsItemWhenRuleAddedMidMove)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a reorder whose RemoveAt makes a source handler sort the view inserts the item at its place in the source and selects it where the sorted view shows it")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReorderKeepsCollectionIntactWhenInsertFails)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a keyboard reorder whose InsertAt fails, after inserting or before, leaves the item once in the app's collection and selected")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReorderIsOffOverSortedView)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates keyboard reorder does nothing on a ListView with CanReorderItems over a sorted CollectionViewSource view, as over a grouped one")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DropOverAppViewSortedDuringDragDoesNotReorder)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a drag over a ListView whose ItemsSource is the app's own ICollectionViewShaping view, which a DragOver handler sorts mid-drag, reorders nothing on the drop")
+        END_TEST_METHOD()
+
         //
         // Platform:Desktop
         //
@@ -136,6 +180,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             int expectedGroupHeaders);
         void PerformGenerateGroupItemTest(xaml_controls::ListViewBase^ list, int expectedGroups, int expectedItems);
         void PerformBasicGroupingTests(xaml_controls::ListViewBase^ list);
+        void PerformGroupingToggleTest(MocoHelper::ListControlType listControlType);
     };
 
 } } } } } }

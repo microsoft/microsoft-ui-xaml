@@ -176,6 +176,8 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_RadioButton();
     _Check_return_ IActivationFactory* CreateActivationFactory_RichEditBox();
     _Check_return_ IActivationFactory* CreateActivationFactory_UserControl();
+    _Check_return_ IActivationFactory* CreateActivationFactory_FilterEventArgs();
+    _Check_return_ IActivationFactory* CreateActivationFactory_SortDescription();
     _Check_return_ IActivationFactory* CreateActivationFactory_ColorPaletteResources();
     _Check_return_ IActivationFactory* CreateActivationFactory_DragOperationDeferral();
     _Check_return_ IActivationFactory* CreateActivationFactory_DragStartingEventArgs();
@@ -202,6 +204,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_ScrollViewer();
     _Check_return_ IActivationFactory* CreateActivationFactory_SemanticZoom();
     _Check_return_ IActivationFactory* CreateActivationFactory_ToggleSwitch();
+    _Check_return_ IActivationFactory* CreateActivationFactory_GroupDescription();
     _Check_return_ IActivationFactory* CreateActivationFactory_BindingFailedEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_ColorDisplayNameHelper();
     _Check_return_ IActivationFactory* CreateActivationFactory_DropCompletedEventArgs();
@@ -354,6 +357,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_AutomationProperty();
     _Check_return_ IActivationFactory* CreateActivationFactory_CurrentChangingEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_PropertyChangedEventArgs();
+    _Check_return_ IActivationFactory* CreateActivationFactory_PropertyGroupDescription();
     _Check_return_ IActivationFactory* CreateActivationFactory_XamlCompositionBrushBase();
     _Check_return_ IActivationFactory* CreateActivationFactory_ColorAnimation();
     _Check_return_ IActivationFactory* CreateActivationFactory_DoubleKeyFrame();
@@ -833,6 +837,8 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.RadioButton"), &DirectUI::CreateActivationFactory_RadioButton)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.RichEditBox"), &DirectUI::CreateActivationFactory_RichEditBox)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.UserControl"), &DirectUI::CreateActivationFactory_UserControl)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.FilterEventArgs"), &DirectUI::CreateActivationFactory_FilterEventArgs)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.SortDescription"), &DirectUI::CreateActivationFactory_SortDescription)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.ColorPaletteResources"), &DirectUI::CreateActivationFactory_ColorPaletteResources)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.DragOperationDeferral"), &DirectUI::CreateActivationFactory_DragOperationDeferral)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.DragStartingEventArgs"), &DirectUI::CreateActivationFactory_DragStartingEventArgs)
@@ -859,6 +865,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.ScrollViewer"), &DirectUI::CreateActivationFactory_ScrollViewer)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.SemanticZoom"), &DirectUI::CreateActivationFactory_SemanticZoom)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.ToggleSwitch"), &DirectUI::CreateActivationFactory_ToggleSwitch)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.GroupDescription"), &DirectUI::CreateActivationFactory_GroupDescription)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.BindingFailedEventArgs"), &DirectUI::CreateActivationFactory_BindingFailedEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.ColorDisplayNameHelper"), &DirectUI::CreateActivationFactory_ColorDisplayNameHelper)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.DropCompletedEventArgs"), &DirectUI::CreateActivationFactory_DropCompletedEventArgs)
@@ -1011,6 +1018,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.AutomationProperty"), &DirectUI::CreateActivationFactory_AutomationProperty)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.CurrentChangingEventArgs"), &DirectUI::CreateActivationFactory_CurrentChangingEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.PropertyChangedEventArgs"), &DirectUI::CreateActivationFactory_PropertyChangedEventArgs)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.PropertyGroupDescription"), &DirectUI::CreateActivationFactory_PropertyGroupDescription)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.XamlCompositionBrushBase"), &DirectUI::CreateActivationFactory_XamlCompositionBrushBase)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Animation.ColorAnimation"), &DirectUI::CreateActivationFactory_ColorAnimation)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Animation.DoubleKeyFrame"), &DirectUI::CreateActivationFactory_DoubleKeyFrame)

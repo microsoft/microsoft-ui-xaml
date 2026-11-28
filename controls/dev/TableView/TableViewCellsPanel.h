@@ -45,9 +45,6 @@ public:
     // column-visibility updates and the column-header automation peer.
     static winrt::FrameworkElement CellForColumn(const winrt::Panel& host, winrt::TableViewColumn const& column);
 
-    // Set by TableViewRow when it captures PART_CellsHost; null for the header host, which has no row.
-    void SetOwningRowInternal(winrt::TableViewRow const& row);
-
     // Each cell is Tagged with its owning TableViewColumn; this reads it (or null).
     static winrt::TableViewColumn ColumnForCell(winrt::UIElement const& child);
 
@@ -85,7 +82,4 @@ private:
     // columns measured this pass, so entries for removed/collapsed columns are pruned automatically
     // (bounding growth and limiting the void*-reuse window the per-pass cache note describes).
     std::unordered_map<void*, double> m_lastMeasuredWidthsByColumn;
-
-    // The row that owns this panel, or null for the header host. Weak: the row owns the panel.
-    winrt::weak_ref<winrt::TableViewRow> m_owningRow{ nullptr };
 };

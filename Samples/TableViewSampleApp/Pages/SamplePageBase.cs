@@ -27,23 +27,13 @@ public partial class SamplePageBase : Page
 
     protected bool IsGrouped => _shaping?.IsGrouped ?? false;
 
-    protected bool IsHierarchical => _shaping?.IsHierarchical ?? false;
-
     protected string AppliedGroupKey => _shaping?.AppliedKey ?? string.Empty;
-
-    protected bool SortOrdersGroups => _shaping?.SortOrdersGroups ?? false;
 
     protected bool IsBulkUpdating => _bulkUpdateDepth > 0;
 
-    // Under Grouped hierarchy GroupBy buckets only the roots: a nested row is shown in its root's group.
-    protected Func<T, T> GroupingRowOf<T>(IEnumerable<T> rows)
-        where T : class =>
-        IsHierarchical && _shaping?.Relation is { } relation ? relation.RootMap(rows) : row => row;
-
-    // Rows a filter leaves in the projection. Under ParentBy that is every match plus its ancestors.
+    // Rows a filter leaves in the projection.
     protected int CountShown<T>(IEnumerable<T> rows, Func<T, bool> matches)
-        where T : class =>
-        IsHierarchical && _shaping?.Relation is { } relation ? relation.CountWithAncestors(rows, matches) : rows.Count(matches);
+        where T : class => rows.Count(matches);
 
     protected void InitializeSample(StatusPanel status, ShapingOptions? shaping = null)
     {
@@ -109,8 +99,6 @@ public partial class SamplePageBase : Page
     }
 
     protected void ReapplyIfGroupedOn(string? propertyName) => _shaping?.ReapplyIfGroupedOn(propertyName);
-
-    protected void OnSortRedeclared() => _shaping?.OnSortRedeclared();
 
     protected void TrackItems<T>(ObservableCollection<T> items, PropertyChangedEventHandler onItemChanged)
         where T : class, INotifyPropertyChanged

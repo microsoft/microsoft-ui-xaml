@@ -22,14 +22,14 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="RightToLeftTable"
                 AutomationProperties.Name="People, right-to-left"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 FlowDirection="RightToLeft"
                 CanUserReorderColumns="True"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- The name columns are plain text so bidi text rendering can be checked. -->
-                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
                 <tv:TableViewColumn x:Name="FirstNameColumn" Header="First name" Width="*" MinWidth="140" CellToolTipBinding="{Binding Bio}" HeaderToolTip="Hover a name for that person's notes." DisplayMemberBinding="{Binding FirstName}"/>
                 <tv:TableViewColumn x:Name="LastNameColumn" Header="Last name" Width="120" DisplayMemberBinding="{Binding LastName}"/>
                 <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
@@ -58,7 +58,7 @@
 
                 <controls:RailSection
                     Header="Filter"
-                    Description="TableViewSource.Filter keeps the rows whose name, department, office or notes contain the text. It composes with grouping and sorting on the same source.">
+                    Description="CollectionViewSource.Filter keeps the rows whose name, department, office or notes contain the text. It composes with grouping and sorting on the same source.">
                     <TextBox
                         x:Name="FilterBox"
                         AutomationProperties.AutomationId="RightToLeftFilterBox"
@@ -70,9 +70,8 @@
 
                 <controls:ShapingOptions
                     x:Name="Shaping"
-                    HierarchyColumnHeader="First name"
                     AutomationIdPrefix="RightToLeft"
-                    Description="Grouped shows group headers indented from the right edge, with the chevron mirrored. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouped shows group headers indented from the right edge, with the chevron mirrored. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

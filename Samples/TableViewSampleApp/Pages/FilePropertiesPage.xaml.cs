@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
@@ -21,25 +22,19 @@ namespace TableViewSampleApp.Pages;
 /// <summary>
 /// File properties scenario: a properties dialog for the sample's own binaries. Every one of the
 /// 22 values is read from the file's version resource (FileVersionInfo) or the file system
-/// (FileInfo), so none is blank. The page starts grouped by section; one TableViewSource over one
+/// (FileInfo), so none is blank. The page starts grouped by section; one CollectionViewSource over one
 /// ObservableCollection is refilled per file and filtered, grouped and edited in place.
 /// </summary>
 public sealed partial class FilePropertiesPage : SamplePageBase
 {
     private static readonly string[] s_sections = { "Description", "Origin", "File" };
 
-    // A detail property under the one it refines: Size on disk under Size, the Build flags under Build.
-    private static readonly ParentRelation s_parentProperty = new(
-        "Parent property",
-        row => (row as FilePropertyEntry)?.Property,
-        row => (row as FilePropertyEntry)?.ParentProperty);
-
     private FileInfo? _currentFile;
 
     public FilePropertiesPage()
     {
         // <snippet>
-        Source = TableViewSource.From(Entries);    // created once; never rebuilt
+        Source = new CollectionViewSource { Source = Entries };    // created once; TableView shows its View
         InitializeComponent();
         PropTable.SelectionChanged += OnPropSelectionChanged; // snippet:skip
 
@@ -48,7 +43,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         PropTable.Density = TableViewDensity.Compact;
         // </snippet>
 
-        InitializeSample(Status, Shaping.Attach(PropTable, Source, (row, key) => KeyOf(row as FilePropertyEntry, key), s_parentProperty));
+        InitializeSample(Status, Shaping.Attach(PropTable, Source, GroupPathOf));
         TrackLifetime(ListFilesOnce);
     }
 
@@ -57,7 +52,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     private async void ListFilesOnce()
@@ -186,7 +181,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
     private static string SizeText(long bytes) =>
         string.Format(CultureInfo.CurrentCulture, "{0} ({1:N0} bytes)", FileSystemEntry.FormatSize(bytes), bytes);
 
-    // ---- Filter (TableViewSource.Filter) ---------------------------------------------------
+    // ---- Filter (the view's Filter) ---------------------------------------------
 
     // <snippet>
     private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
@@ -199,16 +194,16 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         switch ((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag)
         {
             case "dates":
-                Source.Filter(item => item is FilePropertyEntry { IsDate: true });
+                ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is FilePropertyEntry { IsDate: true });
                 break;
             case "version":
-                Source.Filter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
+                ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
                 break;
             case "none":
-                Source.Filter(_ => false);
+                ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(_ => false);
                 break;
             default:
-                Source.ClearFilter();
+                ((ICollectionViewShaping)Source.View).Filter = null;
                 break;
         }
 
@@ -241,13 +236,9 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         var from = entry.Section;
         entry.Section = SampleShaping.Next(s_sections, from);
 
-        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row.
+        // Grouping reads the value when the view refreshes, so refresh it to re-bucket the row.
         ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
-        // A nested row stays in its parent property's group.
-        var shownIn = GroupingRowOf(Entries)(entry);
-        SetLastAction(ReferenceEquals(shownIn, entry) || !IsGrouped
-            ? string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", entry.Property, from, entry.Section)
-            : string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}; it stays under {3} in the {4} group", entry.Property, from, entry.Section, shownIn.Property, KeyOf(shownIn, AppliedGroupKey)));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", entry.Property, from, entry.Section));
     }
 
     private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
@@ -293,10 +284,6 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         RefreshReadouts();
     }
 
-    // Never blank: TableViewSource fails fast on an empty group identity.
-    private static object KeyOf(FilePropertyEntry? entry, string key)
-    {
-        var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;
-        return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
-    }
+    private static string GroupPathOf(string key) =>
+        key == nameof(FilePropertyEntry.Source) ? nameof(FilePropertyEntry.Source) : nameof(FilePropertyEntry.Section);
 }

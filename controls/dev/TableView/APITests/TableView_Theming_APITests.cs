@@ -570,7 +570,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var items = Enumerable.Range(0, 40)
                         .Select(i => new Person { Name = $"Person {i}", Role = "Engineer" }).ToList();
-                    table = CreateTableView(itemsSource: TableViewSource.From(items), height: 241.3333333333333);
+                    table = CreateTableView(itemsSource: items, height: 241.3333333333333);
                     table.Density = density;
                     table.RequestedTheme = ElementTheme.Light;
                     table.HighContrastAdjustment = ElementHighContrastAdjustment.None;
@@ -2847,7 +2847,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySectionAlignmentClearsAndMovesWithFirstVisibleCell()
         {
             TableView table = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             Grid root = null;
             RunOnUIThread.Execute(() =>
             {
@@ -2857,8 +2857,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     column.Width = new GridLength(200);
                 }
-                source = TableViewSource.From(MakeItems());
-                table.ItemsSource = source;
+                source = new CollectionViewSource { Source = MakeItems() };
+                table.ItemsSource = source.View;
                 root = new Grid { FlowDirection = FlowDirection.LeftToRight };
                 root.Children.Add(table);
                 LoadContent(root);
@@ -2886,7 +2886,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.RequestedTheme = theme;
                     table.FlowDirection = flow;
                     table.Density = density.Density;
-                    source.ClearGroupBy();
+                    source.GroupDescriptions.Clear();
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -2894,7 +2894,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     firstStart = TextStart(CellText(0));
                     secondStart = TextStart(CellText(1));
                     Verify.AreEqual(0.0, GetRowCell(GetRealizedRows(table).First(), 0).Padding.Left);
-                    source.GroupBy(item => ((Person)item).Role);
+                    source.GroupDescriptions.Add(new PropertyGroupDescription("Role"));
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -2920,7 +2920,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.AreEqual(0.0, GetRowCell(GetRealizedRows(table).First(), 1).Padding.Left,
                         "Restoring the first column clears the second column's reservation.");
-                    source.ClearGroupBy();
+                    source.GroupDescriptions.Clear();
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -2939,7 +2939,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             foreach (var density in DensityCases)
             {
                 TableView table = null;
-                TableViewSource source = null;
+                CollectionViewSource source = null;
                 double flatWidth = 0;
                 RunOnUIThread.Execute(() =>
                 {
@@ -2949,18 +2949,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.Density = density.Density;
                     table.Columns[0].Width = GridLength.Auto;
                     table.Columns[1].Width = new GridLength(200);
-                    source = TableViewSource.From(new List<Person>
+                    source = new CollectionViewSource { Source = new List<Person>
                     {
                         new Person { Name = "A section row with a long name", Role = "Design" }
-                    });
-                    table.ItemsSource = source;
+                    } };
+                    table.ItemsSource = source.View;
                     LoadContent(table);
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
                 {
                     flatWidth = table.Columns[0].ActualWidth;
-                    source.GroupBy(item => ((Person)item).Role);
+                    source.GroupDescriptions.Add(new PropertyGroupDescription("Role"));
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -3359,7 +3359,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     tableView.Density = testCase.Density;
                     // Sortable headers add the sort indicator's width to their trailing padding; this
                     // test is about density padding, so compare against an unsortable header.
-                    tableView.Columns[0].CanSort = false;
+                    tableView.Columns[0].CanUserSort = false;
                     LoadContent(tableView);
                 });
 
@@ -3987,7 +3987,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateThemingTable();
                 tableView.IsTextScaleFactorEnabled = false;
-                tableView.Columns[0].CanSort = false;
+                tableView.Columns[0].CanUserSort = false;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -5932,8 +5932,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 {
                                     case "TableOff": tableView.CanUserSortColumns = false; break;
                                     case "TableOn": tableView.CanUserSortColumns = true; break;
-                                    case "ColumnOff": tableView.Columns[0].CanSort = false; break;
-                                    case "ColumnOn": tableView.Columns[0].CanSort = true; break;
+                                    case "ColumnOff": tableView.Columns[0].CanUserSort = false; break;
+                                    case "ColumnOn": tableView.Columns[0].CanUserSort = true; break;
                                 }
                             });
                         }
@@ -5944,7 +5944,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             var presenter = GetHeaderPresenter(tableView, 0);
                             var background = (Border)header.FindVisualChildByName("PART_Background");
                             var glyph = (Control)header.FindVisualChildByName("TableViewSortIndicator");
-                            var sortable = tableView.CanUserSortColumns && tableView.Columns[0].CanSort && tableView.IsEnabled;
+                            var sortable = tableView.CanUserSortColumns && tableView.Columns[0].CanUserSort && tableView.IsEnabled;
                             var context = $"{theme}, strong={strong}, {scenario}";
                             Verify.IsTrue(header.IsLoaded, $"Header is loaded: {context}");
                             Verify.AreEqual(tableView.IsEnabled, header.IsEnabled, $"Header inherits enabled state: {context}");
@@ -6188,7 +6188,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 SetApplicationResource("TabularSurfaceRowForegroundDisabledBrush", new SolidColorBrush(disabled));
                 tableView = CreateThemingTable();
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -6232,7 +6232,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 SetApplicationResource("TabularSurfaceRowForegroundDisabledBrush", new SolidColorBrush(disabled));
                 tableView = CreateThemingTable();
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -6291,7 +6291,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateThemingTable();
                 tableView.RequestedTheme = ElementTheme.Light;
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -6498,7 +6498,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateThemingTable();
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -6784,7 +6784,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             tableView.RequestedTheme = theme;
                             tableView.Density = density.Density;
                             tableView.FlowDirection = flow;
-                            tableView.Columns[1].CanSort = false;
+                            tableView.Columns[1].CanUserSort = false;
                             LoadContent(tableView);
                         });
                         IdleSynchronizer.Wait();
@@ -7351,7 +7351,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var tableView = CreateThemingTable();
             tableView.Height = 400;
-            tableView.ItemsSource = TableViewSource.From(MakeItems()).GroupBy(item => (object)((Person)item).Role);
+            tableView.ItemsSource = TableViewShapingTestHelpers.MakeShapingView(MakeItems(), "Role").View;
             return tableView;
         }
 

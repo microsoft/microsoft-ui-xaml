@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
@@ -28,14 +29,24 @@ public sealed partial class TaskManagerPage : SamplePageBase
     private readonly List<ProcessItem> _stashedProcesses = new();
     private string? _searchText;
     private int _newTaskCount;
-    private bool _childRowsShown;
     private (TableViewColumn? Column, SortDirection Direction) _reportedSort;
 
     public TaskManagerPage()
     {
         RandomizeAll();
         // <snippet>
-        Source = TableViewSource.From(Processes);  // created once; filtered, sorted and grouped in place
+        // Live shaping: a row moves, leaves or changes group as soon as a CPU value, a status or a
+        // category changes, with no Refresh(). Sorting and grouping follow whatever the header click
+        // or the Shaping options choose; the search observes the properties it reads that can change.
+        Source = new CollectionViewSource
+        {
+            Source = Processes,  // created once; TableView shows its View
+            IsLiveSortingRequested = true,
+            IsLiveGroupingRequested = true,
+            IsLiveFilteringRequested = true,
+        };
+        Source.LiveFilteringProperties.Add(nameof(ProcessItem.Category));
+        Source.LiveFilteringProperties.Add(nameof(ProcessItem.StatusText));
         InitializeComponent();
         ProcessTable.Sorted += OnProcessTableSorted; // snippet:skip
         ProcessTable.SelectionChanged += OnSelectionChanged; // snippet:skip
@@ -58,7 +69,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
         // </snippet>
 
         UpdateTotals();
-        InitializeSample(Status, Shaping.Attach(ProcessTable, Source, (row, key) => ProcessData.GroupKeyOf(row as ProcessItem, key), ProcessData.ParentProcess));
+        InitializeSample(Status, Shaping.Attach(ProcessTable, Source, ProcessData.GroupPathOf));
         TrackTimer(_timer, () => LiveUpdatesToggle.IsOn);
     }
 
@@ -67,7 +78,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Column order -------------------------------------------------------------------
@@ -164,29 +175,14 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
     private void OnTimerTick(object? sender, object e)
     {
+        // The view re-sorts and regroups the changed rows itself (IsLiveSortingRequested).
         RandomizeAll();
         UpdateTotals();
-        ResortIfMetricSorted();
-    }
-
-    // PropertyChanged updates a cell but does not move its row; re-declaring the active sort with the
-    // column's own path re-sorts the source and keeps the column's sort indicator.
-    private void ResortIfMetricSorted()
-    {
-        var column = SampleShaping.ActiveSortColumn(ProcessTable);
-        if (column is null || column.SortMemberPath is not
-            (nameof(ProcessItem.CpuPercent) or nameof(ProcessItem.MemoryMB) or nameof(ProcessItem.DiskMBps) or nameof(ProcessItem.NetworkMbps)))
-        {
-            return;
-        }
-
-        Source.Sort(column.SortMemberPath, column.SortDirection);
     }
 
     private void OnProcessTableSorted(TableView sender, TableViewSortedEventArgs args)
     {
-        // The live re-sort raises Sorted with the same column and direction on every tick; report
-        // only real changes.
+        // Report only real changes.
         if (_reportedSort == (args.Column, args.Direction))
         {
             return;
@@ -198,7 +194,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0}, {1}", args.Column.Header, args.Direction == SortDirection.Descending ? "descending" : "ascending"));
     }
 
-    // ---- Search (TableViewSource.Filter) ------------------------------------------------
+    // ---- Search (the view's Filter) ------------------------------------------
 
     // <snippet>
     private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -218,17 +214,17 @@ public sealed partial class TaskManagerPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    // Filter evaluates the predicate when it reshapes, not when a row's value changes, so call this
-    // again after a write to a searched property.
+    // Filter is evaluated when the view reshapes and, with live filtering, when Category or StatusText
+    // changes on a row (LiveFilteringProperties).
     private void ApplySearch()
     {
         if (_searchText is not { } text)
         {
-            Source.ClearFilter();
+            ((ICollectionViewShaping)Source.View).Filter = null;
             return;
         }
 
-        Source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
+        ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is ProcessItem process && MatchesSearch(process, text));
     }
     // </snippet>
 
@@ -241,39 +237,6 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
     private int VisibleCount() =>
         _searchText is { } text ? CountShown(Processes, process => MatchesSearch(process, text)) : Processes.Count;
-
-    // Child processes are rows only while the source is nested: ParentBy then shows each under its app.
-    protected override void OnShapingApplying(ShapingApplyingEventArgs e)
-    {
-        var show = e.Mode is "hierarchy" or "groupedHierarchy";
-        if (show == _childRowsShown)
-        {
-            return;
-        }
-
-        _childRowsShown = show;
-        if (show)
-        {
-            foreach (var app in Processes.Where(process => process.Children.Count > 0).ToList())
-            {
-                var index = Processes.IndexOf(app);
-                foreach (var child in app.Children)
-                {
-                    Processes.Insert(++index, child);
-                }
-            }
-        }
-        else
-        {
-            foreach (var child in Processes.Where(process => process.ParentPid is not null).ToList())
-            {
-                Processes.Remove(child);
-            }
-        }
-    }
-
-    private IEnumerable<ProcessItem> RowsOf(ProcessItem app) =>
-        _childRowsShown ? app.Children.Prepend(app) : new[] { app };
 
     // ---- Actions ------------------------------------------------------------------------
 
@@ -296,17 +259,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
             return;
         }
 
-        // Ending an app ends its child processes; ending a child removes it from its app.
-        foreach (var row in RowsOf(process).ToList())
-        {
-            Processes.Remove(row);
-        }
-
-        if (process.ParentPid is { } parentPid && Processes.FirstOrDefault(p => p.Pid == parentPid) is { } app)
-        {
-            app.Children.Remove(process);
-        }
-
+        Processes.Remove(process);
         UpdateTotals();
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Ended {0} ({1})", process.Name, process.Category));
     }
@@ -326,15 +279,10 @@ public sealed partial class TaskManagerPage : SamplePageBase
         }
 
         var from = process.Category;
-        process.Category = SampleShaping.Next(ProcessData.Categories, from);
 
-        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row. The
-        // search matches on Category too, so re-apply it as well (it would keep showing the row).
-        ReapplyIfGroupedOn(nameof(ProcessItem.Category));
-        if (_searchText is not null)
-        {
-            ApplySearch();
-        }
+        // Live grouping moves the row to its new group, and live filtering drops it if the search no
+        // longer matches.
+        process.Category = SampleShaping.Next(ProcessData.Categories, from);
 
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", process.Name, from, process.Category));
     }
@@ -343,7 +291,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
     {
         if (_stashedProcesses.Count > 0)
         {
-            foreach (var process in _stashedProcesses.SelectMany(RowsOf))
+            foreach (var process in _stashedProcesses)
             {
                 Processes.Add(process);
             }
@@ -356,7 +304,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
             return;
         }
 
-        _stashedProcesses.AddRange(Processes.Where(process => process.ParentPid is null));
+        _stashedProcesses.AddRange(Processes);
         Processes.Clear();
         RemoveAllButton.Content = "Restore all rows";
         UpdateTotals();
@@ -374,7 +322,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
     private void RandomizeAll()
     {
-        foreach (var process in Processes.Where(process => process.ParentPid is null))
+        foreach (var process in Processes)
         {
             if (process.Children.Count > 0)
             {

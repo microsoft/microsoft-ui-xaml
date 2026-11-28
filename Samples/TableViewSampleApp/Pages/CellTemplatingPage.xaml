@@ -23,12 +23,12 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="CellTemplatingTable"
                 AutomationProperties.Name="People with templated cells"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
-                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
+                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
                 <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" HeaderToolTip="Read-only text column. Takes the width the other columns leave." DisplayMemberBinding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department" HeaderToolTip="Read-only chip template: a tinted badge with a colour dot and the department name."/>
                 <!-- Edit on demand: the app owns the edit state (IsEditingRole, PendingRole) on the item,
@@ -76,7 +76,7 @@
                         </DataTemplate>
                     </tv:TableViewTemplateColumn.CellTemplate>
                 </tv:TableViewTemplateColumn>
-                <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" HeaderToolTip="Opens a Flyout anchored to the invoking cell."/>
+                <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanUserSort="False" HeaderToolTip="Opens a Flyout anchored to the invoking cell."/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>
@@ -104,7 +104,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="CellTemplating"
-                    Description="Grouping realizes the templated cells again in reused row containers, and every editor keeps its value. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping realizes the templated cells again in reused row containers, and every editor keeps its value. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

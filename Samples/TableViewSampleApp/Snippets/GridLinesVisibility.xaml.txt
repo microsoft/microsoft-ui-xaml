@@ -93,7 +93,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People with grid lines"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     GridLinesVisibility="All"
     SelectionMode="Single">
     <!-- To hide every header line (column separators and bottom rule), override the brush
@@ -102,7 +102,7 @@
         <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="Transparent"/>
     </tv:TableView.Resources>
     -->
-    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
     <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
     <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
