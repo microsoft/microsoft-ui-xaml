@@ -563,28 +563,26 @@ int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
         return provided;
     }
 
-    const auto index = GetRowIndex();
-    if (index < 0)
+    auto const tableView = GetOwningTableView();
+    return tableView ? PositionInSetAt(tableView, GetRowIndex()) : 0;
+}
+
+int32_t TableViewRowAutomationPeer::PositionInSetAt(winrt::TableView const& tableView, int32_t rowIndex)
+{
+    if (rowIndex < 0)
     {
         // 0 is UIA's "not specified"; -1 would reach the client verbatim.
         return 0;
     }
 
-    if (auto const tableView = GetOwningTableView())
+    auto const tableImpl = winrt::get_self<TableView>(tableView);
+    int32_t groupPosition = 0;
+    int32_t groupSize = 0;
+    if (TryGetGroupedRowSetMetadata(tableImpl, rowIndex, groupPosition, groupSize))
     {
-        auto const tableImpl = winrt::get_self<TableView>(tableView);
-
-        int32_t groupPosition = 0;
-        int32_t groupSize = 0;
-        if (TryGetGroupedRowSetMetadata(tableImpl, index, groupPosition, groupSize))
-        {
-            return groupPosition;
-        }
-
-        return tableImpl->GetDataRowPositionInSetInternal(index);
+        return groupPosition;
     }
-
-    return 0;
+    return tableImpl->GetDataRowPositionInSetInternal(rowIndex);
 }
 
 int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
@@ -596,22 +594,23 @@ int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
 
     if (auto const tableView = GetOwningTableView())
     {
-        auto const tableImpl = winrt::get_self<TableView>(tableView);
-
-        int32_t groupPosition = 0;
-        int32_t groupSize = 0;
-        if (TryGetGroupedRowSetMetadata(tableImpl, GetRowIndex(), groupPosition, groupSize))
-        {
-            return groupSize;
-        }
-
-        if (const auto count = tableImpl->GetDataRowSizeOfSetInternal(); count > 0)
-        {
-            return count;
-        }
+        return SizeOfSetAt(tableView, GetRowIndex());
     }
 
     return 0;
+}
+
+int32_t TableViewRowAutomationPeer::SizeOfSetAt(winrt::TableView const& tableView, int32_t rowIndex)
+{
+    auto const tableImpl = winrt::get_self<TableView>(tableView);
+    int32_t groupPosition = 0;
+    int32_t groupSize = 0;
+    if (TryGetGroupedRowSetMetadata(tableImpl, rowIndex, groupPosition, groupSize))
+    {
+        return groupSize;
+    }
+    const auto count = tableImpl->GetDataRowSizeOfSetInternal();
+    return count > 0 ? count : 0;
 }
 
 int32_t TableViewRowAutomationPeer::GetLevelCore()

@@ -34,6 +34,9 @@ public:
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
     int32_t GetLevelCore();
+    // By row index, so the data-item peer of an unrealized row reports what its realized row would.
+    static int32_t PositionInSetAt(winrt::TableView const& tableView, int32_t rowIndex);
+    static int32_t SizeOfSetAt(winrt::TableView const& tableView, int32_t rowIndex);
 
     // Expose direct cell wrappers only to avoid deep, costly UIA subtree walks.
     winrt::IVector<winrt::AutomationPeer> GetChildrenCore();

@@ -59,6 +59,12 @@ public:
         int32_t& positionInGroup,
         int32_t& groupSize) override;
 
+    bool TryGetGroupHeaderSet(
+        winrt::IInspectable const& rows,
+        int32_t index,
+        int32_t& position,
+        int32_t& size) override;
+
     enum class SourceKind
     {
         Flat,

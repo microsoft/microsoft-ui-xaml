@@ -438,6 +438,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
                 var selectionItem = itemPeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
                 Verify.IsTrue(selectionItem.IsSelected, "Precondition: the data-item peer reports itself selected.");
+                Verify.AreEqual(151, itemPeer.GetPositionInSet(), "An unrealized flat row's PositionInSet is computed from its index.");
+                Verify.AreEqual(200, itemPeer.GetSizeOfSet(), "An unrealized flat row's SizeOfSet is the row count.");
+                Verify.AreEqual(0, itemPeer.GetLevel(), "A flat row reports no Level.");
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Reading the set values must not realize the row.");
 
                 items.RemoveAt(150);
                 tableView.UpdateLayout();
@@ -448,6 +452,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyElementNotAvailable(() => selectionItem.RemoveFromSelection(), "RemoveFromSelection");
                 VerifyElementNotAvailable(() => selectionItem.Select(), "Select");
                 VerifyElementNotAvailable(() => _ = itemPeer.GetName(), "GetName");
+                VerifyElementNotAvailable(() => _ = itemPeer.GetLevel(), "GetLevel");
+                VerifyElementNotAvailable(() => _ = itemPeer.GetPositionInSet(), "GetPositionInSet");
+                VerifyElementNotAvailable(() => _ = itemPeer.GetSizeOfSet(), "GetSizeOfSet");
                 Verify.IsNull(itemPeer.GetPattern(PatternInterface.SelectionItem), "A removed item must stop offering SelectionItem.");
             });
         }
@@ -1205,6 +1212,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyElementNotAvailable(() => held.GetBoundingRectangle(), "BoundingRectangle");
                 VerifyElementNotAvailable(() => held.Navigate(AutomationNavigationDirection.Parent), "Navigate");
                 VerifyElementNotAvailable(() => held.GetChildren(), "GetChildren");
+                VerifyElementNotAvailable(() => held.GetLevel(), "Level");
+                VerifyElementNotAvailable(() => held.GetPositionInSet(), "PositionInSet");
+                VerifyElementNotAvailable(() => held.GetSizeOfSet(), "SizeOfSet");
                 VerifyElementNotAvailable(() => selection.Select(), "Select");
                 VerifyElementNotAvailable(() => selection.AddToSelection(), "AddToSelection");
                 VerifyElementNotAvailable(() => selection.RemoveFromSelection(), "RemoveFromSelection");
@@ -5759,6 +5769,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var peer = GetGroupHeaderPeer(tableView, header);
                     Verify.AreEqual(position, peer.GetPositionInSet(), $"Header {header}'s position among the headers under its parent.");
                     Verify.AreEqual(size, peer.GetSizeOfSet(), $"Header {header}'s count of headers under its parent.");
+                    Verify.AreEqual(position, peer.EventsSource.GetPositionInSet(), $"Header {header}'s element AT holds reports the same position.");
+                    Verify.AreEqual(size, peer.EventsSource.GetSizeOfSet(), $"Header {header}'s element AT holds reports the same count.");
                 }
 
                 AutomationProperties.SetLevel(GetGroupHeader(tableView, 1), 7);
@@ -5802,6 +5814,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, selected == null ? 0 : selected.Length, "Precondition: the selected row is reported.");
                 var itemPeer = new ProviderPeerProbe().ToPeer(selected[0]);
                 Verify.AreEqual(3, itemPeer.GetLevel(), "An unrealized data row under a subgroup reports Level 3.");
+                // D3's last subgroup, R2, holds 10 rows in source order; the target is its last.
+                Verify.AreEqual(10, itemPeer.GetPositionInSet(), "An unrealized grouped row's PositionInSet is within its subgroup.");
+                Verify.AreEqual(10, itemPeer.GetSizeOfSet(), "An unrealized grouped row's SizeOfSet is its subgroup's size.");
                 Verify.IsNull(repeater.TryGetElement(target), "Reading Level must not realize the row.");
             });
         }

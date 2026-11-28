@@ -76,6 +76,17 @@ struct ITableViewRowMetadataProvider
     {
         return false;
     }
+
+    // A group header's 1-based position and count among the headers between its parent and the parent's next
+    // sibling (all top-level headers for a top-level one). Same `rows` contract as TryGetGroupMembership.
+    virtual bool TryGetGroupHeaderSet(
+        winrt::Windows::Foundation::IInspectable const& /*rows*/,
+        int32_t /*index*/,
+        int32_t& /*position*/,
+        int32_t& /*size*/)
+    {
+        return false;
+    }
 };
 
 using TableViewRowMetadataProvider = std::shared_ptr<ITableViewRowMetadataProvider>;

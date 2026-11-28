@@ -170,19 +170,23 @@ namespace
             return true;
         }
 
-        // Not forwarded like the other members: an unrealized row's depth is known without realizing it.
+        // Not forwarded like the other members: an unrealized row's set values are known without realizing it.
         int32_t GetLevelCore()
         {
-            if (m_bound)
-            {
-                return BoundRow().second.GetLevel();
-            }
-            const int32_t index = ItemIndex();
-            if (auto const rowPeer = RealizedRowPeer(index))
-            {
-                return rowPeer.GetLevel();
-            }
-            return index >= 0 ? winrt::get_self<TableView>(m_table.get())->GetGroupedRowAutomationLevelInternal(index) : 0;
+            return ReadSetValue([](auto const& p) { return p.GetLevel(); },
+                [](TableView* table, int32_t index) { return table->GetGroupedRowAutomationLevelInternal(index); });
+        }
+
+        int32_t GetPositionInSetCore()
+        {
+            return ReadSetValue([](auto const& p) { return p.GetPositionInSet(); },
+                [this](TableView*, int32_t index) { return TableViewRowAutomationPeer::PositionInSetAt(m_table.get(), index); });
+        }
+
+        int32_t GetSizeOfSetCore()
+        {
+            return ReadSetValue([](auto const& p) { return p.GetSizeOfSet(); },
+                [this](TableView*, int32_t index) { return TableViewRowAutomationPeer::SizeOfSetAt(m_table.get(), index); });
         }
 
         winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface)
@@ -485,6 +489,22 @@ namespace
                 ThrowElementNotAvailable();
             }
             return index;
+        }
+
+        // A stale element throws, as every other member does; a realized row answers through its peer.
+        template <typename FromPeer, typename FromIndex>
+        int32_t ReadSetValue(FromPeer&& fromPeer, FromIndex&& fromIndex)
+        {
+            if (m_bound)
+            {
+                return fromPeer(BoundRow().second);
+            }
+            const int32_t index = RequireIndex();
+            if (auto const rowPeer = RealizedRowPeer(index))
+            {
+                return fromPeer(rowPeer);
+            }
+            return fromIndex(winrt::get_self<TableView>(m_table.get()), index);
         }
 
         bool IsBound(winrt::TableViewRow const& row)

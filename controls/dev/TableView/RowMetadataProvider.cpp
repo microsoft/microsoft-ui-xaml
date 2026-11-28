@@ -206,6 +206,77 @@ bool RowMetadataProvider::TryGetGroupMembership(
     return true;
 }
 
+bool RowMetadataProvider::TryGetGroupHeaderSet(
+    winrt::IInspectable const& rows,
+    int32_t index,
+    int32_t& position,
+    int32_t& size)
+{
+    position = 0;
+    size = 0;
+    if (m_sourceKind != SourceKind::Grouped || !m_rows || !rows || !SameObject(rows, m_rows))
+    {
+        return false;
+    }
+
+    const auto rowCount = m_rows.Count();
+    if (index < 0 || index >= rowCount)
+    {
+        return false;
+    }
+
+    EnsureGroupHeaderIndices(rowCount);
+    const auto begin = m_groupHeaderIndices.begin();
+    const auto end = m_groupHeaderIndices.end();
+    const auto self = std::lower_bound(begin, end, index);
+    if (self == end || *self != index)
+    {
+        return false;
+    }
+    const auto selfEntry = TryGetGroupHeaderEntry(index);
+    if (!selfEntry)
+    {
+        return false;
+    }
+
+    // A lower Level is the parent (before) or the parent's next sibling (after): the set ends there.
+    const int32_t level = selfEntry->Level();
+    auto const sameLevel = [&](int32_t headerIndex, bool& stop)
+    {
+        const auto entry = TryGetGroupHeaderEntry(headerIndex);
+        const int32_t other = entry ? entry->Level() : level;
+        stop = other < level;
+        return other == level;
+    };
+
+    int32_t before = 0;
+    for (auto it = self; it != begin;)
+    {
+        bool stop = false;
+        const bool sibling = sameLevel(*--it, stop);
+        if (stop)
+        {
+            break;
+        }
+        before += sibling ? 1 : 0;
+    }
+    int32_t after = 0;
+    for (auto it = self + 1; it != end; ++it)
+    {
+        bool stop = false;
+        const bool sibling = sameLevel(*it, stop);
+        if (stop)
+        {
+            break;
+        }
+        after += sibling ? 1 : 0;
+    }
+
+    position = before + 1;
+    size = position + after;
+    return true;
+}
+
 TableViewRowInfo RowMetadataProvider::GetRowInfo(int32_t index)
 {
     auto kind = TableViewRowKind::Data;
