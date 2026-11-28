@@ -90,7 +90,7 @@ namespace DirectUI::ShapingEngine
 
     // CollectionNodes and a node's Children: a read-only view of a kept list of the store, so Size costs nothing and a
     // child's public node is created when it is read. The store raises the changes, each after the list changed.
-    class __declspec(novtable) NodeListVector :
+    class __declspec(novtable) __declspec(uuid("c1f1d2f6-6819-44d7-8886-63dc4b47704c")) NodeListVector :
         public wfc::IObservableVector<IInspectable*>,
         public wfc::IVector<IInspectable*>,
         public wfc::IIterable<IInspectable*>,
@@ -141,7 +141,7 @@ namespace DirectUI::ShapingEngine
     // The public node (WPF has none; modelled on CollectionViewGroupInternal). Children is created on first read and
     // follows the store from then on. The node leaves the store when its item is removed or filtered out, or when the
     // view recomputes; it then keeps its last values and Parent is null.
-    class __declspec(novtable) CollectionViewNode :
+    class __declspec(novtable) __declspec(uuid("41f15b16-a44e-4ab2-9e19-dbce5b56ed1b")) CollectionViewNode :
         public xaml_data::ICollectionViewNode,
         public xaml_data::ICustomPropertyProvider,
         public xaml_data::INotifyPropertyChanged,
@@ -172,8 +172,13 @@ namespace DirectUI::ShapingEngine
         {
             return m_tpChildren.Get();
         }
+        bool IsBoundTo(const HierarchyStore* pStore) const;
         _Check_return_ HRESULT SetItem(_In_opt_ IInspectable* pItem);
         _Check_return_ HRESULT SetIsContext(bool isContext);
+        _Check_return_ HRESULT RaisePropertyChanged(_In_z_ const WCHAR* pName);
+
+        // The node object behind an ICustomPropertyProvider, or E_INVALIDARG for any other object.
+        static _Check_return_ HRESULT FromTarget(_In_opt_ IInspectable* pTarget, _Outptr_ CollectionViewNode** ppNode);
 
         // ICollectionViewNode
         IFACEMETHODIMP get_Item(_Outptr_result_maybenull_ IInspectable** ppValue) override;
@@ -193,9 +198,6 @@ namespace DirectUI::ShapingEngine
         IFACEMETHODIMP GetStringRepresentation(_Out_ HSTRING* pValue) override;
 
     private:
-        static CollectionViewNode* FromTarget(_In_ IInspectable* pTarget);
-        _Check_return_ HRESULT RaisePropertyChanged(_In_z_ const WCHAR* pName);
-
         std::weak_ptr<HierarchyStore> m_store;
         NodeId m_id = c_noNode;
         TrackerPtr<IInspectable> m_tpItem;
@@ -244,6 +246,8 @@ namespace DirectUI::ShapingEngine
         std::vector<NodeId> roots;
         UINT cycleBrokenCount = 0;
         bool isDuplicateLogged = false;
+        // A change failed after it began to change the store: only a recompute may use it again.
+        bool isStale = false;
         // A source item that changed sort keys since it was placed; not compared when another is placed.
         std::function<bool(UINT)> isSortSkipped;
 
@@ -286,8 +290,8 @@ namespace DirectUI::ShapingEngine
         void ShiftSourceIndices(UINT index, int delta);
 
         // Whether an item with these keys inserted at sourceIndex needs a recompute (it would take a key from a later
-        // duplicate, or close a cycle).
-        bool IsInsertComplex(UINT sourceIndex, const NodeKey& key, const NodeKey& parentKey) const;
+        // duplicate, or close a cycle). replacing: a node the item replaces, as if it were already removed.
+        bool IsInsertComplex(UINT sourceIndex, const NodeKey& key, const NodeKey& parentKey, NodeId replacing = c_noNode) const;
         bool IsRemoveComplex(NodeId id) const;
 
         _Check_return_ HRESULT GetProjection(NodeId id, _Outptr_ xaml_data::ICollectionViewNode** ppNode);
@@ -314,6 +318,7 @@ namespace DirectUI::ShapingEngine
         void ReleaseProjection(NodeId id);
         _Check_return_ HRESULT RepublishFlat(const HierarchyOutput& output);
         _Check_return_ HRESULT SetIsContext(NodeId id);
+        _Check_return_ HRESULT NotifyParentChanged(const std::vector<NodeId>& ids);
         UINT AllocateKeyObject(_In_opt_ IInspectable* pObject);
         void FreeKeyObject(UINT slot);
         _Check_return_ HRESULT AppendNodeVector(NodeId parent, UINT position, NodeId id, const HierarchyOutput& output);

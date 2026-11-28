@@ -80,7 +80,7 @@ DirectUI::CollectionViewSource::OnPropertyChanged2(
         break;
 
     case KnownPropertyIndex::CollectionViewSource_HierarchyDescription:
-        IFC(OnHierarchyDescriptionChanged());
+        IFC(OnHierarchyDescriptionChanged(args));
         break;
     }
 

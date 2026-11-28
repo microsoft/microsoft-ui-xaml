@@ -97,6 +97,12 @@ namespace DirectUI
         // Sets the description without recomputing (ApplyPropertiesToView applies the rules after).
         _Check_return_ HRESULT SetHierarchyDescription(_In_opt_ xaml_data::IHierarchyDescription* pValue);
         _Check_return_ HRESULT OnHierarchyDescriptionChanged(_In_ HierarchyDescription* pDescription);
+        bool HasHierarchyDescription() const
+        {
+            return !!m_tpHierarchyDescription;
+        }
+        // Grouping and a hierarchy exclude each other; checked before either rule is added.
+        static _Check_return_ HRESULT CheckHierarchyWithoutGrouping(UINT groupCount);
 
         // WPF: the live shaping part of CollectionViewSource.ApplyPropertiesToView. A property list is copied
         // only when its feature is requested.
@@ -266,7 +272,6 @@ namespace DirectUI
         bool IsLiveShaping() const;
 
         // Hierarchy (VectorCollectionView_Hierarchy.cpp).
-        static _Check_return_ HRESULT CheckHierarchyWithoutGrouping(UINT groupCount);
         _Check_return_ HRESULT RefreshHierarchy();
         _Check_return_ HRESULT LeaveHierarchy();
         _Check_return_ HRESULT EnsureNodeList();

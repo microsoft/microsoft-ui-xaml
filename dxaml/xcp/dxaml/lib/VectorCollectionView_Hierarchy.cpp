@@ -265,7 +265,11 @@ _Check_return_ HRESULT DirectUI::ShapingEngine::MakeNodeKey(_In_opt_ IInspectabl
 
 HRESULT CollectionViewNode::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewNode)))
+    if (InlineIsEqualGUID(iid, __uuidof(CollectionViewNode)))
+    {
+        *ppObject = static_cast<CollectionViewNode*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewNode)))
     {
         *ppObject = static_cast<xaml_data::ICollectionViewNode*>(this);
     }
@@ -334,9 +338,15 @@ _Check_return_ HRESULT CollectionViewNode::SetIsContext(bool isContext)
     return S_OK;
 }
 
+bool CollectionViewNode::IsBoundTo(const HierarchyStore* pStore) const
+{
+    return m_id != c_noNode && m_store.lock().get() == pStore;
+}
+
 IFACEMETHODIMP CollectionViewNode::get_Item(_Outptr_result_maybenull_ IInspectable** ppValue)
 {
     ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
     IFC_RETURN(m_tpItem.CopyTo(ppValue));
     return S_OK;
 }
@@ -344,6 +354,7 @@ IFACEMETHODIMP CollectionViewNode::get_Item(_Outptr_result_maybenull_ IInspectab
 IFACEMETHODIMP CollectionViewNode::get_Key(_Outptr_result_maybenull_ IInspectable** ppValue)
 {
     ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
     IFC_RETURN(m_tpKey.CopyTo(ppValue));
     return S_OK;
 }
@@ -385,6 +396,7 @@ IFACEMETHODIMP CollectionViewNode::get_Children(_Outptr_ wfc::IObservableVector<
 IFACEMETHODIMP CollectionViewNode::get_IsContext(_Out_ BOOLEAN* pValue)
 {
     ARG_VALIDRETURNPOINTER(pValue);
+    IFC_RETURN(CheckThread());
     *pValue = m_isContext;
     return S_OK;
 }
@@ -393,74 +405,102 @@ IFACEMETHODIMP CollectionViewNode::add_PropertyChanged(_In_ xaml_data::IProperty
 {
     ARG_NOTNULL_RETURN(pHandler, "handler");
     ARG_VALIDRETURNPOINTER(pToken);
+    IFC_RETURN(CheckThread());
     m_propertyChangedHandlers.AddHandler(pHandler, pToken);
     return S_OK;
 }
 
 IFACEMETHODIMP CollectionViewNode::remove_PropertyChanged(EventRegistrationToken token)
 {
+    IFC_RETURN(CheckThread());
     IFC_RETURN(m_propertyChangedHandlers.RemoveHandler(token));
     return S_OK;
 }
 
+// A name of its own, so a binding's accessor cache (keyed by this TypeName) never applies a node's accessors to
+// another provider.
 IFACEMETHODIMP CollectionViewNode::get_Type(_Out_ wxaml_interop::TypeName* pValue)
 {
+    ARG_VALIDRETURNPOINTER(pValue);
+    IFC_RETURN(CheckThread());
     wxaml_interop::TypeName typeName = {};
-    typeName.Kind = wxaml_interop::TypeKind_Primitive;
-    IFC_RETURN(WindowsCreateString(STR_LEN_PAIR(L"Object"), &typeName.Name));
+    typeName.Kind = wxaml_interop::TypeKind_Metadata;
+    IFC_RETURN(WindowsCreateString(STR_LEN_PAIR(L"Microsoft.UI.Xaml.Data.ICollectionViewNode"), &typeName.Name));
     *pValue = typeName;
     return S_OK;
 }
 
-CollectionViewNode* CollectionViewNode::FromTarget(_In_ IInspectable* pTarget)
+_Check_return_ HRESULT CollectionViewNode::FromTarget(_In_opt_ IInspectable* pTarget, _Outptr_ CollectionViewNode** ppNode)
 {
-    ctl::ComPtr<IInspectable> spTarget(pTarget);
-    ctl::ComPtr<xaml_data::ICustomPropertyProvider> spProvider;
-    VERIFYHR(spTarget.As(&spProvider));
-    return spProvider.Cast<CollectionViewNode>();
+    *ppNode = nullptr;
+    auto spNode = ctl::query_interface_cast<CollectionViewNode>(pTarget);
+    if (!spNode)
+    {
+        return E_INVALIDARG;
+    }
+    *ppNode = spNode.Detach();
+    return S_OK;
 }
 
 IFACEMETHODIMP CollectionViewNode::GetCustomProperty(_In_ HSTRING name, _Outptr_ xaml_data::ICustomProperty** ppValue)
 {
+    ARG_VALIDRETURNPOINTER(ppValue);
     *ppValue = nullptr;
+    IFC_RETURN(CheckThread());
     if (wrl_wrappers::HStringReference(L"Item") == name)
     {
-        IFC_RETURN(CustomProperty::CreateObjectProperty(name, [](IInspectable* pTarget, IInspectable** ppResult)
+        IFC_RETURN(CustomProperty::CreateObjectProperty(name, [](IInspectable* pTarget, IInspectable** ppResult) -> HRESULT
         {
-            return FromTarget(pTarget)->m_tpItem.CopyTo(ppResult);
+            ctl::ComPtr<CollectionViewNode> spNode;
+            IFC_RETURN(FromTarget(pTarget, spNode.ReleaseAndGetAddressOf()));
+            IFC_RETURN(spNode->get_Item(ppResult));
+            return S_OK;
         }, ppValue));
     }
     else if (wrl_wrappers::HStringReference(L"Key") == name)
     {
-        IFC_RETURN(CustomProperty::CreateObjectProperty(name, [](IInspectable* pTarget, IInspectable** ppResult)
+        IFC_RETURN(CustomProperty::CreateObjectProperty(name, [](IInspectable* pTarget, IInspectable** ppResult) -> HRESULT
         {
-            return FromTarget(pTarget)->m_tpKey.CopyTo(ppResult);
+            ctl::ComPtr<CollectionViewNode> spNode;
+            IFC_RETURN(FromTarget(pTarget, spNode.ReleaseAndGetAddressOf()));
+            IFC_RETURN(spNode->get_Key(ppResult));
+            return S_OK;
         }, ppValue));
     }
     else if (wrl_wrappers::HStringReference(L"Parent") == name)
     {
-        IFC_RETURN(CustomProperty::CreateObjectProperty(name, [](IInspectable* pTarget, IInspectable** ppResult)
+        IFC_RETURN(CustomProperty::CreateObjectProperty(name, [](IInspectable* pTarget, IInspectable** ppResult) -> HRESULT
         {
-            return FromTarget(pTarget)->get_Parent(reinterpret_cast<xaml_data::ICollectionViewNode**>(ppResult));
+            ctl::ComPtr<CollectionViewNode> spNode;
+            IFC_RETURN(FromTarget(pTarget, spNode.ReleaseAndGetAddressOf()));
+            IFC_RETURN(spNode->get_Parent(reinterpret_cast<xaml_data::ICollectionViewNode**>(ppResult)));
+            return S_OK;
         }, ppValue));
     }
     else if (wrl_wrappers::HStringReference(L"Children") == name)
     {
-        IFC_RETURN(CustomProperty::CreateObjectProperty(name, [](IInspectable* pTarget, IInspectable** ppResult)
+        IFC_RETURN(CustomProperty::CreateObjectProperty(name, [](IInspectable* pTarget, IInspectable** ppResult) -> HRESULT
         {
-            return FromTarget(pTarget)->get_Children(reinterpret_cast<wfc::IObservableVector<IInspectable*>**>(ppResult));
+            ctl::ComPtr<CollectionViewNode> spNode;
+            IFC_RETURN(FromTarget(pTarget, spNode.ReleaseAndGetAddressOf()));
+            IFC_RETURN(spNode->get_Children(reinterpret_cast<wfc::IObservableVector<IInspectable*>**>(ppResult)));
+            return S_OK;
         }, ppValue));
     }
     else if (wrl_wrappers::HStringReference(L"IsContext") == name)
     {
-        IFC_RETURN(CustomProperty::CreateBooleanProperty(name, [](IInspectable* pTarget, IInspectable** ppResult)
+        IFC_RETURN(CustomProperty::CreateBooleanProperty(name, [](IInspectable* pTarget, IInspectable** ppResult) -> HRESULT
         {
-            return DirectUI::PropertyValue::CreateFromBoolean(FromTarget(pTarget)->m_isContext, ppResult);
+            ctl::ComPtr<CollectionViewNode> spNode;
+            BOOLEAN value = FALSE;
+            IFC_RETURN(FromTarget(pTarget, spNode.ReleaseAndGetAddressOf()));
+            IFC_RETURN(spNode->get_IsContext(&value));
+            IFC_RETURN(DirectUI::PropertyValue::CreateFromBoolean(value, ppResult));
+            return S_OK;
         }, ppValue));
     }
     return S_OK;
 }
-
 IFACEMETHODIMP CollectionViewNode::GetIndexedProperty(_In_ HSTRING name, _In_ wxaml_interop::TypeName type, _Outptr_ xaml_data::ICustomProperty** ppValue)
 {
     *ppValue = nullptr;
@@ -495,7 +535,11 @@ _Check_return_ HRESULT CollectionViewNode::RaisePropertyChanged(_In_z_ const WCH
 
 HRESULT NodeListVector::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(wfc::IObservableVector<IInspectable*>)))
+    if (InlineIsEqualGUID(iid, __uuidof(NodeListVector)))
+    {
+        *ppObject = static_cast<NodeListVector*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(wfc::IObservableVector<IInspectable*>)))
     {
         *ppObject = static_cast<wfc::IObservableVector<IInspectable*>*>(this);
     }
@@ -1149,12 +1193,16 @@ UINT HierarchyStore::FlatIndexOf(NodeId id)
 
 void HierarchyStore::ShiftSourceIndices(UINT index, int delta)
 {
+    // c_noNode: a slot whose node a failed change already removed (the store is stale then).
     if (delta > 0)
     {
         bySource.insert(bySource.begin() + index, c_noNode);
         for (UINT sourceIndex = index + 1; sourceIndex < bySource.size(); ++sourceIndex)
         {
-            sourceIndexOf[bySource[sourceIndex]] = sourceIndex;
+            if (bySource[sourceIndex] != c_noNode)
+            {
+                sourceIndexOf[bySource[sourceIndex]] = sourceIndex;
+            }
         }
     }
     else
@@ -1162,12 +1210,15 @@ void HierarchyStore::ShiftSourceIndices(UINT index, int delta)
         bySource.erase(bySource.begin() + index);
         for (UINT sourceIndex = index; sourceIndex < bySource.size(); ++sourceIndex)
         {
-            sourceIndexOf[bySource[sourceIndex]] = sourceIndex;
+            if (bySource[sourceIndex] != c_noNode)
+            {
+                sourceIndexOf[bySource[sourceIndex]] = sourceIndex;
+            }
         }
     }
 }
 
-bool HierarchyStore::IsInsertComplex(UINT sourceIndex, const NodeKey& key, const NodeKey& parentKey) const
+bool HierarchyStore::IsInsertComplex(UINT sourceIndex, const NodeKey& key, const NodeKey& parentKey, NodeId replacing) const
 {
     if (!key.IsEmpty())
     {
@@ -1176,7 +1227,7 @@ bool HierarchyStore::IsInsertComplex(UINT sourceIndex, const NodeKey& key, const
             return true;
         }
         auto owner = owners.find(key);
-        if (owner != owners.end())
+        if (owner != owners.end() && owner->second != replacing)
         {
             // The new item comes first and would take the key from the item that has it.
             return sourceIndexOf[owner->second] >= sourceIndex;
@@ -1188,16 +1239,21 @@ bool HierarchyStore::IsInsertComplex(UINT sourceIndex, const NodeKey& key, const
         return false;
     }
 
-    // The new node would adopt the root that waits for its key; if that root is above its own parent, a cycle.
+    // The new node would adopt the root that waits for its key; if that root is above its own parent, a cycle. A
+    // replaced node's children wait for its key once it is gone.
     auto parent = owners.find(parentKey);
-    if (parent == owners.end() || waiting.find(key) == waiting.end())
+    if (parent == owners.end() || parent->second == replacing)
     {
         return false;
     }
     NodeId top = parent->second;
-    while (nodes[top].parent != c_noNode)
+    for (NodeId up = nodes[top].parent; up != c_noNode; up = nodes[top].parent)
     {
-        top = nodes[top].parent;
+        if (up == replacing)
+        {
+            return nodes[replacing].key == key;
+        }
+        top = up;
     }
     return nodes[top].isWaiting && nodes[top].parentKey == key;
 }
@@ -1254,7 +1310,12 @@ _Check_return_ HRESULT HierarchyStore::GetProjection(NodeId id, _Outptr_ xaml_da
         ctl::ComPtr<IInspectable> spItem;
         ctl::ComPtr<IInspectable> spKey;
         IFC_RETURN(m_items.GetAt(id, spItem.ReleaseAndGetAddressOf()));
-        if (node.key.isObject)
+        if (node.isDuplicate)
+        {
+            // Only the owner reports the key, so a control that keys rows by Key never takes a duplicate for the
+            // owner. A duplicate becomes the owner only through a recompute, which makes new nodes.
+        }
+        else if (node.key.isObject)
         {
             IFC_RETURN(m_keyObjects.GetAt(node.keyObjectSlot, spKey.ReleaseAndGetAddressOf()));
         }
@@ -1599,18 +1660,17 @@ _Check_return_ HRESULT HierarchyStore::InsertNode(NodeId id, const HierarchyOutp
         nodes[parent].children.push_back(id);
     }
     node.isKept = node.IsKeptByRule();
-    if (!node.isKept)
+    if (node.isKept)
     {
-        return S_OK;
+        node.keptSubtree = 1;
+        for (NodeId child : node.kept)
+        {
+            node.keptSubtree += nodes[child].keptSubtree;
+        }
+        AddMatches(parent, static_cast<int>(node.matchingBelow + (node.isMatch ? 1 : 0)));
+        IFC_RETURN(PromoteAncestors(id, output));
     }
-
-    node.keptSubtree = 1;
-    for (NodeId child : node.kept)
-    {
-        node.keptSubtree += nodes[child].keptSubtree;
-    }
-    AddMatches(parent, static_cast<int>(node.matchingBelow + (node.isMatch ? 1 : 0)));
-    IFC_RETURN(PromoteAncestors(id, output));
+    IFC_RETURN(NotifyParentChanged(adopted));
     return S_OK;
 }
 
@@ -1688,6 +1748,19 @@ _Check_return_ HRESULT HierarchyStore::RemoveNode(NodeId id, const HierarchyOutp
     }
 
     IFC_RETURN(FreeNode(id));
+    IFC_RETURN(NotifyParentChanged(children));
+    return S_OK;
+}
+
+_Check_return_ HRESULT HierarchyStore::NotifyParentChanged(const std::vector<NodeId>& ids)
+{
+    for (NodeId id : ids)
+    {
+        if (auto pProjection = nodes[id].pProjection)
+        {
+            IFC_RETURN(pProjection->RaisePropertyChanged(L"Parent"));
+        }
+    }
     return S_OK;
 }
 
@@ -1701,13 +1774,14 @@ _Check_return_ HRESULT HierarchyStore::UpdateNode(NodeId id, _In_opt_ IInspectab
     if (spOldItem.Get() != pItem)
     {
         IFC_RETURN(m_items.SetAt(id, pItem));
-        if (wasKept && output.pFlat)
-        {
-            IFC_RETURN(output.pFlat->InternalSetAt(FlatIndexOf(id), pItem));
-        }
+        // The node first, so a handler of the flat change finds the item on it.
         if (auto pProjection = nodes[id].pProjection)
         {
             IFC_RETURN(pProjection->SetItem(pItem));
+        }
+        if (wasKept && output.pFlat)
+        {
+            IFC_RETURN(output.pFlat->InternalSetAt(FlatIndexOf(id), pItem));
         }
     }
 
@@ -1848,7 +1922,12 @@ _Check_return_ HRESULT VectorCollectionView::OnHierarchyDescriptionChanged(_In_ 
 IFACEMETHODIMP VectorCollectionView::get_CanBuildHierarchy(_Out_ BOOLEAN* pValue)
 {
     ARG_VALIDRETURNPOINTER(pValue);
-    *pValue = TRUE;
+    UINT groupCount = 0;
+    if (m_tpGroupDescriptions)
+    {
+        IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
+    }
+    *pValue = groupCount == 0;
     return S_OK;
 }
 
@@ -1958,10 +2037,6 @@ _Check_return_ HRESULT VectorCollectionView::RefreshHierarchy()
         std::swap(m_spHierarchy, spPrevious);
         std::swap(m_spGroupRoot, spPreviousRoot);
     }
-    if (spPrevious)
-    {
-        spPrevious->DetachProjections(false /* isRaised */);
-    }
 
     m_sourceIndices.clear();
     m_isHierarchical = true;
@@ -1979,10 +2054,17 @@ _Check_return_ HRESULT VectorCollectionView::RefreshHierarchy()
         IFC_RETURN(ContainRaiseFailure(RaisePropertyChanged(STR_LEN_PAIR(L"CollectionNodes"))));
     }
     IFC_RETURN(static_cast<InternalList*>(m_tpInternalList.Get())->ReplaceAll(outputItems));
+
+    // After the roots' Reset, so a consumer that rebuilt from the new roots has already let go of these: the old
+    // nodes' Children lists empty, and each one somebody still follows says so.
+    if (spPrevious)
+    {
+        spPrevious->DetachProjections(true /* isRaised */);
+    }
     return S_OK;
 }
 
-// The view stops being hierarchical: CollectionNodes turns null; consumers holding the old list see it emptied.
+// The view stops being hierarchical: CollectionNodes turns null; consumers holding the old lists see them emptied.
 _Check_return_ HRESULT VectorCollectionView::LeaveHierarchy()
 {
     if (!m_isHierarchical)
@@ -1995,16 +2077,16 @@ _Check_return_ HRESULT VectorCollectionView::LeaveHierarchy()
         AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
         spPrevious = std::move(m_spHierarchy);
     }
-    if (spPrevious)
-    {
-        spPrevious->DetachProjections(false /* isRaised */);
-    }
     m_isHierarchical = false;
     if (m_tpNodeList)
     {
         IFC_RETURN(static_cast<NodeListVector*>(m_tpNodeList.Get())->Detach(true /* isRaised */));
     }
     IFC_RETURN(ContainRaiseFailure(RaisePropertyChanged(STR_LEN_PAIR(L"CollectionNodes"))));
+    if (spPrevious)
+    {
+        spPrevious->DetachProjections(true /* isRaised */);
+    }
     return S_OK;
 }
 
@@ -2036,8 +2118,10 @@ _Check_return_ HRESULT VectorCollectionView::AllocateHierarchyNode(
 }
 
 // A source Add, Remove or Replace on a hierarchical view. App code (key and sort getters, the filter) runs before
-// anything changes; then the tree is updated in place and each vector raises what changed in it. Data that needs a
-// recompute (a key taken from a later duplicate, a cycle) leaves *pIsApplied false.
+// anything changes, and so does the check whether the change needs a recompute (a key taken from a later duplicate, a
+// cycle), which leaves *pIsApplied false and the store untouched. Then the tree is updated in place and each vector
+// raises what changed in it. A change that fails or is overtaken once it began to change the store leaves the store
+// stale and the source indices invalid: only a recompute uses the store again.
 _Check_return_ HRESULT VectorCollectionView::ProcessHierarchyCollectionChanged(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied)
 {
     auto spStore = m_spHierarchy;
@@ -2045,11 +2129,16 @@ _Check_return_ HRESULT VectorCollectionView::ProcessHierarchyCollectionChanged(w
     const HierarchyOutput output = GetHierarchyOutput();
     const UINT previousSize = static_cast<UINT>(spStore ? spStore->bySource.size() : 0);
     HRESULT hr = S_OK;
+    bool isMutating = false;
 
     *pIsApplied = false;
-    if (!spStore || previousSize != m_sourceListSize
+    if (!spStore || spStore->isStale || previousSize != m_sourceListSize
         + ((change == wfc::CollectionChange_ItemRemoved) ? 1 : 0)
         - ((change == wfc::CollectionChange_ItemInserted) ? 1 : 0))
+    {
+        return S_OK;
+    }
+    if (change == wfc::CollectionChange_ItemInserted ? index > previousSize : (index >= previousSize || spStore->bySource[index] == c_noNode))
     {
         return S_OK;
     }
@@ -2063,6 +2152,14 @@ _Check_return_ HRESULT VectorCollectionView::ProcessHierarchyCollectionChanged(w
         return IsSortDirtyAfterSourceChange(change, index, sourceIndex);
     };
     auto clearSkip = wil::scope_exit([&spStore]() noexcept { spStore->isSortSkipped = nullptr; });
+    auto invalidate = wil::scope_exit([&]() noexcept
+    {
+        if (isMutating && !*pIsApplied)
+        {
+            spStore->isStale = true;
+            m_areSourceIndicesValid = false;
+        }
+    });
 
     if (change == wfc::CollectionChange_ItemRemoved)
     {
@@ -2072,6 +2169,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessHierarchyCollectionChanged(w
             return S_OK;
         }
         BusyScope busy(m_shapeBusyDepth);
+        isMutating = true;
         spStore->ShiftSourceIndices(index, -1);
         IFC_RETURN(spStore->RemoveNode(id, output));
         *pIsApplied = (sourceChangeCount == m_sourceListChangeCount);
@@ -2105,40 +2203,44 @@ _Check_return_ HRESULT VectorCollectionView::ProcessHierarchyCollectionChanged(w
         }();
     }
     IFC_RETURN(hr);
-    if (sourceChangeCount != m_sourceListChangeCount)
+    if (sourceChangeCount != m_sourceListChangeCount || spStore->isStale)
     {
         return S_OK;
     }
 
     BusyScope busy(m_shapeBusyDepth);
+    NodeId replaced = c_noNode;
     if (change == wfc::CollectionChange_ItemChanged)
     {
         const NodeId id = spStore->bySource[index];
         const auto& node = spStore->nodes[id];
         if (node.key == key && node.parentKey == parentKey)
         {
+            isMutating = true;
             IFC_RETURN(spStore->UpdateNode(id, spItem.Get(), isMatch, &keys, output, true));
             *pIsApplied = (sourceChangeCount == m_sourceListChangeCount);
             return S_OK;
         }
 
-        if (spStore->IsRemoveComplex(id))
+        if (spStore->IsRemoveComplex(id) || spStore->IsInsertComplex(index, key, parentKey, id))
         {
             return S_OK;
         }
-        IFC_RETURN(spStore->RemoveNode(id, output));
+        replaced = id;
+    }
+    else if (spStore->IsInsertComplex(index, key, parentKey))
+    {
+        return S_OK;
+    }
+
+    isMutating = true;
+    if (replaced != c_noNode)
+    {
+        IFC_RETURN(spStore->RemoveNode(replaced, output));
         spStore->bySource[index] = c_noNode;
-        if (spStore->IsInsertComplex(index, key, parentKey))
-        {
-            return S_OK;
-        }
     }
     else
     {
-        if (spStore->IsInsertComplex(index, key, parentKey))
-        {
-            return S_OK;
-        }
         spStore->ShiftSourceIndices(index, 1);
     }
 
@@ -2157,7 +2259,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreHierarchyItem(UINT sourceInd
     auto spStore = m_spHierarchy;
     const UINT sourceChangeCount = m_sourceListChangeCount;
     *pIsApplied = false;
-    if (!spStore || sourceIndex >= spStore->bySource.size())
+    if (!spStore || spStore->isStale || sourceIndex >= spStore->bySource.size() || spStore->bySource[sourceIndex] == c_noNode)
     {
         return S_OK;
     }
@@ -2184,7 +2286,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreHierarchyItem(UINT sourceInd
         }();
     }
     IFC_RETURN(hr);
-    if (sourceChangeCount != m_sourceListChangeCount)
+    if (sourceChangeCount != m_sourceListChangeCount || spStore->isStale)
     {
         return S_OK;
     }
@@ -2192,11 +2294,18 @@ _Check_return_ HRESULT VectorCollectionView::RestoreHierarchyItem(UINT sourceInd
     BusyScope busy(m_shapeBusyDepth);
     spStore->isSortSkipped = isSkipped;
     auto clearSkip = wil::scope_exit([&spStore]() noexcept { spStore->isSortSkipped = nullptr; });
+    auto invalidate = wil::scope_exit([&]() noexcept
+    {
+        if (!*pIsApplied)
+        {
+            spStore->isStale = true;
+            m_areSourceIndicesValid = false;
+        }
+    });
     IFC_RETURN(spStore->UpdateNode(id, pItem, isMatch, isResorting ? &keys : nullptr, GetHierarchyOutput()));
     *pIsApplied = (sourceChangeCount == m_sourceListChangeCount);
     return S_OK;
 }
-
 void VectorCollectionView::WalkHierarchy(EReferenceTrackerWalkType walkType)
 {
     if (m_spHierarchy)

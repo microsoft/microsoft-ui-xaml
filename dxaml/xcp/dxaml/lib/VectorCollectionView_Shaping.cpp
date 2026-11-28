@@ -42,7 +42,7 @@ HRESULT VectorCollectionView::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void*
         return S_OK;
     }
 
-    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewHierarchy)) && m_isShapingEnabled)
+    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewHierarchy)) && m_isShapingEnabled && Feature_ExperimentalApi::IsEnabled())
     {
         *ppObject = static_cast<xaml_data::ICollectionViewHierarchy*>(this);
         AddRefOuter();
@@ -259,7 +259,7 @@ IFACEMETHODIMP VectorCollectionView::put_Culture(_In_opt_ HSTRING value)
     return S_OK;
 }
 
-// WPF: ListCollectionView.CanSort / CanFilter / CanGroup, all true.
+// WPF: ListCollectionView.CanSort / CanFilter / CanGroup, all true; a view that builds a hierarchy cannot group.
 IFACEMETHODIMP VectorCollectionView::get_CanSort(_Out_ BOOLEAN* pValue)
 {
     ARG_VALIDRETURNPOINTER(pValue);
@@ -277,7 +277,7 @@ IFACEMETHODIMP VectorCollectionView::get_CanFilter(_Out_ BOOLEAN* pValue)
 IFACEMETHODIMP VectorCollectionView::get_CanGroup(_Out_ BOOLEAN* pValue)
 {
     ARG_VALIDRETURNPOINTER(pValue);
-    *pValue = TRUE;
+    *pValue = !m_tpHierarchyDescription;
     return S_OK;
 }
 
