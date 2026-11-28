@@ -209,7 +209,7 @@ namespace XamlGen.Templates.Metadata
         {
             if (!string.IsNullOrEmpty(property.FieldName))
             {
-                return string.Format("OFFSET({0}, {1})", property.FieldClassName, property.FieldName);
+                return string.Format("static_cast<UINT16>(OFFSET({0}, {1}))", property.FieldClassName, property.FieldName);
             }
             return "0";
         }
@@ -236,7 +236,7 @@ namespace XamlGen.Templates.Metadata
         {
             if (!string.IsNullOrEmpty(property.StorageGroupEnsureMethodName))
             {
-                return string.Format("OFFSET({0}, {1})", property.StorageGroupOffsetClassName, property.StorageGroupOffsetFieldName);
+                return string.Format("static_cast<UINT16>(OFFSET({0}, {1}))", property.StorageGroupOffsetClassName, property.StorageGroupOffsetFieldName);
             }
             return "0";
         }

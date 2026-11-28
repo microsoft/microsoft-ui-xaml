@@ -35,10 +35,15 @@ namespace XamlGen.Templates.Metadata
             this.Write("    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetPropertyMethodString(Model)));
             this.Write(", // Property method\r\n");
- } else { 
-            this.Write("    (METHODPFN)");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetOffsetString(Model)));
-            this.Write(", // Offset. Cast to METHODPFN to force it into the union.\r\n");
+ } else {
+            var offset = GetOffsetString(Model);
+            if (offset == "0") {
+            this.Write("    (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.\r\n");
+ } else {
+            this.Write("    reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(offset));
+            this.Write(")), // Offset. Cast to METHODPFN to force it into the union.\r\n");
+ }
  } 
             this.Write("    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsMethodPointer(Model.RenderDirtyFlagCallbackPointer)));

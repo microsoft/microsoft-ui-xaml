@@ -6736,7 +6736,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.DependencyObject.Name
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_strName), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_strName)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -6820,24 +6820,24 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.TextOptions.TextFormattingMode
     {
-        (METHODPFN)OFFSET(CUIElement, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CUIElement, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         &CUIElement::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_textOptions.m_textFormattingMode) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_textOptions.m_textFormattingMode)) // Storage offset
     },
     // Microsoft.UI.Xaml.TextOptions.TextHintingMode
     {
-        (METHODPFN)OFFSET(CUIElement, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CUIElement, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         &CUIElement::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_textOptions.m_textHintingMode) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_textOptions.m_textHintingMode)) // Storage offset
     },
     // Microsoft.UI.Xaml.TextOptions.TextRenderingMode
     {
-        (METHODPFN)OFFSET(CUIElement, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CUIElement, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         &CUIElement::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_textOptions.m_textRenderingMode) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_textOptions.m_textRenderingMode)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ToolTipService.KeyboardAcceleratorToolTip
     {
@@ -6883,304 +6883,304 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.Typography.AnnotationAlternates
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_nAnnotationAlternates) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_nAnnotationAlternates)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.Capitals
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_Capitals) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_Capitals)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.CapitalSpacing
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fCapitalSpacing) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fCapitalSpacing)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.CaseSensitiveForms
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fCaseSensitiveForms) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fCaseSensitiveForms)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.ContextualAlternates
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fContextualAlternates) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fContextualAlternates)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.ContextualLigatures
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fContextualLigatures) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fContextualLigatures)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.ContextualSwashes
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_nContextualSwashes) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_nContextualSwashes)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.DiscretionaryLigatures
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fDiscretionaryLigatures) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fDiscretionaryLigatures)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.EastAsianExpertForms
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fEastAsianExpertForms) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fEastAsianExpertForms)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.EastAsianLanguage
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_EastAsianLanguage) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_EastAsianLanguage)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.EastAsianWidths
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_EastAsianWidths) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_EastAsianWidths)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.Fraction
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_Fraction) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_Fraction)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.HistoricalForms
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fHistoricalForms) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fHistoricalForms)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.HistoricalLigatures
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fHistoricalLigatures) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fHistoricalLigatures)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.Kerning
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fKerning) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fKerning)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.MathematicalGreek
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fMathematicalGreek) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fMathematicalGreek)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.NumeralAlignment
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_NumeralAlignment) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_NumeralAlignment)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.NumeralStyle
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_NumeralStyle) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_NumeralStyle)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.SlashedZero
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fSlashedZero) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fSlashedZero)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StandardLigatures
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStandardLigatures) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStandardLigatures)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StandardSwashes
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_nStandardSwashes) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_nStandardSwashes)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticAlternates
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_nStylisticAlternates) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_nStylisticAlternates)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet1
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet1) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet1)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet10
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet10) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet10)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet11
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet11) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet11)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet12
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet12) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet12)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet13
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet13) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet13)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet14
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet14) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet14)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet15
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet15) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet15)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet16
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet16) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet16)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet17
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet17) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet17)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet18
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet18) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet18)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet19
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet19) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet19)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet2
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet2) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet2)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet20
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet20) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet20)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet3
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet3) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet3)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet4
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet4) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet4)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet5
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet5) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet5)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet6
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet6) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet6)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet7
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet7) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet7)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet8
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet8) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet8)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.StylisticSet9
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_fStylisticSet9) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_fStylisticSet9)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Typography.Variants
     {
-        (METHODPFN)OFFSET(CDependencyObject, m_pInheritedProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyObject, m_pInheritedProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CDependencyObject::EnsureInheritedProperties, // Storage ensure method
-        OFFSET(InheritedProperties, m_typography.m_Variants) // Storage offset
+        static_cast<UINT16>(OFFSET(InheritedProperties, m_typography.m_Variants)) // Storage offset
     },
     // Microsoft.UI.Xaml.Markup.XamlBindingHelper.DataTemplateComponent
     {
@@ -7275,7 +7275,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Application.ApplicationStarted
     {
-        (METHODPFN)OFFSET(CApplication, m_bApplicationStartupCompleted), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CApplication, m_bApplicationStartupCompleted)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -7303,14 +7303,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Application.Resources
     {
-        (METHODPFN)OFFSET(CApplication, m_pResources), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CApplication, m_pResources)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Application.RootVisual
     {
-        (METHODPFN)OFFSET(CApplication, m_pRootVisual), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CApplication, m_pRootVisual)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -7380,7 +7380,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Brush.Opacity
     {
-        (METHODPFN)OFFSET(CBrush, m_eOpacity), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBrush, m_eOpacity)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -7548,7 +7548,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Windows.UI.Color.ContentProperty
     {
-        (METHODPFN)OFFSET(CColor, m_rgb), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColor, m_rgb)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -7569,14 +7569,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorKeyFrame.KeyTime
     {
-        (METHODPFN)OFFSET(CColorKeyFrame, m_keyTime), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColorKeyFrame, m_keyTime)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorKeyFrame.Value
     {
-        (METHODPFN)OFFSET(CColorKeyFrame, m_uValue), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColorKeyFrame, m_uValue)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -7590,21 +7590,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ColumnDefinition.MaxWidth
     {
-        (METHODPFN)OFFSET(CColumnDefinition, m_eUserMaxSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColumnDefinition, m_eUserMaxSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ColumnDefinition.MinWidth
     {
-        (METHODPFN)OFFSET(CColumnDefinition, m_eUserMinSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColumnDefinition, m_eUserMinSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ColumnDefinition.Width
     {
-        (METHODPFN)OFFSET(CColumnDefinition, m_pUserSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColumnDefinition, m_pUserSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -7730,77 +7730,77 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.CornerRadius.BottomLeft
     {
-        (METHODPFN)OFFSET(CCornerRadius, m_cornerRadius.bottomLeft), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCornerRadius, m_cornerRadius.bottomLeft)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.CornerRadius.BottomRight
     {
-        (METHODPFN)OFFSET(CCornerRadius, m_cornerRadius.bottomRight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCornerRadius, m_cornerRadius.bottomRight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.CornerRadius.TopLeft
     {
-        (METHODPFN)OFFSET(CCornerRadius, m_cornerRadius.topLeft), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCornerRadius, m_cornerRadius.topLeft)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.CornerRadius.TopRight
     {
-        (METHODPFN)OFFSET(CCornerRadius, m_cornerRadius.topRight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCornerRadius, m_cornerRadius.topRight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.DependencyPropertyProxy.PropertyId
     {
-        (METHODPFN)OFFSET(CDependencyPropertyProxy, m_nPropertyIndex), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDependencyPropertyProxy, m_nPropertyIndex)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Double.ContentProperty
     {
-        (METHODPFN)OFFSET(CDouble, m_eValue), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDouble, m_eValue)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleKeyFrame.KeyTime
     {
-        (METHODPFN)OFFSET(CDoubleKeyFrame, m_keyTime), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDoubleKeyFrame, m_keyTime)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleKeyFrame.Value
     {
-        (METHODPFN)OFFSET(CDoubleKeyFrame, m_rValue), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDoubleKeyFrame, m_rValue)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingFunctionBase.EasingMode
     {
-        (METHODPFN)OFFSET(CEasingFunctionBase, m_eEasingMode), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEasingFunctionBase, m_eEasingMode)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.ExternalObjectReference.MarkupExtensionType
     {
-        (METHODPFN)OFFSET(CManagedObjectReference, m_markupExtensionType), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CManagedObjectReference, m_markupExtensionType)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.ExternalObjectReference.NativeValue
     {
-        (METHODPFN)OFFSET(CManagedObjectReference, m_nativeValue), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CManagedObjectReference, m_nativeValue)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -7912,7 +7912,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.FrameworkTemplate.Template
     {
-        (METHODPFN)OFFSET(CFrameworkTemplate, m_pTemplateContent), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkTemplate, m_pTemplateContent)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -7926,35 +7926,35 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Geometry.Transform
     {
-        (METHODPFN)OFFSET(CGeometry, m_pTransform), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGeometry, m_pTransform)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.GradientStop.Color
     {
-        (METHODPFN)OFFSET(CGradientStop, m_rgb), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGradientStop, m_rgb)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.GradientStop.Offset
     {
-        (METHODPFN)OFFSET(CGradientStop, m_stop.rPosition), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGradientStop, m_stop.rPosition)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.GridLength.GridUnitType
     {
-        (METHODPFN)OFFSET(CGridLength, m_gridLength.type), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridLength, m_gridLength.type)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.GridLength.Value
     {
-        (METHODPFN)OFFSET(CGridLength, m_gridLength.value), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridLength, m_gridLength.value)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -8017,119 +8017,119 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Input.InertiaExpansionBehavior.DesiredDeceleration
     {
-        (METHODPFN)OFFSET(CInertiaExpansionBehavior, m_fDeceleration), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInertiaExpansionBehavior, m_fDeceleration)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.InertiaExpansionBehavior.DesiredExpansion
     {
-        (METHODPFN)OFFSET(CInertiaExpansionBehavior, m_fExpansion), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInertiaExpansionBehavior, m_fExpansion)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.InertiaRotationBehavior.DesiredDeceleration
     {
-        (METHODPFN)OFFSET(CInertiaRotationBehavior, m_fDeceleration), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInertiaRotationBehavior, m_fDeceleration)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.InertiaRotationBehavior.DesiredRotation
     {
-        (METHODPFN)OFFSET(CInertiaRotationBehavior, m_fRotation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInertiaRotationBehavior, m_fRotation)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.InertiaTranslationBehavior.DesiredDeceleration
     {
-        (METHODPFN)OFFSET(CInertiaTranslationBehavior, m_fDeceleration), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInertiaTranslationBehavior, m_fDeceleration)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.InertiaTranslationBehavior.DesiredDisplacement
     {
-        (METHODPFN)OFFSET(CInertiaTranslationBehavior, m_fDisplacement), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInertiaTranslationBehavior, m_fDisplacement)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.InputScope.Names
     {
-        (METHODPFN)OFFSET(CInputScope, m_pNames), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInputScope, m_pNames)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.InputScopeName.NameValue
     {
-        (METHODPFN)OFFSET(CInputScopeName, m_nameValue), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInputScopeName, m_nameValue)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.InputValidationCommand.InputValidationKind
     {
-        (METHODPFN)OFFSET(CInputValidationCommand, m_inputValidationKind), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInputValidationCommand, m_inputValidationKind)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.InputValidationCommand.InputValidationMode
     {
-        (METHODPFN)OFFSET(CInputValidationCommand, m_inputValidationMode), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInputValidationCommand, m_inputValidationMode)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Int32.ContentProperty
     {
-        (METHODPFN)OFFSET(CInt32, m_iValue), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInt32, m_iValue)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.KeyboardAccelerator.IsEnabled
     {
-        (METHODPFN)OFFSET(CKeyboardAccelerator, m_isEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CKeyboardAccelerator, m_isEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.KeyboardAccelerator.Key
     {
-        (METHODPFN)OFFSET(CKeyboardAccelerator, m_key), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CKeyboardAccelerator, m_key)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.KeyboardAccelerator.Modifiers
     {
-        (METHODPFN)OFFSET(CKeyboardAccelerator, m_keyModifiers), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CKeyboardAccelerator, m_keyModifiers)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.KeyboardAccelerator.ScopeOwner
     {
-        (METHODPFN)OFFSET(CKeyboardAccelerator, m_scopeOwner), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CKeyboardAccelerator, m_scopeOwner)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.KeySpline.ControlPoint1
     {
-        (METHODPFN)OFFSET(CKeySpline, m_ControlPoint1), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CKeySpline, m_ControlPoint1)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.KeySpline.ControlPoint2
     {
-        (METHODPFN)OFFSET(CKeySpline, m_ControlPoint2), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CKeySpline, m_ControlPoint2)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -8185,168 +8185,168 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Input.ManipulationPivot.Center
     {
-        (METHODPFN)OFFSET(CManipulationPivot, m_ptCenter), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CManipulationPivot, m_ptCenter)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.ManipulationPivot.Radius
     {
-        (METHODPFN)OFFSET(CManipulationPivot, m_fRadius), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CManipulationPivot, m_fRadius)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Matrix.M11
     {
-        (METHODPFN)OFFSET(CMatrix, m_matrix._11), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix, m_matrix._11)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Matrix.M12
     {
-        (METHODPFN)OFFSET(CMatrix, m_matrix._12), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix, m_matrix._12)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Matrix.M21
     {
-        (METHODPFN)OFFSET(CMatrix, m_matrix._21), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix, m_matrix._21)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Matrix.M22
     {
-        (METHODPFN)OFFSET(CMatrix, m_matrix._22), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix, m_matrix._22)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Matrix.OffsetX
     {
-        (METHODPFN)OFFSET(CMatrix, m_matrix._31), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix, m_matrix._31)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Matrix.OffsetY
     {
-        (METHODPFN)OFFSET(CMatrix, m_matrix._32), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix, m_matrix._32)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M11
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._11), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._11)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M12
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._12), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._12)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M13
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._13), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._13)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M14
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._14), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._14)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M21
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._21), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._21)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M22
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._22), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._22)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M23
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._23), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._23)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M24
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._24), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._24)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M31
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._31), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._31)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M32
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._32), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._32)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M33
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._33), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._33)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M34
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._34), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._34)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.M44
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._44), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._44)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.OffsetX
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._41), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._41)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.OffsetY
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._42), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._42)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.Matrix3D.OffsetZ
     {
-        (METHODPFN)OFFSET(CMatrix4x4, m_matrix._43), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix4x4, m_matrix._43)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -8367,168 +8367,168 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.ObjectKeyFrame.KeyTime
     {
-        (METHODPFN)OFFSET(CObjectKeyFrame, m_keyTime), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CObjectKeyFrame, m_keyTime)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ObjectKeyFrame.Value
     {
-        (METHODPFN)OFFSET(CObjectKeyFrame, m_vValue), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CObjectKeyFrame, m_vValue)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Navigation.PageStackEntry.SourcePageType
     {
-        (METHODPFN)OFFSET(CPageStackEntry, m_sourcePageType), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPageStackEntry, m_sourcePageType)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurve.CurveSegments
     {
-        (METHODPFN)OFFSET(CParametricCurve, m_pCurveSegments), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CParametricCurve, m_pCurveSegments)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurveSegment.BeginOffset
     {
-        (METHODPFN)OFFSET(CParametricCurveSegment, m_beginOffset), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CParametricCurveSegment, m_beginOffset)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurveSegment.ConstantCoefficient
     {
-        (METHODPFN)OFFSET(CParametricCurveSegment, m_constantCoefficient), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CParametricCurveSegment, m_constantCoefficient)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurveSegment.CubicCoefficient
     {
-        (METHODPFN)OFFSET(CParametricCurveSegment, m_cubicCoefficient), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CParametricCurveSegment, m_cubicCoefficient)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurveSegment.LinearCoefficient
     {
-        (METHODPFN)OFFSET(CParametricCurveSegment, m_linearCoefficient), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CParametricCurveSegment, m_linearCoefficient)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurveSegment.QuadraticCoefficient
     {
-        (METHODPFN)OFFSET(CParametricCurveSegment, m_quadraticCoefficient), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CParametricCurveSegment, m_quadraticCoefficient)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.PathFigure.IsClosed
     {
-        (METHODPFN)OFFSET(CPathFigure, m_bClosed), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPathFigure, m_bClosed)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.PathFigure.IsFilled
     {
-        (METHODPFN)OFFSET(CPathFigure, m_bFilled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPathFigure, m_bFilled)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.PathFigure.Segments
     {
-        (METHODPFN)OFFSET(CPathFigure, m_pSegments), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPathFigure, m_pSegments)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.PathFigure.StartPoint
     {
-        (METHODPFN)OFFSET(CPathFigure, m_ptStart), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPathFigure, m_ptStart)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Windows.Foundation.Point.ContentProperty
     {
-        (METHODPFN)OFFSET(CPoint, m_pt), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPoint, m_pt)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Windows.Foundation.Point.X
     {
-        (METHODPFN)OFFSET(CPoint, m_pt.x), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPoint, m_pt.x)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Windows.Foundation.Point.Y
     {
-        (METHODPFN)OFFSET(CPoint, m_pt.y), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPoint, m_pt.y)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.Pointer.IsInContact
     {
-        (METHODPFN)OFFSET(CPointer, m_bInContact), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointer, m_bInContact)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.Pointer.IsInRange
     {
-        (METHODPFN)OFFSET(CPointer, m_bInRange), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointer, m_bInRange)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.Pointer.PointerDeviceType
     {
-        (METHODPFN)OFFSET(CPointer, m_pointerDeviceType), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointer, m_pointerDeviceType)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Input.Pointer.PointerId
     {
-        (METHODPFN)OFFSET(CPointer, m_uiPointerId), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointer, m_uiPointerId)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.PointerKeyFrame.PointerValue
     {
-        (METHODPFN)OFFSET(CPointerKeyFrame, m_pointerValue), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointerKeyFrame, m_pointerValue)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.PointerKeyFrame.TargetValue
     {
-        (METHODPFN)OFFSET(CPointerKeyFrame, m_value), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointerKeyFrame, m_value)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.PointKeyFrame.KeyTime
     {
-        (METHODPFN)OFFSET(CPointKeyFrame, m_keyTime), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointKeyFrame, m_keyTime)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.PointKeyFrame.Value
     {
-        (METHODPFN)OFFSET(CPointKeyFrame, m_ptValue), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointKeyFrame, m_ptValue)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -8542,7 +8542,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Printing.PrintDocument.DesiredFormat
     {
-        (METHODPFN)OFFSET(CPrintDocument, m_eDesiredFormat), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPrintDocument, m_eDesiredFormat)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -8556,42 +8556,42 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Printing.PrintDocument.PrintedPageCount
     {
-        (METHODPFN)OFFSET(CPrintDocument, m_nPrintedPageCount), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPrintDocument, m_nPrintedPageCount)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PropertyPath.Path
     {
-        (METHODPFN)OFFSET(CPropertyPath, m_strPath), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPropertyPath, m_strPath)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Windows.Foundation.Rect.Height
     {
-        (METHODPFN)OFFSET(CRect, m_rc.Height), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRect, m_rc.Height)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Windows.Foundation.Rect.Width
     {
-        (METHODPFN)OFFSET(CRect, m_rc.Width), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRect, m_rc.Width)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Windows.Foundation.Rect.X
     {
-        (METHODPFN)OFFSET(CRect, m_rc.X), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRect, m_rc.X)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Windows.Foundation.Rect.Y
     {
-        (METHODPFN)OFFSET(CRect, m_rc.Y), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRect, m_rc.Y)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -8605,63 +8605,63 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.RowDefinition.Height
     {
-        (METHODPFN)OFFSET(CRowDefinition, m_pUserSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRowDefinition, m_pUserSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RowDefinition.MaxHeight
     {
-        (METHODPFN)OFFSET(CRowDefinition, m_eUserMaxSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRowDefinition, m_eUserMaxSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RowDefinition.MinHeight
     {
-        (METHODPFN)OFFSET(CRowDefinition, m_eUserMinSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRowDefinition, m_eUserMinSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.SecondaryContentRelationship.Curves
     {
-        (METHODPFN)OFFSET(CSecondaryContentRelationship, m_pCurves), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSecondaryContentRelationship, m_pCurves)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.SecondaryContentRelationship.IsDescendant
     {
-        (METHODPFN)OFFSET(CSecondaryContentRelationship, m_isDescendant), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSecondaryContentRelationship, m_isDescendant)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.SecondaryContentRelationship.ShouldTargetClip
     {
-        (METHODPFN)OFFSET(CSecondaryContentRelationship, m_shouldTargetClip), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSecondaryContentRelationship, m_shouldTargetClip)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.SetterBase.IsSealed
     {
-        (METHODPFN)OFFSET(CSetterBase, m_bIsSealed), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSetterBase, m_bIsSealed)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Windows.Foundation.Size.Height
     {
-        (METHODPFN)OFFSET(CSize, m_size.height), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSize, m_size.height)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Windows.Foundation.Size.Width
     {
-        (METHODPFN)OFFSET(CSize, m_size.width), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSize, m_size.width)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -8710,42 +8710,42 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.StateTriggerBase.TriggerState
     {
-        (METHODPFN)OFFSET(CStateTriggerBase, m_triggerState), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CStateTriggerBase, m_triggerState)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // String.ContentProperty
     {
-        (METHODPFN)OFFSET(CString, m_strString), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CString, m_strString)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Style.BasedOn
     {
-        (METHODPFN)OFFSET(CStyle, m_pBasedOn), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CStyle, m_pBasedOn)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Style.IsSealed
     {
-        (METHODPFN)OFFSET(CStyle, m_bIsSealed), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CStyle, m_bIsSealed)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Style.Setters
     {
-        (METHODPFN)OFFSET(CStyle, m_pSetters), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CStyle, m_pSetters)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Style.TargetType
     {
-        (METHODPFN)OFFSET(CStyle, m_targetTypeIndex), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CStyle, m_targetTypeIndex)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -8801,10 +8801,10 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.TextElement.CharacterSpacing
     {
-        (METHODPFN)OFFSET(CTextElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nCharacterSpacing) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nCharacterSpacing)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextElement.ExitDisplayModeOnAccessKeyInvoked
     {
@@ -8815,45 +8815,45 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.TextElement.FontFamily
     {
-        (METHODPFN)OFFSET(CTextElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pFontFamily) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextElement.FontSize
     {
-        (METHODPFN)OFFSET(CTextElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_eFontSize) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_eFontSize)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextElement.FontStretch
     {
-        (METHODPFN)OFFSET(CTextElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStretch) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStretch)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextElement.FontStyle
     {
-        (METHODPFN)OFFSET(CTextElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStyle) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStyle)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextElement.FontWeight
     {
-        (METHODPFN)OFFSET(CTextElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontWeight) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontWeight)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextElement.Foreground
     {
-        (METHODPFN)OFFSET(CTextElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         &CTextElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pForeground) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextElement.IsAccessKeyScope
     {
@@ -8864,10 +8864,10 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.TextElement.IsTextScaleFactorEnabled
     {
-        (METHODPFN)OFFSET(CTextElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_isTextScaleFactorEnabled) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_isTextScaleFactorEnabled)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextElement.KeyTipHorizontalOffset
     {
@@ -8892,28 +8892,28 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.TextElement.Language
     {
-        (METHODPFN)OFFSET(CTextElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_strLanguageString) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_strLanguageString)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextElement.TextDecorations
     {
-        (METHODPFN)OFFSET(CTextElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nTextDecorations) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nTextDecorations)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextRange.Length
     {
-        (METHODPFN)OFFSET(CTextRange, m_range.length), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextRange, m_range.length)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextRange.StartIndex
     {
-        (METHODPFN)OFFSET(CTextRange, m_range.startIndex), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextRange, m_range.startIndex)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -8927,77 +8927,77 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Thickness.Bottom
     {
-        (METHODPFN)OFFSET(CThickness, m_thickness.bottom), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CThickness, m_thickness.bottom)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Thickness.Left
     {
-        (METHODPFN)OFFSET(CThickness, m_thickness.left), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CThickness, m_thickness.left)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Thickness.Right
     {
-        (METHODPFN)OFFSET(CThickness, m_thickness.right), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CThickness, m_thickness.right)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Thickness.Top
     {
-        (METHODPFN)OFFSET(CThickness, m_thickness.top), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CThickness, m_thickness.top)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.Timeline.AutoReverse
     {
-        (METHODPFN)OFFSET(CTimeline, m_fAutoReverse), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTimeline, m_fAutoReverse)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetForceDCompAnimationSubtreeDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     {
-        (METHODPFN)OFFSET(CTimeline, m_pBeginTime), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTimeline, m_pBeginTime)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetForceDCompAnimationSubtreeDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.Timeline.Duration
     {
-        (METHODPFN)OFFSET(CTimeline, m_duration), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTimeline, m_duration)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetForceDCompAnimationSubtreeDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.Timeline.FillBehavior
     {
-        (METHODPFN)OFFSET(CTimeline, m_fillBehavior), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTimeline, m_fillBehavior)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetForceDCompAnimationSubtreeDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.Timeline.RepeatBehavior
     {
-        (METHODPFN)OFFSET(CTimeline, m_repeatBehavior), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTimeline, m_repeatBehavior)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetForceDCompAnimationSubtreeDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.Timeline.SpeedRatio
     {
-        (METHODPFN)OFFSET(CTimeline, m_rSpeedRatio), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTimeline, m_rSpeedRatio)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetForceDCompAnimationSubtreeDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Windows.Foundation.TimeSpan.Seconds
     {
-        (METHODPFN)OFFSET(CTimeSpan, m_rTimeSpan), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTimeSpan, m_rTimeSpan)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -9074,35 +9074,35 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
     {
-        (METHODPFN)OFFSET(CTransition, m_pStaggerFunction), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTransition, m_pStaggerFunction)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.ClipTransform
     {
-        (METHODPFN)OFFSET(CTransitionTarget, m_pClipTransform), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTransitionTarget, m_pClipTransform)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransitionTarget::NWSetClipDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.ClipTransformOrigin
     {
-        (METHODPFN)OFFSET(CTransitionTarget, m_ptClipTransformOrigin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTransitionTarget, m_ptClipTransformOrigin)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransitionTarget::NWSetClipDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.CompositeTransform
     {
-        (METHODPFN)OFFSET(CTransitionTarget, m_pxf), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTransitionTarget, m_pxf)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransitionTarget::NWSetTransformDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.Opacity
     {
-        (METHODPFN)OFFSET(CTransitionTarget, m_opacity), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTransitionTarget, m_opacity)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransitionTarget::NWSetOpacityDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -9116,7 +9116,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.TransformOrigin
     {
-        (METHODPFN)OFFSET(CTransitionTarget, m_ptRenderTransformOrigin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTransitionTarget, m_ptRenderTransformOrigin)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransitionTarget::NWSetTransformDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -9403,7 +9403,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.UIElement.Opacity
     {
-        (METHODPFN)OFFSET(CUIElement, m_eOpacityPrivate), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CUIElement, m_eOpacityPrivate)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetOpacityDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -9620,28 +9620,28 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.VisualState.__DeferredSetters
     {
-        (METHODPFN)OFFSET(CVisualState, m_pDeferredSetters), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualState, m_pDeferredSetters)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.VisualState.__DeferredStoryboard
     {
-        (METHODPFN)OFFSET(CVisualState, m_pDeferredStoryboard), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualState, m_pDeferredStoryboard)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.VisualState.Setters
     {
-        (METHODPFN)OFFSET(CVisualState, m_setters), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualState, m_setters)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.VisualState.StateTriggers
     {
-        (METHODPFN)OFFSET(CVisualState, m_pStateTriggerCollection), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualState, m_pStateTriggerCollection)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -9655,14 +9655,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.VisualStateGroup.States
     {
-        (METHODPFN)OFFSET(CVisualStateGroup, m_pVisualStates), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualStateGroup, m_pVisualStates)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.VisualStateGroup.Transitions
     {
-        (METHODPFN)OFFSET(CVisualStateGroup, m_pTransitions), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualStateGroup, m_pTransitions)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -9683,35 +9683,35 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.VisualTransition.From
     {
-        (METHODPFN)OFFSET(CVisualTransition, m_strFrom), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualTransition, m_strFrom)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.VisualTransition.GeneratedDuration
     {
-        (METHODPFN)OFFSET(CVisualTransition, m_duration), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualTransition, m_duration)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.VisualTransition.GeneratedEasingFunction
     {
-        (METHODPFN)OFFSET(CVisualTransition, m_pEasingFunction), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualTransition, m_pEasingFunction)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.VisualTransition.Storyboard
     {
-        (METHODPFN)OFFSET(CVisualTransition, m_pStoryboard), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualTransition, m_pStoryboard)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.VisualTransition.To
     {
-        (METHODPFN)OFFSET(CVisualTransition, m_strTo), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualTransition, m_strTo)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -9837,84 +9837,84 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.AdaptiveTrigger.MinWindowHeight
     {
-        (METHODPFN)OFFSET(CAdaptiveTrigger, m_minWindowHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CAdaptiveTrigger, m_minWindowHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.AdaptiveTrigger.MinWindowWidth
     {
-        (METHODPFN)OFFSET(CAdaptiveTrigger, m_minWindowWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CAdaptiveTrigger, m_minWindowWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.ArcSegment.IsLargeArc
     {
-        (METHODPFN)OFFSET(CArcSegment, m_bLarge), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CArcSegment, m_bLarge)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.ArcSegment.Point
     {
-        (METHODPFN)OFFSET(CArcSegment, m_ptBase), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CArcSegment, m_ptBase)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.ArcSegment.RotationAngle
     {
-        (METHODPFN)OFFSET(CArcSegment, m_eAngle), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CArcSegment, m_eAngle)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.ArcSegment.Size
     {
-        (METHODPFN)OFFSET(CArcSegment, m_size), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CArcSegment, m_size)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.ArcSegment.SweepDirection
     {
-        (METHODPFN)OFFSET(CArcSegment, m_bClockwise), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CArcSegment, m_bClockwise)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.BackEase.Amplitude
     {
-        (METHODPFN)OFFSET(CBackInterpolator, m_fAmplitude), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBackInterpolator, m_fAmplitude)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.BeginStoryboard.Storyboard
     {
-        (METHODPFN)OFFSET(CBeginStoryboard, m_pStoryboard), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBeginStoryboard, m_pStoryboard)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.BezierSegment.Point1
     {
-        (METHODPFN)OFFSET(CBezierSegment, m_ptOne), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBezierSegment, m_ptOne)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.BezierSegment.Point2
     {
-        (METHODPFN)OFFSET(CBezierSegment, m_ptTwo), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBezierSegment, m_ptTwo)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.BezierSegment.Point3
     {
-        (METHODPFN)OFFSET(CBezierSegment, m_ptThree), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBezierSegment, m_ptThree)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -9949,105 +9949,105 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.Block.HorizontalTextAlignment
     {
-        (METHODPFN)OFFSET(CBlock, m_textAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBlock, m_textAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Block.LineHeight
     {
-        (METHODPFN)OFFSET(CBlock, m_lineHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBlock, m_lineHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Block.LineStackingStrategy
     {
-        (METHODPFN)OFFSET(CBlock, m_lineStackingStrategy), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBlock, m_lineStackingStrategy)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Block.Margin
     {
-        (METHODPFN)OFFSET(CBlock, m_margin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBlock, m_margin)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Block.TextAlignment
     {
-        (METHODPFN)OFFSET(CBlock, m_textAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBlock, m_textAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.BounceEase.Bounces
     {
-        (METHODPFN)OFFSET(CBounceInterpolator, m_iBounces), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBounceInterpolator, m_iBounces)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.BounceEase.Bounciness
     {
-        (METHODPFN)OFFSET(CBounceInterpolator, m_fBounciness), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBounceInterpolator, m_fBounciness)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimation.By
     {
-        (METHODPFN)OFFSET(CColorAnimation, m_vBy), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColorAnimation, m_vBy)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimation.EasingFunction
     {
-        (METHODPFN)OFFSET(CColorAnimation, m_pEasingFunction), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColorAnimation, m_pEasingFunction)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimation.EnableDependentAnimation
     {
-        (METHODPFN)OFFSET(CColorAnimation, m_enableDependentAnimation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColorAnimation, m_enableDependentAnimation)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimation.From
     {
-        (METHODPFN)OFFSET(CColorAnimation, m_vFrom), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColorAnimation, m_vFrom)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimation.To
     {
-        (METHODPFN)OFFSET(CColorAnimation, m_vTo), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColorAnimation, m_vTo)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames.EnableDependentAnimation
     {
-        (METHODPFN)OFFSET(CColorAnimationUsingKeyFrames, m_enableDependentAnimation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColorAnimationUsingKeyFrames, m_enableDependentAnimation)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames.KeyFrames
     {
-        (METHODPFN)OFFSET(CColorAnimationUsingKeyFrames, m_pKeyFrames), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CColorAnimationUsingKeyFrames, m_pKeyFrames)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.CenterX
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rCenterX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rCenterX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10061,7 +10061,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.CenterY
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rCenterY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rCenterY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10075,7 +10075,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.CenterZ
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rCenterZ), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rCenterZ)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10089,7 +10089,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.RotationX
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rRotationX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rRotationX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10103,7 +10103,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.RotationY
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rRotationY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rRotationY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10117,7 +10117,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.RotationZ
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rRotationZ), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rRotationZ)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10131,7 +10131,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.ScaleX
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rScaleX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rScaleX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10145,7 +10145,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.ScaleY
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rScaleY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rScaleY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10159,7 +10159,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.ScaleZ
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rScaleZ), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rScaleZ)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10173,7 +10173,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.TranslateX
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rTranslateX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rTranslateX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10187,7 +10187,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.TranslateY
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rTranslateY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rTranslateY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10201,7 +10201,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D.TranslateZ
     {
-        (METHODPFN)OFFSET(CCompositeTransform3D, m_rTranslateZ), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform3D, m_rTranslateZ)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10236,7 +10236,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.CustomResource.ResourceKey
     {
-        (METHODPFN)OFFSET(CustomResourceExtension, m_strResourceKey), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CustomResourceExtension, m_strResourceKey)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10250,56 +10250,56 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.DispatcherTimer.Interval
     {
-        (METHODPFN)OFFSET(CDispatcherTimer, m_pInterval), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDispatcherTimer, m_pInterval)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.By
     {
-        (METHODPFN)OFFSET(CDoubleAnimation, m_vBy), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDoubleAnimation, m_vBy)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.EasingFunction
     {
-        (METHODPFN)OFFSET(CDoubleAnimation, m_pEasingFunction), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDoubleAnimation, m_pEasingFunction)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.EnableDependentAnimation
     {
-        (METHODPFN)OFFSET(CDoubleAnimation, m_enableDependentAnimation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDoubleAnimation, m_enableDependentAnimation)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.From
     {
-        (METHODPFN)OFFSET(CDoubleAnimation, m_vFrom), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDoubleAnimation, m_vFrom)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.To
     {
-        (METHODPFN)OFFSET(CDoubleAnimation, m_vTo), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDoubleAnimation, m_vTo)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames.EnableDependentAnimation
     {
-        (METHODPFN)OFFSET(CDoubleAnimationUsingKeyFrames, m_enableDependentAnimation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDoubleAnimationUsingKeyFrames, m_enableDependentAnimation)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames.KeyFrames
     {
-        (METHODPFN)OFFSET(CDoubleAnimationUsingKeyFrames, m_pKeyFrames), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDoubleAnimationUsingKeyFrames, m_pKeyFrames)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10313,70 +10313,70 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
     {
-        (METHODPFN)OFFSET(CDynamicTimeline, m_pChild), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDynamicTimeline, m_pChild)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationInSubtreeDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame.EasingFunction
     {
-        (METHODPFN)OFFSET(CEasingColorKeyFrame, m_pEasingFunction), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEasingColorKeyFrame, m_pEasingFunction)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingDoubleKeyFrame.EasingFunction
     {
-        (METHODPFN)OFFSET(CEasingDoubleKeyFrame, m_pEasingFunction), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEasingDoubleKeyFrame, m_pEasingFunction)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingPointKeyFrame.EasingFunction
     {
-        (METHODPFN)OFFSET(CEasingPointKeyFrame, m_pEasingFunction), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEasingPointKeyFrame, m_pEasingFunction)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.EdgeUIThemeTransition.Edge
     {
-        (METHODPFN)OFFSET(CEdgeUIThemeTransition, m_edge), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEdgeUIThemeTransition, m_edge)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ElasticEase.Oscillations
     {
-        (METHODPFN)OFFSET(CElasticInterpolator, m_iOscillations), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CElasticInterpolator, m_iOscillations)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ElasticEase.Springiness
     {
-        (METHODPFN)OFFSET(CElasticInterpolator, m_fSpringiness), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CElasticInterpolator, m_fSpringiness)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.EllipseGeometry.Center
     {
-        (METHODPFN)OFFSET(CEllipseGeometry, m_ptCenter), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEllipseGeometry, m_ptCenter)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.EllipseGeometry.RadiusX
     {
-        (METHODPFN)OFFSET(CEllipseGeometry, m_eRadiusX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEllipseGeometry, m_eRadiusX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.EllipseGeometry.RadiusY
     {
-        (METHODPFN)OFFSET(CEllipseGeometry, m_eRadiusY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEllipseGeometry, m_eRadiusY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10397,28 +10397,28 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.EntranceThemeTransition.IsStaggeringEnabled
     {
-        (METHODPFN)OFFSET(CEntranceThemeTransition, m_isStaggeringEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEntranceThemeTransition, m_isStaggeringEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.EventTrigger.Actions
     {
-        (METHODPFN)OFFSET(CEventTrigger, m_pTriggerActions), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEventTrigger, m_pTriggerActions)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.EventTrigger.RoutedEvent
     {
-        (METHODPFN)OFFSET(CEventTrigger, m_strRouted), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CEventTrigger, m_strRouted)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ExponentialEase.Exponent
     {
-        (METHODPFN)OFFSET(CExponentialInterpolator, m_fExponent), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CExponentialInterpolator, m_fExponent)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10558,10 +10558,10 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.FrameworkElement.FlowDirection
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFrameworkElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFlowDirection) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFlowDirection)) // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.FocusVisualMargin
     {
@@ -10600,45 +10600,45 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.FrameworkElement.Height
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_eHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_eHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.HorizontalAlignment
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_horizontalAlignment) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_horizontalAlignment)) // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.IsTextScaleFactorEnabledInternal
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFrameworkElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_isTextScaleFactorEnabled) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_isTextScaleFactorEnabled)) // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.Language
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFrameworkElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_strLanguageString) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_strLanguageString)) // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.Margin
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_margin) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_margin)) // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.MaxHeight
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_eMaxHeight) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_eMaxHeight)) // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.MaxViewport
     {
@@ -10649,24 +10649,24 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.FrameworkElement.MaxWidth
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_eMaxWidth) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_eMaxWidth)) // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.MinHeight
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_eMinHeight) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_eMinHeight)) // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.MinWidth
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_eMinWidth) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_eMinWidth)) // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.Parent
     {
@@ -10712,14 +10712,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.FrameworkElement.VerticalAlignment
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_verticalAlignment) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_verticalAlignment)) // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElement.Width
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_eWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_eWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10754,105 +10754,105 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.Height
     {
-        (METHODPFN)OFFSET(CFrameworkElementEx, m_height), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_height)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.HorizontalAlignment
     {
-        (METHODPFN)OFFSET(CFrameworkElementEx, m_horizontalAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_horizontalAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.Margin
     {
-        (METHODPFN)OFFSET(CFrameworkElementEx, m_margin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_margin)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.MaxHeight
     {
-        (METHODPFN)OFFSET(CFrameworkElementEx, m_maxHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_maxHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.MaxWidth
     {
-        (METHODPFN)OFFSET(CFrameworkElementEx, m_maxWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_maxWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.MinHeight
     {
-        (METHODPFN)OFFSET(CFrameworkElementEx, m_minHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_minHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.MinWidth
     {
-        (METHODPFN)OFFSET(CFrameworkElementEx, m_minWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_minWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.VerticalAlignment
     {
-        (METHODPFN)OFFSET(CFrameworkElementEx, m_verticalAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_verticalAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.Width
     {
-        (METHODPFN)OFFSET(CFrameworkElementEx, m_width), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_width)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.GeometryGroup.Children
     {
-        (METHODPFN)OFFSET(CGeometryGroup, m_pChild), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGeometryGroup, m_pChild)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.GeometryGroup.FillRule
     {
-        (METHODPFN)OFFSET(CGeometryGroup, m_fillMode), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGeometryGroup, m_fillMode)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.GradientBrush.ColorInterpolationMode
     {
-        (METHODPFN)OFFSET(CGradientBrush, m_nInterpolate), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGradientBrush, m_nInterpolate)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.GradientBrush.GradientStops
     {
-        (METHODPFN)OFFSET(CGradientBrush, m_pStops), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGradientBrush, m_pStops)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.GradientBrush.MappingMode
     {
-        (METHODPFN)OFFSET(CGradientBrush, m_nMapping), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGradientBrush, m_nMapping)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.GradientBrush.SpreadMethod
     {
-        (METHODPFN)OFFSET(CGradientBrush, m_nSpread), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGradientBrush, m_nSpread)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10887,21 +10887,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.LineGeometry.EndPoint
     {
-        (METHODPFN)OFFSET(CLineGeometry, m_ptEnd), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CLineGeometry, m_ptEnd)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.LineGeometry.StartPoint
     {
-        (METHODPFN)OFFSET(CLineGeometry, m_ptStart), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CLineGeometry, m_ptStart)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.LineSegment.Point
     {
-        (METHODPFN)OFFSET(CLineSegment, m_pt), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CLineSegment, m_pt)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10915,7 +10915,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Matrix3DProjection.ProjectionMatrix
     {
-        (METHODPFN)OFFSET(CMatrix3DProjection, m_pMatrix), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrix3DProjection, m_pMatrix)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10957,14 +10957,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.EnableDependentAnimation
     {
-        (METHODPFN)OFFSET(CObjectAnimationUsingKeyFrames, m_enableDependentAnimation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CObjectAnimationUsingKeyFrames, m_enableDependentAnimation)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames
     {
-        (METHODPFN)OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -10992,63 +10992,63 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.PanelEx.Height
     {
-        (METHODPFN)OFFSET(CPanelEx, m_height), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPanelEx, m_height)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PanelEx.HorizontalAlignment
     {
-        (METHODPFN)OFFSET(CPanelEx, m_horizontalAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPanelEx, m_horizontalAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PanelEx.Margin
     {
-        (METHODPFN)OFFSET(CPanelEx, m_margin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPanelEx, m_margin)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PanelEx.MaxHeight
     {
-        (METHODPFN)OFFSET(CPanelEx, m_maxHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPanelEx, m_maxHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PanelEx.MaxWidth
     {
-        (METHODPFN)OFFSET(CPanelEx, m_maxWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPanelEx, m_maxWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PanelEx.MinHeight
     {
-        (METHODPFN)OFFSET(CPanelEx, m_minHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPanelEx, m_minHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PanelEx.MinWidth
     {
-        (METHODPFN)OFFSET(CPanelEx, m_minWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPanelEx, m_minWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PanelEx.VerticalAlignment
     {
-        (METHODPFN)OFFSET(CPanelEx, m_verticalAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPanelEx, m_verticalAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PanelEx.Width
     {
-        (METHODPFN)OFFSET(CPanelEx, m_width), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPanelEx, m_width)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11062,14 +11062,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PathGeometry.Figures
     {
-        (METHODPFN)OFFSET(CPathGeometry, m_pFigures), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPathGeometry, m_pFigures)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.PathGeometry.FillRule
     {
-        (METHODPFN)OFFSET(CPathGeometry, m_fillMode), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPathGeometry, m_fillMode)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11083,21 +11083,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Media3D.PerspectiveTransform3D.Depth
     {
-        (METHODPFN)OFFSET(CPerspectiveTransform3D, m_rDepth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPerspectiveTransform3D, m_rDepth)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.PerspectiveTransform3D.OffsetX
     {
-        (METHODPFN)OFFSET(CPerspectiveTransform3D, m_rOffsetX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPerspectiveTransform3D, m_rOffsetX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Media3D.PerspectiveTransform3D.OffsetY
     {
-        (METHODPFN)OFFSET(CPerspectiveTransform3D, m_rOffsetY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPerspectiveTransform3D, m_rOffsetY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform3D::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11118,7 +11118,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.CenterOfRotationX
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rCenterOfRotationX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rCenterOfRotationX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11132,7 +11132,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.CenterOfRotationY
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rCenterOfRotationY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rCenterOfRotationY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11146,7 +11146,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.CenterOfRotationZ
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rCenterOfRotationZ), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rCenterOfRotationZ)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11160,7 +11160,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.GlobalOffsetX
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rGlobalOffsetX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rGlobalOffsetX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11174,7 +11174,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.GlobalOffsetY
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rGlobalOffsetY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rGlobalOffsetY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11188,7 +11188,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.GlobalOffsetZ
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rGlobalOffsetZ), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rGlobalOffsetZ)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11202,7 +11202,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.LocalOffsetX
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rLocalOffsetX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rLocalOffsetX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11216,7 +11216,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.LocalOffsetY
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rLocalOffsetY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rLocalOffsetY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11230,7 +11230,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.LocalOffsetZ
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rLocalOffsetZ), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rLocalOffsetZ)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11251,7 +11251,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.RotationX
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rRotationX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rRotationX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11265,7 +11265,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.RotationY
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rRotationY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rRotationY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11279,7 +11279,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection.RotationZ
     {
-        (METHODPFN)OFFSET(CPlaneProjection, m_rRotationZ), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPlaneProjection, m_rRotationZ)))), // Offset. Cast to METHODPFN to force it into the union.
         &CProjection::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11293,84 +11293,84 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimation.By
     {
-        (METHODPFN)OFFSET(CPointAnimation, m_ptBy), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointAnimation, m_ptBy)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction
     {
-        (METHODPFN)OFFSET(CPointAnimation, m_pEasingFunction), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointAnimation, m_pEasingFunction)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimation.EnableDependentAnimation
     {
-        (METHODPFN)OFFSET(CPointAnimation, m_enableDependentAnimation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointAnimation, m_enableDependentAnimation)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimation.From
     {
-        (METHODPFN)OFFSET(CPointAnimation, m_ptFrom), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointAnimation, m_ptFrom)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimation.To
     {
-        (METHODPFN)OFFSET(CPointAnimation, m_ptTo), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointAnimation, m_ptTo)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.EnableDependentAnimation
     {
-        (METHODPFN)OFFSET(CPointAnimationUsingKeyFrames, m_enableDependentAnimation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointAnimationUsingKeyFrames, m_enableDependentAnimation)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames
     {
-        (METHODPFN)OFFSET(CPointAnimationUsingKeyFrames, m_pKeyFrames), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointAnimationUsingKeyFrames, m_pKeyFrames)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames
     {
-        (METHODPFN)OFFSET(CPointerAnimationUsingKeyFrames, m_pKeyFrames), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointerAnimationUsingKeyFrames, m_pKeyFrames)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.PointerSource
     {
-        (METHODPFN)OFFSET(CPointerAnimationUsingKeyFrames, m_pointerSource), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPointerAnimationUsingKeyFrames, m_pointerSource)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.PolyBezierSegment.Points
     {
-        (METHODPFN)OFFSET(CPolyBezierSegment, m_pPoints), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPolyBezierSegment, m_pPoints)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.PolyLineSegment.Points
     {
-        (METHODPFN)OFFSET(CPolyLineSegment, m_pPoints), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPolyLineSegment, m_pPoints)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment.Points
     {
-        (METHODPFN)OFFSET(CPolyQuadraticSegment, m_pPoints), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPolyQuadraticSegment, m_pPoints)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11391,77 +11391,77 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.PowerEase.Power
     {
-        (METHODPFN)OFFSET(CPowerInterpolator, m_fPower), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPowerInterpolator, m_fPower)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction.Delay
     {
-        (METHODPFN)OFFSET(CPVLStaggerFunction, m_delay), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPVLStaggerFunction, m_delay)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction.DelayReduce
     {
-        (METHODPFN)OFFSET(CPVLStaggerFunction, m_delayReduce), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPVLStaggerFunction, m_delayReduce)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction.Maximum
     {
-        (METHODPFN)OFFSET(CPVLStaggerFunction, m_maximum), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPVLStaggerFunction, m_maximum)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction.Reverse
     {
-        (METHODPFN)OFFSET(CPVLStaggerFunction, m_reverse), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPVLStaggerFunction, m_reverse)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.QuadraticBezierSegment.Point1
     {
-        (METHODPFN)OFFSET(CQuadraticSegment, m_ptOne), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CQuadraticSegment, m_ptOne)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.QuadraticBezierSegment.Point2
     {
-        (METHODPFN)OFFSET(CQuadraticSegment, m_ptTwo), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CQuadraticSegment, m_ptTwo)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.RectangleGeometry.RadiusX
     {
-        (METHODPFN)OFFSET(CRectangleGeometry, m_eRadiusX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRectangleGeometry, m_eRadiusX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.RectangleGeometry.RadiusY
     {
-        (METHODPFN)OFFSET(CRectangleGeometry, m_eRadiusY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRectangleGeometry, m_eRadiusY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.RectangleGeometry.Rect
     {
-        (METHODPFN)OFFSET(CRectangleGeometry, m_rc), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRectangleGeometry, m_rc)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Data.RelativeSource.Mode
     {
-        (METHODPFN)OFFSET(CRelativeSource, m_eMode), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRelativeSource, m_eMode)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11482,35 +11482,35 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.RepositionThemeTransition.IsStaggeringEnabled
     {
-        (METHODPFN)OFFSET(CRepositionThemeTransition, m_isStaggeringEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRepositionThemeTransition, m_isStaggeringEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Setter.Property
     {
-        (METHODPFN)OFFSET(CSetter, m_pDependencyPropertyProxy), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSetter, m_pDependencyPropertyProxy)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Setter.Target
     {
-        (METHODPFN)OFFSET(CSetter, m_target), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSetter, m_target)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Setter.Value
     {
-        (METHODPFN)OFFSET(CSetter, m_vValue), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSetter, m_vValue)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.SolidColorBrush.Color
     {
-        (METHODPFN)OFFSET(CSolidColorBrush, m_rgb), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSolidColorBrush, m_rgb)))), // Offset. Cast to METHODPFN to force it into the union.
         &CSolidColorBrush::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11552,21 +11552,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.SplineColorKeyFrame.KeySpline
     {
-        (METHODPFN)OFFSET(CSplineColorKeyFrame, m_pKeySpline), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSplineColorKeyFrame, m_pKeySpline)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame.KeySpline
     {
-        (METHODPFN)OFFSET(CSplineDoubleKeyFrame, m_pKeySpline), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSplineDoubleKeyFrame, m_pKeySpline)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame.KeySpline
     {
-        (METHODPFN)OFFSET(CSplinePointKeyFrame, m_pKeySpline), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSplinePointKeyFrame, m_pKeySpline)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11587,28 +11587,28 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.StaticResource.ResourceKey
     {
-        (METHODPFN)OFFSET(CStaticResourceExtension, m_strResourceKey), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CStaticResourceExtension, m_strResourceKey)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Imaging.SvgImageSource.RasterizePixelHeight
     {
-        (METHODPFN)OFFSET(CSvgImageSource, m_rasterizeHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSvgImageSource, m_rasterizeHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Imaging.SvgImageSource.RasterizePixelWidth
     {
-        (METHODPFN)OFFSET(CSvgImageSource, m_rasterizeWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSvgImageSource, m_rasterizeWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Imaging.SvgImageSource.UriSource
     {
-        (METHODPFN)OFFSET(CSvgImageSource, m_strSource), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSvgImageSource, m_strSource)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11622,35 +11622,35 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Data.TemplateBinding.Property
     {
-        (METHODPFN)OFFSET(CTemplateBindingExtension, m_pSourceProperty), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTemplateBindingExtension, m_pSourceProperty)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Background
     {
-        (METHODPFN)OFFSET(CTextHighlighter, m_background), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextHighlighter, m_background)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground
     {
-        (METHODPFN)OFFSET(CTextHighlighter, m_foreground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextHighlighter, m_foreground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Ranges
     {
-        (METHODPFN)OFFSET(CTextHighlighter, m_ranges), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextHighlighter, m_ranges)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.ThemeResource.ResourceKey
     {
-        (METHODPFN)OFFSET(CThemeResourceExtension, m_strResourceKey), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CThemeResourceExtension, m_strResourceKey)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11664,28 +11664,28 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.TileBrush.AlignmentX
     {
-        (METHODPFN)OFFSET(CTileBrush, m_AlignmentX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTileBrush, m_AlignmentX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.TileBrush.AlignmentY
     {
-        (METHODPFN)OFFSET(CTileBrush, m_AlignmentY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTileBrush, m_AlignmentY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.TileBrush.Stretch
     {
-        (METHODPFN)OFFSET(CTileBrush, m_Stretch), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTileBrush, m_Stretch)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.XamlCompositionBrushBase.FallbackColor
     {
-        (METHODPFN)OFFSET(CXamlCompositionBrush, m_fallbackColor), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CXamlCompositionBrush, m_fallbackColor)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11755,7 +11755,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Data.Binding.Path
     {
-        (METHODPFN)OFFSET(CBinding, m_strPath), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBinding, m_strPath)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11797,28 +11797,28 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Imaging.BitmapImage.CreateOptions
     {
-        (METHODPFN)OFFSET(CBitmapImage, m_nCreateOptions), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBitmapImage, m_nCreateOptions)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Imaging.BitmapImage.DecodePixelHeight
     {
-        (METHODPFN)OFFSET(CBitmapImage, m_decodePixelHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBitmapImage, m_decodePixelHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Imaging.BitmapImage.DecodePixelType
     {
-        (METHODPFN)OFFSET(CBitmapImage, m_decodePixelType), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBitmapImage, m_decodePixelType)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Imaging.BitmapImage.DecodePixelWidth
     {
-        (METHODPFN)OFFSET(CBitmapImage, m_decodePixelWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBitmapImage, m_decodePixelWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11839,14 +11839,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Imaging.BitmapImage.UriSource
     {
-        (METHODPFN)OFFSET(CBitmapImage, m_strSource), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBitmapImage, m_strSource)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Border.Background
     {
-        (METHODPFN)OFFSET(CBorder, m_pBackgroundBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBorder, m_pBackgroundBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CBorder::NWSetBackgroundBrushDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11867,14 +11867,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Border.BorderBrush
     {
-        (METHODPFN)OFFSET(CBorder, m_pBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBorder, m_pBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CBorder::NWSetBorderBrushDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Border.BorderThickness
     {
-        (METHODPFN)OFFSET(CBorder, m_borderThickness), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBorder, m_borderThickness)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11895,14 +11895,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Border.CornerRadius
     {
-        (METHODPFN)OFFSET(CBorder, m_cornerRadius), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBorder, m_cornerRadius)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Border.Padding
     {
-        (METHODPFN)OFFSET(CBorder, m_padding), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBorder, m_padding)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11930,7 +11930,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.CompositeTransform.CenterX
     {
-        (METHODPFN)OFFSET(CCompositeTransform, m_ptCenter.x), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform, m_ptCenter.x)))), // Offset. Cast to METHODPFN to force it into the union.
         &CCompositeTransform::NWSetDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11944,7 +11944,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.CompositeTransform.CenterY
     {
-        (METHODPFN)OFFSET(CCompositeTransform, m_ptCenter.y), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform, m_ptCenter.y)))), // Offset. Cast to METHODPFN to force it into the union.
         &CCompositeTransform::NWSetDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11965,14 +11965,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.CompositeTransform.Rotation
     {
-        (METHODPFN)OFFSET(CCompositeTransform, m_eRotation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform, m_eRotation)))), // Offset. Cast to METHODPFN to force it into the union.
         &CCompositeTransform::NWSetDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.CompositeTransform.ScaleX
     {
-        (METHODPFN)OFFSET(CCompositeTransform, m_eScaleX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform, m_eScaleX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CCompositeTransform::NWSetDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11986,7 +11986,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.CompositeTransform.ScaleY
     {
-        (METHODPFN)OFFSET(CCompositeTransform, m_eScaleY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform, m_eScaleY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CCompositeTransform::NWSetDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12000,7 +12000,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.CompositeTransform.SkewX
     {
-        (METHODPFN)OFFSET(CCompositeTransform, m_eSkewX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform, m_eSkewX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CCompositeTransform::NWSetDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12014,7 +12014,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.CompositeTransform.SkewY
     {
-        (METHODPFN)OFFSET(CCompositeTransform, m_eSkewY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform, m_eSkewY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CCompositeTransform::NWSetDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12028,7 +12028,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.CompositeTransform.TranslateX
     {
-        (METHODPFN)OFFSET(CCompositeTransform, m_eTranslateX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform, m_eTranslateX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CCompositeTransform::NWSetDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12042,7 +12042,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.CompositeTransform.TranslateY
     {
-        (METHODPFN)OFFSET(CCompositeTransform, m_eTranslateY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCompositeTransform, m_eTranslateY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CCompositeTransform::NWSetDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12091,10 +12091,10 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.CharacterSpacing
     {
-        (METHODPFN)OFFSET(CContentPresenter, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CContentPresenter::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nCharacterSpacing) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nCharacterSpacing)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.Content
     {
@@ -12105,7 +12105,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
     {
-        (METHODPFN)OFFSET(CContentPresenter, m_pContentTemplate), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentPresenter, m_pContentTemplate)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12119,7 +12119,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
     {
-        (METHODPFN)OFFSET(CContentPresenter, m_pContentTransitions), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentPresenter, m_pContentTransitions)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12133,45 +12133,45 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily
     {
-        (METHODPFN)OFFSET(CContentPresenter, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CContentPresenter::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pFontFamily) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontSize
     {
-        (METHODPFN)OFFSET(CContentPresenter, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CContentPresenter::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_eFontSize) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_eFontSize)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontStretch
     {
-        (METHODPFN)OFFSET(CContentPresenter, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CContentPresenter::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStretch) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStretch)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontStyle
     {
-        (METHODPFN)OFFSET(CContentPresenter, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CContentPresenter::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStyle) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStyle)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontWeight
     {
-        (METHODPFN)OFFSET(CContentPresenter, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CContentPresenter::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontWeight) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontWeight)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground
     {
-        (METHODPFN)OFFSET(CContentPresenter, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         &CContentPresenter::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pForeground) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.HorizontalContentAlignment
     {
@@ -12182,10 +12182,10 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.IsTextScaleFactorEnabled
     {
-        (METHODPFN)OFFSET(CContentPresenter, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CContentPresenter::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_isTextScaleFactorEnabled) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_isTextScaleFactorEnabled)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.LineHeight
     {
@@ -12252,7 +12252,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Control.Background
     {
-        (METHODPFN)OFFSET(CControl, m_pBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12266,24 +12266,24 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Control.BorderBrush
     {
-        (METHODPFN)OFFSET(CControl, m_pBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Control.BorderThickness
     {
-        (METHODPFN)OFFSET(CControl, m_borderThickness), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_borderThickness)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Control.CharacterSpacing
     {
-        (METHODPFN)OFFSET(CControl, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CControl::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nCharacterSpacing) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nCharacterSpacing)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Control.CornerRadius
     {
@@ -12294,7 +12294,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey
     {
-        (METHODPFN)OFFSET(CControl, m_pDefaultStyleKey), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pDefaultStyleKey)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12322,49 +12322,49 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Control.FontFamily
     {
-        (METHODPFN)OFFSET(CControl, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CControl::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pFontFamily) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Control.FontSize
     {
-        (METHODPFN)OFFSET(CControl, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CControl::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_eFontSize) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_eFontSize)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Control.FontStretch
     {
-        (METHODPFN)OFFSET(CControl, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CControl::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStretch) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStretch)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Control.FontStyle
     {
-        (METHODPFN)OFFSET(CControl, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CControl::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStyle) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStyle)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Control.FontWeight
     {
-        (METHODPFN)OFFSET(CControl, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CControl::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontWeight) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontWeight)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Control.Foreground
     {
-        (METHODPFN)OFFSET(CControl, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         &CControl::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pForeground) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Control.HorizontalContentAlignment
     {
-        (METHODPFN)OFFSET(CControl, m_horizontalContentAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_horizontalContentAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12406,14 +12406,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Control.IsTextScaleFactorEnabled
     {
-        (METHODPFN)OFFSET(CControl, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CControl::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_isTextScaleFactorEnabled) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_isTextScaleFactorEnabled)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Control.Padding
     {
-        (METHODPFN)OFFSET(CControl, m_padding), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_padding)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12434,7 +12434,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Control.Template
     {
-        (METHODPFN)OFFSET(CControl, m_pTemplate), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_pTemplate)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12448,14 +12448,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Control.VerticalContentAlignment
     {
-        (METHODPFN)OFFSET(CControl, m_verticalContentAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CControl, m_verticalContentAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.DisplayMemberTemplate.DisplayMemberPath
     {
-        (METHODPFN)OFFSET(CDisplayMemberTemplate, m_strMemberPath), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CDisplayMemberTemplate, m_strMemberPath)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12567,14 +12567,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.FadeInThemeAnimation.TargetName
     {
-        (METHODPFN)OFFSET(CFadeInThemeAnimation, m_targetName), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFadeInThemeAnimation, m_targetName)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.FadeOutThemeAnimation.TargetName
     {
-        (METHODPFN)OFFSET(CFadeOutThemeAnimation, m_targetName), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFadeOutThemeAnimation, m_targetName)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12595,70 +12595,70 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.ColorFontPaletteIndex
     {
-        (METHODPFN)OFFSET(CGlyphs, m_colorPaletteIndex), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGlyphs, m_colorPaletteIndex)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.Fill
     {
-        (METHODPFN)OFFSET(CGlyphs, m_pFill), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGlyphs, m_pFill)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.FontRenderingEmSize
     {
-        (METHODPFN)OFFSET(CGlyphs, m_eFontRenderingEmSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGlyphs, m_eFontRenderingEmSize)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.FontUri
     {
-        (METHODPFN)OFFSET(CGlyphs, m_strFontUri), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGlyphs, m_strFontUri)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.Indices
     {
-        (METHODPFN)OFFSET(CGlyphs, m_strIndices), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGlyphs, m_strIndices)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.IsColorFontEnabled
     {
-        (METHODPFN)OFFSET(CGlyphs, m_isColorFontEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGlyphs, m_isColorFontEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.OriginX
     {
-        (METHODPFN)OFFSET(CGlyphs, m_eOriginX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGlyphs, m_eOriginX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.OriginY
     {
-        (METHODPFN)OFFSET(CGlyphs, m_eOriginY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGlyphs, m_eOriginY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.StyleSimulations
     {
-        (METHODPFN)OFFSET(CGlyphs, m_nStyleSimulations), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGlyphs, m_nStyleSimulations)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.UnicodeString
     {
-        (METHODPFN)OFFSET(CGlyphs, m_strUnicodeString), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGlyphs, m_strUnicodeString)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12679,42 +12679,42 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.IconElement.Foreground
     {
-        (METHODPFN)OFFSET(CIconElement, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CIconElement, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         &CIconElement::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pForeground) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Image.NineGrid
     {
-        (METHODPFN)OFFSET(CImage, m_ninegridPrivate), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CImage, m_ninegridPrivate)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Image.Source
     {
-        (METHODPFN)OFFSET(CImage, m_pImageSource), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CImage, m_pImageSource)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Image.Stretch
     {
-        (METHODPFN)OFFSET(CImage, m_Stretch), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CImage, m_Stretch)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.ImageBrush.ImageSource
     {
-        (METHODPFN)OFFSET(CImageBrush, m_pImageSource), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CImageBrush, m_pImageSource)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.InlineUIContainer.Child
     {
-        (METHODPFN)OFFSET(CInlineUIContainer, m_pChild), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CInlineUIContainer, m_pChild)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12770,14 +12770,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel
     {
-        (METHODPFN)OFFSET(CItemsPresenter, m_pItemsPanelTemplate), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CItemsPresenter, m_pItemsPanelTemplate)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ItemsPresenter.Padding
     {
-        (METHODPFN)OFFSET(CItemsPresenter, m_padding), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CItemsPresenter, m_padding)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12791,28 +12791,28 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.LinearGradientBrush.EndPoint
     {
-        (METHODPFN)OFFSET(CLinearGradientBrush, m_ptEnd), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CLinearGradientBrush, m_ptEnd)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.LinearGradientBrush.StartPoint
     {
-        (METHODPFN)OFFSET(CLinearGradientBrush, m_ptStart), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CLinearGradientBrush, m_ptStart)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.MatrixTransform.Matrix
     {
-        (METHODPFN)OFFSET(CMatrixTransform, m_pMatrix), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMatrixTransform, m_pMatrix)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerPresenter.IsFullWindow
     {
-        (METHODPFN)OFFSET(CMediaPlayerPresenter, m_isFullWindow), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMediaPlayerPresenter, m_isFullWindow)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12826,7 +12826,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerPresenter.Stretch
     {
-        (METHODPFN)OFFSET(CMediaPlayerPresenter, m_Stretch), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMediaPlayerPresenter, m_Stretch)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12847,7 +12847,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Panel.Background
     {
-        (METHODPFN)OFFSET(CPanel, m_pBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPanel, m_pBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CPanel::NWSetBackgroundDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -12910,14 +12910,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.Paragraph.Inlines
     {
-        (METHODPFN)OFFSET(CParagraph, m_pInlines), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CParagraph, m_pInlines)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Paragraph.TextIndent
     {
-        (METHODPFN)OFFSET(CParagraph, m_textIndent), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CParagraph, m_textIndent)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13043,7 +13043,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions
     {
-        (METHODPFN)OFFSET(CPopup, m_pChildTransitions), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_pChildTransitions)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13057,63 +13057,63 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.DisableOverlayIsLightDismissCheck
     {
-        (METHODPFN)OFFSET(CPopup, m_disableOverlayIsLightDismissCheck), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_disableOverlayIsLightDismissCheck)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.HorizontalOffset
     {
-        (METHODPFN)OFFSET(CPopup, m_eHOffset), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_eHOffset)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.IsApplicationBarService
     {
-        (METHODPFN)OFFSET(CPopup, m_fIsApplicationBarService), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_fIsApplicationBarService)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.IsContentDialog
     {
-        (METHODPFN)OFFSET(CPopup, m_fIsContentDialog), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_fIsContentDialog)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.IsLightDismissEnabled
     {
-        (METHODPFN)OFFSET(CPopup, m_fIsLightDismissEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_fIsLightDismissEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.IsOpen
     {
-        (METHODPFN)OFFSET(CPopup, m_fIsOpen), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_fIsOpen)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.IsSubMenu
     {
-        (METHODPFN)OFFSET(CPopup, m_fIsSubMenu), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_fIsSubMenu)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.LightDismissOverlayMode
     {
-        (METHODPFN)OFFSET(CPopup, m_lightDismissOverlayMode), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_lightDismissOverlayMode)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement
     {
-        (METHODPFN)OFFSET(CPopup, m_overlayElement), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_overlayElement)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13148,7 +13148,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.VerticalOffset
     {
-        (METHODPFN)OFFSET(CPopup, m_eVOffset), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPopup, m_eVOffset)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13197,21 +13197,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
     {
-        (METHODPFN)OFFSET(CResourceDictionary, m_pMergedDictionaries), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CResourceDictionary, m_pMergedDictionaries)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.ResourceDictionary.Source
     {
-        (METHODPFN)OFFSET(CResourceDictionary, m_strSource), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CResourceDictionary, m_strSource)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries
     {
-        (METHODPFN)OFFSET(CResourceDictionary, m_pThemeDictionaries), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CResourceDictionary, m_pThemeDictionaries)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13225,59 +13225,59 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Blocks
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pBlocks), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pBlocks)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.CharacterSpacing
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CRichTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nCharacterSpacing) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nCharacterSpacing)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CRichTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pFontFamily) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontSize
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CRichTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_eFontSize) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_eFontSize)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontStretch
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CRichTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStretch) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStretch)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontStyle
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CRichTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStyle) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStyle)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontWeight
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CRichTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontWeight) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontWeight)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         &CRichTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pForeground) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.HasOverflowContent
     {
@@ -13288,77 +13288,77 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.HorizontalTextAlignment
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_textAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_textAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.IsColorFontEnabled
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_isColorFontEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_isColorFontEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.IsTextScaleFactorEnabled
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CRichTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_isTextScaleFactorEnabled) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_isTextScaleFactorEnabled)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.IsTextSelectionEnabled
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_isTextSelectionEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_isTextSelectionEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.IsTextTrimmed
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_isTextTrimmed), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_isTextTrimmed)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.LineHeight
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_eLineHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_eLineHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.LineStackingStrategy
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_lineStackingStrategy), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_lineStackingStrategy)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.MaxLines
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_maxLines), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_maxLines)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.OpticalMarginAlignment
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_opticalMarginAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_opticalMarginAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pOverflowTarget), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pOverflowTarget)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Padding
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_padding), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_padding)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13379,63 +13379,63 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pSelectionHighlightColor), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pSelectionHighlightColor)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.TextAlignment
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_textAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_textAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.TextDecorations
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CRichTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nTextDecorations) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nTextDecorations)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.TextHighlighters
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_textHighlighters), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_textHighlighters)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.TextIndent
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_textIndent), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_textIndent)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.TextLineBounds
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_textLineBounds), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_textLineBounds)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.TextReadingOrder
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_textReadingOrder), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_textReadingOrder)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.TextTrimming
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_textTrimming), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_textTrimming)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.TextWrapping
     {
-        (METHODPFN)OFFSET(CRichTextBlock, m_textWrapping), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlock, m_textWrapping)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13449,35 +13449,35 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.IsTextTrimmed
     {
-        (METHODPFN)OFFSET(CRichTextBlockOverflow, m_isTextTrimmed), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlockOverflow, m_isTextTrimmed)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.MaxLines
     {
-        (METHODPFN)OFFSET(CRichTextBlockOverflow, m_maxLines), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlockOverflow, m_maxLines)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.OverflowContentTarget
     {
-        (METHODPFN)OFFSET(CRichTextBlockOverflow, m_pOverflowTarget), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlockOverflow, m_pOverflowTarget)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.Padding
     {
-        (METHODPFN)OFFSET(CRichTextBlockOverflow, m_padding), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichTextBlockOverflow, m_padding)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.RotateTransform.Angle
     {
-        (METHODPFN)OFFSET(CRotateTransform, m_eAngle), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRotateTransform, m_eAngle)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13491,7 +13491,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.RotateTransform.CenterX
     {
-        (METHODPFN)OFFSET(CRotateTransform, m_ptCenter.x), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRotateTransform, m_ptCenter.x)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13505,7 +13505,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.RotateTransform.CenterY
     {
-        (METHODPFN)OFFSET(CRotateTransform, m_ptCenter.y), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRotateTransform, m_ptCenter.y)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13526,21 +13526,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.Run.FlowDirection
     {
-        (METHODPFN)OFFSET(CRun, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRun, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CRun::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFlowDirection) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFlowDirection)) // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Run.Text
     {
-        (METHODPFN)OFFSET(CRun, m_strText), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRun, m_strText)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.ScaleTransform.CenterX
     {
-        (METHODPFN)OFFSET(CScaleTransform, m_ptCenter.x), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScaleTransform, m_ptCenter.x)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13554,7 +13554,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.ScaleTransform.CenterY
     {
-        (METHODPFN)OFFSET(CScaleTransform, m_ptCenter.y), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScaleTransform, m_ptCenter.y)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13568,7 +13568,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.ScaleTransform.ScaleX
     {
-        (METHODPFN)OFFSET(CScaleTransform, m_eScaleX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScaleTransform, m_eScaleX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13582,7 +13582,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.ScaleTransform.ScaleY
     {
-        (METHODPFN)OFFSET(CScaleTransform, m_eScaleY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScaleTransform, m_eScaleY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13603,14 +13603,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.SetterBaseCollection.IsSealed
     {
-        (METHODPFN)OFFSET(CSetterBaseCollection, m_bIsSealed), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSetterBaseCollection, m_bIsSealed)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Shapes.Shape.Fill
     {
-        (METHODPFN)OFFSET(CShape, m_pFill), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CShape, m_pFill)))), // Offset. Cast to METHODPFN to force it into the union.
         &CShape::NWSetFillBrushDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13624,7 +13624,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Shapes.Shape.Stretch
     {
-        (METHODPFN)OFFSET(CShape, m_Stretch), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CShape, m_Stretch)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13694,7 +13694,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.SkewTransform.AngleX
     {
-        (METHODPFN)OFFSET(CSkewTransform, m_eAngleX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSkewTransform, m_eAngleX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13708,7 +13708,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.SkewTransform.AngleY
     {
-        (METHODPFN)OFFSET(CSkewTransform, m_eAngleY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSkewTransform, m_eAngleY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13722,7 +13722,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.SkewTransform.CenterX
     {
-        (METHODPFN)OFFSET(CSkewTransform, m_ptCenter.x), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSkewTransform, m_ptCenter.x)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13736,7 +13736,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.SkewTransform.CenterY
     {
-        (METHODPFN)OFFSET(CSkewTransform, m_ptCenter.y), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSkewTransform, m_ptCenter.y)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13750,7 +13750,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.Span.Inlines
     {
-        (METHODPFN)OFFSET(CSpan, m_pInlines), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSpan, m_pInlines)))), // Offset. Cast to METHODPFN to force it into the union.
         &CDependencyObject::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13918,28 +13918,28 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.Animation.Storyboard.Children
     {
-        (METHODPFN)OFFSET(CStoryboard, m_pChild), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CStoryboard, m_pChild)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTimeline::SetDCompAnimationInSubtreeDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.Storyboard.IsEssential
     {
-        (METHODPFN)OFFSET(CStoryboard, m_fIsEssential), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CStoryboard, m_fIsEssential)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.Storyboard.TargetName
     {
-        (METHODPFN)OFFSET(CTimeline, m_strTargetName), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTimeline, m_strTargetName)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.Animation.Storyboard.TargetProperty
     {
-        (METHODPFN)OFFSET(CTimeline, m_strTargetProperty), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTimeline, m_strTargetProperty)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -13995,126 +13995,126 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.CharacterSpacing
     {
-        (METHODPFN)OFFSET(CTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nCharacterSpacing) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nCharacterSpacing)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.FontFamily
     {
-        (METHODPFN)OFFSET(CTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pFontFamily) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.FontSize
     {
-        (METHODPFN)OFFSET(CTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_eFontSize) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_eFontSize)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.FontStretch
     {
-        (METHODPFN)OFFSET(CTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStretch) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStretch)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.FontStyle
     {
-        (METHODPFN)OFFSET(CTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStyle) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStyle)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.FontWeight
     {
-        (METHODPFN)OFFSET(CTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontWeight) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontWeight)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Foreground
     {
-        (METHODPFN)OFFSET(CTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         &CTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pForeground) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.HorizontalTextAlignment
     {
-        (METHODPFN)OFFSET(CTextBlock, m_textAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_textAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Inlines
     {
-        (METHODPFN)OFFSET(CTextBlock, m_pInlines), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_pInlines)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.IsColorFontEnabled
     {
-        (METHODPFN)OFFSET(CTextBlock, m_isColorFontEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_isColorFontEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.IsTextScaleFactorEnabled
     {
-        (METHODPFN)OFFSET(CTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_isTextScaleFactorEnabled) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_isTextScaleFactorEnabled)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.IsTextSelectionEnabled
     {
-        (METHODPFN)OFFSET(CTextBlock, m_isTextSelectionEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_isTextSelectionEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.IsTextTrimmed
     {
-        (METHODPFN)OFFSET(CTextBlock, m_isTextTrimmed), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_isTextTrimmed)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.LineHeight
     {
-        (METHODPFN)OFFSET(CTextBlock, m_eLineHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_eLineHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.LineStackingStrategy
     {
-        (METHODPFN)OFFSET(CTextBlock, m_lineStackingStrategy), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_lineStackingStrategy)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.MaxLines
     {
-        (METHODPFN)OFFSET(CTextBlock, m_maxLines), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_maxLines)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.OpticalMarginAlignment
     {
-        (METHODPFN)OFFSET(CTextBlock, m_opticalMarginAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_opticalMarginAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Padding
     {
-        (METHODPFN)OFFSET(CTextBlock, m_padding), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_padding)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14142,56 +14142,56 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Text
     {
-        (METHODPFN)OFFSET(CTextBlock, m_strText), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_strText)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.TextAlignment
     {
-        (METHODPFN)OFFSET(CTextBlock, m_textAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_textAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.TextDecorations
     {
-        (METHODPFN)OFFSET(CTextBlock, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CTextBlock::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nTextDecorations) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nTextDecorations)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.TextHighlighters
     {
-        (METHODPFN)OFFSET(CTextBlock, m_textHighlighters), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_textHighlighters)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.TextLineBounds
     {
-        (METHODPFN)OFFSET(CTextBlock, m_textLineBounds), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_textLineBounds)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.TextReadingOrder
     {
-        (METHODPFN)OFFSET(CTextBlock, m_textReadingOrder), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_textReadingOrder)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.TextTrimming
     {
-        (METHODPFN)OFFSET(CTextBlock, m_textTrimming), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_textTrimming)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.TextWrapping
     {
-        (METHODPFN)OFFSET(CTextBlock, m_textWrapping), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBlock, m_textWrapping)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14233,7 +14233,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.TransformGroup.Children
     {
-        (METHODPFN)OFFSET(CTransformGroup, m_pChild), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTransformGroup, m_pChild)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransformGroup::NWSetTransformsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14254,7 +14254,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.TranslateTransform.X
     {
-        (METHODPFN)OFFSET(CTranslateTransform, m_eX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTranslateTransform, m_eX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14268,7 +14268,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Media.TranslateTransform.Y
     {
-        (METHODPFN)OFFSET(CTranslateTransform, m_eY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTranslateTransform, m_eY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CTransform::NWSetRenderDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14310,14 +14310,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Viewbox.Stretch
     {
-        (METHODPFN)OFFSET(CViewbox, m_stretch), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CViewbox, m_stretch)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Viewbox.StretchDirection
     {
-        (METHODPFN)OFFSET(CViewbox, m_stretchDirection), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CViewbox, m_stretchDirection)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14331,14 +14331,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveStoryboards
     {
-        (METHODPFN)OFFSET(CVisualStateGroupCollection, m_pActiveStoryboards), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pActiveStoryboards)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions
     {
-        (METHODPFN)OFFSET(CVisualStateGroupCollection, m_pActiveTransitions), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pActiveTransitions)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14352,14 +14352,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters
     {
-        (METHODPFN)OFFSET(CVisualStateGroupCollection, m_pDeferredSetters), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pDeferredSetters)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers
     {
-        (METHODPFN)OFFSET(CVisualStateGroupCollection, m_pDeferredStateTriggers), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pDeferredStateTriggers)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14408,14 +14408,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.BitmapIcon.ShowAsMonochrome
     {
-        (METHODPFN)OFFSET(CBitmapIcon, m_showAsMonochrome), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBitmapIcon, m_showAsMonochrome)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.BitmapIcon.UriSource
     {
-        (METHODPFN)OFFSET(CBitmapIcon, m_strSource), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CBitmapIcon, m_strSource)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14555,21 +14555,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pBlackoutBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pBlackoutForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pBlackoutStrikethroughBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutStrikethroughBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14583,56 +14583,56 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pCalendarItemBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pCalendarItemBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderThickness
     {
-        (METHODPFN)OFFSET(CCalendarView, m_calendarItemBorderThickness), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_calendarItemBorderThickness)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemCornerRadius
     {
-        (METHODPFN)OFFSET(CCalendarView, m_calendarItemCornerRadius), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_calendarItemCornerRadius)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pCalendarItemDisabledBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemDisabledBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pCalendarItemForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pCalendarItemHoverBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemHoverBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pCalendarItemPressedBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemPressedBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14646,35 +14646,35 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pDayItemFontFamily), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pDayItemFontFamily)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontSize
     {
-        (METHODPFN)OFFSET(CCalendarView, m_dayItemFontSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_dayItemFontSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontStyle
     {
-        (METHODPFN)OFFSET(CCalendarView, m_dayItemFontStyle), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_dayItemFontStyle)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontWeight
     {
-        (METHODPFN)OFFSET(CCalendarView, m_dayItemFontWeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_dayItemFontWeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemMargin
     {
-        (METHODPFN)OFFSET(CCalendarView, m_dayItemMargin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_dayItemMargin)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14688,7 +14688,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pDisabledForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pDisabledForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14709,98 +14709,98 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pFirstOfMonthLabelFontFamily), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pFirstOfMonthLabelFontFamily)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontSize
     {
-        (METHODPFN)OFFSET(CCalendarView, m_firstOfMonthLabelFontSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_firstOfMonthLabelFontSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontStyle
     {
-        (METHODPFN)OFFSET(CCalendarView, m_firstOfMonthLabelFontStyle), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_firstOfMonthLabelFontStyle)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontWeight
     {
-        (METHODPFN)OFFSET(CCalendarView, m_firstOfMonthLabelFontWeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_firstOfMonthLabelFontWeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelMargin
     {
-        (METHODPFN)OFFSET(CCalendarView, m_firstOfMonthLabelMargin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_firstOfMonthLabelMargin)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pFirstOfYearDecadeLabelFontFamily), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pFirstOfYearDecadeLabelFontFamily)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontSize
     {
-        (METHODPFN)OFFSET(CCalendarView, m_firstOfYearDecadeLabelFontSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_firstOfYearDecadeLabelFontSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontStyle
     {
-        (METHODPFN)OFFSET(CCalendarView, m_firstOfYearDecadeLabelFontStyle), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_firstOfYearDecadeLabelFontStyle)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontWeight
     {
-        (METHODPFN)OFFSET(CCalendarView, m_firstOfYearDecadeLabelFontWeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_firstOfYearDecadeLabelFontWeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelMargin
     {
-        (METHODPFN)OFFSET(CCalendarView, m_firstOfYearDecadeLabelMargin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_firstOfYearDecadeLabelMargin)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pFocusBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pFocusBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.HorizontalDayItemAlignment
     {
-        (METHODPFN)OFFSET(CCalendarView, m_horizontalDayItemAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_horizontalDayItemAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.HorizontalFirstOfMonthLabelAlignment
     {
-        (METHODPFN)OFFSET(CCalendarView, m_horizontalFirstOfMonthLabelAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_horizontalFirstOfMonthLabelAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pHoverBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pHoverBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14842,35 +14842,35 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pMonthYearItemFontFamily), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pMonthYearItemFontFamily)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontSize
     {
-        (METHODPFN)OFFSET(CCalendarView, m_monthYearItemFontSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_monthYearItemFontSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontStyle
     {
-        (METHODPFN)OFFSET(CCalendarView, m_monthYearItemFontStyle), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_monthYearItemFontStyle)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontWeight
     {
-        (METHODPFN)OFFSET(CCalendarView, m_monthYearItemFontWeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_monthYearItemFontWeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemMargin
     {
-        (METHODPFN)OFFSET(CCalendarView, m_monthYearItemMargin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_monthYearItemMargin)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14884,49 +14884,49 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pOutOfScopeBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pOutOfScopeForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pOutOfScopeHoverForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeHoverForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pOutOfScopePressedForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopePressedForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pPressedBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pPressedBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pPressedForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pPressedForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pSelectedBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -14940,49 +14940,49 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pSelectedDisabledBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedDisabledBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pSelectedDisabledForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedDisabledForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pSelectedForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pSelectedHoverBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedHoverBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pSelectedHoverForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedHoverForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pSelectedPressedBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedPressedBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pSelectedPressedForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedPressedForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15003,91 +15003,91 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pTodayBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pTodayBlackoutBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBlackoutBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pTodayBlackoutForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBlackoutForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pTodayDisabledBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayDisabledBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayFontWeight
     {
-        (METHODPFN)OFFSET(CCalendarView, m_todayFontWeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_todayFontWeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pTodayForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pTodayHoverBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayHoverBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pTodayHoverBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayHoverBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pTodayPressedBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayPressedBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pTodayPressedBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayPressedBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush
     {
-        (METHODPFN)OFFSET(CCalendarView, m_pTodaySelectedInnerBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_pTodaySelectedInnerBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.VerticalDayItemAlignment
     {
-        (METHODPFN)OFFSET(CCalendarView, m_verticalDayItemAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_verticalDayItemAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.VerticalFirstOfMonthLabelAlignment
     {
-        (METHODPFN)OFFSET(CCalendarView, m_verticalFirstOfMonthLabelAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CCalendarView, m_verticalFirstOfMonthLabelAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15332,7 +15332,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
     {
-        (METHODPFN)OFFSET(CContentControl, m_pContentTemplate), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentControl, m_pContentTemplate)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15346,14 +15346,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
     {
-        (METHODPFN)OFFSET(CContentControl, m_pContentTransitions), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentControl, m_pContentTransitions)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.SelectedContentTemplate
     {
-        (METHODPFN)OFFSET(CContentControl, m_pSelectedContentTemplate), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CContentControl, m_pSelectedContentTemplate)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15479,45 +15479,45 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.FontFamily
     {
-        (METHODPFN)OFFSET(CFontIcon, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFontIcon, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFontIcon::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_pFontFamily) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.FontSize
     {
-        (METHODPFN)OFFSET(CFontIcon, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFontIcon, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFontIcon::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_eFontSize) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_eFontSize)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.FontStyle
     {
-        (METHODPFN)OFFSET(CFontIcon, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFontIcon, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFontIcon::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontStyle) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontStyle)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.FontWeight
     {
-        (METHODPFN)OFFSET(CFontIcon, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFontIcon, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFontIcon::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_nFontWeight) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_nFontWeight)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.Glyph
     {
-        (METHODPFN)OFFSET(CFontIcon, m_strGlyph), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFontIcon, m_strGlyph)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.IsTextScaleFactorEnabled
     {
-        (METHODPFN)OFFSET(CFontIcon, m_pTextFormatting), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFontIcon, m_pTextFormatting)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFontIcon::EnsureTextFormatting, // Storage ensure method
-        OFFSET(TextFormatting, m_isTextScaleFactorEnabled) // Storage offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_isTextScaleFactorEnabled)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.MirroredWhenRightToLeft
     {
@@ -15549,14 +15549,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Grid.Column
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_nGridColumn) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_nGridColumn)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
     {
-        (METHODPFN)OFFSET(CGrid, m_pColumnDefinitions), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGrid, m_pColumnDefinitions)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15570,10 +15570,10 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Grid.ColumnSpan
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_nGridColumnSpan) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_nGridColumnSpan)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Grid.CornerRadius
     {
@@ -15591,14 +15591,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Grid.Row
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_nGridRow) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_nGridRow)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Grid.RowDefinitions
     {
-        (METHODPFN)OFFSET(CGrid, m_pRowDefinitions), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGrid, m_pRowDefinitions)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15612,10 +15612,10 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Grid.RowSpan
     {
-        (METHODPFN)OFFSET(CFrameworkElement, m_pLayoutProperties), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrameworkElement, m_pLayoutProperties)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         &CFrameworkElement::EnsureGroupStorage, // Storage ensure method
-        OFFSET(FrameworkElementGroupStorage, m_nGridRowSpan) // Storage offset
+        static_cast<UINT16>(OFFSET(FrameworkElementGroupStorage, m_nGridRowSpan)) // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Hub.DefaultSectionIndex
     {
@@ -15731,14 +15731,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Documents.Hyperlink.IsTabStop
     {
-        (METHODPFN)OFFSET(CHyperlink, m_isTabStop), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CHyperlink, m_isTabStop)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Documents.Hyperlink.NavigateUri
     {
-        (METHODPFN)OFFSET(CHyperlink, m_strNavigateUri), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CHyperlink, m_strNavigateUri)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15815,7 +15815,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource
     {
-        (METHODPFN)OFFSET(CIconSourceElement, m_iconSource), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CIconSourceElement, m_iconSource)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15829,7 +15829,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.DisplayMemberPath
     {
-        (METHODPFN)OFFSET(CItemsControl, m_strDisplayMemberPath), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CItemsControl, m_strDisplayMemberPath)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15857,7 +15857,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.IsItemsHostInvalid
     {
-        (METHODPFN)OFFSET(CItemsControl, m_bItemsHostInvalid), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CItemsControl, m_bItemsHostInvalid)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15878,7 +15878,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
     {
-        (METHODPFN)OFFSET(CItemsControl, m_pItemContainerTransitions), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CItemsControl, m_pItemContainerTransitions)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15892,14 +15892,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost
     {
-        (METHODPFN)OFFSET(CItemsControl, m_pItemsHost), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CItemsControl, m_pItemsHost)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel
     {
-        (METHODPFN)OFFSET(CItemsControl, m_pItemsPanelTemplate), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CItemsControl, m_pItemsPanelTemplate)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15913,7 +15913,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemTemplate
     {
-        (METHODPFN)OFFSET(CItemsControl, m_pItemTemplate), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CItemsControl, m_pItemTemplate)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15927,49 +15927,49 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Shapes.Line.X1
     {
-        (METHODPFN)OFFSET(CLine, m_eX1), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CLine, m_eX1)))), // Offset. Cast to METHODPFN to force it into the union.
         &CShape::NWSetGeometryDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Shapes.Line.X2
     {
-        (METHODPFN)OFFSET(CLine, m_eX2), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CLine, m_eX2)))), // Offset. Cast to METHODPFN to force it into the union.
         &CShape::NWSetGeometryDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Shapes.Line.Y1
     {
-        (METHODPFN)OFFSET(CLine, m_eY1), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CLine, m_eY1)))), // Offset. Cast to METHODPFN to force it into the union.
         &CShape::NWSetGeometryDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Shapes.Line.Y2
     {
-        (METHODPFN)OFFSET(CLine, m_eY2), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CLine, m_eY2)))), // Offset. Cast to METHODPFN to force it into the union.
         &CShape::NWSetGeometryDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.AreTransportControlsEnabled
     {
-        (METHODPFN)OFFSET(CMediaPlayerElement, m_areTransportControlsEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMediaPlayerElement, m_areTransportControlsEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.AutoPlay
     {
-        (METHODPFN)OFFSET(CMediaPlayerElement, m_fAutoPlay), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMediaPlayerElement, m_fAutoPlay)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.IsFullWindow
     {
-        (METHODPFN)OFFSET(CMediaPlayerElement, m_isFullWindow), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMediaPlayerElement, m_isFullWindow)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15983,7 +15983,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource
     {
-        (METHODPFN)OFFSET(CMediaPlayerElement, m_pPosterSource), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMediaPlayerElement, m_pPosterSource)))), // Offset. Cast to METHODPFN to force it into the union.
         &CMediaPlayerElement::NWSetMediaSourceDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -15997,7 +15997,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.Stretch
     {
-        (METHODPFN)OFFSET(CMediaPlayerElement, m_Stretch), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CMediaPlayerElement, m_Stretch)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16242,7 +16242,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.InputScope
     {
-        (METHODPFN)OFFSET(CPasswordBox, m_pInputScope), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPasswordBox, m_pInputScope)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16263,14 +16263,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.IsPasswordRevealButtonEnabled
     {
-        (METHODPFN)OFFSET(CPasswordBox, m_fRevealButtonEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPasswordBox, m_fRevealButtonEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.MaxLength
     {
-        (METHODPFN)OFFSET(CPasswordBox, m_iMaxLength), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPasswordBox, m_iMaxLength)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16284,14 +16284,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.PasswordChar
     {
-        (METHODPFN)OFFSET(CPasswordBox, m_strPasswordChar), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPasswordBox, m_strPasswordChar)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.PasswordRevealMode
     {
-        (METHODPFN)OFFSET(CPasswordBox, m_passwordRevealMode), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPasswordBox, m_passwordRevealMode)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16305,7 +16305,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.PreventKeyboardDisplayOnProgrammaticFocus
     {
-        (METHODPFN)OFFSET(CPasswordBox, m_bPreventKeyboardDisplayOnProgrammaticFocus), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPasswordBox, m_bPreventKeyboardDisplayOnProgrammaticFocus)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16319,14 +16319,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor
     {
-        (METHODPFN)OFFSET(CPasswordBox, m_pSelectionHighlightColor), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPasswordBox, m_pSelectionHighlightColor)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.TextReadingOrder
     {
-        (METHODPFN)OFFSET(CPasswordBox, m_textReadingOrder), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPasswordBox, m_textReadingOrder)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16354,42 +16354,42 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Shapes.Path.Data
     {
-        (METHODPFN)OFFSET(CPath, m_pGeometryData), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPath, m_pGeometryData)))), // Offset. Cast to METHODPFN to force it into the union.
         &CShape::NWSetGeometryDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.PathIcon.Data
     {
-        (METHODPFN)OFFSET(CPathIcon, m_pData), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPathIcon, m_pData)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Shapes.Polygon.FillRule
     {
-        (METHODPFN)OFFSET(CPolygon, m_nFillRule), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPolygon, m_nFillRule)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Shapes.Polygon.Points
     {
-        (METHODPFN)OFFSET(CPolygon, m_pPoints), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPolygon, m_pPoints)))), // Offset. Cast to METHODPFN to force it into the union.
         &CShape::NWSetGeometryDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Shapes.Polyline.FillRule
     {
-        (METHODPFN)OFFSET(CPolyline, m_nFillRule), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPolyline, m_nFillRule)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Shapes.Polyline.Points
     {
-        (METHODPFN)OFFSET(CPolyline, m_pPoints), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CPolyline, m_pPoints)))), // Offset. Cast to METHODPFN to force it into the union.
         &CShape::NWSetGeometryDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16403,14 +16403,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.RangeBase.Maximum
     {
-        (METHODPFN)OFFSET(CRangeBase, m_maximum), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRangeBase, m_maximum)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.RangeBase.Minimum
     {
-        (METHODPFN)OFFSET(CRangeBase, m_minimum), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRangeBase, m_minimum)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16424,21 +16424,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.RangeBase.Value
     {
-        (METHODPFN)OFFSET(CRangeBase, m_value), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRangeBase, m_value)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Shapes.Rectangle.RadiusX
     {
-        (METHODPFN)OFFSET(CRectangle, m_eRadiusX), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRectangle, m_eRadiusX)))), // Offset. Cast to METHODPFN to force it into the union.
         &CShape::NWSetGeometryDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Shapes.Rectangle.RadiusY
     {
-        (METHODPFN)OFFSET(CRectangle, m_eRadiusY), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRectangle, m_eRadiusY)))), // Offset. Cast to METHODPFN to force it into the union.
         &CShape::NWSetGeometryDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16592,7 +16592,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.AcceptsReturn
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_bAcceptsReturn), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_bAcceptsReturn)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16655,56 +16655,56 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.HorizontalTextAlignment
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_textAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_textAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.InputScope
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_pInputScope), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_pInputScope)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.IsColorFontEnabled
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_isColorFontEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_isColorFontEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.IsReadOnly
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_bIsReadOnly), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_bIsReadOnly)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.IsSpellCheckEnabled
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_isSpellCheckEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_isSpellCheckEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.IsTelemetryCollectionEnabled
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_bIsTelemetryCollectionEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_bIsTelemetryCollectionEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.IsTextPredictionEnabled
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_isTextPredictionEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_isTextPredictionEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.MaxLength
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_iMaxLength), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_iMaxLength)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16718,7 +16718,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.PreventKeyboardDisplayOnProgrammaticFocus
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_bPreventKeyboardDisplayOnProgrammaticFocus), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_bPreventKeyboardDisplayOnProgrammaticFocus)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16739,35 +16739,35 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_pSelectionHighlightColor), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_pSelectionHighlightColor)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_pSelectionHighlightColorWhenNotFocused), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_pSelectionHighlightColorWhenNotFocused)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.TextAlignment
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_textAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_textAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.TextReadingOrder
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_textReadingOrder), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_textReadingOrder)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.TextWrapping
     {
-        (METHODPFN)OFFSET(CRichEditBox, m_textWrapping), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CRichEditBox, m_textWrapping)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16844,7 +16844,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.SplitView.IsPaneOpen
     {
-        (METHODPFN)OFFSET(CSplitView, m_isPaneOpen), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSplitView, m_isPaneOpen)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16886,14 +16886,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings
     {
-        (METHODPFN)OFFSET(CSplitView, m_pTemplateSettings), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSplitView, m_pTemplateSettings)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.StackPanel.AreScrollSnapPointsRegular
     {
-        (METHODPFN)OFFSET(CStackPanel, m_bAreScrollSnapPointsRegular), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CStackPanel, m_bAreScrollSnapPointsRegular)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16928,7 +16928,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.StackPanel.Orientation
     {
-        (METHODPFN)OFFSET(CStackPanel, m_orientation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CStackPanel, m_orientation)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -16949,14 +16949,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.SymbolIcon.Symbol
     {
-        (METHODPFN)OFFSET(CSymbolIcon, m_nSymbol), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSymbolIcon, m_nSymbol)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.AcceptsReturn
     {
-        (METHODPFN)OFFSET(CTextBox, m_bAcceptsReturn), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_bAcceptsReturn)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -17040,14 +17040,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.TextBox.HorizontalTextAlignment
     {
-        (METHODPFN)OFFSET(CTextBox, m_textAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_textAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.InputScope
     {
-        (METHODPFN)OFFSET(CTextBox, m_pInputScope), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_pInputScope)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -17068,49 +17068,49 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.TextBox.IsColorFontEnabled
     {
-        (METHODPFN)OFFSET(CTextBox, m_isColorFontEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_isColorFontEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.IsCoreDesktopPopupMenuEnabled
     {
-        (METHODPFN)OFFSET(CTextBox, m_isDesktopPopupMenuEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_isDesktopPopupMenuEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.IsReadOnly
     {
-        (METHODPFN)OFFSET(CTextBox, m_bIsReadOnly), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_bIsReadOnly)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.IsSpellCheckEnabled
     {
-        (METHODPFN)OFFSET(CTextBox, m_isSpellCheckEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_isSpellCheckEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.IsTelemetryCollectionEnabled
     {
-        (METHODPFN)OFFSET(CTextBox, m_bIsTelemetryCollectionEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_bIsTelemetryCollectionEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.IsTextPredictionEnabled
     {
-        (METHODPFN)OFFSET(CTextBox, m_isTextPredictionEnabled), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_isTextPredictionEnabled)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.MaxLength
     {
-        (METHODPFN)OFFSET(CTextBox, m_iMaxLength), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_iMaxLength)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -17131,14 +17131,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.TextBox.PreventEditFocusLoss
     {
-        (METHODPFN)OFFSET(CTextBox, m_preventEditFocusLoss), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_preventEditFocusLoss)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.PreventKeyboardDisplayOnProgrammaticFocus
     {
-        (METHODPFN)OFFSET(CTextBox, m_bPreventKeyboardDisplayOnProgrammaticFocus), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_bPreventKeyboardDisplayOnProgrammaticFocus)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -17152,7 +17152,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectedText
     {
-        (METHODPFN)OFFSET(CTextBox, m_strSelectedText), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_strSelectedText)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -17166,56 +17166,56 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor
     {
-        (METHODPFN)OFFSET(CTextBox, m_pSelectionHighlightColor), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_pSelectionHighlightColor)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused
     {
-        (METHODPFN)OFFSET(CTextBox, m_pSelectionHighlightColorWhenNotFocused), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_pSelectionHighlightColorWhenNotFocused)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionLength
     {
-        (METHODPFN)OFFSET(CTextBox, m_iSelectionLength), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_iSelectionLength)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionStart
     {
-        (METHODPFN)OFFSET(CTextBox, m_iSelectionStart), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_iSelectionStart)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.Text
     {
-        (METHODPFN)OFFSET(CTextBox, m_strText), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_strText)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.TextAlignment
     {
-        (METHODPFN)OFFSET(CTextBox, m_textAlignment), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_textAlignment)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.TextReadingOrder
     {
-        (METHODPFN)OFFSET(CTextBox, m_textReadingOrder), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_textReadingOrder)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.TextBox.TextWrapping
     {
-        (METHODPFN)OFFSET(CTextBox, m_textWrapping), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CTextBox, m_textWrapping)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentAndBoundsDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -17894,7 +17894,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Frame.BackStackDepth
     {
-        (METHODPFN)OFFSET(CFrame, m_backStackDepth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrame, m_backStackDepth)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -17908,21 +17908,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Frame.CanGoBack
     {
-        (METHODPFN)OFFSET(CFrame, m_canGoBack), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrame, m_canGoBack)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Frame.CanGoForward
     {
-        (METHODPFN)OFFSET(CFrame, m_canGoForward), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrame, m_canGoForward)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Frame.CurrentSourcePageType
     {
-        (METHODPFN)OFFSET(CFrame, m_currentSourcePageType), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrame, m_currentSourcePageType)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -17943,35 +17943,35 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Frame.SourcePageType
     {
-        (METHODPFN)OFFSET(CFrame, m_sourcePageType), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CFrame, m_sourcePageType)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pCheckBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pCheckHintBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckHintBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pCheckSelectingBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckSelectingBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.ContentMargin
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_contentMargin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_contentMargin)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -17985,14 +17985,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pDragBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pDragBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pDragForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pDragForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18006,7 +18006,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pFocusBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pFocusBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18034,14 +18034,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pPlaceholderBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pPlaceholderBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pPointerOverBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pPointerOverBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18062,7 +18062,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pSelectedBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18076,21 +18076,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pSelectedForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush
     {
-        (METHODPFN)OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18209,14 +18209,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18230,119 +18230,119 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxPressedBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPressedBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxPressedBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPressedBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxSelectedBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxSelectedDisabledBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedDisabledBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPointerOverBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPointerOverBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPressedBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPressedBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckDisabledBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckDisabledBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckHintBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckHintBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckMode
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_checkMode), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_checkMode)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckPressedBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckPressedBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pCheckSelectingBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckSelectingBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.ContentMargin
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_contentMargin), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_contentMargin)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18356,14 +18356,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pDragBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pDragBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pDragForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pDragForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18377,14 +18377,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pFocusBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pFocusBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pFocusSecondaryBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pFocusSecondaryBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18412,14 +18412,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pPlaceholderBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPlaceholderBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pPointerOverBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18433,21 +18433,21 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pPointerOverBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pPointerOverForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pPressedBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPressedBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18489,14 +18489,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectedBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectedBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18510,56 +18510,56 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectedDisabledBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedDisabledBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectedDisabledBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedDisabledBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectedForeground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedForeground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectedInnerBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedInnerBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectedPointerOverBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPointerOverBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPointerOverBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectedPressedBackground), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPressedBackground)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectedPressedBorderBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPressedBorderBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18573,7 +18573,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectionIndicatorBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18587,7 +18587,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectionIndicatorDisabledBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorDisabledBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18601,14 +18601,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectionIndicatorPointerOverBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorPointerOverBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush
     {
-        (METHODPFN)OFFSET(CListViewItemChrome, m_pSelectionIndicatorPressedBrush), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorPressedBrush)))), // Offset. Cast to METHODPFN to force it into the union.
         &CListViewBaseItemChrome::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18755,14 +18755,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ScrollBar.Orientation
     {
-        (METHODPFN)OFFSET(CScrollBar, m_orientation), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScrollBar, m_orientation)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ScrollBar.ViewportSize
     {
-        (METHODPFN)OFFSET(CScrollBar, m_viewportSize), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScrollBar, m_viewportSize)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18811,7 +18811,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.Primitives.SelectorItem.IsSelected
     {
-        (METHODPFN)OFFSET(CSelectorItem, m_isSelected), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CSelectorItem, m_isSelected)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -18965,7 +18965,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.WindowChrome.CaptionVisibility
     {
-        (METHODPFN)OFFSET(CWindowChrome, m_titleBarVisibility), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CWindowChrome, m_titleBarVisibility)))), // Offset. Cast to METHODPFN to force it into the union.
         &CUIElement::NWSetContentDirty, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -19231,7 +19231,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ListBox.SingleSelectionFollowsFocus
     {
-        (METHODPFN)OFFSET(CListBox, m_singleSelectionFollowsFocus), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListBox, m_singleSelectionFollowsFocus)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -19392,7 +19392,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ListViewBase.SingleSelectionFollowsFocus
     {
-        (METHODPFN)OFFSET(CListViewBase, m_singleSelectionFollowsFocus), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CListViewBase, m_singleSelectionFollowsFocus)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -19448,14 +19448,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ScrollViewer.ExtentHeight
     {
-        (METHODPFN)OFFSET(CScrollViewer, m_extentHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScrollViewer, m_extentHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ScrollViewer.ExtentWidth
     {
-        (METHODPFN)OFFSET(CScrollViewer, m_extentWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScrollViewer, m_extentWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -19588,14 +19588,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollableHeight
     {
-        (METHODPFN)OFFSET(CScrollViewer, m_scrollableHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScrollViewer, m_scrollableHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollableWidth
     {
-        (METHODPFN)OFFSET(CScrollViewer, m_scrollableWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScrollViewer, m_scrollableWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -19658,14 +19658,14 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     },
     // Microsoft.UI.Xaml.Controls.ScrollViewer.ViewportHeight
     {
-        (METHODPFN)OFFSET(CScrollViewer, m_viewportHeight), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScrollViewer, m_viewportHeight)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ScrollViewer.ViewportWidth
     {
-        (METHODPFN)OFFSET(CScrollViewer, m_viewportWidth), // Offset. Cast to METHODPFN to force it into the union.
+        reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(static_cast<UINT16>(OFFSET(CScrollViewer, m_viewportWidth)))), // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -19978,1540 +19978,1540 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
     },
     // Microsoft.UI.Xaml.Application.Resources object property
     {
-        OFFSET(CApplication, m_pResources), // Offset
+        static_cast<UINT16>(OFFSET(CApplication, m_pResources)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Application_Resources, // Index name
         2, // Next object property = Microsoft.UI.Xaml.Application.RootVisual
     },
     // Microsoft.UI.Xaml.Application.RootVisual object property
     {
-        OFFSET(CApplication, m_pRootVisual), // Offset
+        static_cast<UINT16>(OFFSET(CApplication, m_pRootVisual)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Application_RootVisual, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Internal.ExternalObjectReference.NativeValue object property
     {
-        OFFSET(CManagedObjectReference, m_nativeValue), // Offset
+        static_cast<UINT16>(OFFSET(CManagedObjectReference, m_nativeValue)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ExternalObjectReference_NativeValue, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.FrameworkTemplate.Template object property
     {
-        OFFSET(CFrameworkTemplate, m_pTemplateContent), // Offset
+        static_cast<UINT16>(OFFSET(CFrameworkTemplate, m_pTemplateContent)), // Offset
         0, // Storage offset
         KnownPropertyIndex::FrameworkTemplate_Template, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Geometry.Transform object property
     {
-        OFFSET(CGeometry, m_pTransform), // Offset
+        static_cast<UINT16>(OFFSET(CGeometry, m_pTransform)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Geometry_Transform, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Input.InputScope.Names object property
     {
-        OFFSET(CInputScope, m_pNames), // Offset
+        static_cast<UINT16>(OFFSET(CInputScope, m_pNames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::InputScope_Names, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Input.KeyboardAccelerator.ScopeOwner object property
     {
-        OFFSET(CKeyboardAccelerator, m_scopeOwner), // Offset
+        static_cast<UINT16>(OFFSET(CKeyboardAccelerator, m_scopeOwner)), // Offset
         0, // Storage offset
         KnownPropertyIndex::KeyboardAccelerator_ScopeOwner, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.ObjectKeyFrame.Value object property
     {
-        OFFSET(CObjectKeyFrame, m_vValue), // Offset
+        static_cast<UINT16>(OFFSET(CObjectKeyFrame, m_vValue)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ObjectKeyFrame_Value, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurve.CurveSegments object property
     {
-        OFFSET(CParametricCurve, m_pCurveSegments), // Offset
+        static_cast<UINT16>(OFFSET(CParametricCurve, m_pCurveSegments)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ParametricCurve_CurveSegments, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.PathFigure.Segments object property
     {
-        OFFSET(CPathFigure, m_pSegments), // Offset
+        static_cast<UINT16>(OFFSET(CPathFigure, m_pSegments)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PathFigure_Segments, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Internal.SecondaryContentRelationship.Curves object property
     {
-        OFFSET(CSecondaryContentRelationship, m_pCurves), // Offset
+        static_cast<UINT16>(OFFSET(CSecondaryContentRelationship, m_pCurves)), // Offset
         0, // Storage offset
         KnownPropertyIndex::SecondaryContentRelationship_Curves, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Style.BasedOn object property
     {
-        OFFSET(CStyle, m_pBasedOn), // Offset
+        static_cast<UINT16>(OFFSET(CStyle, m_pBasedOn)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Style_BasedOn, // Index name
         13, // Next object property = Microsoft.UI.Xaml.Style.Setters
     },
     // Microsoft.UI.Xaml.Style.Setters object property
     {
-        OFFSET(CStyle, m_pSetters), // Offset
+        static_cast<UINT16>(OFFSET(CStyle, m_pSetters)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Style_Setters, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.TextElement.FontFamily object property
     {
-        OFFSET(CTextElement, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::TextElement_FontFamily, // Index name
         15, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.Foreground
     },
     // Microsoft.UI.Xaml.Documents.TextElement.Foreground object property
     {
-        OFFSET(CTextElement, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::TextElement_Foreground, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime object property
     {
-        OFFSET(CTimeline, m_pBeginTime), // Offset
+        static_cast<UINT16>(OFFSET(CTimeline, m_pBeginTime)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Timeline_BeginTime, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction object property
     {
-        OFFSET(CTransition, m_pStaggerFunction), // Offset
+        static_cast<UINT16>(OFFSET(CTransition, m_pStaggerFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Transition_GeneratedStaggerFunction, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.ClipTransform object property
     {
-        OFFSET(CTransitionTarget, m_pClipTransform), // Offset
+        static_cast<UINT16>(OFFSET(CTransitionTarget, m_pClipTransform)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TransitionTarget_ClipTransform, // Index name
         19, // Next object property = Microsoft.UI.Xaml.Media.Animation.TransitionTarget.CompositeTransform
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.CompositeTransform object property
     {
-        OFFSET(CTransitionTarget, m_pxf), // Offset
+        static_cast<UINT16>(OFFSET(CTransitionTarget, m_pxf)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TransitionTarget_CompositeTransform, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.VisualState.__DeferredSetters object property
     {
-        OFFSET(CVisualState, m_pDeferredSetters), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_pDeferredSetters)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState___DeferredSetters, // Index name
         21, // Next object property = Microsoft.UI.Xaml.VisualState.__DeferredStoryboard
     },
     // Microsoft.UI.Xaml.VisualState.__DeferredStoryboard object property
     {
-        OFFSET(CVisualState, m_pDeferredStoryboard), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_pDeferredStoryboard)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState___DeferredStoryboard, // Index name
         22, // Next object property = Microsoft.UI.Xaml.VisualState.Setters
     },
     // Microsoft.UI.Xaml.VisualState.Setters object property
     {
-        OFFSET(CVisualState, m_setters), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_setters)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState_Setters, // Index name
         23, // Next object property = Microsoft.UI.Xaml.VisualState.StateTriggers
     },
     // Microsoft.UI.Xaml.VisualState.StateTriggers object property
     {
-        OFFSET(CVisualState, m_pStateTriggerCollection), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_pStateTriggerCollection)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState_StateTriggers, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.VisualStateGroup.States object property
     {
-        OFFSET(CVisualStateGroup, m_pVisualStates), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroup, m_pVisualStates)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroup_States, // Index name
         25, // Next object property = Microsoft.UI.Xaml.VisualStateGroup.Transitions
     },
     // Microsoft.UI.Xaml.VisualStateGroup.Transitions object property
     {
-        OFFSET(CVisualStateGroup, m_pTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroup, m_pTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroup_Transitions, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.VisualTransition.GeneratedEasingFunction object property
     {
-        OFFSET(CVisualTransition, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CVisualTransition, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualTransition_GeneratedEasingFunction, // Index name
         27, // Next object property = Microsoft.UI.Xaml.VisualTransition.Storyboard
     },
     // Microsoft.UI.Xaml.VisualTransition.Storyboard object property
     {
-        OFFSET(CVisualTransition, m_pStoryboard), // Offset
+        static_cast<UINT16>(OFFSET(CVisualTransition, m_pStoryboard)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualTransition_Storyboard, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.BeginStoryboard.Storyboard object property
     {
-        OFFSET(CBeginStoryboard, m_pStoryboard), // Offset
+        static_cast<UINT16>(OFFSET(CBeginStoryboard, m_pStoryboard)), // Offset
         0, // Storage offset
         KnownPropertyIndex::BeginStoryboard_Storyboard, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimation.EasingFunction object property
     {
-        OFFSET(CColorAnimation, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CColorAnimation, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ColorAnimation_EasingFunction, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames.KeyFrames object property
     {
-        OFFSET(CColorAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CColorAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ColorAnimationUsingKeyFrames_KeyFrames, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.DispatcherTimer.Interval object property
     {
-        OFFSET(CDispatcherTimer, m_pInterval), // Offset
+        static_cast<UINT16>(OFFSET(CDispatcherTimer, m_pInterval)), // Offset
         0, // Storage offset
         KnownPropertyIndex::DispatcherTimer_Interval, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.EasingFunction object property
     {
-        OFFSET(CDoubleAnimation, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CDoubleAnimation, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::DoubleAnimation_EasingFunction, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames.KeyFrames object property
     {
-        OFFSET(CDoubleAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CDoubleAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::DoubleAnimationUsingKeyFrames_KeyFrames, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children object property
     {
-        OFFSET(CDynamicTimeline, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CDynamicTimeline, m_pChild)), // Offset
         0, // Storage offset
         KnownPropertyIndex::DynamicTimeline_Children, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame.EasingFunction object property
     {
-        OFFSET(CEasingColorKeyFrame, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CEasingColorKeyFrame, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::EasingColorKeyFrame_EasingFunction, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingDoubleKeyFrame.EasingFunction object property
     {
-        OFFSET(CEasingDoubleKeyFrame, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CEasingDoubleKeyFrame, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::EasingDoubleKeyFrame_EasingFunction, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingPointKeyFrame.EasingFunction object property
     {
-        OFFSET(CEasingPointKeyFrame, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CEasingPointKeyFrame, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::EasingPointKeyFrame_EasingFunction, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.EventTrigger.Actions object property
     {
-        OFFSET(CEventTrigger, m_pTriggerActions), // Offset
+        static_cast<UINT16>(OFFSET(CEventTrigger, m_pTriggerActions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::EventTrigger_Actions, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.GeometryGroup.Children object property
     {
-        OFFSET(CGeometryGroup, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CGeometryGroup, m_pChild)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GeometryGroup_Children, // Index name
         5, // Next object property = Microsoft.UI.Xaml.Media.Geometry.Transform
     },
     // Microsoft.UI.Xaml.Media.GradientBrush.GradientStops object property
     {
-        OFFSET(CGradientBrush, m_pStops), // Offset
+        static_cast<UINT16>(OFFSET(CGradientBrush, m_pStops)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GradientBrush_GradientStops, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Matrix3DProjection.ProjectionMatrix object property
     {
-        OFFSET(CMatrix3DProjection, m_pMatrix), // Offset
+        static_cast<UINT16>(OFFSET(CMatrix3DProjection, m_pMatrix)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Matrix3DProjection_ProjectionMatrix, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames object property
     {
-        OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ObjectAnimationUsingKeyFrames_KeyFrames, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.PathGeometry.Figures object property
     {
-        OFFSET(CPathGeometry, m_pFigures), // Offset
+        static_cast<UINT16>(OFFSET(CPathGeometry, m_pFigures)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PathGeometry_Figures, // Index name
         5, // Next object property = Microsoft.UI.Xaml.Media.Geometry.Transform
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction object property
     {
-        OFFSET(CPointAnimation, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CPointAnimation, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PointAnimation_EasingFunction, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames object property
     {
-        OFFSET(CPointAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CPointAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PointAnimationUsingKeyFrames_KeyFrames, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames object property
     {
-        OFFSET(CPointerAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CPointerAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PointerAnimationUsingKeyFrames_KeyFrames, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.PolyBezierSegment.Points object property
     {
-        OFFSET(CPolyBezierSegment, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyBezierSegment, m_pPoints)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PolyBezierSegment_Points, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.PolyLineSegment.Points object property
     {
-        OFFSET(CPolyLineSegment, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyLineSegment, m_pPoints)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PolyLineSegment_Points, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment.Points object property
     {
-        OFFSET(CPolyQuadraticSegment, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyQuadraticSegment, m_pPoints)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PolyQuadraticBezierSegment_Points, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Setter.Property object property
     {
-        OFFSET(CSetter, m_pDependencyPropertyProxy), // Offset
+        static_cast<UINT16>(OFFSET(CSetter, m_pDependencyPropertyProxy)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Setter_Property, // Index name
         51, // Next object property = Microsoft.UI.Xaml.Setter.Target
     },
     // Microsoft.UI.Xaml.Setter.Target object property
     {
-        OFFSET(CSetter, m_target), // Offset
+        static_cast<UINT16>(OFFSET(CSetter, m_target)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Setter_Target, // Index name
         52, // Next object property = Microsoft.UI.Xaml.Setter.Value
     },
     // Microsoft.UI.Xaml.Setter.Value object property
     {
-        OFFSET(CSetter, m_vValue), // Offset
+        static_cast<UINT16>(OFFSET(CSetter, m_vValue)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Setter_Value, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.SplineColorKeyFrame.KeySpline object property
     {
-        OFFSET(CSplineColorKeyFrame, m_pKeySpline), // Offset
+        static_cast<UINT16>(OFFSET(CSplineColorKeyFrame, m_pKeySpline)), // Offset
         0, // Storage offset
         KnownPropertyIndex::SplineColorKeyFrame_KeySpline, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame.KeySpline object property
     {
-        OFFSET(CSplineDoubleKeyFrame, m_pKeySpline), // Offset
+        static_cast<UINT16>(OFFSET(CSplineDoubleKeyFrame, m_pKeySpline)), // Offset
         0, // Storage offset
         KnownPropertyIndex::SplineDoubleKeyFrame_KeySpline, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame.KeySpline object property
     {
-        OFFSET(CSplinePointKeyFrame, m_pKeySpline), // Offset
+        static_cast<UINT16>(OFFSET(CSplinePointKeyFrame, m_pKeySpline)), // Offset
         0, // Storage offset
         KnownPropertyIndex::SplinePointKeyFrame_KeySpline, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Data.TemplateBinding.Property object property
     {
-        OFFSET(CTemplateBindingExtension, m_pSourceProperty), // Offset
+        static_cast<UINT16>(OFFSET(CTemplateBindingExtension, m_pSourceProperty)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TemplateBinding_Property, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Background object property
     {
-        OFFSET(CTextHighlighter, m_background), // Offset
+        static_cast<UINT16>(OFFSET(CTextHighlighter, m_background)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextHighlighter_Background, // Index name
         58, // Next object property = Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground object property
     {
-        OFFSET(CTextHighlighter, m_foreground), // Offset
+        static_cast<UINT16>(OFFSET(CTextHighlighter, m_foreground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextHighlighter_Foreground, // Index name
         59, // Next object property = Microsoft.UI.Xaml.Documents.TextHighlighter.Ranges
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Ranges object property
     {
-        OFFSET(CTextHighlighter, m_ranges), // Offset
+        static_cast<UINT16>(OFFSET(CTextHighlighter, m_ranges)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextHighlighter_Ranges, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.Border.Background object property
     {
-        OFFSET(CBorder, m_pBackgroundBrush), // Offset
+        static_cast<UINT16>(OFFSET(CBorder, m_pBackgroundBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Border_Background, // Index name
         61, // Next object property = Microsoft.UI.Xaml.Controls.Border.BorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Border.BorderBrush object property
     {
-        OFFSET(CBorder, m_pBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CBorder, m_pBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Border_BorderBrush, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate object property
     {
-        OFFSET(CContentPresenter, m_pContentTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CContentPresenter, m_pContentTemplate)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentPresenter_ContentTemplate, // Index name
         63, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions object property
     {
-        OFFSET(CContentPresenter, m_pContentTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CContentPresenter, m_pContentTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentPresenter_ContentTransitions, // Index name
         64, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily object property
     {
-        OFFSET(CContentPresenter, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::ContentPresenter_FontFamily, // Index name
         65, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground object property
     {
-        OFFSET(CContentPresenter, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::ContentPresenter_Foreground, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.Control.Background object property
     {
-        OFFSET(CControl, m_pBackground), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_Background, // Index name
         67, // Next object property = Microsoft.UI.Xaml.Controls.Control.BorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Control.BorderBrush object property
     {
-        OFFSET(CControl, m_pBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_BorderBrush, // Index name
         68, // Next object property = Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey
     },
     // Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey object property
     {
-        OFFSET(CControl, m_pDefaultStyleKey), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pDefaultStyleKey)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_DefaultStyleKey, // Index name
         69, // Next object property = Microsoft.UI.Xaml.Controls.Control.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.Control.FontFamily object property
     {
-        OFFSET(CControl, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::Control_FontFamily, // Index name
         70, // Next object property = Microsoft.UI.Xaml.Controls.Control.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Control.Foreground object property
     {
-        OFFSET(CControl, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::Control_Foreground, // Index name
         71, // Next object property = Microsoft.UI.Xaml.Controls.Control.Template
     },
     // Microsoft.UI.Xaml.Controls.Control.Template object property
     {
-        OFFSET(CControl, m_pTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pTemplate)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_Template, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.Fill object property
     {
-        OFFSET(CGlyphs, m_pFill), // Offset
+        static_cast<UINT16>(OFFSET(CGlyphs, m_pFill)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Glyphs_Fill, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.IconElement.Foreground object property
     {
-        OFFSET(CIconElement, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CIconElement, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::IconElement_Foreground, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.Image.Source object property
     {
-        OFFSET(CImage, m_pImageSource), // Offset
+        static_cast<UINT16>(OFFSET(CImage, m_pImageSource)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Image_Source, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.ImageBrush.ImageSource object property
     {
-        OFFSET(CImageBrush, m_pImageSource), // Offset
+        static_cast<UINT16>(OFFSET(CImageBrush, m_pImageSource)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ImageBrush_ImageSource, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.InlineUIContainer.Child object property
     {
-        OFFSET(CInlineUIContainer, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CInlineUIContainer, m_pChild)), // Offset
         0, // Storage offset
         KnownPropertyIndex::InlineUIContainer_Child, // Index name
         14, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel object property
     {
-        OFFSET(CItemsPresenter, m_pItemsPanelTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CItemsPresenter, m_pItemsPanelTemplate)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsPresenter_ItemsPanel, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.MatrixTransform.Matrix object property
     {
-        OFFSET(CMatrixTransform, m_pMatrix), // Offset
+        static_cast<UINT16>(OFFSET(CMatrixTransform, m_pMatrix)), // Offset
         0, // Storage offset
         KnownPropertyIndex::MatrixTransform_Matrix, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.Panel.Background object property
     {
-        OFFSET(CPanel, m_pBackground), // Offset
+        static_cast<UINT16>(OFFSET(CPanel, m_pBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Panel_Background, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.Paragraph.Inlines object property
     {
-        OFFSET(CParagraph, m_pInlines), // Offset
+        static_cast<UINT16>(OFFSET(CParagraph, m_pInlines)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Paragraph_Inlines, // Index name
         14, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions object property
     {
-        OFFSET(CPopup, m_pChildTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CPopup, m_pChildTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Popup_ChildTransitions, // Index name
         82, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement object property
     {
-        OFFSET(CPopup, m_overlayElement), // Offset
+        static_cast<UINT16>(OFFSET(CPopup, m_overlayElement)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Popup_OverlayElement, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries object property
     {
-        OFFSET(CResourceDictionary, m_pMergedDictionaries), // Offset
+        static_cast<UINT16>(OFFSET(CResourceDictionary, m_pMergedDictionaries)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ResourceDictionary_MergedDictionaries, // Index name
         84, // Next object property = Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries
     },
     // Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries object property
     {
-        OFFSET(CResourceDictionary, m_pThemeDictionaries), // Offset
+        static_cast<UINT16>(OFFSET(CResourceDictionary, m_pThemeDictionaries)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ResourceDictionary_ThemeDictionaries, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Blocks object property
     {
-        OFFSET(CRichTextBlock, m_pBlocks), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pBlocks)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_Blocks, // Index name
         86, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily object property
     {
-        OFFSET(CRichTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::RichTextBlock_FontFamily, // Index name
         87, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground object property
     {
-        OFFSET(CRichTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::RichTextBlock_Foreground, // Index name
         88, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget object property
     {
-        OFFSET(CRichTextBlock, m_pOverflowTarget), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pOverflowTarget)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_OverflowContentTarget, // Index name
         89, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor object property
     {
-        OFFSET(CRichTextBlock, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_SelectionHighlightColor, // Index name
         90, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.TextHighlighters
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.TextHighlighters object property
     {
-        OFFSET(CRichTextBlock, m_textHighlighters), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_textHighlighters)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_TextHighlighters, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.OverflowContentTarget object property
     {
-        OFFSET(CRichTextBlockOverflow, m_pOverflowTarget), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlockOverflow, m_pOverflowTarget)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlockOverflow_OverflowContentTarget, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Shapes.Shape.Fill object property
     {
-        OFFSET(CShape, m_pFill), // Offset
+        static_cast<UINT16>(OFFSET(CShape, m_pFill)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Shape_Fill, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.Span.Inlines object property
     {
-        OFFSET(CSpan, m_pInlines), // Offset
+        static_cast<UINT16>(OFFSET(CSpan, m_pInlines)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Span_Inlines, // Index name
         14, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
     },
     // Microsoft.UI.Xaml.Media.Animation.Storyboard.Children object property
     {
-        OFFSET(CStoryboard, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CStoryboard, m_pChild)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Storyboard_Children, // Index name
         16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.FontFamily object property
     {
-        OFFSET(CTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::TextBlock_FontFamily, // Index name
         96, // Next object property = Microsoft.UI.Xaml.Controls.TextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Foreground object property
     {
-        OFFSET(CTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::TextBlock_Foreground, // Index name
         97, // Next object property = Microsoft.UI.Xaml.Controls.TextBlock.Inlines
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Inlines object property
     {
-        OFFSET(CTextBlock, m_pInlines), // Offset
+        static_cast<UINT16>(OFFSET(CTextBlock, m_pInlines)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBlock_Inlines, // Index name
         98, // Next object property = Microsoft.UI.Xaml.Controls.TextBlock.TextHighlighters
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.TextHighlighters object property
     {
-        OFFSET(CTextBlock, m_textHighlighters), // Offset
+        static_cast<UINT16>(OFFSET(CTextBlock, m_textHighlighters)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBlock_TextHighlighters, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.TransformGroup.Children object property
     {
-        OFFSET(CTransformGroup, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CTransformGroup, m_pChild)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TransformGroup_Children, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveStoryboards object property
     {
-        OFFSET(CVisualStateGroupCollection, m_pActiveStoryboards), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pActiveStoryboards)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_ActiveStoryboards, // Index name
         101, // Next object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions object property
     {
-        OFFSET(CVisualStateGroupCollection, m_pActiveTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pActiveTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_ActiveTransitions, // Index name
         102, // Next object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters object property
     {
-        OFFSET(CVisualStateGroupCollection, m_pDeferredSetters), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pDeferredSetters)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_DeferredSetters, // Index name
         103, // Next object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers object property
     {
-        OFFSET(CVisualStateGroupCollection, m_pDeferredStateTriggers), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pDeferredStateTriggers)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_DeferredStateTriggers, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutBackground object property
     {
-        OFFSET(CCalendarView, m_pBlackoutBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutBackground, // Index name
         105, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground object property
     {
-        OFFSET(CCalendarView, m_pBlackoutForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutForeground, // Index name
         106, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush object property
     {
-        OFFSET(CCalendarView, m_pBlackoutStrikethroughBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutStrikethroughBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutStrikethroughBrush, // Index name
         107, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground object property
     {
-        OFFSET(CCalendarView, m_pCalendarItemBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemBackground, // Index name
         108, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pCalendarItemBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemBorderBrush, // Index name
         109, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground object property
     {
-        OFFSET(CCalendarView, m_pCalendarItemDisabledBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemDisabledBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemDisabledBackground, // Index name
         110, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground object property
     {
-        OFFSET(CCalendarView, m_pCalendarItemForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemForeground, // Index name
         111, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground object property
     {
-        OFFSET(CCalendarView, m_pCalendarItemHoverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemHoverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemHoverBackground, // Index name
         112, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground object property
     {
-        OFFSET(CCalendarView, m_pCalendarItemPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemPressedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemPressedBackground, // Index name
         113, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily object property
     {
-        OFFSET(CCalendarView, m_pDayItemFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pDayItemFontFamily)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_DayItemFontFamily, // Index name
         114, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground object property
     {
-        OFFSET(CCalendarView, m_pDisabledForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pDisabledForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_DisabledForeground, // Index name
         115, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily object property
     {
-        OFFSET(CCalendarView, m_pFirstOfMonthLabelFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pFirstOfMonthLabelFontFamily)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontFamily, // Index name
         116, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily object property
     {
-        OFFSET(CCalendarView, m_pFirstOfYearDecadeLabelFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pFirstOfYearDecadeLabelFontFamily)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontFamily, // Index name
         117, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pFocusBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pFocusBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FocusBorderBrush, // Index name
         118, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pHoverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pHoverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_HoverBorderBrush, // Index name
         119, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily object property
     {
-        OFFSET(CCalendarView, m_pMonthYearItemFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pMonthYearItemFontFamily)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_MonthYearItemFontFamily, // Index name
         120, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground object property
     {
-        OFFSET(CCalendarView, m_pOutOfScopeBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeBackground, // Index name
         121, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground object property
     {
-        OFFSET(CCalendarView, m_pOutOfScopeForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeForeground, // Index name
         122, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground object property
     {
-        OFFSET(CCalendarView, m_pOutOfScopeHoverForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeHoverForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeHoverForeground, // Index name
         123, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground object property
     {
-        OFFSET(CCalendarView, m_pOutOfScopePressedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopePressedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopePressedForeground, // Index name
         124, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pPressedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_PressedBorderBrush, // Index name
         125, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground object property
     {
-        OFFSET(CCalendarView, m_pPressedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pPressedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_PressedForeground, // Index name
         126, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pSelectedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedBorderBrush, // Index name
         127, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pSelectedDisabledBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedDisabledBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedDisabledBorderBrush, // Index name
         128, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground object property
     {
-        OFFSET(CCalendarView, m_pSelectedDisabledForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedDisabledForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedDisabledForeground, // Index name
         129, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground object property
     {
-        OFFSET(CCalendarView, m_pSelectedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedForeground, // Index name
         130, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pSelectedHoverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedHoverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedHoverBorderBrush, // Index name
         131, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground object property
     {
-        OFFSET(CCalendarView, m_pSelectedHoverForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedHoverForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedHoverForeground, // Index name
         132, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pSelectedPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedPressedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedPressedBorderBrush, // Index name
         133, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground object property
     {
-        OFFSET(CCalendarView, m_pSelectedPressedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedPressedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedPressedForeground, // Index name
         134, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground object property
     {
-        OFFSET(CCalendarView, m_pTodayBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBackground, // Index name
         135, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground object property
     {
-        OFFSET(CCalendarView, m_pTodayBlackoutBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBlackoutBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBlackoutBackground, // Index name
         136, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground object property
     {
-        OFFSET(CCalendarView, m_pTodayBlackoutForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBlackoutForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBlackoutForeground, // Index name
         137, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground object property
     {
-        OFFSET(CCalendarView, m_pTodayDisabledBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayDisabledBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayDisabledBackground, // Index name
         138, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground object property
     {
-        OFFSET(CCalendarView, m_pTodayForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayForeground, // Index name
         139, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground object property
     {
-        OFFSET(CCalendarView, m_pTodayHoverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayHoverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayHoverBackground, // Index name
         140, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pTodayHoverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayHoverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayHoverBorderBrush, // Index name
         141, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground object property
     {
-        OFFSET(CCalendarView, m_pTodayPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayPressedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayPressedBackground, // Index name
         142, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pTodayPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayPressedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayPressedBorderBrush, // Index name
         143, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush object property
     {
-        OFFSET(CCalendarView, m_pTodaySelectedInnerBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodaySelectedInnerBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodaySelectedInnerBorderBrush, // Index name
         66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate object property
     {
-        OFFSET(CContentControl, m_pContentTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CContentControl, m_pContentTemplate)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentControl_ContentTemplate, // Index name
         145, // Next object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions object property
     {
-        OFFSET(CContentControl, m_pContentTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CContentControl, m_pContentTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentControl_ContentTransitions, // Index name
         146, // Next object property = Microsoft.UI.Xaml.Controls.ContentControl.SelectedContentTemplate
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.SelectedContentTemplate object property
     {
-        OFFSET(CContentControl, m_pSelectedContentTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CContentControl, m_pSelectedContentTemplate)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentControl_SelectedContentTemplate, // Index name
         66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.FontFamily object property
     {
-        OFFSET(CFontIcon, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CFontIcon, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::FontIcon_FontFamily, // Index name
         73, // Next object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions object property
     {
-        OFFSET(CGrid, m_pColumnDefinitions), // Offset
+        static_cast<UINT16>(OFFSET(CGrid, m_pColumnDefinitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Grid_ColumnDefinitions, // Index name
         149, // Next object property = Microsoft.UI.Xaml.Controls.Grid.RowDefinitions
     },
     // Microsoft.UI.Xaml.Controls.Grid.RowDefinitions object property
     {
-        OFFSET(CGrid, m_pRowDefinitions), // Offset
+        static_cast<UINT16>(OFFSET(CGrid, m_pRowDefinitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Grid_RowDefinitions, // Index name
         79, // Next object property = Microsoft.UI.Xaml.Controls.Panel.Background
     },
     // Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource object property
     {
-        OFFSET(CIconSourceElement, m_iconSource), // Offset
+        static_cast<UINT16>(OFFSET(CIconSourceElement, m_iconSource)), // Offset
         0, // Storage offset
         KnownPropertyIndex::IconSourceElement_IconSource, // Index name
         73, // Next object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions object property
     {
-        OFFSET(CItemsControl, m_pItemContainerTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CItemsControl, m_pItemContainerTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemContainerTransitions, // Index name
         152, // Next object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost object property
     {
-        OFFSET(CItemsControl, m_pItemsHost), // Offset
+        static_cast<UINT16>(OFFSET(CItemsControl, m_pItemsHost)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemsHost, // Index name
         153, // Next object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel object property
     {
-        OFFSET(CItemsControl, m_pItemsPanelTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CItemsControl, m_pItemsPanelTemplate)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemsPanel, // Index name
         154, // Next object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemTemplate
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemTemplate object property
     {
-        OFFSET(CItemsControl, m_pItemTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CItemsControl, m_pItemTemplate)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemTemplate, // Index name
         66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource object property
     {
-        OFFSET(CMediaPlayerElement, m_pPosterSource), // Offset
+        static_cast<UINT16>(OFFSET(CMediaPlayerElement, m_pPosterSource)), // Offset
         0, // Storage offset
         KnownPropertyIndex::MediaPlayerElement_PosterSource, // Index name
         66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.InputScope object property
     {
-        OFFSET(CPasswordBox, m_pInputScope), // Offset
+        static_cast<UINT16>(OFFSET(CPasswordBox, m_pInputScope)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PasswordBox_InputScope, // Index name
         157, // Next object property = Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor object property
     {
-        OFFSET(CPasswordBox, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CPasswordBox, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PasswordBox_SelectionHighlightColor, // Index name
         66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Shapes.Path.Data object property
     {
-        OFFSET(CPath, m_pGeometryData), // Offset
+        static_cast<UINT16>(OFFSET(CPath, m_pGeometryData)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Path_Data, // Index name
         92, // Next object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Controls.PathIcon.Data object property
     {
-        OFFSET(CPathIcon, m_pData), // Offset
+        static_cast<UINT16>(OFFSET(CPathIcon, m_pData)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PathIcon_Data, // Index name
         73, // Next object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Shapes.Polygon.Points object property
     {
-        OFFSET(CPolygon, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolygon, m_pPoints)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Polygon_Points, // Index name
         92, // Next object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Shapes.Polyline.Points object property
     {
-        OFFSET(CPolyline, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyline, m_pPoints)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Polyline_Points, // Index name
         92, // Next object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.InputScope object property
     {
-        OFFSET(CRichEditBox, m_pInputScope), // Offset
+        static_cast<UINT16>(OFFSET(CRichEditBox, m_pInputScope)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_InputScope, // Index name
         163, // Next object property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor object property
     {
-        OFFSET(CRichEditBox, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CRichEditBox, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_SelectionHighlightColor, // Index name
         164, // Next object property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused object property
     {
-        OFFSET(CRichEditBox, m_pSelectionHighlightColorWhenNotFocused), // Offset
+        static_cast<UINT16>(OFFSET(CRichEditBox, m_pSelectionHighlightColorWhenNotFocused)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_SelectionHighlightColorWhenNotFocused, // Index name
         66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings object property
     {
-        OFFSET(CSplitView, m_pTemplateSettings), // Offset
+        static_cast<UINT16>(OFFSET(CSplitView, m_pTemplateSettings)), // Offset
         0, // Storage offset
         KnownPropertyIndex::SplitView_TemplateSettings, // Index name
         66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.TextBox.InputScope object property
     {
-        OFFSET(CTextBox, m_pInputScope), // Offset
+        static_cast<UINT16>(OFFSET(CTextBox, m_pInputScope)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_InputScope, // Index name
         167, // Next object property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor object property
     {
-        OFFSET(CTextBox, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CTextBox, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_SelectionHighlightColor, // Index name
         168, // Next object property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused object property
     {
-        OFFSET(CTextBox, m_pSelectionHighlightColorWhenNotFocused), // Offset
+        static_cast<UINT16>(OFFSET(CTextBox, m_pSelectionHighlightColorWhenNotFocused)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_SelectionHighlightColorWhenNotFocused, // Index name
         66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush object property
     {
-        OFFSET(CGridViewItemChrome, m_pCheckBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckBrush, // Index name
         170, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush object property
     {
-        OFFSET(CGridViewItemChrome, m_pCheckHintBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckHintBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckHintBrush, // Index name
         171, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush object property
     {
-        OFFSET(CGridViewItemChrome, m_pCheckSelectingBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckSelectingBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckSelectingBrush, // Index name
         172, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground object property
     {
-        OFFSET(CGridViewItemChrome, m_pDragBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pDragBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_DragBackground, // Index name
         173, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground object property
     {
-        OFFSET(CGridViewItemChrome, m_pDragForeground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pDragForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_DragForeground, // Index name
         174, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush object property
     {
-        OFFSET(CGridViewItemChrome, m_pFocusBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pFocusBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_FocusBorderBrush, // Index name
         175, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground object property
     {
-        OFFSET(CGridViewItemChrome, m_pPlaceholderBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pPlaceholderBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_PlaceholderBackground, // Index name
         176, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground object property
     {
-        OFFSET(CGridViewItemChrome, m_pPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pPointerOverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_PointerOverBackground, // Index name
         177, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground object property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedBackground, // Index name
         178, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground object property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedForeground, // Index name
         179, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground object property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBackground, // Index name
         180, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush object property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
         62, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBorderBrush, // Index name
         182, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBrush, // Index name
         183, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBorderBrush, // Index name
         184, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBrush, // Index name
         185, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBorderBrush, // Index name
         186, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBrush, // Index name
         187, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPressedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBorderBrush, // Index name
         188, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPressedBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBrush, // Index name
         189, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedBrush, // Index name
         190, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedDisabledBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedDisabledBrush, // Index name
         191, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPointerOverBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPointerOverBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPointerOverBrush, // Index name
         192, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPressedBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPressedBrush, // Index name
         193, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBrush, // Index name
         194, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckDisabledBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckDisabledBrush, // Index name
         195, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckHintBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckHintBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckHintBrush, // Index name
         196, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckPressedBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckPressedBrush, // Index name
         197, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pCheckSelectingBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckSelectingBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckSelectingBrush, // Index name
         198, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground object property
     {
-        OFFSET(CListViewItemChrome, m_pDragBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pDragBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_DragBackground, // Index name
         199, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground object property
     {
-        OFFSET(CListViewItemChrome, m_pDragForeground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pDragForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_DragForeground, // Index name
         200, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pFocusBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pFocusBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_FocusBorderBrush, // Index name
         201, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pFocusSecondaryBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pFocusSecondaryBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_FocusSecondaryBorderBrush, // Index name
         202, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground object property
     {
-        OFFSET(CListViewItemChrome, m_pPlaceholderBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPlaceholderBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PlaceholderBackground, // Index name
         203, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground object property
     {
-        OFFSET(CListViewItemChrome, m_pPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBackground, // Index name
         204, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBorderBrush, // Index name
         205, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground object property
     {
-        OFFSET(CListViewItemChrome, m_pPointerOverForeground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverForeground, // Index name
         206, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground object property
     {
-        OFFSET(CListViewItemChrome, m_pPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPressedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PressedBackground, // Index name
         207, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedBackground, // Index name
         208, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedBorderBrush, // Index name
         209, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedDisabledBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedDisabledBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBackground, // Index name
         210, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedDisabledBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedDisabledBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBorderBrush, // Index name
         211, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedForeground, // Index name
         212, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedInnerBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedInnerBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedInnerBorderBrush, // Index name
         213, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPointerOverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBackground, // Index name
         214, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPointerOverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
         215, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPressedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBackground, // Index name
         216, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPressedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBorderBrush, // Index name
         217, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorBrush, // Index name
         218, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorDisabledBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorDisabledBrush, // Index name
         219, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorPointerOverBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorPointerOverBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPointerOverBrush, // Index name
         220, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush object property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorPressedBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPressedBrush, // Index name
         62, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
@@ -21530,1456 +21530,1456 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
     },
     // Microsoft.UI.Xaml.Application.Resources render property
     {
-        OFFSET(CApplication, m_pResources), // Offset
+        static_cast<UINT16>(OFFSET(CApplication, m_pResources)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Application_Resources, // Index name
         2, // Next render property = Microsoft.UI.Xaml.Application.RootVisual
     },
     // Microsoft.UI.Xaml.Application.RootVisual render property
     {
-        OFFSET(CApplication, m_pRootVisual), // Offset
+        static_cast<UINT16>(OFFSET(CApplication, m_pRootVisual)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Application_RootVisual, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.FrameworkTemplate.Template render property
     {
-        OFFSET(CFrameworkTemplate, m_pTemplateContent), // Offset
+        static_cast<UINT16>(OFFSET(CFrameworkTemplate, m_pTemplateContent)), // Offset
         0, // Storage offset
         KnownPropertyIndex::FrameworkTemplate_Template, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Geometry.Transform render property
     {
-        OFFSET(CGeometry, m_pTransform), // Offset
+        static_cast<UINT16>(OFFSET(CGeometry, m_pTransform)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Geometry_Transform, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Input.InputScope.Names render property
     {
-        OFFSET(CInputScope, m_pNames), // Offset
+        static_cast<UINT16>(OFFSET(CInputScope, m_pNames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::InputScope_Names, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurve.CurveSegments render property
     {
-        OFFSET(CParametricCurve, m_pCurveSegments), // Offset
+        static_cast<UINT16>(OFFSET(CParametricCurve, m_pCurveSegments)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ParametricCurve_CurveSegments, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.PathFigure.Segments render property
     {
-        OFFSET(CPathFigure, m_pSegments), // Offset
+        static_cast<UINT16>(OFFSET(CPathFigure, m_pSegments)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PathFigure_Segments, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Internal.SecondaryContentRelationship.Curves render property
     {
-        OFFSET(CSecondaryContentRelationship, m_pCurves), // Offset
+        static_cast<UINT16>(OFFSET(CSecondaryContentRelationship, m_pCurves)), // Offset
         0, // Storage offset
         KnownPropertyIndex::SecondaryContentRelationship_Curves, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Style.Setters render property
     {
-        OFFSET(CStyle, m_pSetters), // Offset
+        static_cast<UINT16>(OFFSET(CStyle, m_pSetters)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Style_Setters, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.TextElement.FontFamily render property
     {
-        OFFSET(CTextElement, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::TextElement_FontFamily, // Index name
         11, // Next render property = Microsoft.UI.Xaml.Documents.TextElement.Foreground
     },
     // Microsoft.UI.Xaml.Documents.TextElement.Foreground render property
     {
-        OFFSET(CTextElement, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::TextElement_Foreground, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime render property
     {
-        OFFSET(CTimeline, m_pBeginTime), // Offset
+        static_cast<UINT16>(OFFSET(CTimeline, m_pBeginTime)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Timeline_BeginTime, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction render property
     {
-        OFFSET(CTransition, m_pStaggerFunction), // Offset
+        static_cast<UINT16>(OFFSET(CTransition, m_pStaggerFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Transition_GeneratedStaggerFunction, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.ClipTransform render property
     {
-        OFFSET(CTransitionTarget, m_pClipTransform), // Offset
+        static_cast<UINT16>(OFFSET(CTransitionTarget, m_pClipTransform)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TransitionTarget_ClipTransform, // Index name
         15, // Next render property = Microsoft.UI.Xaml.Media.Animation.TransitionTarget.CompositeTransform
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.CompositeTransform render property
     {
-        OFFSET(CTransitionTarget, m_pxf), // Offset
+        static_cast<UINT16>(OFFSET(CTransitionTarget, m_pxf)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TransitionTarget_CompositeTransform, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.VisualState.__DeferredSetters render property
     {
-        OFFSET(CVisualState, m_pDeferredSetters), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_pDeferredSetters)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState___DeferredSetters, // Index name
         17, // Next render property = Microsoft.UI.Xaml.VisualState.__DeferredStoryboard
     },
     // Microsoft.UI.Xaml.VisualState.__DeferredStoryboard render property
     {
-        OFFSET(CVisualState, m_pDeferredStoryboard), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_pDeferredStoryboard)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState___DeferredStoryboard, // Index name
         18, // Next render property = Microsoft.UI.Xaml.VisualState.Setters
     },
     // Microsoft.UI.Xaml.VisualState.Setters render property
     {
-        OFFSET(CVisualState, m_setters), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_setters)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState_Setters, // Index name
         19, // Next render property = Microsoft.UI.Xaml.VisualState.StateTriggers
     },
     // Microsoft.UI.Xaml.VisualState.StateTriggers render property
     {
-        OFFSET(CVisualState, m_pStateTriggerCollection), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_pStateTriggerCollection)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState_StateTriggers, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.VisualStateGroup.States render property
     {
-        OFFSET(CVisualStateGroup, m_pVisualStates), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroup, m_pVisualStates)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroup_States, // Index name
         21, // Next render property = Microsoft.UI.Xaml.VisualStateGroup.Transitions
     },
     // Microsoft.UI.Xaml.VisualStateGroup.Transitions render property
     {
-        OFFSET(CVisualStateGroup, m_pTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroup, m_pTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroup_Transitions, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.VisualTransition.GeneratedEasingFunction render property
     {
-        OFFSET(CVisualTransition, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CVisualTransition, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualTransition_GeneratedEasingFunction, // Index name
         23, // Next render property = Microsoft.UI.Xaml.VisualTransition.Storyboard
     },
     // Microsoft.UI.Xaml.VisualTransition.Storyboard render property
     {
-        OFFSET(CVisualTransition, m_pStoryboard), // Offset
+        static_cast<UINT16>(OFFSET(CVisualTransition, m_pStoryboard)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualTransition_Storyboard, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.BeginStoryboard.Storyboard render property
     {
-        OFFSET(CBeginStoryboard, m_pStoryboard), // Offset
+        static_cast<UINT16>(OFFSET(CBeginStoryboard, m_pStoryboard)), // Offset
         0, // Storage offset
         KnownPropertyIndex::BeginStoryboard_Storyboard, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimation.EasingFunction render property
     {
-        OFFSET(CColorAnimation, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CColorAnimation, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ColorAnimation_EasingFunction, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames.KeyFrames render property
     {
-        OFFSET(CColorAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CColorAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ColorAnimationUsingKeyFrames_KeyFrames, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.DispatcherTimer.Interval render property
     {
-        OFFSET(CDispatcherTimer, m_pInterval), // Offset
+        static_cast<UINT16>(OFFSET(CDispatcherTimer, m_pInterval)), // Offset
         0, // Storage offset
         KnownPropertyIndex::DispatcherTimer_Interval, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.EasingFunction render property
     {
-        OFFSET(CDoubleAnimation, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CDoubleAnimation, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::DoubleAnimation_EasingFunction, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames.KeyFrames render property
     {
-        OFFSET(CDoubleAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CDoubleAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::DoubleAnimationUsingKeyFrames_KeyFrames, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children render property
     {
-        OFFSET(CDynamicTimeline, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CDynamicTimeline, m_pChild)), // Offset
         0, // Storage offset
         KnownPropertyIndex::DynamicTimeline_Children, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame.EasingFunction render property
     {
-        OFFSET(CEasingColorKeyFrame, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CEasingColorKeyFrame, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::EasingColorKeyFrame_EasingFunction, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingDoubleKeyFrame.EasingFunction render property
     {
-        OFFSET(CEasingDoubleKeyFrame, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CEasingDoubleKeyFrame, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::EasingDoubleKeyFrame_EasingFunction, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingPointKeyFrame.EasingFunction render property
     {
-        OFFSET(CEasingPointKeyFrame, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CEasingPointKeyFrame, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::EasingPointKeyFrame_EasingFunction, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.EventTrigger.Actions render property
     {
-        OFFSET(CEventTrigger, m_pTriggerActions), // Offset
+        static_cast<UINT16>(OFFSET(CEventTrigger, m_pTriggerActions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::EventTrigger_Actions, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.GeometryGroup.Children render property
     {
-        OFFSET(CGeometryGroup, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CGeometryGroup, m_pChild)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GeometryGroup_Children, // Index name
         4, // Next render property = Microsoft.UI.Xaml.Media.Geometry.Transform
     },
     // Microsoft.UI.Xaml.Media.GradientBrush.GradientStops render property
     {
-        OFFSET(CGradientBrush, m_pStops), // Offset
+        static_cast<UINT16>(OFFSET(CGradientBrush, m_pStops)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GradientBrush_GradientStops, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Matrix3DProjection.ProjectionMatrix render property
     {
-        OFFSET(CMatrix3DProjection, m_pMatrix), // Offset
+        static_cast<UINT16>(OFFSET(CMatrix3DProjection, m_pMatrix)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Matrix3DProjection_ProjectionMatrix, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames render property
     {
-        OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ObjectAnimationUsingKeyFrames_KeyFrames, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.PathGeometry.Figures render property
     {
-        OFFSET(CPathGeometry, m_pFigures), // Offset
+        static_cast<UINT16>(OFFSET(CPathGeometry, m_pFigures)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PathGeometry_Figures, // Index name
         4, // Next render property = Microsoft.UI.Xaml.Media.Geometry.Transform
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction render property
     {
-        OFFSET(CPointAnimation, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CPointAnimation, m_pEasingFunction)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PointAnimation_EasingFunction, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames render property
     {
-        OFFSET(CPointAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CPointAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PointAnimationUsingKeyFrames_KeyFrames, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames render property
     {
-        OFFSET(CPointerAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CPointerAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PointerAnimationUsingKeyFrames_KeyFrames, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.PolyBezierSegment.Points render property
     {
-        OFFSET(CPolyBezierSegment, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyBezierSegment, m_pPoints)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PolyBezierSegment_Points, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.PolyLineSegment.Points render property
     {
-        OFFSET(CPolyLineSegment, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyLineSegment, m_pPoints)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PolyLineSegment_Points, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment.Points render property
     {
-        OFFSET(CPolyQuadraticSegment, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyQuadraticSegment, m_pPoints)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PolyQuadraticBezierSegment_Points, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Setter.Property render property
     {
-        OFFSET(CSetter, m_pDependencyPropertyProxy), // Offset
+        static_cast<UINT16>(OFFSET(CSetter, m_pDependencyPropertyProxy)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Setter_Property, // Index name
         47, // Next render property = Microsoft.UI.Xaml.Setter.Target
     },
     // Microsoft.UI.Xaml.Setter.Target render property
     {
-        OFFSET(CSetter, m_target), // Offset
+        static_cast<UINT16>(OFFSET(CSetter, m_target)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Setter_Target, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.SplineColorKeyFrame.KeySpline render property
     {
-        OFFSET(CSplineColorKeyFrame, m_pKeySpline), // Offset
+        static_cast<UINT16>(OFFSET(CSplineColorKeyFrame, m_pKeySpline)), // Offset
         0, // Storage offset
         KnownPropertyIndex::SplineColorKeyFrame_KeySpline, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame.KeySpline render property
     {
-        OFFSET(CSplineDoubleKeyFrame, m_pKeySpline), // Offset
+        static_cast<UINT16>(OFFSET(CSplineDoubleKeyFrame, m_pKeySpline)), // Offset
         0, // Storage offset
         KnownPropertyIndex::SplineDoubleKeyFrame_KeySpline, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame.KeySpline render property
     {
-        OFFSET(CSplinePointKeyFrame, m_pKeySpline), // Offset
+        static_cast<UINT16>(OFFSET(CSplinePointKeyFrame, m_pKeySpline)), // Offset
         0, // Storage offset
         KnownPropertyIndex::SplinePointKeyFrame_KeySpline, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Data.TemplateBinding.Property render property
     {
-        OFFSET(CTemplateBindingExtension, m_pSourceProperty), // Offset
+        static_cast<UINT16>(OFFSET(CTemplateBindingExtension, m_pSourceProperty)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TemplateBinding_Property, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Background render property
     {
-        OFFSET(CTextHighlighter, m_background), // Offset
+        static_cast<UINT16>(OFFSET(CTextHighlighter, m_background)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextHighlighter_Background, // Index name
         53, // Next render property = Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground render property
     {
-        OFFSET(CTextHighlighter, m_foreground), // Offset
+        static_cast<UINT16>(OFFSET(CTextHighlighter, m_foreground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextHighlighter_Foreground, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.Border.Background render property
     {
-        OFFSET(CBorder, m_pBackgroundBrush), // Offset
+        static_cast<UINT16>(OFFSET(CBorder, m_pBackgroundBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Border_Background, // Index name
         55, // Next render property = Microsoft.UI.Xaml.Controls.Border.BorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Border.BorderBrush render property
     {
-        OFFSET(CBorder, m_pBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CBorder, m_pBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Border_BorderBrush, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions render property
     {
-        OFFSET(CContentPresenter, m_pContentTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CContentPresenter, m_pContentTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentPresenter_ContentTransitions, // Index name
         57, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily render property
     {
-        OFFSET(CContentPresenter, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::ContentPresenter_FontFamily, // Index name
         58, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground render property
     {
-        OFFSET(CContentPresenter, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::ContentPresenter_Foreground, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.Control.Background render property
     {
-        OFFSET(CControl, m_pBackground), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_Background, // Index name
         60, // Next render property = Microsoft.UI.Xaml.Controls.Control.BorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Control.BorderBrush render property
     {
-        OFFSET(CControl, m_pBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_BorderBrush, // Index name
         61, // Next render property = Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey
     },
     // Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey render property
     {
-        OFFSET(CControl, m_pDefaultStyleKey), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pDefaultStyleKey)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_DefaultStyleKey, // Index name
         62, // Next render property = Microsoft.UI.Xaml.Controls.Control.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.Control.FontFamily render property
     {
-        OFFSET(CControl, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::Control_FontFamily, // Index name
         63, // Next render property = Microsoft.UI.Xaml.Controls.Control.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Control.Foreground render property
     {
-        OFFSET(CControl, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::Control_Foreground, // Index name
         64, // Next render property = Microsoft.UI.Xaml.Controls.Control.Template
     },
     // Microsoft.UI.Xaml.Controls.Control.Template render property
     {
-        OFFSET(CControl, m_pTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pTemplate)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_Template, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.Fill render property
     {
-        OFFSET(CGlyphs, m_pFill), // Offset
+        static_cast<UINT16>(OFFSET(CGlyphs, m_pFill)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Glyphs_Fill, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.IconElement.Foreground render property
     {
-        OFFSET(CIconElement, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CIconElement, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::IconElement_Foreground, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.Image.Source render property
     {
-        OFFSET(CImage, m_pImageSource), // Offset
+        static_cast<UINT16>(OFFSET(CImage, m_pImageSource)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Image_Source, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.ImageBrush.ImageSource render property
     {
-        OFFSET(CImageBrush, m_pImageSource), // Offset
+        static_cast<UINT16>(OFFSET(CImageBrush, m_pImageSource)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ImageBrush_ImageSource, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.InlineUIContainer.Child render property
     {
-        OFFSET(CInlineUIContainer, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CInlineUIContainer, m_pChild)), // Offset
         0, // Storage offset
         KnownPropertyIndex::InlineUIContainer_Child, // Index name
         10, // Next render property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel render property
     {
-        OFFSET(CItemsPresenter, m_pItemsPanelTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CItemsPresenter, m_pItemsPanelTemplate)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsPresenter_ItemsPanel, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.MatrixTransform.Matrix render property
     {
-        OFFSET(CMatrixTransform, m_pMatrix), // Offset
+        static_cast<UINT16>(OFFSET(CMatrixTransform, m_pMatrix)), // Offset
         0, // Storage offset
         KnownPropertyIndex::MatrixTransform_Matrix, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.Panel.Background render property
     {
-        OFFSET(CPanel, m_pBackground), // Offset
+        static_cast<UINT16>(OFFSET(CPanel, m_pBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Panel_Background, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.Paragraph.Inlines render property
     {
-        OFFSET(CParagraph, m_pInlines), // Offset
+        static_cast<UINT16>(OFFSET(CParagraph, m_pInlines)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Paragraph_Inlines, // Index name
         10, // Next render property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions render property
     {
-        OFFSET(CPopup, m_pChildTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CPopup, m_pChildTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Popup_ChildTransitions, // Index name
         75, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement render property
     {
-        OFFSET(CPopup, m_overlayElement), // Offset
+        static_cast<UINT16>(OFFSET(CPopup, m_overlayElement)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Popup_OverlayElement, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries render property
     {
-        OFFSET(CResourceDictionary, m_pMergedDictionaries), // Offset
+        static_cast<UINT16>(OFFSET(CResourceDictionary, m_pMergedDictionaries)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ResourceDictionary_MergedDictionaries, // Index name
         77, // Next render property = Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries
     },
     // Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries render property
     {
-        OFFSET(CResourceDictionary, m_pThemeDictionaries), // Offset
+        static_cast<UINT16>(OFFSET(CResourceDictionary, m_pThemeDictionaries)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ResourceDictionary_ThemeDictionaries, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Blocks render property
     {
-        OFFSET(CRichTextBlock, m_pBlocks), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pBlocks)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_Blocks, // Index name
         79, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily render property
     {
-        OFFSET(CRichTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::RichTextBlock_FontFamily, // Index name
         80, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground render property
     {
-        OFFSET(CRichTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::RichTextBlock_Foreground, // Index name
         81, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget render property
     {
-        OFFSET(CRichTextBlock, m_pOverflowTarget), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pOverflowTarget)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_OverflowContentTarget, // Index name
         82, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor render property
     {
-        OFFSET(CRichTextBlock, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_SelectionHighlightColor, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.OverflowContentTarget render property
     {
-        OFFSET(CRichTextBlockOverflow, m_pOverflowTarget), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlockOverflow, m_pOverflowTarget)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlockOverflow_OverflowContentTarget, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Shapes.Shape.Fill render property
     {
-        OFFSET(CShape, m_pFill), // Offset
+        static_cast<UINT16>(OFFSET(CShape, m_pFill)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Shape_Fill, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Documents.Span.Inlines render property
     {
-        OFFSET(CSpan, m_pInlines), // Offset
+        static_cast<UINT16>(OFFSET(CSpan, m_pInlines)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Span_Inlines, // Index name
         10, // Next render property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
     },
     // Microsoft.UI.Xaml.Media.Animation.Storyboard.Children render property
     {
-        OFFSET(CStoryboard, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CStoryboard, m_pChild)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Storyboard_Children, // Index name
         12, // Next render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.FontFamily render property
     {
-        OFFSET(CTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::TextBlock_FontFamily, // Index name
         88, // Next render property = Microsoft.UI.Xaml.Controls.TextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Foreground render property
     {
-        OFFSET(CTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         KnownPropertyIndex::TextBlock_Foreground, // Index name
         89, // Next render property = Microsoft.UI.Xaml.Controls.TextBlock.Inlines
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Inlines render property
     {
-        OFFSET(CTextBlock, m_pInlines), // Offset
+        static_cast<UINT16>(OFFSET(CTextBlock, m_pInlines)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBlock_Inlines, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.TransformGroup.Children render property
     {
-        OFFSET(CTransformGroup, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CTransformGroup, m_pChild)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TransformGroup_Children, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveStoryboards render property
     {
-        OFFSET(CVisualStateGroupCollection, m_pActiveStoryboards), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pActiveStoryboards)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_ActiveStoryboards, // Index name
         92, // Next render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions render property
     {
-        OFFSET(CVisualStateGroupCollection, m_pActiveTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pActiveTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_ActiveTransitions, // Index name
         93, // Next render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters render property
     {
-        OFFSET(CVisualStateGroupCollection, m_pDeferredSetters), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pDeferredSetters)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_DeferredSetters, // Index name
         94, // Next render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers render property
     {
-        OFFSET(CVisualStateGroupCollection, m_pDeferredStateTriggers), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pDeferredStateTriggers)), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_DeferredStateTriggers, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutBackground render property
     {
-        OFFSET(CCalendarView, m_pBlackoutBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutBackground, // Index name
         96, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground render property
     {
-        OFFSET(CCalendarView, m_pBlackoutForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutForeground, // Index name
         97, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush render property
     {
-        OFFSET(CCalendarView, m_pBlackoutStrikethroughBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutStrikethroughBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutStrikethroughBrush, // Index name
         98, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground render property
     {
-        OFFSET(CCalendarView, m_pCalendarItemBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemBackground, // Index name
         99, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pCalendarItemBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemBorderBrush, // Index name
         100, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground render property
     {
-        OFFSET(CCalendarView, m_pCalendarItemDisabledBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemDisabledBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemDisabledBackground, // Index name
         101, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground render property
     {
-        OFFSET(CCalendarView, m_pCalendarItemForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemForeground, // Index name
         102, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground render property
     {
-        OFFSET(CCalendarView, m_pCalendarItemHoverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemHoverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemHoverBackground, // Index name
         103, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground render property
     {
-        OFFSET(CCalendarView, m_pCalendarItemPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemPressedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemPressedBackground, // Index name
         104, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily render property
     {
-        OFFSET(CCalendarView, m_pDayItemFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pDayItemFontFamily)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_DayItemFontFamily, // Index name
         105, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground render property
     {
-        OFFSET(CCalendarView, m_pDisabledForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pDisabledForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_DisabledForeground, // Index name
         106, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily render property
     {
-        OFFSET(CCalendarView, m_pFirstOfMonthLabelFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pFirstOfMonthLabelFontFamily)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontFamily, // Index name
         107, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily render property
     {
-        OFFSET(CCalendarView, m_pFirstOfYearDecadeLabelFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pFirstOfYearDecadeLabelFontFamily)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontFamily, // Index name
         108, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pFocusBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pFocusBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FocusBorderBrush, // Index name
         109, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pHoverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pHoverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_HoverBorderBrush, // Index name
         110, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily render property
     {
-        OFFSET(CCalendarView, m_pMonthYearItemFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pMonthYearItemFontFamily)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_MonthYearItemFontFamily, // Index name
         111, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground render property
     {
-        OFFSET(CCalendarView, m_pOutOfScopeBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeBackground, // Index name
         112, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground render property
     {
-        OFFSET(CCalendarView, m_pOutOfScopeForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeForeground, // Index name
         113, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground render property
     {
-        OFFSET(CCalendarView, m_pOutOfScopeHoverForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeHoverForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeHoverForeground, // Index name
         114, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground render property
     {
-        OFFSET(CCalendarView, m_pOutOfScopePressedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopePressedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopePressedForeground, // Index name
         115, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pPressedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_PressedBorderBrush, // Index name
         116, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground render property
     {
-        OFFSET(CCalendarView, m_pPressedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pPressedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_PressedForeground, // Index name
         117, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pSelectedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedBorderBrush, // Index name
         118, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pSelectedDisabledBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedDisabledBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedDisabledBorderBrush, // Index name
         119, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground render property
     {
-        OFFSET(CCalendarView, m_pSelectedDisabledForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedDisabledForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedDisabledForeground, // Index name
         120, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground render property
     {
-        OFFSET(CCalendarView, m_pSelectedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedForeground, // Index name
         121, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pSelectedHoverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedHoverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedHoverBorderBrush, // Index name
         122, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground render property
     {
-        OFFSET(CCalendarView, m_pSelectedHoverForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedHoverForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedHoverForeground, // Index name
         123, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pSelectedPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedPressedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedPressedBorderBrush, // Index name
         124, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground render property
     {
-        OFFSET(CCalendarView, m_pSelectedPressedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedPressedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedPressedForeground, // Index name
         125, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground render property
     {
-        OFFSET(CCalendarView, m_pTodayBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBackground, // Index name
         126, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground render property
     {
-        OFFSET(CCalendarView, m_pTodayBlackoutBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBlackoutBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBlackoutBackground, // Index name
         127, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground render property
     {
-        OFFSET(CCalendarView, m_pTodayBlackoutForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBlackoutForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBlackoutForeground, // Index name
         128, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground render property
     {
-        OFFSET(CCalendarView, m_pTodayDisabledBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayDisabledBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayDisabledBackground, // Index name
         129, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground render property
     {
-        OFFSET(CCalendarView, m_pTodayForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayForeground, // Index name
         130, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground render property
     {
-        OFFSET(CCalendarView, m_pTodayHoverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayHoverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayHoverBackground, // Index name
         131, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pTodayHoverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayHoverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayHoverBorderBrush, // Index name
         132, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground render property
     {
-        OFFSET(CCalendarView, m_pTodayPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayPressedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayPressedBackground, // Index name
         133, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pTodayPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayPressedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayPressedBorderBrush, // Index name
         134, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush render property
     {
-        OFFSET(CCalendarView, m_pTodaySelectedInnerBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodaySelectedInnerBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodaySelectedInnerBorderBrush, // Index name
         59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions render property
     {
-        OFFSET(CContentControl, m_pContentTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CContentControl, m_pContentTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentControl_ContentTransitions, // Index name
         59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.FontFamily render property
     {
-        OFFSET(CFontIcon, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CFontIcon, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         KnownPropertyIndex::FontIcon_FontFamily, // Index name
         66, // Next render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions render property
     {
-        OFFSET(CGrid, m_pColumnDefinitions), // Offset
+        static_cast<UINT16>(OFFSET(CGrid, m_pColumnDefinitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Grid_ColumnDefinitions, // Index name
         138, // Next render property = Microsoft.UI.Xaml.Controls.Grid.RowDefinitions
     },
     // Microsoft.UI.Xaml.Controls.Grid.RowDefinitions render property
     {
-        OFFSET(CGrid, m_pRowDefinitions), // Offset
+        static_cast<UINT16>(OFFSET(CGrid, m_pRowDefinitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Grid_RowDefinitions, // Index name
         72, // Next render property = Microsoft.UI.Xaml.Controls.Panel.Background
     },
     // Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource render property
     {
-        OFFSET(CIconSourceElement, m_iconSource), // Offset
+        static_cast<UINT16>(OFFSET(CIconSourceElement, m_iconSource)), // Offset
         0, // Storage offset
         KnownPropertyIndex::IconSourceElement_IconSource, // Index name
         66, // Next render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions render property
     {
-        OFFSET(CItemsControl, m_pItemContainerTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CItemsControl, m_pItemContainerTransitions)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemContainerTransitions, // Index name
         141, // Next render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost render property
     {
-        OFFSET(CItemsControl, m_pItemsHost), // Offset
+        static_cast<UINT16>(OFFSET(CItemsControl, m_pItemsHost)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemsHost, // Index name
         142, // Next render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel render property
     {
-        OFFSET(CItemsControl, m_pItemsPanelTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CItemsControl, m_pItemsPanelTemplate)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemsPanel, // Index name
         59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource render property
     {
-        OFFSET(CMediaPlayerElement, m_pPosterSource), // Offset
+        static_cast<UINT16>(OFFSET(CMediaPlayerElement, m_pPosterSource)), // Offset
         0, // Storage offset
         KnownPropertyIndex::MediaPlayerElement_PosterSource, // Index name
         59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.InputScope render property
     {
-        OFFSET(CPasswordBox, m_pInputScope), // Offset
+        static_cast<UINT16>(OFFSET(CPasswordBox, m_pInputScope)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PasswordBox_InputScope, // Index name
         145, // Next render property = Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor render property
     {
-        OFFSET(CPasswordBox, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CPasswordBox, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PasswordBox_SelectionHighlightColor, // Index name
         59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Shapes.Path.Data render property
     {
-        OFFSET(CPath, m_pGeometryData), // Offset
+        static_cast<UINT16>(OFFSET(CPath, m_pGeometryData)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Path_Data, // Index name
         84, // Next render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Controls.PathIcon.Data render property
     {
-        OFFSET(CPathIcon, m_pData), // Offset
+        static_cast<UINT16>(OFFSET(CPathIcon, m_pData)), // Offset
         0, // Storage offset
         KnownPropertyIndex::PathIcon_Data, // Index name
         66, // Next render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Shapes.Polygon.Points render property
     {
-        OFFSET(CPolygon, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolygon, m_pPoints)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Polygon_Points, // Index name
         84, // Next render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Shapes.Polyline.Points render property
     {
-        OFFSET(CPolyline, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyline, m_pPoints)), // Offset
         0, // Storage offset
         KnownPropertyIndex::Polyline_Points, // Index name
         84, // Next render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.InputScope render property
     {
-        OFFSET(CRichEditBox, m_pInputScope), // Offset
+        static_cast<UINT16>(OFFSET(CRichEditBox, m_pInputScope)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_InputScope, // Index name
         151, // Next render property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor render property
     {
-        OFFSET(CRichEditBox, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CRichEditBox, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_SelectionHighlightColor, // Index name
         152, // Next render property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused render property
     {
-        OFFSET(CRichEditBox, m_pSelectionHighlightColorWhenNotFocused), // Offset
+        static_cast<UINT16>(OFFSET(CRichEditBox, m_pSelectionHighlightColorWhenNotFocused)), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_SelectionHighlightColorWhenNotFocused, // Index name
         59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings render property
     {
-        OFFSET(CSplitView, m_pTemplateSettings), // Offset
+        static_cast<UINT16>(OFFSET(CSplitView, m_pTemplateSettings)), // Offset
         0, // Storage offset
         KnownPropertyIndex::SplitView_TemplateSettings, // Index name
         59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.TextBox.InputScope render property
     {
-        OFFSET(CTextBox, m_pInputScope), // Offset
+        static_cast<UINT16>(OFFSET(CTextBox, m_pInputScope)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_InputScope, // Index name
         155, // Next render property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor render property
     {
-        OFFSET(CTextBox, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CTextBox, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_SelectionHighlightColor, // Index name
         156, // Next render property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused render property
     {
-        OFFSET(CTextBox, m_pSelectionHighlightColorWhenNotFocused), // Offset
+        static_cast<UINT16>(OFFSET(CTextBox, m_pSelectionHighlightColorWhenNotFocused)), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_SelectionHighlightColorWhenNotFocused, // Index name
         59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush render property
     {
-        OFFSET(CGridViewItemChrome, m_pCheckBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckBrush, // Index name
         158, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush render property
     {
-        OFFSET(CGridViewItemChrome, m_pCheckHintBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckHintBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckHintBrush, // Index name
         159, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush render property
     {
-        OFFSET(CGridViewItemChrome, m_pCheckSelectingBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckSelectingBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckSelectingBrush, // Index name
         160, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground render property
     {
-        OFFSET(CGridViewItemChrome, m_pDragBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pDragBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_DragBackground, // Index name
         161, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground render property
     {
-        OFFSET(CGridViewItemChrome, m_pDragForeground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pDragForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_DragForeground, // Index name
         162, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush render property
     {
-        OFFSET(CGridViewItemChrome, m_pFocusBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pFocusBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_FocusBorderBrush, // Index name
         163, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground render property
     {
-        OFFSET(CGridViewItemChrome, m_pPlaceholderBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pPlaceholderBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_PlaceholderBackground, // Index name
         164, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground render property
     {
-        OFFSET(CGridViewItemChrome, m_pPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pPointerOverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_PointerOverBackground, // Index name
         165, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground render property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedBackground, // Index name
         166, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground render property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedForeground, // Index name
         167, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground render property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBackground, // Index name
         168, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush render property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
         56, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBorderBrush, // Index name
         170, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBrush, // Index name
         171, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBorderBrush, // Index name
         172, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBrush, // Index name
         173, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBorderBrush, // Index name
         174, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBrush, // Index name
         175, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPressedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBorderBrush, // Index name
         176, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPressedBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBrush, // Index name
         177, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedBrush, // Index name
         178, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedDisabledBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedDisabledBrush, // Index name
         179, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPointerOverBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPointerOverBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPointerOverBrush, // Index name
         180, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPressedBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPressedBrush, // Index name
         181, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBrush, // Index name
         182, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckDisabledBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckDisabledBrush, // Index name
         183, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckHintBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckHintBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckHintBrush, // Index name
         184, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckPressedBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckPressedBrush, // Index name
         185, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pCheckSelectingBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckSelectingBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckSelectingBrush, // Index name
         186, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground render property
     {
-        OFFSET(CListViewItemChrome, m_pDragBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pDragBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_DragBackground, // Index name
         187, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground render property
     {
-        OFFSET(CListViewItemChrome, m_pDragForeground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pDragForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_DragForeground, // Index name
         188, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pFocusBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pFocusBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_FocusBorderBrush, // Index name
         189, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pFocusSecondaryBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pFocusSecondaryBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_FocusSecondaryBorderBrush, // Index name
         190, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground render property
     {
-        OFFSET(CListViewItemChrome, m_pPlaceholderBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPlaceholderBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PlaceholderBackground, // Index name
         191, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground render property
     {
-        OFFSET(CListViewItemChrome, m_pPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBackground, // Index name
         192, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBorderBrush, // Index name
         193, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground render property
     {
-        OFFSET(CListViewItemChrome, m_pPointerOverForeground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverForeground, // Index name
         194, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground render property
     {
-        OFFSET(CListViewItemChrome, m_pPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPressedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PressedBackground, // Index name
         195, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedBackground, // Index name
         196, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedBorderBrush, // Index name
         197, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedDisabledBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedDisabledBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBackground, // Index name
         198, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedDisabledBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedDisabledBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBorderBrush, // Index name
         199, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedForeground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedForeground, // Index name
         200, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedInnerBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedInnerBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedInnerBorderBrush, // Index name
         201, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPointerOverBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBackground, // Index name
         202, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPointerOverBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
         203, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPressedBackground)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBackground, // Index name
         204, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPressedBorderBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBorderBrush, // Index name
         205, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorBrush, // Index name
         206, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorDisabledBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorDisabledBrush, // Index name
         207, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorPointerOverBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorPointerOverBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPointerOverBrush, // Index name
         208, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush render property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorPressedBrush)), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPressedBrush, // Index name
         56, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
@@ -22999,7 +22999,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Application.Resources enter property
     {
-        OFFSET(CApplication, m_pResources), // Offset
+        static_cast<UINT16>(OFFSET(CApplication, m_pResources)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Application_Resources, // Index name
@@ -23007,7 +23007,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Application.RootVisual enter property
     {
-        OFFSET(CApplication, m_pRootVisual), // Offset
+        static_cast<UINT16>(OFFSET(CApplication, m_pRootVisual)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Application_RootVisual, // Index name
@@ -23015,7 +23015,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.FrameworkTemplate.Template enter property
     {
-        OFFSET(CFrameworkTemplate, m_pTemplateContent), // Offset
+        static_cast<UINT16>(OFFSET(CFrameworkTemplate, m_pTemplateContent)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::FrameworkTemplate_Template, // Index name
@@ -23023,7 +23023,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Geometry.Transform enter property
     {
-        OFFSET(CGeometry, m_pTransform), // Offset
+        static_cast<UINT16>(OFFSET(CGeometry, m_pTransform)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Geometry_Transform, // Index name
@@ -23031,7 +23031,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Input.InputScope.Names enter property
     {
-        OFFSET(CInputScope, m_pNames), // Offset
+        static_cast<UINT16>(OFFSET(CInputScope, m_pNames)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::InputScope_Names, // Index name
@@ -23039,7 +23039,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.KeySpline.ControlPoint1 enter property
     {
-        OFFSET(CKeySpline, m_ControlPoint1), // Offset
+        static_cast<UINT16>(OFFSET(CKeySpline, m_ControlPoint1)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::KeySpline_ControlPoint1, // Index name
@@ -23047,7 +23047,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.KeySpline.ControlPoint2 enter property
     {
-        OFFSET(CKeySpline, m_ControlPoint2), // Offset
+        static_cast<UINT16>(OFFSET(CKeySpline, m_ControlPoint2)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::KeySpline_ControlPoint2, // Index name
@@ -23055,7 +23055,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurve.CurveSegments enter property
     {
-        OFFSET(CParametricCurve, m_pCurveSegments), // Offset
+        static_cast<UINT16>(OFFSET(CParametricCurve, m_pCurveSegments)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ParametricCurve_CurveSegments, // Index name
@@ -23063,7 +23063,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.PathFigure.Segments enter property
     {
-        OFFSET(CPathFigure, m_pSegments), // Offset
+        static_cast<UINT16>(OFFSET(CPathFigure, m_pSegments)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PathFigure_Segments, // Index name
@@ -23071,7 +23071,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Internal.SecondaryContentRelationship.Curves enter property
     {
-        OFFSET(CSecondaryContentRelationship, m_pCurves), // Offset
+        static_cast<UINT16>(OFFSET(CSecondaryContentRelationship, m_pCurves)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::SecondaryContentRelationship_Curves, // Index name
@@ -23079,7 +23079,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Style.Setters enter property
     {
-        OFFSET(CStyle, m_pSetters), // Offset
+        static_cast<UINT16>(OFFSET(CStyle, m_pSetters)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Style_Setters, // Index name
@@ -23087,23 +23087,23 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Documents.TextElement.FontFamily enter property
     {
-        OFFSET(CTextElement, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextElement_FontFamily, // Index name
         13, // Next enter property = Microsoft.UI.Xaml.Documents.TextElement.Foreground
     },
     // Microsoft.UI.Xaml.Documents.TextElement.Foreground enter property
     {
-        OFFSET(CTextElement, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextElement, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextElement_Foreground, // Index name
         0, // Next enter property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime enter property
     {
-        OFFSET(CTimeline, m_pBeginTime), // Offset
+        static_cast<UINT16>(OFFSET(CTimeline, m_pBeginTime)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Timeline_BeginTime, // Index name
@@ -23111,7 +23111,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction enter property
     {
-        OFFSET(CTransition, m_pStaggerFunction), // Offset
+        static_cast<UINT16>(OFFSET(CTransition, m_pStaggerFunction)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Transition_GeneratedStaggerFunction, // Index name
@@ -23119,7 +23119,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.ClipTransform enter property
     {
-        OFFSET(CTransitionTarget, m_pClipTransform), // Offset
+        static_cast<UINT16>(OFFSET(CTransitionTarget, m_pClipTransform)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TransitionTarget_ClipTransform, // Index name
@@ -23127,7 +23127,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.CompositeTransform enter property
     {
-        OFFSET(CTransitionTarget, m_pxf), // Offset
+        static_cast<UINT16>(OFFSET(CTransitionTarget, m_pxf)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TransitionTarget_CompositeTransform, // Index name
@@ -23143,7 +23143,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.VisualState.__DeferredSetters enter property
     {
-        OFFSET(CVisualState, m_pDeferredSetters), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_pDeferredSetters)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualState___DeferredSetters, // Index name
@@ -23151,7 +23151,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.VisualState.__DeferredStoryboard enter property
     {
-        OFFSET(CVisualState, m_pDeferredStoryboard), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_pDeferredStoryboard)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualState___DeferredStoryboard, // Index name
@@ -23159,7 +23159,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.VisualState.Setters enter property
     {
-        OFFSET(CVisualState, m_setters), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_setters)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualState_Setters, // Index name
@@ -23167,7 +23167,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.VisualState.StateTriggers enter property
     {
-        OFFSET(CVisualState, m_pStateTriggerCollection), // Offset
+        static_cast<UINT16>(OFFSET(CVisualState, m_pStateTriggerCollection)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualState_StateTriggers, // Index name
@@ -23175,7 +23175,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.VisualStateGroup.States enter property
     {
-        OFFSET(CVisualStateGroup, m_pVisualStates), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroup, m_pVisualStates)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualStateGroup_States, // Index name
@@ -23183,7 +23183,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.VisualStateGroup.Transitions enter property
     {
-        OFFSET(CVisualStateGroup, m_pTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroup, m_pTransitions)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualStateGroup_Transitions, // Index name
@@ -23191,7 +23191,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.VisualTransition.GeneratedEasingFunction enter property
     {
-        OFFSET(CVisualTransition, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CVisualTransition, m_pEasingFunction)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualTransition_GeneratedEasingFunction, // Index name
@@ -23199,7 +23199,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.VisualTransition.Storyboard enter property
     {
-        OFFSET(CVisualTransition, m_pStoryboard), // Offset
+        static_cast<UINT16>(OFFSET(CVisualTransition, m_pStoryboard)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualTransition_Storyboard, // Index name
@@ -23215,7 +23215,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.BeginStoryboard.Storyboard enter property
     {
-        OFFSET(CBeginStoryboard, m_pStoryboard), // Offset
+        static_cast<UINT16>(OFFSET(CBeginStoryboard, m_pStoryboard)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke) | static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::BeginStoryboard_Storyboard, // Index name
@@ -23223,7 +23223,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimation.EasingFunction enter property
     {
-        OFFSET(CColorAnimation, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CColorAnimation, m_pEasingFunction)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ColorAnimation_EasingFunction, // Index name
@@ -23231,7 +23231,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames.KeyFrames enter property
     {
-        OFFSET(CColorAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CColorAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ColorAnimationUsingKeyFrames_KeyFrames, // Index name
@@ -23239,7 +23239,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.DispatcherTimer.Interval enter property
     {
-        OFFSET(CDispatcherTimer, m_pInterval), // Offset
+        static_cast<UINT16>(OFFSET(CDispatcherTimer, m_pInterval)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::DispatcherTimer_Interval, // Index name
@@ -23247,7 +23247,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.EasingFunction enter property
     {
-        OFFSET(CDoubleAnimation, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CDoubleAnimation, m_pEasingFunction)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::DoubleAnimation_EasingFunction, // Index name
@@ -23255,7 +23255,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames.KeyFrames enter property
     {
-        OFFSET(CDoubleAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CDoubleAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::DoubleAnimationUsingKeyFrames_KeyFrames, // Index name
@@ -23263,7 +23263,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children enter property
     {
-        OFFSET(CDynamicTimeline, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CDynamicTimeline, m_pChild)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::DynamicTimeline_Children, // Index name
@@ -23271,7 +23271,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame.EasingFunction enter property
     {
-        OFFSET(CEasingColorKeyFrame, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CEasingColorKeyFrame, m_pEasingFunction)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::EasingColorKeyFrame_EasingFunction, // Index name
@@ -23279,7 +23279,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingDoubleKeyFrame.EasingFunction enter property
     {
-        OFFSET(CEasingDoubleKeyFrame, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CEasingDoubleKeyFrame, m_pEasingFunction)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::EasingDoubleKeyFrame_EasingFunction, // Index name
@@ -23287,7 +23287,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingPointKeyFrame.EasingFunction enter property
     {
-        OFFSET(CEasingPointKeyFrame, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CEasingPointKeyFrame, m_pEasingFunction)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::EasingPointKeyFrame_EasingFunction, // Index name
@@ -23295,7 +23295,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.EventTrigger.Actions enter property
     {
-        OFFSET(CEventTrigger, m_pTriggerActions), // Offset
+        static_cast<UINT16>(OFFSET(CEventTrigger, m_pTriggerActions)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::EventTrigger_Actions, // Index name
@@ -23303,7 +23303,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.FrameworkElement.Height enter property
     {
-        OFFSET(CFrameworkElement, m_eHeight), // Offset
+        static_cast<UINT16>(OFFSET(CFrameworkElement, m_eHeight)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::FrameworkElement_Height, // Index name
@@ -23311,7 +23311,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.FrameworkElement.Width enter property
     {
-        OFFSET(CFrameworkElement, m_eWidth), // Offset
+        static_cast<UINT16>(OFFSET(CFrameworkElement, m_eWidth)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::FrameworkElement_Width, // Index name
@@ -23319,7 +23319,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.Height enter property
     {
-        OFFSET(CFrameworkElementEx, m_height), // Offset
+        static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_height)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::FrameworkElementEx_Height, // Index name
@@ -23327,7 +23327,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.FrameworkElementEx.Width enter property
     {
-        OFFSET(CFrameworkElementEx, m_width), // Offset
+        static_cast<UINT16>(OFFSET(CFrameworkElementEx, m_width)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::FrameworkElementEx_Width, // Index name
@@ -23335,7 +23335,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.GeometryGroup.Children enter property
     {
-        OFFSET(CGeometryGroup, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CGeometryGroup, m_pChild)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GeometryGroup_Children, // Index name
@@ -23343,7 +23343,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.GradientBrush.GradientStops enter property
     {
-        OFFSET(CGradientBrush, m_pStops), // Offset
+        static_cast<UINT16>(OFFSET(CGradientBrush, m_pStops)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GradientBrush_GradientStops, // Index name
@@ -23351,7 +23351,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Matrix3DProjection.ProjectionMatrix enter property
     {
-        OFFSET(CMatrix3DProjection, m_pMatrix), // Offset
+        static_cast<UINT16>(OFFSET(CMatrix3DProjection, m_pMatrix)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Matrix3DProjection_ProjectionMatrix, // Index name
@@ -23359,7 +23359,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames enter property
     {
-        OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ObjectAnimationUsingKeyFrames_KeyFrames, // Index name
@@ -23367,7 +23367,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.PanelEx.Height enter property
     {
-        OFFSET(CPanelEx, m_height), // Offset
+        static_cast<UINT16>(OFFSET(CPanelEx, m_height)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::PanelEx_Height, // Index name
@@ -23375,7 +23375,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.PanelEx.Width enter property
     {
-        OFFSET(CPanelEx, m_width), // Offset
+        static_cast<UINT16>(OFFSET(CPanelEx, m_width)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::PanelEx_Width, // Index name
@@ -23383,7 +23383,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.PathGeometry.Figures enter property
     {
-        OFFSET(CPathGeometry, m_pFigures), // Offset
+        static_cast<UINT16>(OFFSET(CPathGeometry, m_pFigures)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PathGeometry_Figures, // Index name
@@ -23391,7 +23391,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction enter property
     {
-        OFFSET(CPointAnimation, m_pEasingFunction), // Offset
+        static_cast<UINT16>(OFFSET(CPointAnimation, m_pEasingFunction)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PointAnimation_EasingFunction, // Index name
@@ -23399,7 +23399,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames enter property
     {
-        OFFSET(CPointAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CPointAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PointAnimationUsingKeyFrames_KeyFrames, // Index name
@@ -23407,7 +23407,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames enter property
     {
-        OFFSET(CPointerAnimationUsingKeyFrames, m_pKeyFrames), // Offset
+        static_cast<UINT16>(OFFSET(CPointerAnimationUsingKeyFrames, m_pKeyFrames)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PointerAnimationUsingKeyFrames_KeyFrames, // Index name
@@ -23415,7 +23415,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.PolyBezierSegment.Points enter property
     {
-        OFFSET(CPolyBezierSegment, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyBezierSegment, m_pPoints)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PolyBezierSegment_Points, // Index name
@@ -23423,7 +23423,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.PolyLineSegment.Points enter property
     {
-        OFFSET(CPolyLineSegment, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyLineSegment, m_pPoints)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PolyLineSegment_Points, // Index name
@@ -23431,7 +23431,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment.Points enter property
     {
-        OFFSET(CPolyQuadraticSegment, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyQuadraticSegment, m_pPoints)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PolyQuadraticBezierSegment_Points, // Index name
@@ -23439,7 +23439,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Setter.Property enter property
     {
-        OFFSET(CSetter, m_pDependencyPropertyProxy), // Offset
+        static_cast<UINT16>(OFFSET(CSetter, m_pDependencyPropertyProxy)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Setter_Property, // Index name
@@ -23447,7 +23447,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Setter.Target enter property
     {
-        OFFSET(CSetter, m_target), // Offset
+        static_cast<UINT16>(OFFSET(CSetter, m_target)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Setter_Target, // Index name
@@ -23455,7 +23455,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.SplineColorKeyFrame.KeySpline enter property
     {
-        OFFSET(CSplineColorKeyFrame, m_pKeySpline), // Offset
+        static_cast<UINT16>(OFFSET(CSplineColorKeyFrame, m_pKeySpline)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::SplineColorKeyFrame_KeySpline, // Index name
@@ -23463,7 +23463,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame.KeySpline enter property
     {
-        OFFSET(CSplineDoubleKeyFrame, m_pKeySpline), // Offset
+        static_cast<UINT16>(OFFSET(CSplineDoubleKeyFrame, m_pKeySpline)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::SplineDoubleKeyFrame_KeySpline, // Index name
@@ -23471,7 +23471,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame.KeySpline enter property
     {
-        OFFSET(CSplinePointKeyFrame, m_pKeySpline), // Offset
+        static_cast<UINT16>(OFFSET(CSplinePointKeyFrame, m_pKeySpline)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::SplinePointKeyFrame_KeySpline, // Index name
@@ -23479,7 +23479,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Data.TemplateBinding.Property enter property
     {
-        OFFSET(CTemplateBindingExtension, m_pSourceProperty), // Offset
+        static_cast<UINT16>(OFFSET(CTemplateBindingExtension, m_pSourceProperty)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TemplateBinding_Property, // Index name
@@ -23487,7 +23487,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Background enter property
     {
-        OFFSET(CTextHighlighter, m_background), // Offset
+        static_cast<UINT16>(OFFSET(CTextHighlighter, m_background)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextHighlighter_Background, // Index name
@@ -23495,7 +23495,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground enter property
     {
-        OFFSET(CTextHighlighter, m_foreground), // Offset
+        static_cast<UINT16>(OFFSET(CTextHighlighter, m_foreground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextHighlighter_Foreground, // Index name
@@ -23503,7 +23503,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Border.Background enter property
     {
-        OFFSET(CBorder, m_pBackgroundBrush), // Offset
+        static_cast<UINT16>(OFFSET(CBorder, m_pBackgroundBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Border_Background, // Index name
@@ -23511,7 +23511,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Border.BorderBrush enter property
     {
-        OFFSET(CBorder, m_pBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CBorder, m_pBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Border_BorderBrush, // Index name
@@ -23519,7 +23519,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions enter property
     {
-        OFFSET(CContentPresenter, m_pContentTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CContentPresenter, m_pContentTransitions)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ContentPresenter_ContentTransitions, // Index name
@@ -23527,23 +23527,23 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily enter property
     {
-        OFFSET(CContentPresenter, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ContentPresenter_FontFamily, // Index name
         68, // Next enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground enter property
     {
-        OFFSET(CContentPresenter, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CContentPresenter, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ContentPresenter_Foreground, // Index name
         39, // Next enter property = Microsoft.UI.Xaml.FrameworkElement.Height
     },
     // Microsoft.UI.Xaml.Controls.Control.Background enter property
     {
-        OFFSET(CControl, m_pBackground), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_Background, // Index name
@@ -23551,7 +23551,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Control.BorderBrush enter property
     {
-        OFFSET(CControl, m_pBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_BorderBrush, // Index name
@@ -23559,7 +23559,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey enter property
     {
-        OFFSET(CControl, m_pDefaultStyleKey), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pDefaultStyleKey)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_DefaultStyleKey, // Index name
@@ -23567,23 +23567,23 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Control.FontFamily enter property
     {
-        OFFSET(CControl, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_FontFamily, // Index name
         73, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Control.Foreground enter property
     {
-        OFFSET(CControl, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CControl, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_Foreground, // Index name
         74, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Template
     },
     // Microsoft.UI.Xaml.Controls.Control.Template enter property
     {
-        OFFSET(CControl, m_pTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CControl, m_pTemplate)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_Template, // Index name
@@ -23591,7 +23591,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.Fill enter property
     {
-        OFFSET(CGlyphs, m_pFill), // Offset
+        static_cast<UINT16>(OFFSET(CGlyphs, m_pFill)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Glyphs_Fill, // Index name
@@ -23599,7 +23599,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.FontUri enter property
     {
-        OFFSET(CGlyphs, m_strFontUri), // Offset
+        static_cast<UINT16>(OFFSET(CGlyphs, m_strFontUri)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::Glyphs_FontUri, // Index name
@@ -23607,15 +23607,15 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.IconElement.Foreground enter property
     {
-        OFFSET(CIconElement, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CIconElement, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::IconElement_Foreground, // Index name
         39, // Next enter property = Microsoft.UI.Xaml.FrameworkElement.Height
     },
     // Microsoft.UI.Xaml.Controls.Image.Source enter property
     {
-        OFFSET(CImage, m_pImageSource), // Offset
+        static_cast<UINT16>(OFFSET(CImage, m_pImageSource)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke) | static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Image_Source, // Index name
@@ -23623,7 +23623,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.ImageBrush.ImageSource enter property
     {
-        OFFSET(CImageBrush, m_pImageSource), // Offset
+        static_cast<UINT16>(OFFSET(CImageBrush, m_pImageSource)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ImageBrush_ImageSource, // Index name
@@ -23631,7 +23631,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Documents.InlineUIContainer.Child enter property
     {
-        OFFSET(CInlineUIContainer, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CInlineUIContainer, m_pChild)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::InlineUIContainer_Child, // Index name
@@ -23639,7 +23639,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel enter property
     {
-        OFFSET(CItemsPresenter, m_pItemsPanelTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CItemsPresenter, m_pItemsPanelTemplate)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ItemsPresenter_ItemsPanel, // Index name
@@ -23647,7 +23647,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.MatrixTransform.Matrix enter property
     {
-        OFFSET(CMatrixTransform, m_pMatrix), // Offset
+        static_cast<UINT16>(OFFSET(CMatrixTransform, m_pMatrix)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::MatrixTransform_Matrix, // Index name
@@ -23655,7 +23655,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Panel.Background enter property
     {
-        OFFSET(CPanel, m_pBackground), // Offset
+        static_cast<UINT16>(OFFSET(CPanel, m_pBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Panel_Background, // Index name
@@ -23663,7 +23663,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Documents.Paragraph.Inlines enter property
     {
-        OFFSET(CParagraph, m_pInlines), // Offset
+        static_cast<UINT16>(OFFSET(CParagraph, m_pInlines)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Paragraph_Inlines, // Index name
@@ -23671,7 +23671,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions enter property
     {
-        OFFSET(CPopup, m_pChildTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CPopup, m_pChildTransitions)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Popup_ChildTransitions, // Index name
@@ -23679,7 +23679,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement enter property
     {
-        OFFSET(CPopup, m_overlayElement), // Offset
+        static_cast<UINT16>(OFFSET(CPopup, m_overlayElement)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Popup_OverlayElement, // Index name
@@ -23687,7 +23687,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries enter property
     {
-        OFFSET(CResourceDictionary, m_pMergedDictionaries), // Offset
+        static_cast<UINT16>(OFFSET(CResourceDictionary, m_pMergedDictionaries)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ResourceDictionary_MergedDictionaries, // Index name
@@ -23695,7 +23695,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries enter property
     {
-        OFFSET(CResourceDictionary, m_pThemeDictionaries), // Offset
+        static_cast<UINT16>(OFFSET(CResourceDictionary, m_pThemeDictionaries)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ResourceDictionary_ThemeDictionaries, // Index name
@@ -23703,7 +23703,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Blocks enter property
     {
-        OFFSET(CRichTextBlock, m_pBlocks), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pBlocks)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichTextBlock_Blocks, // Index name
@@ -23711,23 +23711,23 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily enter property
     {
-        OFFSET(CRichTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichTextBlock_FontFamily, // Index name
         91, // Next enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground enter property
     {
-        OFFSET(CRichTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichTextBlock_Foreground, // Index name
         92, // Next enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget enter property
     {
-        OFFSET(CRichTextBlock, m_pOverflowTarget), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pOverflowTarget)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::DoNotEnterLeave) | static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichTextBlock_OverflowContentTarget, // Index name
@@ -23735,7 +23735,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor enter property
     {
-        OFFSET(CRichTextBlock, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlock, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichTextBlock_SelectionHighlightColor, // Index name
@@ -23743,7 +23743,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.OverflowContentTarget enter property
     {
-        OFFSET(CRichTextBlockOverflow, m_pOverflowTarget), // Offset
+        static_cast<UINT16>(OFFSET(CRichTextBlockOverflow, m_pOverflowTarget)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::DoNotEnterLeave) | static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichTextBlockOverflow_OverflowContentTarget, // Index name
@@ -23751,7 +23751,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Shapes.Shape.Fill enter property
     {
-        OFFSET(CShape, m_pFill), // Offset
+        static_cast<UINT16>(OFFSET(CShape, m_pFill)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Shape_Fill, // Index name
@@ -23759,7 +23759,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Documents.Span.Inlines enter property
     {
-        OFFSET(CSpan, m_pInlines), // Offset
+        static_cast<UINT16>(OFFSET(CSpan, m_pInlines)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Span_Inlines, // Index name
@@ -23767,7 +23767,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.Animation.Storyboard.Children enter property
     {
-        OFFSET(CStoryboard, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CStoryboard, m_pChild)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Storyboard_Children, // Index name
@@ -23775,23 +23775,23 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.FontFamily enter property
     {
-        OFFSET(CTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBlock_FontFamily, // Index name
         99, // Next enter property = Microsoft.UI.Xaml.Controls.TextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Foreground enter property
     {
-        OFFSET(CTextBlock, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pForeground), // Storage offset
+        static_cast<UINT16>(OFFSET(CTextBlock, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pForeground)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBlock_Foreground, // Index name
         100, // Next enter property = Microsoft.UI.Xaml.Controls.TextBlock.Inlines
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Inlines enter property
     {
-        OFFSET(CTextBlock, m_pInlines), // Offset
+        static_cast<UINT16>(OFFSET(CTextBlock, m_pInlines)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBlock_Inlines, // Index name
@@ -23799,7 +23799,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Media.TransformGroup.Children enter property
     {
-        OFFSET(CTransformGroup, m_pChild), // Offset
+        static_cast<UINT16>(OFFSET(CTransformGroup, m_pChild)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TransformGroup_Children, // Index name
@@ -23807,7 +23807,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveStoryboards enter property
     {
-        OFFSET(CVisualStateGroupCollection, m_pActiveStoryboards), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pActiveStoryboards)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualStateGroupCollection_ActiveStoryboards, // Index name
@@ -23815,7 +23815,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions enter property
     {
-        OFFSET(CVisualStateGroupCollection, m_pActiveTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pActiveTransitions)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualStateGroupCollection_ActiveTransitions, // Index name
@@ -23823,7 +23823,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters enter property
     {
-        OFFSET(CVisualStateGroupCollection, m_pDeferredSetters), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pDeferredSetters)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualStateGroupCollection_DeferredSetters, // Index name
@@ -23831,7 +23831,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers enter property
     {
-        OFFSET(CVisualStateGroupCollection, m_pDeferredStateTriggers), // Offset
+        static_cast<UINT16>(OFFSET(CVisualStateGroupCollection, m_pDeferredStateTriggers)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualStateGroupCollection_DeferredStateTriggers, // Index name
@@ -23839,7 +23839,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutBackground enter property
     {
-        OFFSET(CCalendarView, m_pBlackoutBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_BlackoutBackground, // Index name
@@ -23847,7 +23847,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground enter property
     {
-        OFFSET(CCalendarView, m_pBlackoutForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_BlackoutForeground, // Index name
@@ -23855,7 +23855,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush enter property
     {
-        OFFSET(CCalendarView, m_pBlackoutStrikethroughBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pBlackoutStrikethroughBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_BlackoutStrikethroughBrush, // Index name
@@ -23863,7 +23863,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground enter property
     {
-        OFFSET(CCalendarView, m_pCalendarItemBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemBackground, // Index name
@@ -23871,7 +23871,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pCalendarItemBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemBorderBrush, // Index name
@@ -23879,7 +23879,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground enter property
     {
-        OFFSET(CCalendarView, m_pCalendarItemDisabledBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemDisabledBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemDisabledBackground, // Index name
@@ -23887,7 +23887,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground enter property
     {
-        OFFSET(CCalendarView, m_pCalendarItemForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemForeground, // Index name
@@ -23895,7 +23895,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground enter property
     {
-        OFFSET(CCalendarView, m_pCalendarItemHoverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemHoverBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemHoverBackground, // Index name
@@ -23903,7 +23903,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground enter property
     {
-        OFFSET(CCalendarView, m_pCalendarItemPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pCalendarItemPressedBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemPressedBackground, // Index name
@@ -23911,7 +23911,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily enter property
     {
-        OFFSET(CCalendarView, m_pDayItemFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pDayItemFontFamily)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_DayItemFontFamily, // Index name
@@ -23919,7 +23919,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground enter property
     {
-        OFFSET(CCalendarView, m_pDisabledForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pDisabledForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_DisabledForeground, // Index name
@@ -23927,7 +23927,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily enter property
     {
-        OFFSET(CCalendarView, m_pFirstOfMonthLabelFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pFirstOfMonthLabelFontFamily)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontFamily, // Index name
@@ -23935,7 +23935,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily enter property
     {
-        OFFSET(CCalendarView, m_pFirstOfYearDecadeLabelFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pFirstOfYearDecadeLabelFontFamily)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontFamily, // Index name
@@ -23943,7 +23943,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pFocusBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pFocusBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_FocusBorderBrush, // Index name
@@ -23951,7 +23951,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pHoverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pHoverBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_HoverBorderBrush, // Index name
@@ -23959,7 +23959,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily enter property
     {
-        OFFSET(CCalendarView, m_pMonthYearItemFontFamily), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pMonthYearItemFontFamily)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_MonthYearItemFontFamily, // Index name
@@ -23967,7 +23967,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground enter property
     {
-        OFFSET(CCalendarView, m_pOutOfScopeBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_OutOfScopeBackground, // Index name
@@ -23975,7 +23975,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground enter property
     {
-        OFFSET(CCalendarView, m_pOutOfScopeForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_OutOfScopeForeground, // Index name
@@ -23983,7 +23983,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground enter property
     {
-        OFFSET(CCalendarView, m_pOutOfScopeHoverForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopeHoverForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_OutOfScopeHoverForeground, // Index name
@@ -23991,7 +23991,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground enter property
     {
-        OFFSET(CCalendarView, m_pOutOfScopePressedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pOutOfScopePressedForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_OutOfScopePressedForeground, // Index name
@@ -23999,7 +23999,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pPressedBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_PressedBorderBrush, // Index name
@@ -24007,7 +24007,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground enter property
     {
-        OFFSET(CCalendarView, m_pPressedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pPressedForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_PressedForeground, // Index name
@@ -24015,7 +24015,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pSelectedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedBorderBrush, // Index name
@@ -24023,7 +24023,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pSelectedDisabledBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedDisabledBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedDisabledBorderBrush, // Index name
@@ -24031,7 +24031,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground enter property
     {
-        OFFSET(CCalendarView, m_pSelectedDisabledForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedDisabledForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedDisabledForeground, // Index name
@@ -24039,7 +24039,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground enter property
     {
-        OFFSET(CCalendarView, m_pSelectedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedForeground, // Index name
@@ -24047,7 +24047,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pSelectedHoverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedHoverBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedHoverBorderBrush, // Index name
@@ -24055,7 +24055,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground enter property
     {
-        OFFSET(CCalendarView, m_pSelectedHoverForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedHoverForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedHoverForeground, // Index name
@@ -24063,7 +24063,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pSelectedPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedPressedBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedPressedBorderBrush, // Index name
@@ -24071,7 +24071,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground enter property
     {
-        OFFSET(CCalendarView, m_pSelectedPressedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pSelectedPressedForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedPressedForeground, // Index name
@@ -24079,7 +24079,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground enter property
     {
-        OFFSET(CCalendarView, m_pTodayBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayBackground, // Index name
@@ -24087,7 +24087,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground enter property
     {
-        OFFSET(CCalendarView, m_pTodayBlackoutBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBlackoutBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayBlackoutBackground, // Index name
@@ -24095,7 +24095,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground enter property
     {
-        OFFSET(CCalendarView, m_pTodayBlackoutForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayBlackoutForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayBlackoutForeground, // Index name
@@ -24103,7 +24103,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground enter property
     {
-        OFFSET(CCalendarView, m_pTodayDisabledBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayDisabledBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayDisabledBackground, // Index name
@@ -24111,7 +24111,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground enter property
     {
-        OFFSET(CCalendarView, m_pTodayForeground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayForeground, // Index name
@@ -24119,7 +24119,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground enter property
     {
-        OFFSET(CCalendarView, m_pTodayHoverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayHoverBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayHoverBackground, // Index name
@@ -24127,7 +24127,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pTodayHoverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayHoverBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayHoverBorderBrush, // Index name
@@ -24135,7 +24135,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground enter property
     {
-        OFFSET(CCalendarView, m_pTodayPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayPressedBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayPressedBackground, // Index name
@@ -24143,7 +24143,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pTodayPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodayPressedBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayPressedBorderBrush, // Index name
@@ -24151,7 +24151,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush enter property
     {
-        OFFSET(CCalendarView, m_pTodaySelectedInnerBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CCalendarView, m_pTodaySelectedInnerBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodaySelectedInnerBorderBrush, // Index name
@@ -24159,7 +24159,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions enter property
     {
-        OFFSET(CContentControl, m_pContentTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CContentControl, m_pContentTransitions)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ContentControl_ContentTransitions, // Index name
@@ -24167,15 +24167,15 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.FontFamily enter property
     {
-        OFFSET(CFontIcon, m_pTextFormatting), // Offset
-        OFFSET(TextFormatting, m_pFontFamily), // Storage offset
+        static_cast<UINT16>(OFFSET(CFontIcon, m_pTextFormatting)), // Offset
+        static_cast<UINT16>(OFFSET(TextFormatting, m_pFontFamily)), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::FontIcon_FontFamily, // Index name
         77, // Next enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions enter property
     {
-        OFFSET(CGrid, m_pColumnDefinitions), // Offset
+        static_cast<UINT16>(OFFSET(CGrid, m_pColumnDefinitions)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Grid_ColumnDefinitions, // Index name
@@ -24183,7 +24183,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Grid.RowDefinitions enter property
     {
-        OFFSET(CGrid, m_pRowDefinitions), // Offset
+        static_cast<UINT16>(OFFSET(CGrid, m_pRowDefinitions)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Grid_RowDefinitions, // Index name
@@ -24191,7 +24191,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource enter property
     {
-        OFFSET(CIconSourceElement, m_iconSource), // Offset
+        static_cast<UINT16>(OFFSET(CIconSourceElement, m_iconSource)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::IconSourceElement_IconSource, // Index name
@@ -24199,7 +24199,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions enter property
     {
-        OFFSET(CItemsControl, m_pItemContainerTransitions), // Offset
+        static_cast<UINT16>(OFFSET(CItemsControl, m_pItemContainerTransitions)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ItemsControl_ItemContainerTransitions, // Index name
@@ -24207,7 +24207,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost enter property
     {
-        OFFSET(CItemsControl, m_pItemsHost), // Offset
+        static_cast<UINT16>(OFFSET(CItemsControl, m_pItemsHost)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::DoNotEnterLeave) | static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ItemsControl_ItemsHost, // Index name
@@ -24215,7 +24215,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel enter property
     {
-        OFFSET(CItemsControl, m_pItemsPanelTemplate), // Offset
+        static_cast<UINT16>(OFFSET(CItemsControl, m_pItemsPanelTemplate)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ItemsControl_ItemsPanel, // Index name
@@ -24223,7 +24223,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.AutoPlay enter property
     {
-        OFFSET(CMediaPlayerElement, m_fAutoPlay), // Offset
+        static_cast<UINT16>(OFFSET(CMediaPlayerElement, m_fAutoPlay)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::MediaPlayerElement_AutoPlay, // Index name
@@ -24231,7 +24231,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.IsFullWindow enter property
     {
-        OFFSET(CMediaPlayerElement, m_isFullWindow), // Offset
+        static_cast<UINT16>(OFFSET(CMediaPlayerElement, m_isFullWindow)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::MediaPlayerElement_IsFullWindow, // Index name
@@ -24239,7 +24239,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource enter property
     {
-        OFFSET(CMediaPlayerElement, m_pPosterSource), // Offset
+        static_cast<UINT16>(OFFSET(CMediaPlayerElement, m_pPosterSource)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke) | static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::MediaPlayerElement_PosterSource, // Index name
@@ -24247,7 +24247,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.InputScope enter property
     {
-        OFFSET(CPasswordBox, m_pInputScope), // Offset
+        static_cast<UINT16>(OFFSET(CPasswordBox, m_pInputScope)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PasswordBox_InputScope, // Index name
@@ -24255,7 +24255,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor enter property
     {
-        OFFSET(CPasswordBox, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CPasswordBox, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PasswordBox_SelectionHighlightColor, // Index name
@@ -24263,7 +24263,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Shapes.Path.Data enter property
     {
-        OFFSET(CPath, m_pGeometryData), // Offset
+        static_cast<UINT16>(OFFSET(CPath, m_pGeometryData)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Path_Data, // Index name
@@ -24271,7 +24271,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.PathIcon.Data enter property
     {
-        OFFSET(CPathIcon, m_pData), // Offset
+        static_cast<UINT16>(OFFSET(CPathIcon, m_pData)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PathIcon_Data, // Index name
@@ -24279,7 +24279,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Shapes.Polygon.Points enter property
     {
-        OFFSET(CPolygon, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolygon, m_pPoints)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Polygon_Points, // Index name
@@ -24287,7 +24287,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Shapes.Polyline.Points enter property
     {
-        OFFSET(CPolyline, m_pPoints), // Offset
+        static_cast<UINT16>(OFFSET(CPolyline, m_pPoints)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Polyline_Points, // Index name
@@ -24295,7 +24295,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.InputScope enter property
     {
-        OFFSET(CRichEditBox, m_pInputScope), // Offset
+        static_cast<UINT16>(OFFSET(CRichEditBox, m_pInputScope)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichEditBox_InputScope, // Index name
@@ -24303,7 +24303,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor enter property
     {
-        OFFSET(CRichEditBox, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CRichEditBox, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichEditBox_SelectionHighlightColor, // Index name
@@ -24311,7 +24311,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused enter property
     {
-        OFFSET(CRichEditBox, m_pSelectionHighlightColorWhenNotFocused), // Offset
+        static_cast<UINT16>(OFFSET(CRichEditBox, m_pSelectionHighlightColorWhenNotFocused)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichEditBox_SelectionHighlightColorWhenNotFocused, // Index name
@@ -24319,7 +24319,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings enter property
     {
-        OFFSET(CSplitView, m_pTemplateSettings), // Offset
+        static_cast<UINT16>(OFFSET(CSplitView, m_pTemplateSettings)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::SplitView_TemplateSettings, // Index name
@@ -24327,7 +24327,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.TextBox.InputScope enter property
     {
-        OFFSET(CTextBox, m_pInputScope), // Offset
+        static_cast<UINT16>(OFFSET(CTextBox, m_pInputScope)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBox_InputScope, // Index name
@@ -24335,7 +24335,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor enter property
     {
-        OFFSET(CTextBox, m_pSelectionHighlightColor), // Offset
+        static_cast<UINT16>(OFFSET(CTextBox, m_pSelectionHighlightColor)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBox_SelectionHighlightColor, // Index name
@@ -24343,7 +24343,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused enter property
     {
-        OFFSET(CTextBox, m_pSelectionHighlightColorWhenNotFocused), // Offset
+        static_cast<UINT16>(OFFSET(CTextBox, m_pSelectionHighlightColorWhenNotFocused)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBox_SelectionHighlightColorWhenNotFocused, // Index name
@@ -24351,7 +24351,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush enter property
     {
-        OFFSET(CGridViewItemChrome, m_pCheckBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_CheckBrush, // Index name
@@ -24359,7 +24359,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush enter property
     {
-        OFFSET(CGridViewItemChrome, m_pCheckHintBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckHintBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_CheckHintBrush, // Index name
@@ -24367,7 +24367,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush enter property
     {
-        OFFSET(CGridViewItemChrome, m_pCheckSelectingBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pCheckSelectingBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_CheckSelectingBrush, // Index name
@@ -24375,7 +24375,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground enter property
     {
-        OFFSET(CGridViewItemChrome, m_pDragBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pDragBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_DragBackground, // Index name
@@ -24383,7 +24383,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground enter property
     {
-        OFFSET(CGridViewItemChrome, m_pDragForeground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pDragForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_DragForeground, // Index name
@@ -24391,7 +24391,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush enter property
     {
-        OFFSET(CGridViewItemChrome, m_pFocusBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pFocusBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_FocusBorderBrush, // Index name
@@ -24399,7 +24399,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground enter property
     {
-        OFFSET(CGridViewItemChrome, m_pPlaceholderBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pPlaceholderBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_PlaceholderBackground, // Index name
@@ -24407,7 +24407,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground enter property
     {
-        OFFSET(CGridViewItemChrome, m_pPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pPointerOverBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_PointerOverBackground, // Index name
@@ -24415,7 +24415,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground enter property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_SelectedBackground, // Index name
@@ -24423,7 +24423,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground enter property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_SelectedForeground, // Index name
@@ -24431,7 +24431,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground enter property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBackground, // Index name
@@ -24439,7 +24439,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush enter property
     {
-        OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
@@ -24447,7 +24447,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBorderBrush, // Index name
@@ -24455,7 +24455,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBrush, // Index name
@@ -24463,7 +24463,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBorderBrush, // Index name
@@ -24471,7 +24471,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBrush, // Index name
@@ -24479,7 +24479,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBorderBrush, // Index name
@@ -24487,7 +24487,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBrush, // Index name
@@ -24495,7 +24495,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPressedBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBorderBrush, // Index name
@@ -24503,7 +24503,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxPressedBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBrush, // Index name
@@ -24511,7 +24511,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedBrush, // Index name
@@ -24519,7 +24519,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedDisabledBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedDisabledBrush, // Index name
@@ -24527,7 +24527,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPointerOverBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPointerOverBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPointerOverBrush, // Index name
@@ -24535,7 +24535,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPressedBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPressedBrush, // Index name
@@ -24543,7 +24543,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBrush, // Index name
@@ -24551,7 +24551,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckDisabledBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckDisabledBrush, // Index name
@@ -24559,7 +24559,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckHintBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckHintBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckHintBrush, // Index name
@@ -24567,7 +24567,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckPressedBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckPressedBrush, // Index name
@@ -24575,7 +24575,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pCheckSelectingBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pCheckSelectingBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckSelectingBrush, // Index name
@@ -24583,7 +24583,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground enter property
     {
-        OFFSET(CListViewItemChrome, m_pDragBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pDragBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_DragBackground, // Index name
@@ -24591,7 +24591,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground enter property
     {
-        OFFSET(CListViewItemChrome, m_pDragForeground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pDragForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_DragForeground, // Index name
@@ -24599,7 +24599,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pFocusBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pFocusBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_FocusBorderBrush, // Index name
@@ -24607,7 +24607,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pFocusSecondaryBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pFocusSecondaryBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_FocusSecondaryBorderBrush, // Index name
@@ -24615,7 +24615,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground enter property
     {
-        OFFSET(CListViewItemChrome, m_pPlaceholderBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPlaceholderBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_PlaceholderBackground, // Index name
@@ -24623,7 +24623,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground enter property
     {
-        OFFSET(CListViewItemChrome, m_pPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBackground, // Index name
@@ -24631,7 +24631,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBorderBrush, // Index name
@@ -24639,7 +24639,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground enter property
     {
-        OFFSET(CListViewItemChrome, m_pPointerOverForeground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPointerOverForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_PointerOverForeground, // Index name
@@ -24647,7 +24647,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground enter property
     {
-        OFFSET(CListViewItemChrome, m_pPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pPressedBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_PressedBackground, // Index name
@@ -24655,7 +24655,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedBackground, // Index name
@@ -24663,7 +24663,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedBorderBrush, // Index name
@@ -24671,7 +24671,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedDisabledBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedDisabledBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBackground, // Index name
@@ -24679,7 +24679,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedDisabledBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedDisabledBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBorderBrush, // Index name
@@ -24687,7 +24687,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedForeground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedForeground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedForeground, // Index name
@@ -24695,7 +24695,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedInnerBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedInnerBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedInnerBorderBrush, // Index name
@@ -24703,7 +24703,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPointerOverBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPointerOverBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBackground, // Index name
@@ -24711,7 +24711,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPointerOverBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
@@ -24719,7 +24719,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPressedBackground), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPressedBackground)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBackground, // Index name
@@ -24727,7 +24727,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectedPressedBorderBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectedPressedBorderBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBorderBrush, // Index name
@@ -24735,7 +24735,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorBrush, // Index name
@@ -24743,7 +24743,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorDisabledBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorDisabledBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorDisabledBrush, // Index name
@@ -24751,7 +24751,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorPointerOverBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorPointerOverBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPointerOverBrush, // Index name
@@ -24759,7 +24759,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush enter property
     {
-        OFFSET(CListViewItemChrome, m_pSelectionIndicatorPressedBrush), // Offset
+        static_cast<UINT16>(OFFSET(CListViewItemChrome, m_pSelectionIndicatorPressedBrush)), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPressedBrush, // Index name
