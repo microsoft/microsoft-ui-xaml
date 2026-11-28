@@ -36,7 +36,8 @@ void FocusProperties::IsScrollable(
     else
     {
         auto uielement = do_pointer_cast<CUIElement>(element);
-        if (uielement && uielement->IsScroller())
+        // DesiredSize and UnclippedDesiredSize expand through GetLayoutStorage(), which is null before Measure or after Shutdown.
+        if (uielement && uielement->IsScroller() && uielement->HasLayoutStorage())
         {
             const auto desiredSize = uielement->DesiredSize;
             const auto unclippedDesiredSize = uielement->UnclippedDesiredSize;
