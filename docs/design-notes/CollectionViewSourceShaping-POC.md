@@ -809,7 +809,7 @@ an `ICollectionViewNode` (`Item`, `Key`, `Parent`, `Children`, `IsContext`, `Has
 | Source changes | Add, Remove and Replace update the tree in place: a node and its subtree move as one; a removed parent's children become roots and are adopted again when the key returns. A Replace with the same keys updates in place; a same-object Replace raises `ItemChanged` on the flat list (a refresh, as a flat view does). Changes are published per vector (node lists first, then the flat list; a node arrives with its subtree complete). Over 64 rows of one change, the flat list raises one `Reset`. A node whose parent changes (orphaned or adopted) raises `PropertyChanged("Parent")`. |
 | Live shaping | A live sort moves the node (with its subtree) among its siblings; a live filter change brings context ancestors in or out. Key changes are seen on `Replace`/`Refresh()`, not live (V1). |
 | Bad data | Never throws: a later duplicate key is a root that cannot be a parent, and its node's `Key` is null (only the owner reports the key, so a control that keys rows by `Key` never takes the duplicate for the owner); the member of a cycle that comes first in the source becomes a root. Logged once per recompute (binding debug output and a `CollectionViewHierarchyDataError` trace). A change that touches a duplicate owner or a cycle recomputes. |
-| Recompute | `Refresh()`, a rule or description change, or a source `Reset`: one `Reset` on the flat list and on `CollectionNodes`; node objects are new. The old nodes' `Children` lists then empty and each raises a `Reset` (after the roots' `Reset`, so a consumer that rebuilt from the new roots has already let go of them). `CollectionNodes` is one object for the view's lifetime (null while flat), and `PropertyChanged("CollectionNodes")` precedes the `Reset` when the hierarchy is turned on or off. |
+| Recompute | `Refresh()`, a rule or description change, or a source `Reset`: one `Reset` on the flat list and on `CollectionNodes`; node objects are new. The old nodes are inert: each is detached first (`HasChildren` false, `Parent` null, without `PropertyChanged`), then its `Children` list empties and raises a `Reset` (after the roots' `Reset`, so a consumer that rebuilt from the new roots has already let go of them). `CollectionNodes` is one object for the view's lifetime (null while flat), and `PropertyChanged("CollectionNodes")` precedes the `Reset` when the hierarchy is turned on or off. |
 
 A `HierarchyDescription` can be shared, as a `GroupDescription` can: one instance on several `CollectionViewSource`s (in code or as a markup resource) builds each view's tree, and a key path change rebuilds every view built with it. A view that its `CollectionViewSource` replaced keeps the shared description (it is not copied).
 
@@ -818,9 +818,10 @@ parent-key maps, waiting orphans by parent key, sorted kept-children lists, kept
 math, and filter counts for context. Public nodes and their `Children` lists are created on first read and held
 weakly by the store: one nobody references is released, and the next read makes a new node object (the same `Children`
 list while that is referenced). `HasChildren` (raising `PropertyChanged("HasChildren")` when it changes) tells a consumer
-whether to draw a chevron without making the `Children` list; `Children.Size` and `IndexOf` read the store, and
-`NodeFromItem` uses an identity index built on its first call, so none of them makes other node objects. Changes of one
-source change that move more than 64 rows of the flat list in total are published as one `Reset`.
+whether to draw a chevron without making the `Children` list (a consumer of an app's nodes that lack `INotifyPropertyChanged` watches `Children` instead, as TableView does); `Children.Size` and `IndexOf` read the store, and
+`NodeFromItem` uses an identity index built on its first call, so none of them makes other node objects. One source change
+publishes at most 64 rows of fine-grained flat-list changes; once its running total passes 64, the rest is one `Reset`
+(so a consumer may see some inserts, then the `Reset`).
 
 TableView (`TableViewRowFlattener_Tree.cpp`) shows `CollectionNodes` and the children of each expanded node, follows
 those lists' changes as row splices (a collapsed row follows only its node's `HasChildren`; subscriptions are kept across
@@ -1044,7 +1045,18 @@ and `BenchTeardown` on fre and chk):
   check that no existing index moved), never renumbered.
 - **`HierarchyDescription` factory.** MIDL emits an empty composable factory (`IHierarchyDescriptionFactory`) for any
   unsealed runtime class, with or without `constructor_name` (as for `SetterBase`, `Transition`, `UIElement`). A
-  protected constructor added later goes into a new, versioned factory interface.
+  protected constructor added later goes into a new, versioned factory interface. Evidence (round B, W-11): MIDL
+  10.0.26100 on `unsealed runtimeclass Base { Int32 Value { get; }; }`, once with `[constructor_name("T.IBaseFactory")]`
+  and once without, gives two winmds whose types (`IBase`, `IBaseFactory`, `Base`), interface lists, methods and
+  attributes (`ComposableAttribute(T.IBaseFactory)`, the same factory GUID) are identical; the files differ only in
+  the module MVID and the PE timestamp (17 bytes). Dropping `constructor_name` would change nothing.
+- **Shaping QIs and the feature gate.** The view's `ICollectionViewHierarchy` QI, the hierarchy/grouping exclusivity
+  checks and the TableView tree path require `Feature_ExperimentalApi`. The `ICollectionViewShaping` and live-shaping
+  QIs are #12654's and stay as that PR has them (R-9).
+- **Telemetry registration.** The tree adds TableView feature bit `1 << 6` (`Hierarchy`; `1 << 4` stays retired),
+  TiP reason 26 (`hierarchy_expansion_failed`) and measure 64745039 (`TableViewTreeExpansionTest`); the operation
+  test's data version is 2 for the new reason. Before this ships: register the measure and reason with TiP, and make
+  the usage dashboards decode bit `1 << 6` as the tree.
 - **Codegen.** Generated outputs were first hand-written, then regenerated with `dxaml\xcp\runcodegen.cmd`
   (`a78612b94`, and again for `ICollectionViewShaping`). See "Regeneration" below.
 - **Flat/grouped switch.** Adding the first or removing the last `GroupDescription` keeps `View`; ListView, GridView

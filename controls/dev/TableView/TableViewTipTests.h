@@ -56,7 +56,7 @@ namespace TableViewTip
             return TestIdentity{ OperationMeasure::GroupExpansion, "TableViewGroupExpansionTest",
                 TIP_reason(TableViewTipReason::group_expansion_failed) };
         case Operation::HierarchyExpansion:
-            return TestIdentity{ OperationMeasure::HierarchyExpansion, "TableViewHierarchyExpansionTest",
+            return TestIdentity{ OperationMeasure::HierarchyExpansion, "TableViewTreeExpansionTest",
                 TIP_reason(TableViewTipReason::hierarchy_expansion_failed) };
         default: return std::nullopt;
         }
@@ -140,7 +140,8 @@ namespace TableViewTip
     // declaration, so a change to these tests' data leaves its data version alone.
     TIP_declare_test(TableViewOperationTest, OperationMeasure::Sort)
     {
-        TIP_set_data_version(1);
+        // 2: the reason set gained hierarchy_expansion_failed (26).
+        TIP_set_data_version(2);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 

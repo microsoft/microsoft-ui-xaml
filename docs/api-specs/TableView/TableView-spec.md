@@ -633,6 +633,8 @@ ProcessTable.CollapseAllRows();
 
 Rows start collapsed (only the roots show). The view sorts each sibling list and filters (a match keeps its ancestors as context rows, which start expanded so the match shows); a header click sorts the siblings. Expansion is intent keyed by the node's `Key`, so it survives sort, filter, `Refresh()` and an item replaced by one with the same key; two tables over one view keep their own expansion. A row has `Level` (1 for a root), `IsExpandable` and `IsExpanded`; the lead cell is indented per level (`TableViewRowIndentSize`) and hosts the chevron. Keyboard: <kbd>Right</kbd> expands a collapsed row, then moves into its first cell; <kbd>Left</kbd> collapses an expanded row, then moves to its parent; <kbd>*</kbd> expands the row's subtree. `IndexOf` is the displayed row (`-1` inside a collapsed row); collapsing a row deselects a hidden selected row. The row peer implements `IExpandCollapseProvider` (`Expand`/`Collapse` fail with `UIA_E_INVALIDOPERATION` on a leaf and `UIA_E_ELEMENTNOTENABLED` while the table is disabled) and reports `Level`, `PositionInSet` and `SizeOfSet` within the sibling set. The chevron gutter (`PART_RowExpanderGutter`, `x:Load="False"`) is loaded the first time a row shows a tree row, so flat and grouped tables never create it; its glyph size is the `TableViewRowExpanderGlyphSize` resource. A view cannot group and build a hierarchy at once.
 
+An app view can supply its own nodes (`ICollectionViewHierarchy` on the view, `ICollectionViewNode` nodes). A collapsed row learns that its chevron appears or goes from the node's `PropertyChanged("HasChildren")`, so a node should implement `INotifyPropertyChanged` and raise it; for a node that does not, TableView watches the node's `Children` list instead (reading `Children` for each such row). Nodes the view stops using (after a `Refresh()` or rule change) are inert: their `Children` empty and raise one `Reset`, and their `HasChildren` and `Parent` read `false` and `null` without a change notification.
+
 | Member | Kind | Description |
 |---|---|---|
 | `ExpandRow(Object item)` | method | Expands the item's row and its ancestors, so the row is shown. No-op for an item the view does not show, or when the view is not a tree. |
@@ -1444,12 +1446,18 @@ Template parts:
 | `PART_RowChrome` | `Grid` | Optional native-focus target and selection host. Its margin excludes effective horizontal separator thickness, including terminal-line suppression. Templates without this part retain full-row focus geometry. |
 | `PART_CellsHost` | `TableViewCellsPanel` (typed `Panel`) | Host for generated cell elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_SelectionIndicator` | `Border` | **Required by the default state definitions.** Rounded whole-row interaction/selection outline. `Selected*` and `HighContrast*` interaction states show it; `SelectedDisabled` and the HC states also set its brush. Custom templates using other indicator types must adapt the corresponding state targets. |
+| `PART_RowExpanderGutter` | `FrameworkElement` | Optional. The tree chevron column in the lead cell. It must default to `Collapsed` (the default template also defers it with `x:Load="False"`): code shows it only once the row shows a tree row, so a flat or grouped row never realizes it. |
 
 Visual states:
 
 | Group | States |
 |---|---|
 | `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled`, `Selected`, `SelectedPointerOver`, `SelectedPressed`, `SelectedDisabled`, `HighContrastPointerOver`, `HighContrastPressed`, `HighContrastSelected`, `HighContrastSelectedPointerOver`, `HighContrastSelectedPressed` |
+| `RowHierarchyStates` | `RowNotHierarchical`, `RowHierarchical` |
+| `RowExpandabilityStates` | `RowExpandable`, `RowNotExpandable` |
+| `RowExpansionStates` | `RowCollapsed`, `RowExpanded` |
+
+Every row enters `RowNotHierarchical` when its template is applied. The three hierarchy groups change only once the row shows a tree row (`RowNotHierarchical` again when it later shows a flat or grouped row); before that a row is in no expandability or expansion state. Setters in `RowNotHierarchical` therefore apply to flat rows; setters in the other states may target `PART_RowExpanderGutter` and its icon, which realizes them.
 
 Selected states share the one group rather than living in a second, overlapping one: they animate the same `PART_RootBorder.Background`, so two groups would make the result depend on `GoToState` call order. Encoding both dimensions in the state name is the pattern `TreeViewItem` and `ItemContainer` use.
 
