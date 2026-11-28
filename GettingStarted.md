@@ -24,20 +24,25 @@ Follow these steps:
 
 4. Install the required Visual Studio components:
 
-   * If you have Visual Studio 2026, use Visual Studio Installer to import the `.vsconfig` file
-     from the root of the repository into your existing installation.
-   * Otherwise, run the following command to install or configure Visual Studio 2022 Build Tools:
+   Run the setup command once to ensure you have a Visual Studio instance with the required components:
 
    ```
    cd C:\winui3
    .\OneTimeSetup.cmd -Install MSBuild
    ```
 
-   `OneTimeSetup.cmd -Install MSBuild` always targets Visual Studio 2022 Build Tools. Do not run it
-   to configure an existing Visual Studio 2026 installation.
+   Setup uses `vswhere` to find an existing Visual Studio 2022 or newer installation
+   (including preview releases). It selects the latest Build Tools installation if 
+   available, otherwise the latest full IDE. It imports `.vsconfig_buildtools` for
+   Build Tools or `.vsconfig` for the full IDE. If no supported installation is found,
+   it installs Visual Studio 2022 Build Tools. If the repo has a registered `.buildtools`
+   installation, setup configures that instance instead, matching initialization's
+   repo-local override.
 
    Click the various "Yes", "Continue", and "Modify"/"Install" buttons as needed to complete
    the installation. When installation completes, close the Visual Studio Installer window.
+   If you already have the components required and no Modify button is shown, the VS Installer
+   can just be closed.
 
 ## Building WinUI
 
@@ -184,13 +189,11 @@ restore the updated package.
 
 ## Current limitations
 
-The WinUI OSS effort is still in progress. Phase 2 of the plan outlined in the
+The WinUI OSS effort is still in progress. Phase 4 of the plan outlined in the
 [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) is now
-complete and Phase 3 is underway. Current limitations include:
+complete and Governance & Contribution is underway. Current limitations include:
 * The product binaries built from source cannot yet be easily used during an app build without
   manually replacing the binaries in the app output folder as described above.
-* The XAML Compiler is not yet fully shared and therefore isn't buildable. The build uses a
-  prebuilt version instead. XamlCompiler tests cannot be built or run.
 * There is no support yet to run any builds/tests in a CI system.
 
 [^1]: The product binaries built by this repo are the `Microsoft.UI.Xaml.*.dll` files,
@@ -268,6 +271,6 @@ command at the root of the repo:
 
 ### Other notes
 
-* `OneTimeSetup.cmd -Install MSBuild` installs or modifies Visual Studio 2022 Build Tools. To use
-  Visual Studio 2026, import the repository's `.vsconfig` file into that installation instead.
+* `OneTimeSetup.cmd -Install MSBuild` installs Visual Studio 2022 Build Tools or modifies and
+existing Visual Studio install by importing the approprate `.vsconfig` file into that installation.
 * `init.cmd` sets up the build environment and can install or update build tools when required.

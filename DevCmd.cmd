@@ -41,8 +41,8 @@ setlocal enableextensions enabledelayedexpansion
 set _ARGS=
 set _PreserveContext=0
 
-rem We are targeting VS 2019 (version 16.x) or later
-set VsVersion=16.0
+rem VS 2022 (version 17.x) or later is required by init.cmd.
+set VsVersion=17.0
 
 :ParseArgs
 if "%1" EQU "" (

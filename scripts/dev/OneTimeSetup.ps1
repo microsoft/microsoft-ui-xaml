@@ -32,24 +32,33 @@ $ProgressPreference = 'SilentlyContinue'
 function Download([uri]$Uri, [string]$OutFile)
 {
     Write-Host -NoNewline "Downloading $OutFile... "
-    Invoke-WebRequest -Uri $Uri -OutFile $DownloadPath\$OutFile
+    Invoke-WebRequest -Uri $Uri -OutFile $DownloadPath\$OutFile -ErrorAction Stop
     Write-Host -ForegroundColor Green Done.
 }
 
-function LaunchSetupAndWait([string]$exePath, [string[]]$ArgumentList)
+function LaunchSetupAndWait([string]$exePath, [string[]]$ArgumentList, [string]$WorkingDirectory = (Get-Location).Path)
 {
     Write-Host -NoNewline "Launching $exePath... "
-    $c = Start-Process $DownloadPath\$exePath -Wait -PassThru -ArgumentList $ArgumentList
+    $setupPath = $exePath
+    if (![System.IO.Path]::IsPathRooted($setupPath))
+    {
+        $setupPath = Join-Path $DownloadPath $setupPath
+    }
+    $c = Start-Process $setupPath -Wait -PassThru -ArgumentList $ArgumentList -WorkingDirectory $WorkingDirectory -ErrorAction Stop
     $exitcode = $c.ExitCode
-    if ($exitCode -eq 0)
+    if ($exitCode -eq 0 -or $exitCode -eq 3010)
     {
         Write-Host -ForegroundColor Green Done.
+        if ($exitCode -eq 3010)
+        {
+            Write-Host -ForegroundColor Yellow 'A restart is required to complete setup.'
+        }
     }
     else
     {
         Write-Host -ForegroundColor Red "Error $exitcode"
     }
-    return ($exitCode -eq 0)
+    return ($exitCode -eq 0 -or $exitCode -eq 3010)
 }
 
 function Install-LogViewer
@@ -115,23 +124,101 @@ else
 
 function Install-MSBuild
 {
-# Install MSBuild Tools 2022
-# Use the current official Visual Studio Build Tools installer URL.
-Download -Uri https://aka.ms/vs/17/release/vs_BuildTools.exe -OutFile vs_buildtools.exe
-# Note: Not passing "--quiet" because the install takes a long time, making it important to see the progress
-$installed = LaunchSetupAndWait vs_buildtools.exe  -ArgumentList " --add Microsoft.VisualStudio.Workload.MSBuildTools --config $PSScriptRoot\..\..\.vsconfig_buildtools --wait"
-if (!$installed)
-{
-    # try to figure out what went wrong
-    $latestClientLog = (Get-ChildItem $env:temp\dd_client_* | Sort-Object -Property LastWriteTime -Descending)[0]
-    $log = (Get-Content $latestClientLog)
-    $errorLines = ($log -like '*Error :*')
-    if ($errorLines)
+    $repoRoot = (Resolve-Path "$PSScriptRoot\..\..").Path
+    $installerDir = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer'
+    $vswhere = Join-Path $installerDir 'vswhere.exe'
+    $localBuildTools = Join-Path $repoRoot '.buildtools'
+    $useLocalBuildTools = Test-Path -LiteralPath $localBuildTools -PathType Container
+    $instance = $null
+    if (Test-Path -LiteralPath $vswhere)
     {
-        Write-Host $errorLines
+        $productGroups = @(
+            @('Microsoft.VisualStudio.Product.BuildTools'),
+            @('Microsoft.VisualStudio.Product.Community', 'Microsoft.VisualStudio.Product.Professional', 'Microsoft.VisualStudio.Product.Enterprise')
+        )
+        if ($useLocalBuildTools)
+        {
+            $productGroups = ,@('*')
+        }
+        foreach ($products in $productGroups)
+        {
+            $vswhereArguments = @('-products') + $products + @('-version', '17.0', '-prerelease', '-format', 'json')
+            if (!$useLocalBuildTools)
+            {
+                $vswhereArguments += '-latest'
+            }
+            $json = & $vswhere @vswhereArguments
+            if ($LASTEXITCODE -ne 0)
+            {
+                throw "Visual Studio discovery failed with exit code $LASTEXITCODE."
+            }
+            if ([string]::IsNullOrWhiteSpace($json -join "`n"))
+            {
+                throw 'Visual Studio discovery returned no JSON.'
+            }
+            $instances = $json | ConvertFrom-Json -ErrorAction Stop
+            if ($useLocalBuildTools)
+            {
+                $instance = $instances | Where-Object { $_.installationPath -and $_.installationPath.TrimEnd('\') -eq $localBuildTools } |
+                    Select-Object -First 1
+                if (!$instance)
+                {
+                    throw "The .buildtools directory exists, but no supported Visual Studio installation is registered at $localBuildTools."
+                }
+            }
+            else
+            {
+                $instance = $instances | Select-Object -First 1
+            }
+            if ($instance)
+            {
+                break
+            }
+        }
     }
-    Write-Host "For more information see %temp%\dd_*.txt"
-}
+
+    elseif ($useLocalBuildTools -or (Test-Path -LiteralPath (Join-Path $installerDir 'setup.exe')))
+    {
+        throw "Visual Studio Installer or .buildtools is present, but discovery is unavailable at $vswhere. Repair the installer before running setup."
+    }
+
+    $configPath = Join-Path $repoRoot '.vsconfig_buildtools'
+    if ($instance)
+    {
+        if (!$instance.installationPath -or !$instance.channelId -or !$instance.productId)
+        {
+            throw 'Visual Studio discovery returned an instance without its installation path, channel, or product ID.'
+        }
+        if ($instance.productId -ne 'Microsoft.VisualStudio.Product.BuildTools')
+        {
+            $configPath = Join-Path $repoRoot '.vsconfig'
+        }
+        $setupPath = Join-Path $installerDir 'setup.exe'
+        if (!(Test-Path -LiteralPath $setupPath))
+        {
+            throw "Visual Studio Installer was not found at $setupPath."
+        }
+        Write-Host "Configuring $($instance.displayName) at $($instance.installationPath) using $configPath."
+        # --wait is only supported by the bootstrapper, not the installed setup.exe.
+        $installed = LaunchSetupAndWait $setupPath -WorkingDirectory $repoRoot -ArgumentList "modify --installPath `"$($instance.installationPath)`" --channelId `"$($instance.channelId)`" --config `"$configPath`""
+    }
+    else
+    {
+        Write-Host 'No supported Visual Studio installation found. Installing Visual Studio 2022 Build Tools.'
+        Download -Uri https://aka.ms/vs/17/release/vs_BuildTools.exe -OutFile vs_buildtools.exe
+        $installed = LaunchSetupAndWait vs_buildtools.exe -WorkingDirectory $repoRoot -ArgumentList "--add Microsoft.VisualStudio.Workload.MSBuildTools --config `"$configPath`" --wait"
+    }
+
+    if (!$installed)
+    {
+        $latestClientLog = Get-ChildItem $env:temp\dd_client_* -ErrorAction SilentlyContinue |
+            Sort-Object -Property LastWriteTime -Descending | Select-Object -First 1
+        if ($latestClientLog)
+        {
+            Get-Content $latestClientLog.FullName | Where-Object { $_ -like '*Error :*' } | Write-Host
+        }
+        throw 'Visual Studio setup failed. For more information see %temp%\dd_*.txt.'
+    }
 }
 
 function Install-Git
