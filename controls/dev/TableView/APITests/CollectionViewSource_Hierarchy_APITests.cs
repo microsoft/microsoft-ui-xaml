@@ -499,8 +499,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 };
                 view.CurrentChanging += handler;
 
-                // Cy becomes her own parent: the view must recompute, and the recompute fails.
-                Log.Comment("Replace: " + ThrownTypeName(() => list[2] = new TreeEmployee { Id = 3, ManagerId = 3, Name = "Cy" }));
+                // Cy becomes her own parent: the view must recompute, and the recompute fails. The handler's exception is
+                // reported to Application.UnhandledException; handled there, the app goes on.
+                using (var unhandled = new UnhandledErrors())
+                {
+                    Log.Comment("Replace: " + ThrownTypeName(() => list[2] = new TreeEmployee { Id = 3, ManagerId = 3, Name = "Cy" }));
+                    Log.Comment("Reported: " + string.Join(" | ", unhandled.Messages));
+                }
                 isThrowing = false;
                 view.CurrentChanging -= handler;
 
