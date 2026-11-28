@@ -2075,6 +2075,7 @@ namespace Microsoft.UI.Xaml.Data
         Microsoft.UI.Xaml.Data.ICollectionViewNode Parent{ get; };
         Windows.Foundation.Collections.IObservableVector<Object> Children{ get; };
         Boolean IsContext{ get; };
+        Boolean HasChildren{ get; };
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]

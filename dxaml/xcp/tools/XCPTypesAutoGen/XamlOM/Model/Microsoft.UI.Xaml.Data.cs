@@ -1137,6 +1137,11 @@ namespace Microsoft.UI.Xaml.Data
         [PropertyKind(PropertyKind.PropertyOnly)]
         [OrderHint(4)]
         Windows.Foundation.Boolean IsContext { get; }
+
+        // Whether Children has any node, without making the list; PropertyChanged("HasChildren") when it changes.
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(5)]
+        Windows.Foundation.Boolean HasChildren { get; }
     }
 
     [CodeGen(CodeGenLevel.CoreOnly)]

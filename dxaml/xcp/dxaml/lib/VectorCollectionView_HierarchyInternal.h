@@ -10,6 +10,7 @@
 #include "VectorCollectionView_ShapingInternal.h"
 #include <functional>
 #include <memory>
+#include <unordered_map>
 
 namespace DirectUI::ShapingEngine
 {
@@ -70,8 +71,8 @@ namespace DirectUI::ShapingEngine
         NodeKey parentKey;
         UINT keyObjectSlot = c_noTrackerSlot;
         UINT parentKeyObjectSlot = c_noTrackerSlot;
+        // Weak references to the public node and its Children (HierarchyStore::m_projections), once either was made.
         UINT projectionSlot = c_noTrackerSlot;
-        class CollectionViewNode* pProjection = nullptr;
         bool isAllocated = false;
         bool isMatch = false;
         bool isKept = false;
@@ -139,8 +140,9 @@ namespace DirectUI::ShapingEngine
     };
 
     // The public node (WPF has none; modelled on CollectionViewGroupInternal). Children is created on first read and
-    // follows the store from then on. The node leaves the store when its item is removed or filtered out, or when the
-    // view recomputes; it then keeps its last values and Parent is null.
+    // follows the store from then on. The store holds both weakly: a node nobody references is released, and the next
+    // read makes a new one (with the Children list, if that one is still referenced). The node leaves the store when its
+    // item is removed or filtered out, or when the view recomputes; it then keeps its last values and Parent is null.
     class __declspec(novtable) __declspec(uuid("41f15b16-a44e-4ab2-9e19-dbce5b56ed1b")) CollectionViewNode :
         public xaml_data::ICollectionViewNode,
         public xaml_data::ICustomPropertyProvider,
@@ -168,10 +170,8 @@ namespace DirectUI::ShapingEngine
         {
             return m_id;
         }
-        NodeListVector* ChildrenNoRef() const
-        {
-            return m_tpChildren.Get();
-        }
+        // A Children list that outlived an earlier node object of the same tree node.
+        void SetChildren(_In_ NodeListVector* pChildren);
         bool IsBoundTo(const HierarchyStore* pStore) const;
         _Check_return_ HRESULT SetItem(_In_opt_ IInspectable* pItem);
         _Check_return_ HRESULT SetIsContext(bool isContext);
@@ -186,6 +186,7 @@ namespace DirectUI::ShapingEngine
         IFACEMETHODIMP get_Parent(_Outptr_result_maybenull_ xaml_data::ICollectionViewNode** ppValue) override;
         IFACEMETHODIMP get_Children(_Outptr_ wfc::IObservableVector<IInspectable*>** ppValue) override;
         IFACEMETHODIMP get_IsContext(_Out_ BOOLEAN* pValue) override;
+        IFACEMETHODIMP get_HasChildren(_Out_ BOOLEAN* pValue) override;
 
         // INotifyPropertyChanged
         IFACEMETHODIMP add_PropertyChanged(_In_ xaml_data::IPropertyChangedEventHandler* pHandler, _Out_ EventRegistrationToken* pToken) override;
@@ -295,6 +296,12 @@ namespace DirectUI::ShapingEngine
         bool IsRemoveComplex(NodeId id) const;
 
         _Check_return_ HRESULT GetProjection(NodeId id, _Outptr_ xaml_data::ICollectionViewNode** ppNode);
+        // The node object of a node, or its Children list, if one exists; null otherwise.
+        ctl::ComPtr<CollectionViewNode> LiveProjection(NodeId id);
+        ctl::ComPtr<NodeListVector> LiveChildren(NodeId id);
+        _Check_return_ HRESULT RegisterChildren(NodeId id, _In_ NodeListVector* pChildren);
+        // The position of a node among owner's kept children (c_noNode: the roots), if pNode is the node object of one.
+        bool TryGetPosition(NodeId owner, _In_ CollectionViewNode* pNode, _Out_ UINT* pPosition);
         // The kept list of a node (c_noNode: the roots) as a NodeListVector reads it; empty for a node no longer kept.
         UINT KeptCount(NodeId owner) const;
         NodeId KeptAt(NodeId owner, UINT index) const;
@@ -304,6 +311,11 @@ namespace DirectUI::ShapingEngine
 
         // Detaches every public node (the view recomputed or stopped being hierarchical).
         void DetachProjections(bool isRaised);
+
+        // Changes that move more than c_maxFlatEvents rows of the flat list in total, between Begin and the outermost End,
+        // publish it as one Reset at the End.
+        void BeginFlatBatch();
+        _Check_return_ HRESULT EndFlatBatch(const HierarchyOutput& output, bool isPublished);
 
     private:
         _Check_return_ HRESULT CompareNodes(NodeId left, NodeId right, _Out_ int* pResult);
@@ -319,15 +331,32 @@ namespace DirectUI::ShapingEngine
         _Check_return_ HRESULT RepublishFlat(const HierarchyOutput& output);
         _Check_return_ HRESULT SetIsContext(NodeId id);
         _Check_return_ HRESULT NotifyParentChanged(const std::vector<NodeId>& ids);
+        // A kept list's size went from 0 to 1 or back: its owner's HasChildren changed.
+        _Check_return_ HRESULT NotifyHasChildrenChanged(NodeId owner);
+        // Whether a change of count rows is published to the flat list now (false: the batch publishes it).
+        bool IsFlatPublished(UINT count);
+        void IndexIdentity(NodeId id, _In_opt_ IInspectable* pItem, bool isAdded);
         UINT AllocateKeyObject(_In_opt_ IInspectable* pObject);
         void FreeKeyObject(UINT slot);
         _Check_return_ HRESULT AppendNodeVector(NodeId parent, UINT position, NodeId id, const HierarchyOutput& output);
-        NodeListVector* NodeVector(NodeId parent, const HierarchyOutput& output) const;
+        ctl::ComPtr<NodeListVector> NodeVector(NodeId parent, const HierarchyOutput& output);
+        UINT EnsureProjectionSlot(NodeId id);
 
         TrackerPtrVector<IInspectable> m_items;
         TrackerPtrVector<IInspectable> m_keyObjects;
         std::vector<UINT> m_freeKeyObjects;
-        TrackerPtrVector<IInspectable> m_projections;
+        struct ProjectionRefs
+        {
+            ctl::WeakRefPtr node;
+            ctl::WeakRefPtr children;
+        };
+        std::vector<ProjectionRefs> m_projections;
         std::vector<UINT> m_freeProjections;
+        // Item COM identity to node, built on the first lookup by item and kept up to date from then on.
+        std::unordered_multimap<IUnknown*, NodeId> m_byIdentity;
+        bool m_isIdentityIndexed = false;
+        UINT m_flatBatchDepth = 0;
+        UINT m_flatBatchRows = 0;
+        bool m_isFlatBatchDirty = false;
     };
 }
