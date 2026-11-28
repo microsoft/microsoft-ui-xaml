@@ -3217,6 +3217,8 @@ enum class KnownMethodIndex: UINT16
     VisualStateManager_RaiseCurrentStateChanged,
     Window_Activate,
     Window_Close,
+    Window_TryLoadPlacementDetails,
+    Window_SavePlacementDetails,
     Window_SetTitleBar,
     Window_Show,
     Window_Hide,

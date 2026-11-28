@@ -5,6 +5,9 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="OM" #>
 
+<# if (ReferencesExperimentalType(Model)) { #>
+midl_pragma warning(disable: 5135)
+<# } #>
 <# this.WriteRuntimeClassAttributes(Model); #>
 <#= Model.GetRuntimeClassString() #> <#= Model.IdlClassInfo.Name #>
 <# if (Model.IdlClassInfo.HasBaseClass) { #>
@@ -38,4 +41,5 @@
 <# } #>
 <#   EndVersion(version); #>
 <# } #>
-};
+};<# if (ReferencesExperimentalType(Model)) { #>
+midl_pragma warning(default: 5135)<# } #>

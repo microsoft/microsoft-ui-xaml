@@ -5,9 +5,14 @@
 
 #include "WindowPlacement.h"
 #include "Microsoft.Windows.Storage.h"
+#include <Microsoft.UI.Interop.h>
 #include "StaticStore.h"
 #include <appmodel.h>
+#include <sddl.h>
+#include <shobjidl.h>
 #include <type_traits>
+
+#pragma comment(lib, "advapi32.lib")
 
 #define WINUI_PLACEMENTEX
 #include <PlacementEx\User32Utils.h>
@@ -21,10 +26,38 @@ namespace
 {
     using PropertyMap = wfc::IMap<HSTRING, IInspectable*>;
     namespace storage = ABI::Microsoft::Windows::Storage;
+    namespace windowing = ABI::Microsoft::UI::Windowing;
+    using PlacementDetails = windowing::IAppWindowPlacementDetails;
 
     constexpr uint32_t c_recordVersion = 1;
     constexpr uint32_t c_maxRecordSize = 8192;
     constexpr uint32_t c_maxDpi = 9600;
+
+    HRESULT OpenCascadeInitializationMutex(_Out_ wil::unique_handle& mutex)
+    {
+        wil::unique_handle token;
+        IFCEXPECTRC_RETURN(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token), HRESULT_FROM_WIN32(GetLastError()));
+        DWORD size = 0;
+        GetTokenInformation(token.get(), TokenUser, nullptr, 0, &size);
+        IFCEXPECTRC_RETURN(GetLastError() == ERROR_INSUFFICIENT_BUFFER, HRESULT_FROM_WIN32(GetLastError()));
+        std::vector<BYTE> buffer(size);
+        IFCEXPECTRC_RETURN(GetTokenInformation(token.get(), TokenUser, buffer.data(), size, &size), HRESULT_FROM_WIN32(GetLastError()));
+        wil::unique_hlocal_string sid;
+        IFCEXPECTRC_RETURN(ConvertSidToStringSidW(reinterpret_cast<TOKEN_USER*>(buffer.data())->User.Sid, &sid),
+            HRESULT_FROM_WIN32(GetLastError()));
+
+        const std::wstring name = std::wstring(L"Local\\Microsoft.UI.Xaml.WindowPlacement.Initialize.") + sid.get();
+        // Same-user full-trust processes can initialize storage regardless of elevation. Other users cannot.
+        const std::wstring sddl = std::wstring(L"D:P(A;;0x00100001;;;SY)(A;;0x00100001;;;") +
+            sid.get() + L")S:(ML;;NW;;;ME)";
+        wil::unique_hlocal_security_descriptor descriptor;
+        IFCEXPECTRC_RETURN(ConvertStringSecurityDescriptorToSecurityDescriptorW(
+            sddl.c_str(), SDDL_REVISION_1, &descriptor, nullptr), HRESULT_FROM_WIN32(GetLastError()));
+        SECURITY_ATTRIBUTES attributes{ sizeof(attributes), descriptor.get(), FALSE };
+        mutex.reset(CreateMutexExW(&attributes, name.c_str(), 0, SYNCHRONIZE | MUTEX_MODIFY_STATE));
+        IFCEXPECTRC_RETURN(mutex, HRESULT_FROM_WIN32(GetLastError()));
+        return S_OK;
+    }
 
     // These values are stored in version 1 records. Keep their numeric values stable.
     enum class SavedWindowState : uint32_t
@@ -97,17 +130,119 @@ namespace
     {
         if (state == SavedWindowState::Maximized)
         {
-            return SW_MAXIMIZE;
+            return SW_SHOWMAXIMIZED;
         }
 
         if (state == SavedWindowState::MinimizedFromNormal ||
             state == SavedWindowState::MinimizedFromMaximized ||
             state == SavedWindowState::MinimizedFromSnapped)
         {
-            return SW_MINIMIZE;
+            // Match the show command that GetWindowPlacement and AppWindow.GetCurrentPlacement report.
+            return SW_SHOWMINIMIZED;
         }
 
-        return SW_NORMAL;
+        return SW_SHOWNORMAL;
+    }
+
+    RECT ToRect(const ABI::Windows::Graphics::RectInt32& rect)
+    {
+        return { rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height };
+    }
+
+    ABI::Windows::Graphics::RectInt32 ToRectInt32(const RECT& rect)
+    {
+        return { rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top };
+    }
+
+    // WinUI's copy of PlacementEx and AppWindow's PlacementInfo use different flag values.
+    // Flags without an equivalent (KeepHidden, NoActivate, AllowPartiallyOffScreen, ...) are dropped.
+    struct FlagMapping
+    {
+        PlacementFlags placementEx;
+        windowing::PlacementInfo appWindow;
+    };
+    constexpr FlagMapping c_flagMappings[] =
+    {
+        { PlacementFlags::RestoreToMaximized, windowing::PlacementInfo_RestoreToMaximized },
+        { PlacementFlags::RestoreToArranged, windowing::PlacementInfo_RestoreToArranged },
+        { PlacementFlags::Arranged, windowing::PlacementInfo_Arranged },
+        { PlacementFlags::AllowSizing, windowing::PlacementInfo_Resizable },
+        { PlacementFlags::FullScreen, windowing::PlacementInfo_FullScreen },
+    };
+
+    HRESULT ToPlacementEx(_In_ PlacementDetails* details, _Out_ PlacementEx& placement)
+    {
+        placement.Clear();
+
+        ABI::Windows::Graphics::RectInt32 normalRect{}, workArea{}, arrangeRect{};
+        INT32 dpi = 0;
+        INT32 showCmd = 0;
+        windowing::PlacementInfo info{};
+        wrl_wrappers::HString deviceName;
+        IFC_RETURN(details->get_NormalRect(&normalRect));
+        IFC_RETURN(details->get_WorkArea(&workArea));
+        IFC_RETURN(details->get_ArrangeRect(&arrangeRect));
+        IFC_RETURN(details->get_Dpi(&dpi));
+        IFC_RETURN(details->get_ShowCmd(&showCmd));
+        IFC_RETURN(details->get_Flags(&info));
+        IFC_RETURN(details->get_DeviceName(deviceName.GetAddressOf()));
+
+        // AppWindowPlacementDetails.Create doesn't validate. Reject values that can't be a placement.
+        IFCEXPECTRC_RETURN(dpi >= 96 && static_cast<uint32_t>(dpi) <= c_maxDpi, E_INVALIDARG);
+        IFCEXPECTRC_RETURN(showCmd >= 0 && showCmd <= SW_MAX, E_INVALIDARG);
+
+        placement.normalRect = ToRect(normalRect);
+        placement.workArea = ToRect(workArea);
+        placement.arrangeRect = ToRect(arrangeRect);
+        placement.dpi = static_cast<UINT>(dpi);
+        placement.showCmd = static_cast<UINT>(showCmd);
+        for (const auto& mapping : c_flagMappings)
+        {
+            if ((static_cast<uint32_t>(info) & static_cast<uint32_t>(mapping.appWindow)) != 0)
+            {
+                placement.flags |= mapping.placementEx;
+            }
+        }
+
+        IFC_RETURN(StringCchCopyW(placement.deviceName, ARRAYSIZE(placement.deviceName),
+            WindowsGetStringRawBuffer(deviceName.Get(), nullptr)));
+
+        return S_OK;
+    }
+
+    HRESULT FromPlacementEx(const PlacementEx& placement, _COM_Outptr_ PlacementDetails** details)
+    {
+        *details = nullptr;
+
+        wrl::ComPtr<windowing::IAppWindowPlacementDetailsStatics> statics;
+        IFC_RETURN(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Windowing_AppWindowPlacementDetails).Get(),
+            &statics));
+
+        uint32_t info = 0;
+        for (const auto& mapping : c_flagMappings)
+        {
+            if (placement.HasFlag(mapping.placementEx))
+            {
+                info |= static_cast<uint32_t>(mapping.appWindow);
+            }
+        }
+
+        // Use the string length, not the buffer size, so the HSTRING has no padding nulls.
+        const size_t deviceNameLength = wcsnlen(placement.deviceName, ARRAYSIZE(placement.deviceName));
+        IFCEXPECTRC_RETURN(deviceNameLength < ARRAYSIZE(placement.deviceName), E_INVALIDARG);
+
+        IFC_RETURN(statics->Create(
+            ToRectInt32(placement.normalRect),
+            ToRectInt32(placement.workArea),
+            static_cast<INT32>(placement.dpi),
+            static_cast<INT32>(placement.showCmd),
+            ToRectInt32(placement.arrangeRect),
+            static_cast<windowing::PlacementInfo>(info),
+            wrl_wrappers::HStringReference(placement.deviceName, static_cast<unsigned int>(deviceNameLength)).Get(),
+            details));
+
+        return S_OK;
     }
 
     HRESULT ReadPlacement(
@@ -237,23 +372,205 @@ HRESULT WindowPlacement::GetId(_Out_ HSTRING* value)
 HRESULT WindowPlacement::SetId(_In_opt_ HSTRING value)
 {
     IFCEXPECTRC_RETURN(WindowsGetStringLen(value) <= MAX_PATH, E_INVALIDARG);
-    IFC_RETURN(m_id.Set(value));
-
-    if (!WindowsIsStringEmpty(value))
+    INT32 comparison = 0;
+    IFC_RETURN(WindowsCompareStringOrdinal(m_id.Get(), value, &comparison));
+    if (comparison != 0)
     {
-        // Storage is optional; failure must not make a window property unusable.
-        IGNOREHR(EnsureStorage());
+        IFC_RETURN(m_id.Set(value));
+        ClearCascadeTag();
+        m_cascadePropertyName.Release();
     }
 
     return S_OK;
 }
 
-HRESULT WindowPlacement::EnsureStorage()
+HRESULT WindowPlacement::EnsureCascadePropertyName()
 {
-    if (m_settings)
+    if (!HasId() || !WindowsIsStringEmpty(m_cascadePropertyName.Get()))
     {
         return S_OK;
     }
+
+    wil::unique_handle mutex;
+    IFC_RETURN(OpenCascadeInitializationMutex(mutex));
+    const DWORD wait = WaitForSingleObject(mutex.get(), 5000);
+    IFCEXPECTRC_RETURN(wait == WAIT_OBJECT_0 || wait == WAIT_ABANDONED,
+        wait == WAIT_FAILED ? HRESULT_FROM_WIN32(GetLastError()) : HRESULT_FROM_WIN32(ERROR_TIMEOUT));
+    auto releaseMutex = wil::scope_exit([&]()
+    {
+        if (!ReleaseMutex(mutex.get()))
+        {
+            TRACE_HR_NORETURN(HRESULT_FROM_WIN32(GetLastError()));
+        }
+    });
+
+    IFC_RETURN(EnsureStorage());
+    if (!m_settings)
+    {
+        return S_OK;
+    }
+
+    wchar_t key[19]{};
+    GetPlacementKey(m_id.Get(), key);
+    key[0] = L'G';
+    const auto keyString = wrl_wrappers::HStringReference(key);
+    wrl_wrappers::HString record;
+    wrl::ComPtr<IInspectable> boxed;
+    // ApplicationData can return a null value rather than E_BOUNDS for a missing key.
+    boolean hasGroup = false;
+    IFC_RETURN(m_settings->HasKey(keyString.Get(), &hasGroup));
+    const HRESULT lookup = hasGroup ? m_settings->Lookup(keyString.Get(), &boxed) : E_BOUNDS;
+    if (lookup == E_BOUNDS)
+    {
+        RoClearError();
+        GUID group{};
+        IFC_RETURN(CoCreateGuid(&group));
+        wchar_t text[39]{};
+        IFCEXPECTRC_RETURN(StringFromGUID2(group, text, ARRAYSIZE(text)) == ARRAYSIZE(text), E_UNEXPECTED);
+        const std::wstring value = std::wstring(WindowsGetStringRawBuffer(m_id.Get(), nullptr), WindowsGetStringLen(m_id.Get())) + text;
+        IFC_RETURN(record.Set(value.c_str(), static_cast<UINT32>(value.size())));
+        wrl::ComPtr<wf::IPropertyValueStatics> statics;
+        IFC_RETURN(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Windows_Foundation_PropertyValue).Get(), &statics));
+        IFC_RETURN(statics->CreateString(record.Get(), &boxed));
+        boolean replaced = false;
+        IFC_RETURN(m_settings->Insert(keyString.Get(), boxed.Get(), &replaced));
+    }
+    else
+    {
+        IFC_RETURN(lookup);
+        IFCEXPECTRC_RETURN(boxed.Get(), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        wrl::ComPtr<wf::IPropertyValue> value;
+        IFC_RETURN(boxed.As(&value));
+        IFC_RETURN(value->GetString(record.GetAddressOf()));
+    }
+
+    UINT32 length = 0;
+    PCWSTR text = WindowsGetStringRawBuffer(record.Get(), &length);
+    const UINT32 idLength = WindowsGetStringLen(m_id.Get());
+    IFCEXPECTRC_RETURN(length == idLength + 38 &&
+        memcmp(text, WindowsGetStringRawBuffer(m_id.Get(), nullptr), idLength * sizeof(wchar_t)) == 0,
+        HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+    GUID group{};
+    IFC_RETURN(IIDFromString(text + idLength, &group));
+    IFCEXPECTRC_RETURN(!IsEqualGUID(group, GUID_NULL), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+    const std::wstring property = std::wstring(L"Microsoft.UI.Xaml.WindowPlacement.Cascade.") + (text + idLength);
+    IFC_RETURN(m_cascadePropertyName.Set(property.c_str(), static_cast<UINT32>(property.size())));
+    return S_OK;
+}
+
+void WindowPlacement::ClearCascadeTag()
+{
+    if (m_taggedWindow)
+    {
+        RemovePropW(m_taggedWindow, WindowsGetStringRawBuffer(m_cascadePropertyName.Get(), nullptr));
+        m_taggedWindow = nullptr;
+    }
+}
+
+HRESULT WindowPlacement::UpdateCascadeTag(HWND hwnd, bool eligible)
+{
+    if (!eligible || !HasId())
+    {
+        ClearCascadeTag();
+        return S_OK;
+    }
+    IFC_RETURN(EnsureCascadePropertyName());
+    if (!WindowsIsStringEmpty(m_cascadePropertyName.Get()) && m_taggedWindow != hwnd)
+    {
+        ClearCascadeTag();
+        IFCEXPECTRC_RETURN(SetPropW(hwnd, WindowsGetStringRawBuffer(m_cascadePropertyName.Get(), nullptr),
+            reinterpret_cast<HANDLE>(1)), HRESULT_FROM_WIN32(GetLastError()));
+        m_taggedWindow = hwnd;
+    }
+    return S_OK;
+}
+
+HRESULT WindowPlacement::TryCreateCascadedPlacement(HWND destination, _Outptr_result_maybenull_ PlacementDetails** details)
+{
+    *details = nullptr;
+    IFC_RETURN(EnsureCascadePropertyName());
+    if (WindowsIsStringEmpty(m_cascadePropertyName.Get()))
+    {
+        return S_OK;
+    }
+
+    wrl::ComPtr<IVirtualDesktopManager> desktops;
+    IFC_RETURN(CoCreateInstance(CLSID_VirtualDesktopManager, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&desktops)));
+    wrl::ComPtr<windowing::IAppWindowPlacementDetailsStatics> statics;
+    IFC_RETURN(wf::GetActivationFactory(
+        wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Windowing_AppWindowPlacementDetails).Get(), &statics));
+
+    struct Search
+    {
+        HWND destination;
+        PCWSTR property;
+        std::vector<HWND> sources;
+    } search{ destination, WindowsGetStringRawBuffer(m_cascadePropertyName.Get(), nullptr), {} };
+    SetLastError(ERROR_SUCCESS);
+    const BOOL enumerated = EnumWindows([](HWND hwnd, LPARAM parameter) -> BOOL
+    {
+        auto& search = *reinterpret_cast<Search*>(parameter);
+        if (hwnd != search.destination && IsWindowVisible(hwnd) && !IsIconic(hwnd) &&
+            GetPropW(hwnd, search.property) == reinterpret_cast<HANDLE>(1))
+        {
+            search.sources.push_back(hwnd);
+        }
+        return TRUE;
+    }, reinterpret_cast<LPARAM>(&search));
+    if (!enumerated)
+    {
+        const DWORD error = GetLastError();
+        IFC_RETURN(error ? HRESULT_FROM_WIN32(error) : E_FAIL);
+    }
+
+    for (HWND hwnd : search.sources)
+    {
+        DWORD cloaked = 0;
+        const HRESULT cloakResult = DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked));
+        TRACE_HR_NORETURN(cloakResult);
+        if (FAILED(cloakResult) || cloaked != 0)
+        {
+            if (FAILED(cloakResult)) RoClearError();
+            continue;
+        }
+        BOOL current = FALSE;
+        const HRESULT desktopResult = desktops->IsWindowOnCurrentVirtualDesktop(hwnd, &current);
+        TRACE_HR_NORETURN(desktopResult);
+        if (FAILED(desktopResult) || !current)
+        {
+            if (FAILED(desktopResult)) RoClearError();
+            continue;
+        }
+        ABI::Microsoft::UI::WindowId id{};
+        const HRESULT idResult = ABI::Microsoft::UI::GetWindowIdFromWindow(hwnd, &id);
+        TRACE_HR_NORETURN(idResult);
+        if (FAILED(idResult))
+        {
+            RoClearError();
+            continue;
+        }
+        if (GetPropW(hwnd, search.property) != reinterpret_cast<HANDLE>(1))
+        {
+            continue;
+        }
+        wrl::ComPtr<PlacementDetails> captured;
+        const HRESULT capture = statics->CreateCascadedFrom(id, &captured);
+        TRACE_HR_NORETURN(capture);
+        if (SUCCEEDED(capture) && captured)
+        {
+            *details = captured.Detach();
+            return S_OK;
+        }
+        RoClearError();
+    }
+    return S_OK;
+}
+
+HRESULT WindowPlacement::EnsureStorage()
+{
+    // Reopen the container on every use. The app can delete it (DeleteContainer or
+    // ApplicationData.ClearAsync), and writes to a stale Values map would be lost.
+    m_settings.Reset();
 
     UINT32 length = 0;
     if (GetCurrentPackageFullName(&length, nullptr) != ERROR_INSUFFICIENT_BUFFER)
@@ -287,12 +604,14 @@ HRESULT WindowPlacement::EnsureStorage()
     return S_OK;
 }
 
-HRESULT WindowPlacement::TryLoadAndApply(HWND hwnd, _Out_ PlacementResult* result)
+HRESULT WindowPlacement::TryLoad(_Outptr_result_maybenull_ PlacementDetails** details, _Out_ PlacementResult* result)
 {
+    IFCPTR_RETURN(details);
     IFCPTR_RETURN(result);
+    *details = nullptr;
     *result = PlacementResult::None;
 
-    if (WindowsIsStringEmpty(m_id.Get()))
+    if (!HasId())
     {
         // An empty string means placement is disabled, but this is not an error.
         return S_OK;
@@ -337,56 +656,49 @@ HRESULT WindowPlacement::TryLoadAndApply(HWND hwnd, _Out_ PlacementResult* resul
     IFCEXPECTRC_RETURN(record.Get(), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
     IFC_RETURN(ReadPlacement(record.Get(), m_id.Get(), placement, *result));
 
-    // Reopen minimized windows at their restore target, including snap bounds when available.
-    // PlacementEx needs Arranged, not just RestoreToArranged, to apply those bounds now.
-    if (placement.HasFlag(PlacementFlags::RestoreToArranged))
-    {
-        placement.flags &= ~PlacementFlags::RestoreToArranged;
-        placement.flags |= PlacementFlags::Arranged;
-    }
+    // WinUI never restores full screen, in either mode. Strip the flag so AppWindow doesn't switch
+    // presenters. The app can enter full screen itself.
+    placement.flags &= ~PlacementFlags::FullScreen;
 
-    placement.RestoreIfMinimized();
-    placement.flags |= PlacementFlags::KeepHidden | PlacementFlags::NoActivate;
-    if (GetWindowLongPtr(hwnd, GWL_STYLE) & WS_THICKFRAME)
-    {
-        placement.flags |= PlacementFlags::AllowSizing;
-    }
+    // The record doesn't store resizability. Always allow AppWindow to shrink the window to fit
+    // a smaller screen, even if the app made the window fixed size.
+    placement.flags |= PlacementFlags::AllowSizing;
+    IFC_RETURN(FromPlacementEx(placement, details));
 
-    // Apply the restored bounds and window state to the HWND.
-    IFCEXPECTRC_RETURN(PlacementEx::SetPlacement(hwnd, &placement), E_FAIL);
-
-    *result |= PlacementResult::LoadedAndApplied;
+    *result |= PlacementResult::Found;
 
     return S_OK;
 }
 
-HRESULT WindowPlacement::Save(HWND hwnd, _Out_ PlacementResult* result)
+HRESULT WindowPlacement::Save(_In_ PlacementDetails* details, _Out_ PlacementResult* result)
 {
+    IFCPTR_RETURN(details);
     IFCPTR_RETURN(result);
     *result = PlacementResult::None;
 
     // An empty id opts out. Storage is unavailable without package identity or if setup failed.
     // Saving is best effort; skip it rather than interfere with window shutdown.
-    if (WindowsIsStringEmpty(m_id.Get()) || !m_settings)
+    if (!HasId())
+    {
+        return S_OK;
+    }
+
+    IGNOREHR(EnsureStorage());
+    if (!m_settings)
     {
         return S_OK;
     }
 
     PlacementEx placement;
-    // Keep the earlier record if capture fails or returns bounds/DPI that the reader would reject.
-    IFCEXPECTRC_RETURN(PlacementEx::GetPlacement(hwnd, &placement), E_FAIL);
-
-    // Full-screen placement is also excluded: phase 1 only saves overlapped-window placement.
-    if (placement.HasFlag(PlacementFlags::FullScreen))
-    {
-        return S_OK;
-    }
-
+    // Keep the earlier record if the details have bounds/DPI that the reader would reject.
+    IFC_RETURN(ToPlacementEx(details, placement));
     IFCEXPECTRC_RETURN(placement.IsValid(), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
     IFCEXPECTRC_RETURN(IsValidRect(placement.normalRect), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
     IFCEXPECTRC_RETURN(IsValidRect(placement.workArea), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
-    IFCEXPECTRC_RETURN(placement.dpi <= c_maxDpi, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
 
+    // The record has no full screen state, so any FullScreen flag in the details is not stored.
+    // In full screen, AppWindow reports the overlapped placement underneath it (normal, maximized,
+    // or snapped). The app decides whether to enter full screen again after a restart.
     const bool minimized = PlacementEx::IsMinimizeShowCmd(placement.showCmd);
     const bool arranged = placement.HasFlag(PlacementFlags::Arranged) ||
                           placement.HasFlag(PlacementFlags::RestoreToArranged);

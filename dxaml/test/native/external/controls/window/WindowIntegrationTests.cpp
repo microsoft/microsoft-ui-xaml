@@ -2286,9 +2286,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestCleanupWrapper cleanup;
 
         // Regression: set Width/Height while maximized, then switch straight into FullScreen (a
-        // non-sizing presenter) without un-maximizing first. FullScreen's getter reads the tracked
-        // restored size (m_lastRestoredClientSizeDips), so setting while maximized must keep that in
-        // sync - otherwise the getter reports the previously tracked size instead of the value just set.
+        // non-sizing presenter) without un-maximizing first. AppWindow.GetCurrentPlacement must
+        // carry the updated normal rect into FullScreen so the getter reports the value just set.
         const double initialWidth = 500.0;
         const double initialHeight = 400.0;
         const double setWhileMaxWidth = 720.0;
@@ -3165,6 +3164,51 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         runForPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::CompactOverlay, L"CompactOverlay");
     }
 
+    void WindowIntegrationTests::GetWindowWidthHeightInPresenterReflectsOverlappedFrameChange()
+    {
+        TestCleanupWrapper cleanup;
+
+        const double tolerance = 2.0;
+        auto areClose = [tolerance](double a, double b) { return std::abs(a - b) <= tolerance; };
+
+        WindowAutoCloser window1;
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'"
+                L"  Width='640' Height='480'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto presenter = safe_cast<Microsoft::UI::Windowing::OverlappedPresenter^>(window1->AppWindow->Presenter);
+            presenter->SetBorderAndTitleBar(false, false);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        double restoredWidth = 0;
+        double restoredHeight = 0;
+        RunOnUIThread([&]()
+        {
+            restoredWidth = window1->Bounds.Width;
+            restoredHeight = window1->Bounds.Height;
+            window1->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(areClose(restoredWidth, window1->Width),
+                L"FullScreen Width should use chrome from the updated Overlapped frame");
+            VERIFY_IS_TRUE(areClose(restoredHeight, window1->Height),
+                L"FullScreen Height should use chrome from the updated Overlapped frame");
+        });
+    }
+
     void WindowIntegrationTests::RestoreFromMaximizedWithECITBIsExact()
     {
         TestCleanupWrapper cleanup;
@@ -3257,10 +3301,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestCleanupWrapper cleanup;
 
         // Regression for the same-turn edge: an app sets Width/Height and then switches to a
-        // non-sizing presenter in the *same* message-loop turn, with no intervening idle. The
-        // deferred WM_SIZE capture hasn't run yet by the time the presenter changes, so the getter
-        // must rely on the size the setter recorded synchronously. (The other presenter tests put a
-        // WaitForIdle between the set and the switch, so they don't exercise this path.)
+        // non-sizing presenter in the *same* message-loop turn, with no intervening idle.
+        // AppWindow.GetCurrentPlacement must already contain the new normal rect.
         const double setWidth = 540.0;
         const double setHeight = 420.0;
         const double tolerance = 2.0;
@@ -3283,8 +3325,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
             TestServices::WindowHelper->WaitForIdle();
 
-            // Set Width/Height AND switch presenter in the same turn - deliberately no WaitForIdle
-            // between them, so the deferred WM_SIZE capture can't have run.
+            // Set Width/Height and switch presenter in the same turn, deliberately with no WaitForIdle.
             RunOnUIThread([&]()
             {
                 window1->Width = setWidth;
