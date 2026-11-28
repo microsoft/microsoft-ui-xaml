@@ -2279,8 +2279,9 @@ void TableView::OnRowsSourceResetForHierarchy(
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
     // Reset only: splices restamp via ElementIndexChanged or the toggling verb. A Reset may
-    // republish metadata for the same rows (e.g. a collapsed node losing its last child).
-    if (!args || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    // republish metadata for the same rows (e.g. a collapsed node losing its last child). Flat and
+    // grouped rows carry no tree state to republish.
+    if (!args || args.Action() != winrt::NotifyCollectionChangedAction::Reset || !IsHierarchicalRowSource())
     {
         return;
     }
@@ -2997,8 +2998,12 @@ void TableView::OnRowElementIndexChanged(
         rowImpl->RefreshRowBackground();
     }
 
-    // ...and so must hierarchy state: a moved row may be at a new depth.
-    RefreshRowHierarchyState(row, args.NewIndex());
+    // ...and so must hierarchy state: a moved row may be at a new depth. Only tree rows have one; a flat or grouped
+    // data row keeps its Level 0 and lead-cell padding through an index change.
+    if (IsHierarchicalRowSource() || rowImpl->Level() > 0)
+    {
+        RefreshRowHierarchyState(row, args.NewIndex());
+    }
 
     // ...and so must selected chrome. The element keeps its item here (only its index moved), so
     // this normally re-derives the same answer - it is the cheap guarantee that a row whose index

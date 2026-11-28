@@ -252,33 +252,17 @@ void TableViewRow::OnApplyTemplate()
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
     auto const chrome = GetTemplateChild(L"PART_RowChrome").try_as<winrt::FrameworkElement>();
     m_rowChrome.set(chrome);
-    m_rowExpanderGutter.set(GetTemplateChild(hstring{ s_RowExpanderGutterPartName }).try_as<winrt::FrameworkElement>());
 
-    // Revoke unconditionally so a re-template that drops the gutter leaves no stale subscription.
+    // Revoke unconditionally so a re-template that drops the gutter leaves no stale subscription. The gutter itself is
+    // looked up (which loads it) only when the row shows a tree row: EnsureExpanderGutter.
     m_gutterPointerPressedRevoker.revoke();
     m_gutterPointerReleasedRevoker.revoke();
     m_gutterPointerExitedRevoker.revoke();
     m_gutterPointerCaptureLostRevoker.revoke();
     m_isGutterPressed = false;
-
-    // Subscribe per template apply, not per prepare (pooled container would fan one tap into N
-    // toggles). The press is handled so the row's release-time selection latch never arms; the
-    // toggle itself fires on release-inside, matching TableViewGroupHeader.
-    if (auto const gutter = m_rowExpanderGutter.get())
-    {
-        m_gutterPointerPressedRevoker = gutter.PointerPressed(
-            winrt::auto_revoke,
-            { this, &TableViewRow::OnExpanderGutterPointerPressed });
-        m_gutterPointerReleasedRevoker = gutter.PointerReleased(
-            winrt::auto_revoke,
-            { this, &TableViewRow::OnExpanderGutterPointerReleased });
-        m_gutterPointerExitedRevoker = gutter.PointerExited(
-            winrt::auto_revoke,
-            { this, &TableViewRow::OnExpanderGutterPointerCanceled });
-        m_gutterPointerCaptureLostRevoker = gutter.PointerCaptureLost(
-            winrt::auto_revoke,
-            { this, &TableViewRow::OnExpanderGutterPointerCanceled });
-    }
+    m_rowExpanderGutter.set(nullptr);
+    m_rowExpanderGutterResolved = false;
+    m_hierarchyStatesApplied = false;
 
     if (host)
     {
@@ -1419,11 +1403,16 @@ void TableViewRow::SetIsSelectedInternal(bool isSelected)
 
 void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, bool isExpanded)
 {
-    // Snapshot for the automation event (a recycled row moving to another node is a real transition).
+    // A change is announced only for the item the row showed before; a recycled row moving to another item is not a
+    // state change any client saw.
+    const auto item = DataContext();
+    const uintptr_t stampedItem = item ? reinterpret_cast<uintptr_t>(winrt::get_abi(item.as<winrt::Windows::Foundation::IUnknown>())) : 0;
+    const bool isSameItem = std::exchange(m_hierarchyStampedItem, stampedItem) == stampedItem;
+    const int32_t previousLevel = Level();
     const winrt::ExpandCollapseState oldState = HierarchyExpandCollapseState();
 
     // Guarded: setters box before SetValue, and re-preparing onto the same node is the common case.
-    if (Level() != level)
+    if (previousLevel != level)
     {
         Level(level);
     }
@@ -1441,6 +1430,12 @@ void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, b
     // Unconditional: indent also depends on the indent resource and grouping. Writes inside are
     // equality-guarded, so no layout re-invalidation.
     ApplyHierarchyAffordance();
+
+    // Tree rows only (or a row leaving the tree): a grouped row's set metadata does not change when it is restamped.
+    if (!isSameItem || (level <= 0 && previousLevel <= 0))
+    {
+        return;
+    }
 
     RaiseExpandCollapseStateChanged(oldState, HierarchyExpandCollapseState());
 
@@ -1482,14 +1477,8 @@ void TableViewRow::RaiseExpandCollapseStateChanged(
         return;
     }
 
-    // XAML caches the peer per element, so the fallback yields the same instance a client holds.
-    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
-    if (!peer)
-    {
-        peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(*this);
-    }
-
-    if (auto const rowPeer = peer ? peer.try_as<winrt::TableViewRowAutomationPeer>() : nullptr)
+    // Only a peer that exists can have told a client the old state.
+    if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewRowAutomationPeer>())
     {
         winrt::get_self<TableViewRowAutomationPeer>(rowPeer)->RaiseExpandCollapseAutomationEvent(
             oldState, newState);
@@ -1510,18 +1499,25 @@ bool TableViewRow::IsRowItselfFocused()
 }
 
 // Places the chevron and reserves room in the lead cell. Separate so template apply and cell
-// rebuild (fresh gutter/wrappers) can re-apply against unchanged state.
+// rebuild (fresh gutter/wrappers) can re-apply against unchanged state. A row that never showed a
+// tree row has no gutter and needs no hierarchy state: only the lead cell's padding is kept.
 void TableViewRow::ApplyHierarchyAffordance()
 {
     const int32_t level = Level();
     const bool isHierarchical = level > 0;
 
-    winrt::VisualStateManager::GoToState(
-        *this, isHierarchical ? L"RowHierarchical" : L"RowNotHierarchical", false /* useTransitions */);
-    winrt::VisualStateManager::GoToState(
-        *this, IsExpandable() ? L"RowExpandable" : L"RowNotExpandable", false /* useTransitions */);
-    winrt::VisualStateManager::GoToState(
-        *this, IsExpanded() ? L"RowExpanded" : L"RowCollapsed", false /* useTransitions */);
+    if (isHierarchical || m_hierarchyStatesApplied)
+    {
+        // Loads the gutter: the states below set its icon.
+        EnsureExpanderGutter();
+        winrt::VisualStateManager::GoToState(
+            *this, isHierarchical ? L"RowHierarchical" : L"RowNotHierarchical", false /* useTransitions */);
+        winrt::VisualStateManager::GoToState(
+            *this, IsExpandable() ? L"RowExpandable" : L"RowNotExpandable", false /* useTransitions */);
+        winrt::VisualStateManager::GoToState(
+            *this, IsExpanded() ? L"RowExpanded" : L"RowCollapsed", false /* useTransitions */);
+        m_hierarchyStatesApplied = isHierarchical;
+    }
 
     const double indent = HierarchyIndent();
 
@@ -1539,10 +1535,10 @@ void TableViewRow::ApplyHierarchyAffordance()
         {
             gutter.Margin(gutterMargin);
         }
-    }
 
-    // The clip is in gutter space, which the margin just moved.
-    UpdateExpanderGutterClip();
+        // The clip is in gutter space, which the margin just moved.
+        UpdateExpanderGutterClip();
+    }
 
     ApplyHierarchyIndentToCells(indent);
 
@@ -1556,6 +1552,38 @@ void TableViewRow::ApplyHierarchyAffordance()
             SyncExpanderGutterWithLeadCell(host);
         }
     }
+}
+
+winrt::FrameworkElement TableViewRow::EnsureExpanderGutter()
+{
+    if (m_rowExpanderGutterResolved)
+    {
+        return m_rowExpanderGutter.get();
+    }
+    m_rowExpanderGutterResolved = true;
+
+    auto const gutter = GetTemplateChild(hstring{ s_RowExpanderGutterPartName }).try_as<winrt::FrameworkElement>();
+    m_rowExpanderGutter.set(gutter);
+
+    // Subscribe once per load, not per prepare (a pooled container would fan one tap into N
+    // toggles). The press is handled so the row's release-time selection latch never arms; the
+    // toggle itself fires on release-inside, matching TableViewGroupHeader.
+    if (gutter)
+    {
+        m_gutterPointerPressedRevoker = gutter.PointerPressed(
+            winrt::auto_revoke,
+            { this, &TableViewRow::OnExpanderGutterPointerPressed });
+        m_gutterPointerReleasedRevoker = gutter.PointerReleased(
+            winrt::auto_revoke,
+            { this, &TableViewRow::OnExpanderGutterPointerReleased });
+        m_gutterPointerExitedRevoker = gutter.PointerExited(
+            winrt::auto_revoke,
+            { this, &TableViewRow::OnExpanderGutterPointerCanceled });
+        m_gutterPointerCaptureLostRevoker = gutter.PointerCaptureLost(
+            winrt::auto_revoke,
+            { this, &TableViewRow::OnExpanderGutterPointerCanceled });
+    }
+    return gutter;
 }
 
 // Level is 1-based (UIA); a root gets no indent beyond the gutter.

@@ -839,10 +839,16 @@ void TableViewRowAutomationPeer::Collapse()
 
 void TableViewRowAutomationPeer::SetExpansion(bool expand)
 {
+    // UIA ExpandCollapse contract: a disabled element is ElementNotEnabled, a leaf InvalidOperation.
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+
     auto const row = GetRow();
     if (!row || !row.IsExpandable())
     {
-        return;
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
     }
 
     // Pass direction, not a toggle: the mutation is deferred, so IsExpanded() can't make it
@@ -882,8 +888,8 @@ void TableViewRowAutomationPeer::RaiseExpandCollapseAutomationEvent(
 
 void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
 {
-    // A row that left the tree (ClearParentBy, or a recycled row bound to a flat item) still owes
-    // a client that read its tree Level the change back.
+    // A row that left the tree (the view stopped being a tree, or a recycled row bound to a flat item)
+    // still owes a client that read its tree Level the change back.
     if (!IsHierarchicalRow() && m_lastReportedLevel <= 0)
     {
         return;
@@ -949,6 +955,7 @@ int32_t TableViewRowAutomationPeer::ComputeLevel()
 bool TableViewRowAutomationPeer::IsTreeRowInfo(TableView* tableImpl, int32_t rowIndex, TableViewRowInfo& info)
 {
     return rowIndex >= 0 &&
+        tableImpl->IsHierarchicalRowSource() &&
         tableImpl->TryGetRowInfo(rowIndex, info) &&
         info.Kind == TableViewRowKind::Data &&
         info.SizeOfSet > 0;

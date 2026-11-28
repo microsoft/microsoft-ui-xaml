@@ -77,6 +77,8 @@ public:
 
     // Re-applies indent and chevron; template apply and cell rebuild both discard prior layout.
     void ApplyHierarchyAffordance();
+    // The chevron gutter, loaded on first use.
+    winrt::FrameworkElement EnsureExpanderGutter();
     void ApplyHierarchyIndentToCells();
     // Overload taking a pre-resolved indent, avoiding a second TableViewRowIndentSize lookup.
     void ApplyHierarchyIndentToCells(double indent);
@@ -235,8 +237,16 @@ private:
     tracker_ref<winrt::Panel> m_cellsHost{ this };
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     tracker_ref<winrt::FrameworkElement> m_rowChrome{ this };
-    // Chevron hit target. Null if a re-template drops the part (indent still applies).
+    // Chevron hit target, loaded (x:Load) the first time the row shows a tree row. Null for a row that never did, or if a
+    // re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
+    // The template's gutter part was looked up (and loaded) since the last template apply.
+    bool m_rowExpanderGutterResolved{ false };
+    // The hierarchy visual states were last set for a tree row; a flat row that never was one skips them.
+    bool m_hierarchyStatesApplied{ false };
+    // COM identity of the item the hierarchy state was last stamped for: a change of state is announced to UI Automation
+    // only for the same item, never for a recycled row moving to another one.
+    uintptr_t m_hierarchyStampedItem{ 0 };
     // Transparent cell wrapper fill, created on first use and shared by this row's cells.
     winrt::Brush m_cellWrapperBackground{ nullptr };
     winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};

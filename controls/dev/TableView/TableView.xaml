@@ -269,6 +269,9 @@
 
     <x:Double x:Key="TableViewRowExpanderSize">24</x:Double>
 
+    <!-- Chevron glyph size on a tree row; scale it with TableViewRowExpanderSize. -->
+    <x:Double x:Key="TableViewRowExpanderGlyphSize">12</x:Double>
+
     <!-- Indent added per hierarchy level on a tree row's first column. Override in an app's
          resources to retheme every table, or in one TableView's Resources for a single table. -->
     <x:Double x:Key="TableViewRowIndentSize">16</x:Double>
@@ -528,15 +531,17 @@
                                     <!-- Hierarchy chevron. Overlays the first cell (TableViewRow pads it by
                                          the same indent) so cells stay aligned with headers; later child so it
                                          stays on top as the hit target. No own Foreground: inherits the
-                                         presenter's, keeping this optional part out of CommonStates. -->
+                                         presenter's, keeping this optional part out of CommonStates. Loaded
+                                         only when the row first shows a tree row, so flat rows never create it. -->
                                     <Border x:Name="PART_RowExpanderGutter"
+                                            x:Load="False"
                                             Width="{ThemeResource TableViewRowExpanderSize}"
                                             Background="Transparent"
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Stretch"
                                             Visibility="Collapsed">
                                         <FontIcon x:Name="PART_RowExpanderIcon"
-                                                  FontSize="12"
+                                                  FontSize="{ThemeResource TableViewRowExpanderGlyphSize}"
                                                   Glyph="&#xE76C;"
                                                   MirroredWhenRightToLeft="True"
                                                   HorizontalAlignment="Center"
