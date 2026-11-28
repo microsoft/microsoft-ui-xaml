@@ -168,7 +168,7 @@ TableViewRowFlattener::~TableViewRowFlattener()
     {
         ShapingHelpers::SafeRevokeWith([&] { m_view.VectorChanged(m_viewItemsChangedToken); });
     }
-    DetachTreeRows();
+    DetachTreeRows(true /* isDestroying */);
 }
 
 winrt::hstring TableViewRowFlattener::ObjectIdentity(winrt::IInspectable const& item)

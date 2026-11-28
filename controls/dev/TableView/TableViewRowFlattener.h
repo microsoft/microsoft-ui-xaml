@@ -127,6 +127,8 @@ public:
     // TableView.ExpandRow / CollapseRow: the item's node; expanding also expands its ancestors. False when the item
     // has no node.
     bool SetItemExpanded(winrt::IInspectable const& item, bool isExpanded);
+    // The row identity (node key) of the item's node; empty when the item has no node.
+    winrt::hstring TryGetIdentityForItem(winrt::IInspectable const& item) const;
 
     // Positive prefix test, so a stale or foreign key cannot become node intent.
     static bool IsNodeKey(winrt::hstring const& key);
@@ -206,7 +208,8 @@ private:
 
     // Follows the view's CollectionNodes object; true when it changed.
     bool AttachViewNodesNow();
-    void DetachTreeRows();
+    // isDestroying: only unsubscribes; no new row list.
+    void DetachTreeRows(bool isDestroying = false);
     void RebuildTreeRows();
     void ApplyTreeRows(std::vector<winrt::IInspectable>&& items, std::vector<NodeRow>&& rows);
     // Appends the rows of the nodes in a list and, under each expanded node, its children; explicit stack.
@@ -227,11 +230,11 @@ private:
     void UnsubscribeFromChildren(NodeRow& row);
     void OnNodeHasChildrenChanged(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node);
     void OnNodeListChanged(
-        winrt::hstring const& parentKey,
+        bool isRoots,
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& list,
         winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     bool TryApplyNodeListChange(
-        winrt::hstring const& parentKey,
+        bool isRoots,
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& list,
         winrt::Windows::Foundation::Collections::CollectionChange change,
         uint32_t index);

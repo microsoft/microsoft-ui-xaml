@@ -145,7 +145,7 @@ bool TableViewRowFlattener::AttachViewNodesNow()
             {
                 if (auto strongThis = weakThis.lock())
                 {
-                    strongThis->OnNodeListChanged({}, sender, args);
+                    strongThis->OnNodeListChanged(true /* isRoots */, sender, args);
                 }
             });
 
@@ -171,7 +171,7 @@ bool TableViewRowFlattener::AttachViewNodesNow()
     return true;
 }
 
-void TableViewRowFlattener::DetachTreeRows()
+void TableViewRowFlattener::DetachTreeRows(bool isDestroying)
 {
     if (!m_treeRowsAttached)
     {
@@ -188,6 +188,10 @@ void TableViewRowFlattener::DetachTreeRows()
     m_treeRowsStale = false;
     m_filterOverlayCollapsed.clear();
     m_removedNodeKeys.clear();
+    if (isDestroying)
+    {
+        return;
+    }
     // A new list, not Clear(): the repeater may still show the old one until the rows change, and needs no Reset. The
     // old one, and the items it holds, go when the repeater lets go of it.
     m_treeRows = winrt::single_threaded_observable_vector<winrt::IInspectable>();
@@ -402,6 +406,12 @@ void TableViewRowFlattener::SubscribeToNode(NodeRow& row)
     auto const notify = row.Node.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>();
     if (!notify)
     {
+        // An app's node that does not raise HasChildren: its Children list says when the chevron changes.
+        if (!row.Children)
+        {
+            row.Children = row.Node.Children();
+        }
+        SubscribeToChildren(row);
         return;
     }
 
@@ -423,13 +433,15 @@ void TableViewRowFlattener::SubscribeToChildren(NodeRow& row)
         return;
     }
 
+    // The row is found by its list when the list changes, so a key the row takes later (a keyless node's new item) is
+    // the one its child rows get.
     std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
     row.ChildrenToken = row.Children.VectorChanged(
-        [weakThis, key = row.NodeKey](NodeList const& sender, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+        [weakThis](NodeList const& sender, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
         {
             if (auto strongThis = weakThis.lock())
             {
-                strongThis->OnNodeListChanged(key, sender, args);
+                strongThis->OnNodeListChanged(false /* isRoots */, sender, args);
             }
         });
 }
@@ -633,7 +645,7 @@ void TableViewRowFlattener::RaiseRowMetadataChanged() const
 }
 
 void TableViewRowFlattener::OnNodeListChanged(
-    winrt::hstring const& parentKey,
+    bool isRoots,
     NodeList const& list,
     winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
 {
@@ -650,7 +662,7 @@ void TableViewRowFlattener::OnNodeListChanged(
     }
 
     const auto change = args.CollectionChange();
-    const bool isRootsReset = parentKey.empty() && change == winrt::Windows::Foundation::Collections::CollectionChange::Reset;
+    const bool isRootsReset = isRoots && change == winrt::Windows::Foundation::Collections::CollectionChange::Reset;
     if (m_treeRowsStale && !isRootsReset)
     {
         // Rebuilt once the change ends (OnViewItemsChanged), not per node list it touches.
@@ -665,7 +677,7 @@ void TableViewRowFlattener::OnNodeListChanged(
         auto const done = wil::scope_exit([this]() noexcept { m_treeRowsInFlight = false; });
         try
         {
-            applied = !isRootsReset && TryApplyNodeListChange(parentKey, list, change, args.Index());
+            applied = !isRootsReset && TryApplyNodeListChange(isRoots, list, change, args.Index());
         }
         catch (...)
         {
@@ -695,7 +707,7 @@ void TableViewRowFlattener::OnNodeListChanged(
 }
 
 bool TableViewRowFlattener::TryApplyNodeListChange(
-    winrt::hstring const& parentKey,
+    bool isRoots,
     NodeList const& list,
     winrt::Windows::Foundation::Collections::CollectionChange change,
     uint32_t index)
@@ -703,7 +715,8 @@ bool TableViewRowFlattener::TryApplyNodeListChange(
     using winrt::Windows::Foundation::Collections::CollectionChange;
 
     int32_t parentRow = -1;
-    if (!parentKey.empty())
+    winrt::hstring parentKey;
+    if (!isRoots)
     {
         // By the list, not the key: cheaper than the key index, and a stale list (its row left) matches nothing.
         auto const found = std::find_if(m_nodeRows.begin(), m_nodeRows.end(), [&list](NodeRow const& row) { return row.Children == list; });
@@ -712,6 +725,7 @@ bool TableViewRowFlattener::TryApplyNodeListChange(
             return true;
         }
         parentRow = static_cast<int32_t>(found - m_nodeRows.begin());
+        parentKey = found->NodeKey;
     }
     else if (list != m_viewNodes)
     {
@@ -837,6 +851,23 @@ void TableViewRowFlattener::OnViewItemChanged(uint32_t index)
     catch (...)
     {
         RebuildTreeRows();
+    }
+}
+
+winrt::hstring TableViewRowFlattener::TryGetIdentityForItem(winrt::IInspectable const& item) const
+{
+    if (m_kind != Kind::Tree || !m_hierarchy)
+    {
+        return {};
+    }
+    try
+    {
+        auto const node = m_hierarchy.NodeFromItem(item);
+        return node ? NodeKeyFor(node) : winrt::hstring{};
+    }
+    catch (...)
+    {
+        return {};
     }
 }
 
@@ -1111,6 +1142,7 @@ bool TableViewRowFlattener::TryApplyNodeExpansionSplice(winrt::hstring const& no
             ShapingHelpers::SafeRevokeWith([&] { children.VectorChanged(token); });
         }
         collapsed.Children = nullptr;
+        SubscribeToNode(collapsed);
     }
 
     RaiseRowMetadataChanged();
