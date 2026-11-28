@@ -32,6 +32,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CastingSourceFollowsWriteableBitmapSources)
+                TEST_METHOD_PROPERTY(L"Description", L"An Image whose casting source was requested hands each new WriteableBitmap source to its image sharing engine without failing and keeps the same casting source.")
+            END_TEST_METHOD()
+
         private:
             inline Platform::String^ GetResourcesPath() const;
         };
