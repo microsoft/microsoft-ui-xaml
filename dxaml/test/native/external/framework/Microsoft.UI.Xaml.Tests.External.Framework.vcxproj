@@ -174,12 +174,16 @@
     <ClInclude Include="naming\Tests\NamingIntegrationTests.h" />
     <ClInclude Include="parser\tests\ConditionalXamlTests.h" />
     <ClInclude Include="parser\tests\ParserIntegrationTests.h" />
+    <ClInclude Include="parser\tests\CollectionInitializationStringIntegrationTests.h" />
+    <ClInclude Include="parser\tests\XamlNodeStreamValidationTests.h" />
+    <ClInclude Include="parser\tests\XClassPeerTypeTests.h" />
     <ClInclude Include="peers\tests\PeerIntegrationTests.h" />
     <ClInclude Include="propertySystem\Tests\MyButton.h" />
     <ClInclude Include="propertySystem\Tests\PropertySystemIntegrationTests.h" />
     <ClInclude Include="resourceDictionary\MergedDictionariesTests.h" />
     <ClInclude Include="resourceDictionary\ResourceDictionaryBasicTests.h" />
     <ClInclude Include="resourceDictionary\ScopedResourcesTests.h" />
+    <ClInclude Include="resourceDictionary\ResourceDictionaryVectorInterfaceTests.h" />
     <ClInclude Include="resourceLoading\tests\CustomResourceLoader.h" />
     <ClInclude Include="resourceLoading\tests\ResourceLoadingIntegrationTests.h" />
     <ClInclude Include="simple\SimplePropertiesTests.h" />
@@ -187,6 +191,7 @@
     <ClInclude Include="styles\tests\StyleWithXBindTests.h" />
     <ClInclude Include="styles\tests\TestCustomResourceLoader.h" />
     <ClInclude Include="vsm\tests\VsmIntegrationTests.h" />
+    <ClInclude Include="vsm\tests\VisualStateGroupEventsTests.h" />
     <ClInclude Include="xdefer\tests\ElementDeferralTests.h" />
     <ClInclude Include="xdefer\tests\ElementTraits.h" />
   </ItemGroup>
@@ -241,12 +246,16 @@
     <ClCompile Include="naming\Tests\NamingIntegrationTests.cpp" />
     <ClCompile Include="parser\tests\ConditionalXamlTests.cpp" />
     <ClCompile Include="parser\tests\ParserIntegrationTests.cpp" />
+    <ClCompile Include="parser\tests\CollectionInitializationStringIntegrationTests.cpp" />
+    <ClCompile Include="parser\tests\XamlNodeStreamValidationTests.cpp" />
+    <ClCompile Include="parser\tests\XClassPeerTypeTests.cpp" />
     <ClCompile Include="peers\tests\PeerIntegrationTests.cpp" />
     <ClCompile Include="propertySystem\Tests\PropertySystemIntegrationTests.cpp" />
     <ClCompile Include="propertySystem\Notification\BasicNotificationTests.cpp" />
     <ClCompile Include="resourceDictionary\ResourceDictionaryBasicTests.cpp" />
     <ClCompile Include="resourceDictionary\MergedDictionariesTests.cpp" />
     <ClCompile Include="resourceDictionary\ScopedResourcesTests.cpp" />
+    <ClCompile Include="resourceDictionary\ResourceDictionaryVectorInterfaceTests.cpp" />
     <ClCompile Include="resourceLoading\tests\ResourceLoadingIntegrationTests.cpp" />
     <ClCompile Include="resourceLoading\tests\CustomResourceLoader.cpp" />
     <ClCompile Include="simple\SimplePropertiesTests.cpp" />
@@ -254,6 +263,7 @@
     <ClCompile Include="styles\tests\StyleWithXBindTests.cpp" />
     <ClCompile Include="styles\tests\TestCustomResourceLoader.cpp" />
     <ClCompile Include="vsm\tests\VsmIntegrationTests.cpp" />
+    <ClCompile Include="vsm\tests\VisualStateGroupEventsTests.cpp" />
     <ClCompile Include="xdefer\tests\ElementDeferralTests.cpp" />
   </ItemGroup>
   <ItemGroup>
