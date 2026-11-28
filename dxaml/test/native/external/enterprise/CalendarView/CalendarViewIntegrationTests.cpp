@@ -16,6 +16,9 @@
 #include <CustomBrushes.h>
 #include <ControlHelper.h>
 #include <FileLoader.h>
+#include <RuntimeEnabledFeatureOverride.h>
+#include <DisableErrorReportingScopeGuard.h>
+#include <set>
 
 using namespace std;
 using namespace std::placeholders;
@@ -50,6 +53,36 @@ namespace
         {
             return (value != 0);
         }
+    }
+
+    Microsoft::UI::Xaml::Thickness MakeThickness(double left, double top, double right, double bottom)
+    {
+        Microsoft::UI::Xaml::Thickness thickness;
+        thickness.Left = left;
+        thickness.Top = top;
+        thickness.Right = right;
+        thickness.Bottom = bottom;
+        return thickness;
+    }
+
+    void VerifyThickness(Microsoft::UI::Xaml::Thickness expected, Microsoft::UI::Xaml::Thickness actual, const char* name)
+    {
+        LOG_OUTPUT(L"Verifying %hs", name);
+        VERIFY_ARE_EQUAL(expected.Left, actual.Left);
+        VERIFY_ARE_EQUAL(expected.Top, actual.Top);
+        VERIFY_ARE_EQUAL(expected.Right, actual.Right);
+        VERIFY_ARE_EQUAL(expected.Bottom, actual.Bottom);
+    }
+
+    void VerifySolidColorBrush(Microsoft::UI::Xaml::Media::Brush^ brush, unsigned argb, const char* name)
+    {
+        LOG_OUTPUT(L"Verifying %hs is a SolidColorBrush with color 0x%08X", name, argb);
+        auto solidColorBrush = dynamic_cast<Microsoft::UI::Xaml::Media::SolidColorBrush^>(brush);
+        VERIFY_IS_TRUE(solidColorBrush != nullptr);
+        VERIFY_ARE_EQUAL(static_cast<unsigned>((argb >> 24) & 0xFF), static_cast<unsigned>(solidColorBrush->Color.A));
+        VERIFY_ARE_EQUAL(static_cast<unsigned>((argb >> 16) & 0xFF), static_cast<unsigned>(solidColorBrush->Color.R));
+        VERIFY_ARE_EQUAL(static_cast<unsigned>((argb >> 8) & 0xFF), static_cast<unsigned>(solidColorBrush->Color.G));
+        VERIFY_ARE_EQUAL(static_cast<unsigned>(argb & 0xFF), static_cast<unsigned>(solidColorBrush->Color.B));
     }
 }
 
@@ -6132,6 +6165,885 @@ VerifyAllTimeZonesPartImpl(19, 20)
     Platform::String^ CalendarViewIntegrationTests::GetResourcesPath() const
     {
         return GetPackageFolder() + L"resources\\native\\enterprise\\calendarview\\";
+    }
+
+// All CalendarView brush properties, in the order they are assigned and verified.
+#define CALENDARVIEW_BRUSH_PROPERTIES(X) \
+    X(FocusBorderBrush) X(SelectedHoverBorderBrush) X(SelectedPressedBorderBrush) X(SelectedDisabledBorderBrush) \
+    X(SelectedBorderBrush) X(HoverBorderBrush) X(PressedBorderBrush) X(TodaySelectedInnerBorderBrush) \
+    X(BlackoutStrikethroughBrush) X(CalendarItemBorderBrush) X(BlackoutBackground) X(OutOfScopeBackground) \
+    X(CalendarItemBackground) X(CalendarItemHoverBackground) X(CalendarItemPressedBackground) X(CalendarItemDisabledBackground) \
+    X(TodayBackground) X(TodayBlackoutBackground) X(TodayHoverBackground) X(TodayPressedBackground) \
+    X(TodayDisabledBackground) X(PressedForeground) X(TodayForeground) X(BlackoutForeground) \
+    X(TodayBlackoutForeground) X(SelectedForeground) X(SelectedHoverForeground) X(SelectedPressedForeground) \
+    X(SelectedDisabledForeground) X(OutOfScopeForeground) X(OutOfScopeHoverForeground) X(OutOfScopePressedForeground) \
+    X(CalendarItemForeground) X(DisabledForeground)
+
+    void CalendarViewIntegrationTests::VerifyTypedPropertiesMapToDependencyProperties()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            cv = ref new xaml_controls::CalendarView();
+
+            LOG_OUTPUT(L"Defaults supplied by CalendarView are the same through the typed property and its DependencyProperty.");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"GregorianCalendar"), cv->CalendarIdentifier);
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"GregorianCalendar"), safe_cast<Platform::String^>(cv->GetValue(xaml_controls::CalendarView::CalendarIdentifierProperty)));
+            VERIFY_ARE_EQUAL(6, cv->NumberOfWeeksInView);
+            VERIFY_ARE_EQUAL(6, safe_cast<int>(cv->GetValue(xaml_controls::CalendarView::NumberOfWeeksInViewProperty)));
+
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Every CalendarView property has its own DependencyProperty identifier.");
+            xaml::DependencyProperty^ properties[] =
+            {
+#define CALENDARVIEW_PROPERTY_IDENTIFIER(name) xaml_controls::CalendarView::name##Property,
+                CALENDARVIEW_BRUSH_PROPERTIES(CALENDARVIEW_PROPERTY_IDENTIFIER)
+#undef CALENDARVIEW_PROPERTY_IDENTIFIER
+                xaml_controls::CalendarView::CalendarIdentifierProperty,
+                xaml_controls::CalendarView::DayOfWeekFormatProperty,
+                xaml_controls::CalendarView::IsGroupLabelVisibleProperty,
+                xaml_controls::CalendarView::DisplayModeProperty,
+                xaml_controls::CalendarView::FirstDayOfWeekProperty,
+                xaml_controls::CalendarView::IsOutOfScopeEnabledProperty,
+                xaml_controls::CalendarView::IsTodayHighlightedProperty,
+                xaml_controls::CalendarView::MaxDateProperty,
+                xaml_controls::CalendarView::MinDateProperty,
+                xaml_controls::CalendarView::NumberOfWeeksInViewProperty,
+                xaml_controls::CalendarView::SelectedDatesProperty,
+                xaml_controls::CalendarView::SelectionModeProperty,
+                xaml_controls::CalendarView::TemplateSettingsProperty,
+                xaml_controls::CalendarView::DayItemFontFamilyProperty,
+                xaml_controls::CalendarView::DayItemFontSizeProperty,
+                xaml_controls::CalendarView::DayItemFontStyleProperty,
+                xaml_controls::CalendarView::DayItemFontWeightProperty,
+                xaml_controls::CalendarView::TodayFontWeightProperty,
+                xaml_controls::CalendarView::FirstOfMonthLabelFontFamilyProperty,
+                xaml_controls::CalendarView::FirstOfMonthLabelFontSizeProperty,
+                xaml_controls::CalendarView::FirstOfMonthLabelFontStyleProperty,
+                xaml_controls::CalendarView::FirstOfMonthLabelFontWeightProperty,
+                xaml_controls::CalendarView::MonthYearItemFontFamilyProperty,
+                xaml_controls::CalendarView::MonthYearItemFontSizeProperty,
+                xaml_controls::CalendarView::MonthYearItemFontStyleProperty,
+                xaml_controls::CalendarView::MonthYearItemFontWeightProperty,
+                xaml_controls::CalendarView::FirstOfYearDecadeLabelFontFamilyProperty,
+                xaml_controls::CalendarView::FirstOfYearDecadeLabelFontSizeProperty,
+                xaml_controls::CalendarView::FirstOfYearDecadeLabelFontStyleProperty,
+                xaml_controls::CalendarView::FirstOfYearDecadeLabelFontWeightProperty,
+                xaml_controls::CalendarView::DayItemMarginProperty,
+                xaml_controls::CalendarView::MonthYearItemMarginProperty,
+                xaml_controls::CalendarView::FirstOfMonthLabelMarginProperty,
+                xaml_controls::CalendarView::FirstOfYearDecadeLabelMarginProperty,
+                xaml_controls::CalendarView::HorizontalDayItemAlignmentProperty,
+                xaml_controls::CalendarView::VerticalDayItemAlignmentProperty,
+                xaml_controls::CalendarView::HorizontalFirstOfMonthLabelAlignmentProperty,
+                xaml_controls::CalendarView::VerticalFirstOfMonthLabelAlignmentProperty,
+                xaml_controls::CalendarView::CalendarItemBorderThicknessProperty,
+                xaml_controls::CalendarView::CalendarViewDayItemStyleProperty,
+                xaml_controls::CalendarView::CalendarItemCornerRadiusProperty,
+            };
+
+            std::set<IUnknown*> identities;
+            for (auto property : properties)
+            {
+                VERIFY_IS_TRUE(property != nullptr);
+                wrl::ComPtr<IUnknown> identity;
+                VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(property)->QueryInterface(IID_PPV_ARGS(&identity)));
+                identities.insert(identity.Get());
+            }
+            static_assert(_countof(properties) == 75, "This list must name each of the 75 CalendarView dependency properties (CalendarView.g.h) once; it does not detect properties added to CalendarView.");
+            VERIFY_ARE_EQUAL(_countof(properties), identities.size());
+
+            LOG_OUTPUT(L"Assign a distinct, non-default value to every settable property through its typed setter.");
+            std::vector<xaml_media::Brush^> brushes;
+#define CALENDARVIEW_SET_BRUSH(name) \
+            brushes.push_back(ref new xaml_media::SolidColorBrush(Microsoft::UI::ColorHelper::FromArgb(0xFF, static_cast<unsigned char>(brushes.size() + 1), 0x20, 0x40))); \
+            cv->name = brushes.back();
+            CALENDARVIEW_BRUSH_PROPERTIES(CALENDARVIEW_SET_BRUSH)
+#undef CALENDARVIEW_SET_BRUSH
+
+            auto dayItemFontFamily = ref new xaml_media::FontFamily(L"Consolas");
+            auto firstOfMonthLabelFontFamily = ref new xaml_media::FontFamily(L"Arial");
+            auto monthYearItemFontFamily = ref new xaml_media::FontFamily(L"Courier New");
+            auto firstOfYearDecadeLabelFontFamily = ref new xaml_media::FontFamily(L"Segoe UI");
+            cv->DayItemFontFamily = dayItemFontFamily;
+            cv->FirstOfMonthLabelFontFamily = firstOfMonthLabelFontFamily;
+            cv->MonthYearItemFontFamily = monthYearItemFontFamily;
+            cv->FirstOfYearDecadeLabelFontFamily = firstOfYearDecadeLabelFontFamily;
+
+            cv->DayItemFontSize = 11.0;
+            cv->FirstOfMonthLabelFontSize = 13.0;
+            cv->MonthYearItemFontSize = 17.0;
+            cv->FirstOfYearDecadeLabelFontSize = 19.0;
+
+            cv->DayItemFontStyle = ::Windows::UI::Text::FontStyle::Italic;
+            cv->FirstOfMonthLabelFontStyle = ::Windows::UI::Text::FontStyle::Oblique;
+            cv->MonthYearItemFontStyle = ::Windows::UI::Text::FontStyle::Italic;
+            cv->FirstOfYearDecadeLabelFontStyle = ::Windows::UI::Text::FontStyle::Oblique;
+
+            ::Windows::UI::Text::FontWeight weight;
+            weight.Weight = 100; cv->DayItemFontWeight = weight;
+            weight.Weight = 200; cv->TodayFontWeight = weight;
+            weight.Weight = 300; cv->FirstOfMonthLabelFontWeight = weight;
+            weight.Weight = 800; cv->MonthYearItemFontWeight = weight;
+            weight.Weight = 900; cv->FirstOfYearDecadeLabelFontWeight = weight;
+
+            cv->DayItemMargin = MakeThickness(1, 2, 3, 4);
+            cv->MonthYearItemMargin = MakeThickness(5, 6, 7, 8);
+            cv->FirstOfMonthLabelMargin = MakeThickness(9, 10, 11, 12);
+            cv->FirstOfYearDecadeLabelMargin = MakeThickness(13, 14, 15, 16);
+            cv->CalendarItemBorderThickness = MakeThickness(3, 1, 4, 2);
+
+            cv->HorizontalDayItemAlignment = xaml::HorizontalAlignment::Left;
+            cv->HorizontalFirstOfMonthLabelAlignment = xaml::HorizontalAlignment::Right;
+            cv->VerticalDayItemAlignment = xaml::VerticalAlignment::Top;
+            cv->VerticalFirstOfMonthLabelAlignment = xaml::VerticalAlignment::Bottom;
+
+            xaml::CornerRadius cornerRadius;
+            cornerRadius.TopLeft = 1;
+            cornerRadius.TopRight = 2;
+            cornerRadius.BottomRight = 3;
+            cornerRadius.BottomLeft = 4;
+            cv->CalendarItemCornerRadius = cornerRadius;
+
+            auto dayItemStyle = ref new xaml::Style(xaml_controls::CalendarViewDayItem::typeid);
+            cv->CalendarViewDayItemStyle = dayItemStyle;
+
+            const auto minDate = MakeEnUsGregorianDate(2010, 1, 1);
+            const auto maxDate = MakeEnUsGregorianDate(2012, 12, 31);
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Julian;
+            cv->DayOfWeekFormat = L"{dayofweek.abbreviated(2)}";
+            cv->IsGroupLabelVisible = true;
+            cv->IsOutOfScopeEnabled = false;
+            cv->IsTodayHighlighted = false;
+            cv->FirstDayOfWeek = ::Windows::Globalization::DayOfWeek::Thursday;
+            cv->MinDate = minDate;
+            cv->MaxDate = maxDate;
+            cv->NumberOfWeeksInView = 4;
+            cv->SelectionMode = xaml_controls::CalendarViewSelectionMode::Multiple;
+            cv->DisplayMode = xaml_controls::CalendarViewDisplayMode::Decade;
+
+            cv->UpdateLayout();
+
+            LOG_OUTPUT(L"Every value reads back through the typed getter and through GetValue of its own identifier.");
+            unsigned brushIndex = 0;
+#define CALENDARVIEW_VERIFY_BRUSH(name) \
+            LOG_OUTPUT(L"Verifying %hs", #name); \
+            VERIFY_IS_TRUE(AreSameObject(brushes[brushIndex], cv->name)); \
+            VERIFY_IS_TRUE(AreSameObject(brushes[brushIndex], cv->GetValue(xaml_controls::CalendarView::name##Property))); \
+            ++brushIndex;
+            CALENDARVIEW_BRUSH_PROPERTIES(CALENDARVIEW_VERIFY_BRUSH)
+#undef CALENDARVIEW_VERIFY_BRUSH
+
+#define CALENDARVIEW_VERIFY_REFERENCE(name, expected) \
+            LOG_OUTPUT(L"Verifying %hs", #name); \
+            VERIFY_IS_TRUE(AreSameObject(expected, cv->name)); \
+            VERIFY_IS_TRUE(AreSameObject(expected, cv->GetValue(xaml_controls::CalendarView::name##Property)));
+            CALENDARVIEW_VERIFY_REFERENCE(DayItemFontFamily, dayItemFontFamily)
+            CALENDARVIEW_VERIFY_REFERENCE(FirstOfMonthLabelFontFamily, firstOfMonthLabelFontFamily)
+            CALENDARVIEW_VERIFY_REFERENCE(MonthYearItemFontFamily, monthYearItemFontFamily)
+            CALENDARVIEW_VERIFY_REFERENCE(FirstOfYearDecadeLabelFontFamily, firstOfYearDecadeLabelFontFamily)
+            CALENDARVIEW_VERIFY_REFERENCE(CalendarViewDayItemStyle, dayItemStyle)
+            CALENDARVIEW_VERIFY_REFERENCE(SelectedDates, cv->SelectedDates)
+            CALENDARVIEW_VERIFY_REFERENCE(TemplateSettings, cv->TemplateSettings)
+#undef CALENDARVIEW_VERIFY_REFERENCE
+            VERIFY_IS_TRUE(cv->TemplateSettings != nullptr);
+
+#define CALENDARVIEW_VERIFY_VALUE(name, type, expected) \
+            LOG_OUTPUT(L"Verifying %hs", #name); \
+            VERIFY_ARE_EQUAL(expected, cv->name); \
+            VERIFY_ARE_EQUAL(expected, safe_cast<type>(cv->GetValue(xaml_controls::CalendarView::name##Property)));
+            CALENDARVIEW_VERIFY_VALUE(DayItemFontSize, double, 11.0)
+            CALENDARVIEW_VERIFY_VALUE(FirstOfMonthLabelFontSize, double, 13.0)
+            CALENDARVIEW_VERIFY_VALUE(MonthYearItemFontSize, double, 17.0)
+            CALENDARVIEW_VERIFY_VALUE(FirstOfYearDecadeLabelFontSize, double, 19.0)
+            CALENDARVIEW_VERIFY_VALUE(DayItemFontStyle, ::Windows::UI::Text::FontStyle, ::Windows::UI::Text::FontStyle::Italic)
+            CALENDARVIEW_VERIFY_VALUE(FirstOfMonthLabelFontStyle, ::Windows::UI::Text::FontStyle, ::Windows::UI::Text::FontStyle::Oblique)
+            CALENDARVIEW_VERIFY_VALUE(MonthYearItemFontStyle, ::Windows::UI::Text::FontStyle, ::Windows::UI::Text::FontStyle::Italic)
+            CALENDARVIEW_VERIFY_VALUE(FirstOfYearDecadeLabelFontStyle, ::Windows::UI::Text::FontStyle, ::Windows::UI::Text::FontStyle::Oblique)
+            CALENDARVIEW_VERIFY_VALUE(HorizontalDayItemAlignment, xaml::HorizontalAlignment, xaml::HorizontalAlignment::Left)
+            CALENDARVIEW_VERIFY_VALUE(HorizontalFirstOfMonthLabelAlignment, xaml::HorizontalAlignment, xaml::HorizontalAlignment::Right)
+            CALENDARVIEW_VERIFY_VALUE(VerticalDayItemAlignment, xaml::VerticalAlignment, xaml::VerticalAlignment::Top)
+            CALENDARVIEW_VERIFY_VALUE(VerticalFirstOfMonthLabelAlignment, xaml::VerticalAlignment, xaml::VerticalAlignment::Bottom)
+            CALENDARVIEW_VERIFY_VALUE(CalendarIdentifier, Platform::String^, ::Windows::Globalization::CalendarIdentifiers::Julian)
+            CALENDARVIEW_VERIFY_VALUE(DayOfWeekFormat, Platform::String^, ref new Platform::String(L"{dayofweek.abbreviated(2)}"))
+            CALENDARVIEW_VERIFY_VALUE(IsGroupLabelVisible, bool, true)
+            CALENDARVIEW_VERIFY_VALUE(IsOutOfScopeEnabled, bool, false)
+            CALENDARVIEW_VERIFY_VALUE(IsTodayHighlighted, bool, false)
+            CALENDARVIEW_VERIFY_VALUE(FirstDayOfWeek, ::Windows::Globalization::DayOfWeek, ::Windows::Globalization::DayOfWeek::Thursday)
+            CALENDARVIEW_VERIFY_VALUE(NumberOfWeeksInView, int, 4)
+            CALENDARVIEW_VERIFY_VALUE(SelectionMode, xaml_controls::CalendarViewSelectionMode, xaml_controls::CalendarViewSelectionMode::Multiple)
+            CALENDARVIEW_VERIFY_VALUE(DisplayMode, xaml_controls::CalendarViewDisplayMode, xaml_controls::CalendarViewDisplayMode::Decade)
+#undef CALENDARVIEW_VERIFY_VALUE
+
+#define CALENDARVIEW_VERIFY_FONT_WEIGHT(name, expected) \
+            LOG_OUTPUT(L"Verifying %hs", #name); \
+            VERIFY_ARE_EQUAL(static_cast<unsigned short>(expected), cv->name.Weight); \
+            VERIFY_ARE_EQUAL(static_cast<unsigned short>(expected), safe_cast<::Windows::UI::Text::FontWeight>(cv->GetValue(xaml_controls::CalendarView::name##Property)).Weight);
+            CALENDARVIEW_VERIFY_FONT_WEIGHT(DayItemFontWeight, 100)
+            CALENDARVIEW_VERIFY_FONT_WEIGHT(TodayFontWeight, 200)
+            CALENDARVIEW_VERIFY_FONT_WEIGHT(FirstOfMonthLabelFontWeight, 300)
+            CALENDARVIEW_VERIFY_FONT_WEIGHT(MonthYearItemFontWeight, 800)
+            CALENDARVIEW_VERIFY_FONT_WEIGHT(FirstOfYearDecadeLabelFontWeight, 900)
+#undef CALENDARVIEW_VERIFY_FONT_WEIGHT
+
+#define CALENDARVIEW_VERIFY_THICKNESS(name, l, t, r, b) \
+            VerifyThickness(MakeThickness(l, t, r, b), cv->name, #name); \
+            VerifyThickness(MakeThickness(l, t, r, b), safe_cast<xaml::Thickness>(cv->GetValue(xaml_controls::CalendarView::name##Property)), #name " (GetValue)");
+            CALENDARVIEW_VERIFY_THICKNESS(DayItemMargin, 1, 2, 3, 4)
+            CALENDARVIEW_VERIFY_THICKNESS(MonthYearItemMargin, 5, 6, 7, 8)
+            CALENDARVIEW_VERIFY_THICKNESS(FirstOfMonthLabelMargin, 9, 10, 11, 12)
+            CALENDARVIEW_VERIFY_THICKNESS(FirstOfYearDecadeLabelMargin, 13, 14, 15, 16)
+            CALENDARVIEW_VERIFY_THICKNESS(CalendarItemBorderThickness, 3, 1, 4, 2)
+#undef CALENDARVIEW_VERIFY_THICKNESS
+
+            LOG_OUTPUT(L"Verifying CalendarItemCornerRadius");
+            auto typedCornerRadius = cv->CalendarItemCornerRadius;
+            auto boxedCornerRadius = safe_cast<xaml::CornerRadius>(cv->GetValue(xaml_controls::CalendarView::CalendarItemCornerRadiusProperty));
+            for (auto actual : { typedCornerRadius, boxedCornerRadius })
+            {
+                VERIFY_ARE_EQUAL(1.0, actual.TopLeft);
+                VERIFY_ARE_EQUAL(2.0, actual.TopRight);
+                VERIFY_ARE_EQUAL(3.0, actual.BottomRight);
+                VERIFY_ARE_EQUAL(4.0, actual.BottomLeft);
+            }
+
+            LOG_OUTPUT(L"Verifying MinDate and MaxDate");
+            VERIFY_ARE_EQUAL(minDate.UniversalTime, cv->MinDate.UniversalTime);
+            VERIFY_ARE_EQUAL(minDate.UniversalTime, safe_cast<::Windows::Foundation::DateTime>(cv->GetValue(xaml_controls::CalendarView::MinDateProperty)).UniversalTime);
+            VERIFY_ARE_EQUAL(maxDate.UniversalTime, cv->MaxDate.UniversalTime);
+            VERIFY_ARE_EQUAL(maxDate.UniversalTime, safe_cast<::Windows::Foundation::DateTime>(cv->GetValue(xaml_controls::CalendarView::MaxDateProperty)).UniversalTime);
+
+            LOG_OUTPUT(L"SelectedDates read through its DependencyProperty is the live collection.");
+            cv->SelectedDates->Append(MakeEnUsGregorianDate(2011, 5, 5));
+            auto selectedDatesFromProperty = safe_cast<::Windows::Foundation::Collections::IVector<::Windows::Foundation::DateTime>^>(cv->GetValue(xaml_controls::CalendarView::SelectedDatesProperty));
+            VERIFY_ARE_EQUAL(1u, selectedDatesFromProperty->Size);
+            VERIFY_ARE_EQUAL(cv->SelectedDates->GetAt(0).UniversalTime, selectedDatesFromProperty->GetAt(0).UniversalTime);
+        });
+    }
+
+#undef CALENDARVIEW_BRUSH_PROPERTIES
+
+    void CalendarViewIntegrationTests::VerifyDayOfWeekFormatControlsWeekDayNames()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+
+        // 2001-01-01 is a Monday: the expected names start on Monday to match FirstDayOfWeek.
+        auto getExpectedShortestNames = []()
+        {
+            std::vector<Platform::String^> names;
+            auto calendar = CreateEnUsGregorianCalendar();
+            calendar->SetDateTime(MakeEnUsGregorianDate(2001, 1, 1));
+            for (int i = 0; i < 7; ++i)
+            {
+                names.push_back(calendar->DayOfWeekAsString(1 /*shortest*/));
+                calendar->AddDays(1);
+            }
+            return names;
+        };
+        const wchar_t* fullNames[] = { L"Monday", L"Tuesday", L"Wednesday", L"Thursday", L"Friday", L"Saturday", L"Sunday" };
+
+        auto getWeekDayNames = [&]()
+        {
+            auto settings = cv->TemplateSettings;
+            return std::vector<Platform::String^>{ settings->WeekDay1, settings->WeekDay2, settings->WeekDay3, settings->WeekDay4, settings->WeekDay5, settings->WeekDay6, settings->WeekDay7 };
+        };
+
+        auto verifyAutomationNamesAreFullNames = [&]()
+        {
+            for (int i = 0; i < 7; ++i)
+            {
+                auto weekDayElement = safe_cast<xaml::DependencyObject^>(CalendarHelper::GetTemplateChild(cv, ref new Platform::String((L"WeekDay" + std::to_wstring(i + 1)).c_str())));
+                VERIFY_ARE_EQUAL(ref new Platform::String(fullNames[i]), xaml_automation::AutomationProperties::GetName(weekDayElement));
+            }
+        };
+
+        RunOnUIThread([&]()
+        {
+            cv = ref new xaml_controls::CalendarView();
+            cv->Language = L"en-US";
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Gregorian;
+            cv->FirstDayOfWeek = ::Windows::Globalization::DayOfWeek::Monday;
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Without DayOfWeekFormat the week day names are the calendar's shortest names.");
+            auto expectedShortestNames = getExpectedShortestNames();
+            auto names = getWeekDayNames();
+            for (int i = 0; i < 7; ++i)
+            {
+                VERIFY_ARE_EQUAL(expectedShortestNames[i], names[i]);
+                VERIFY_ARE_NOT_EQUAL(ref new Platform::String(fullNames[i]), names[i]);
+            }
+            verifyAutomationNamesAreFullNames();
+
+            cv->DayOfWeekFormat = L"{dayofweek.full}";
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"DayOfWeekFormat '{dayofweek.full}' formats the names with that pattern.");
+            auto names = getWeekDayNames();
+            for (int i = 0; i < 7; ++i)
+            {
+                VERIFY_ARE_EQUAL(ref new Platform::String(fullNames[i]), names[i]);
+            }
+            verifyAutomationNamesAreFullNames();
+
+            cv->DayOfWeekFormat = L"";
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"An empty DayOfWeekFormat falls back to the shortest names.");
+            auto expectedShortestNames = getExpectedShortestNames();
+            auto names = getWeekDayNames();
+            for (int i = 0; i < 7; ++i)
+            {
+                VERIFY_ARE_EQUAL(expectedShortestNames[i], names[i]);
+            }
+        });
+    }
+
+// The fallback table of CalendarView::SetRoundedCalendarViewBaseItemChromeFallbackProperties (CalendarView_Partial.cpp):
+// colors are ARGB, margins are left, top, right, bottom.
+#define CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(X) \
+    X(OutOfScopeHoverForeground, 0xE4000000) \
+    X(OutOfScopePressedForeground, 0x72000000) \
+    X(SelectedHoverForeground, 0xFF003E92) \
+    X(SelectedPressedForeground, 0xFF005FB7) \
+    X(SelectedDisabledForeground, 0x5C000000) \
+    X(TodayBlackoutForeground, 0xFFFFFFFF) \
+    X(TodaySelectedInnerBorderBrush, 0xFFFFFFFF) \
+    X(BlackoutStrikethroughBrush, 0x72000000) \
+    X(BlackoutBackground, 0x00FFFFFF) \
+    X(TodayBackground, 0xFF0067C0) \
+    X(TodayBlackoutBackground, 0xFF0078D4) \
+    X(TodayHoverBackground, 0xFF003E92) \
+    X(TodayPressedBackground, 0xFF0078D4) \
+    X(TodayDisabledBackground, 0x37000000) \
+    X(CalendarItemHoverBackground, 0x0A000000) \
+    X(CalendarItemPressedBackground, 0x06000000) \
+    X(CalendarItemDisabledBackground, 0x00FFFFFF) \
+    X(SelectedDisabledBorderBrush, 0x37000000) \
+    X(DisabledForeground, 0x5C000000)
+
+// Fallback margin, and a custom margin that is non-zero on one side only (a different side per property).
+#define CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(X) \
+    X(DayItemMargin, 0, 6, 0, 0, 0, 5, 0, 0) \
+    X(MonthYearItemMargin, 0, 2, 0, 0, 5, 0, 0, 0) \
+    X(FirstOfMonthLabelMargin, 0, 1, 0, 0, 0, 0, 5, 0) \
+    X(FirstOfYearDecadeLabelMargin, 0, 3, 0, 0, 0, 0, 0, 5)
+
+    // Shows a CalendarView whose fallback brushes are locally null and whose fallback margins are locally zero:
+    // these are the "unset" inputs of the rounded chrome fallback.
+    static xaml_controls::CalendarView^ ShowCalendarViewWithUnsetRoundedChromeValues()
+    {
+        auto cv = ref new xaml_controls::CalendarView();
+#define CALENDARVIEW_SET_NULL_BRUSH(name, argb) cv->name = nullptr;
+        CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_SET_NULL_BRUSH)
+#undef CALENDARVIEW_SET_NULL_BRUSH
+#define CALENDARVIEW_SET_ZERO_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) cv->name = MakeThickness(0, 0, 0, 0);
+        CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_SET_ZERO_MARGIN)
+#undef CALENDARVIEW_SET_ZERO_MARGIN
+        TestServices::WindowHelper->WindowContent = cv;
+        return cv;
+    }
+
+    void CalendarViewIntegrationTests::VerifyRoundedChromeFallbackPropertiesWhenForced()
+    {
+#ifndef DBG
+        WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped, L"The rounded chrome fallback values are only applied by debug (chk) builds of Microsoft.UI.Xaml.dll.");
+        return;
+#else
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+        RuntimeEnabledFeatureOverride forceRoundedChrome(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceRoundedCalendarViewBaseItemChrome, true);
+
+        LOG_OUTPUT(L"Rounded chrome forced: applying the template fills every unset value with its fallback.");
+        RunOnUIThread([&]()
+        {
+            cv = ShowCalendarViewWithUnsetRoundedChromeValues();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+#define CALENDARVIEW_VERIFY_FALLBACK_BRUSH(name, argb) VerifySolidColorBrush(cv->name, argb, #name);
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_VERIFY_FALLBACK_BRUSH)
+#undef CALENDARVIEW_VERIFY_FALLBACK_BRUSH
+#define CALENDARVIEW_VERIFY_FALLBACK_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) VerifyThickness(MakeThickness(fl, ft, fr, fb), cv->name, #name);
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_VERIFY_FALLBACK_MARGIN)
+#undef CALENDARVIEW_VERIFY_FALLBACK_MARGIN
+            TestServices::WindowHelper->WindowContent = nullptr;
+            cv = nullptr;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+#endif
+    }
+
+    void CalendarViewIntegrationTests::VerifyRoundedChromeKeepsUnforcedAndCustomValues()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+        std::vector<xaml_media::Brush^> customBrushes;
+
+        auto clearContent = [&]()
+        {
+            TestServices::WindowHelper->WindowContent = nullptr;
+            cv = nullptr;
+            customBrushes.clear();
+        };
+
+        LOG_OUTPUT(L"Rounded chrome not forced: the unset values stay unset.");
+        RunOnUIThread([&]()
+        {
+            cv = ShowCalendarViewWithUnsetRoundedChromeValues();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+#define CALENDARVIEW_VERIFY_NULL_BRUSH(name, argb) \
+            LOG_OUTPUT(L"Verifying %hs is still null", #name); \
+            VERIFY_IS_TRUE(cv->name == nullptr);
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_VERIFY_NULL_BRUSH)
+#undef CALENDARVIEW_VERIFY_NULL_BRUSH
+#define CALENDARVIEW_VERIFY_ZERO_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) VerifyThickness(MakeThickness(0, 0, 0, 0), cv->name, #name);
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_VERIFY_ZERO_MARGIN)
+#undef CALENDARVIEW_VERIFY_ZERO_MARGIN
+            clearContent();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RuntimeEnabledFeatureOverride forceRoundedChrome(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceRoundedCalendarViewBaseItemChrome, true);
+
+        LOG_OUTPUT(L"Rounded chrome forced: non-null brushes and margins that are non-zero on a single side are kept.");
+        RunOnUIThread([&]()
+        {
+            cv = ref new xaml_controls::CalendarView();
+#define CALENDARVIEW_SET_CUSTOM_BRUSH(name, argb) \
+            customBrushes.push_back(ref new xaml_media::SolidColorBrush(Microsoft::UI::ColorHelper::FromArgb(0xFF, static_cast<unsigned char>(customBrushes.size() + 1), 0x11, 0x22))); \
+            cv->name = customBrushes.back();
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_SET_CUSTOM_BRUSH)
+#undef CALENDARVIEW_SET_CUSTOM_BRUSH
+#define CALENDARVIEW_SET_CUSTOM_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) cv->name = MakeThickness(cl, ct, cr, cb);
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_SET_CUSTOM_MARGIN)
+#undef CALENDARVIEW_SET_CUSTOM_MARGIN
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            size_t brushIndex = 0;
+#define CALENDARVIEW_VERIFY_CUSTOM_BRUSH(name, argb) \
+            LOG_OUTPUT(L"Verifying %hs keeps its custom brush", #name); \
+            VERIFY_IS_TRUE(AreSameObject(customBrushes[brushIndex++], cv->name));
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES(CALENDARVIEW_VERIFY_CUSTOM_BRUSH)
+#undef CALENDARVIEW_VERIFY_CUSTOM_BRUSH
+#define CALENDARVIEW_VERIFY_CUSTOM_MARGIN(name, fl, ft, fr, fb, cl, ct, cr, cb) VerifyThickness(MakeThickness(cl, ct, cr, cb), cv->name, #name);
+            CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS(CALENDARVIEW_VERIFY_CUSTOM_MARGIN)
+#undef CALENDARVIEW_VERIFY_CUSTOM_MARGIN
+            clearContent();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+#undef CALENDARVIEW_ROUNDED_CHROME_FALLBACK_BRUSHES
+#undef CALENDARVIEW_ROUNDED_CHROME_FALLBACK_MARGINS
+
+    void CalendarViewIntegrationTests::KeyboardNavigationTestPageUpAtCalendarMinDate()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+        ::Windows::Foundation::DateTime calendarMinDate{};
+        ::Windows::Foundation::DateTime focusStartDate{};
+
+        RunOnUIThread([&]()
+        {
+            // MinDate is the first date the Gregorian calendar supports, so there is no month before the first one.
+            auto calendar = CreateEnUsGregorianCalendar();
+            calendar->SetToMin();
+            calendarMinDate = calendar->GetDateTime();
+            calendar->AddDays(10);
+            focusStartDate = calendar->GetDateTime();
+            calendar->AddMonths(3);
+
+            cv = ref new xaml_controls::CalendarView();
+            cv->Language = L"en-US";
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Gregorian;
+            cv->MinDate = calendarMinDate;
+            cv->MaxDate = calendar->GetDateTime();
+            cv->SetDisplayDate(focusStartDate);
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto panel = safe_cast<xaml_controls::Primitives::CalendarPanel^>(CalendarHelper::GetTemplateChild(cv, L"MonthViewPanel"));
+            xaml_controls::CalendarViewDayItem^ startItem = nullptr;
+            for (unsigned i = 0; i < panel->Children->Size; ++i)
+            {
+                auto dayItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(panel->Children->GetAt(i));
+                if (dayItem != nullptr && IsSameEnUsGregorianDay(dayItem->Date, focusStartDate))
+                {
+                    startItem = dayItem;
+                    break;
+                }
+            }
+            VERIFY_IS_TRUE(startItem != nullptr);
+            VERIFY_IS_TRUE(startItem->Focus(xaml::FocusState::Keyboard));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto focusedItem = safe_cast<xaml_controls::CalendarViewDayItem^>(Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(TestServices::WindowHelper->WindowContent->XamlRoot));
+            VERIFY_IS_TRUE(IsSameEnUsGregorianDay(focusStartDate, focusedItem->Date));
+        });
+
+        LOG_OUTPUT(L"PageUp can't go to the previous month, so focus moves to the first date instead.");
+        TestServices::KeyboardHelper->PageUp();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto focusedItem = safe_cast<xaml_controls::CalendarViewDayItem^>(Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(TestServices::WindowHelper->WindowContent->XamlRoot));
+            VERIFY_IS_TRUE(IsSameEnUsGregorianDay(calendarMinDate, focusedItem->Date));
+        });
+    }
+
+    void CalendarViewIntegrationTests::VerifyKeyboardNavigationAfterReplacingTemplateWithoutViewsGrid()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+        const auto november15 = MakeEnUsGregorianDate(2000, 11, 15);
+        const auto november16 = MakeEnUsGregorianDate(2000, 11, 16);
+
+        auto findMonthViewDayItem = [&](::Windows::Foundation::DateTime date) -> xaml_controls::CalendarViewDayItem^
+        {
+            auto panel = safe_cast<xaml_controls::Primitives::CalendarPanel^>(CalendarHelper::GetTemplateChild(cv, L"MonthViewPanel"));
+            for (unsigned i = 0; i < panel->Children->Size; ++i)
+            {
+                auto dayItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(panel->Children->GetAt(i));
+                if (dayItem != nullptr && IsSameEnUsGregorianDay(dayItem->Date, date))
+                {
+                    return dayItem;
+                }
+            }
+            return nullptr;
+        };
+
+        auto verifyFocusedDate = [&](::Windows::Foundation::DateTime expectedDate)
+        {
+            auto focusedItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(cv->XamlRoot));
+            VERIFY_IS_TRUE(focusedItem != nullptr);
+            VERIFY_IS_TRUE(IsSameEnUsGregorianDay(expectedDate, focusedItem->Date));
+        };
+
+        RunOnUIThread([&]()
+        {
+            cv = ref new xaml_controls::CalendarView();
+            cv->Language = L"en-US";
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Gregorian;
+            cv->FirstDayOfWeek = ::Windows::Globalization::DayOfWeek::Sunday;
+            cv->MinDate = MakeEnUsGregorianDate(2000, 11, 1);
+            cv->MaxDate = MakeEnUsGregorianDate(2000, 12, 31);
+            cv->SetDisplayDate(november15);
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(CalendarHelper::GetTemplateChild(cv, L"Views"));
+
+            LOG_OUTPUT(L"Replace the applied default template with one that only has the month view parts.");
+            cv->Template = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                L"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                L"    xmlns:primitives='using:Microsoft.UI.Xaml.Controls.Primitives' TargetType='CalendarView'>"
+                L"  <ScrollViewer x:Name='MonthViewScrollViewer' Width='350' Height='300'>"
+                L"    <primitives:CalendarPanel x:Name='MonthViewPanel'/>"
+                L"  </ScrollViewer>"
+                L"</ControlTemplate>"));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"The new template is applied and its month view panel shows the days.");
+            VERIFY_IS_NULL(CalendarHelper::GetTemplateChild(cv, L"Views"));
+            auto dayItem = findMonthViewDayItem(november15);
+            VERIFY_IS_NOT_NULL(dayItem);
+            VERIFY_IS_TRUE(dayItem->Focus(xaml::FocusState::Keyboard));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Left-to-right: Right moves focus to the next day.");
+        TestServices::KeyboardHelper->Right();
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            verifyFocusedDate(november16);
+            cv->FlowDirection = xaml::FlowDirection::RightToLeft;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Without a Views grid the CalendarView's own FlowDirection applies: in right-to-left, Right moves focus to the previous day.");
+        TestServices::KeyboardHelper->Right();
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            verifyFocusedDate(november15);
+        });
+    }
+
+    void CalendarViewIntegrationTests::VerifyMinDateLaterThanMaxDateFailsMeasure()
+    {
+        TestCleanupWrapper cleanup;
+        DisableErrorReportingScopeGuard disableErrors;
+        xaml_controls::Grid^ root = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            root = ref new xaml_controls::Grid();
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto cv = ref new xaml_controls::CalendarView();
+            cv->Language = L"en-US";
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Gregorian;
+            cv->MinDate = MakeEnUsGregorianDate(2001, 1, 1);
+            cv->MaxDate = MakeEnUsGregorianDate(2000, 1, 1);
+            root->Children->Append(cv);
+
+            LOG_OUTPUT(L"MinDate is later than MaxDate: measuring the CalendarView fails and it is the layout exception element.");
+            VERIFY_THROWS_WINRT(cv->Measure(::Windows::Foundation::Size(400, 400)), Platform::FailureException^);
+            VERIFY_IS_TRUE(AreSameObject(cv, xaml_primitives::LayoutInformation::GetLayoutExceptionElement(TestServices::WindowHelper->CurrentDispatcher)));
+
+            LOG_OUTPUT(L"After the range is made valid, the CalendarView measures again.");
+            cv->MaxDate = MakeEnUsGregorianDate(2001, 12, 31);
+            cv->Measure(::Windows::Foundation::Size(400, 400));
+            VERIFY_IS_GREATER_THAN(cv->DesiredSize.Height, 0.0f);
+
+            root->Children->Clear();
+            TestServices::WindowHelper->WindowContent = nullptr;
+        });
+
+        TestServices::WindowHelper->SetLastLayoutExceptionElement(nullptr);
+    }
+
+    void CalendarViewIntegrationTests::VerifyNextButtonCrossesJapaneseEraWithinOneYearViewRow()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+        xaml_controls::Button^ nextButton = nullptr;
+        xaml_controls::ScrollViewer^ yearViewScrollViewer = nullptr;
+
+        // Showa 64 is 1989-01-01..1989-01-07 and Heisei 1 starts on 1989-01-08 (Gregorian dates). Starting at
+        // January 1988, the year view items are Showa 63 Jan-Dec (0-11), Showa 64 Jan (12), Heisei 1 Jan (13), ...
+        // so on a 4 x 4 year view January of both Showa 64 and Heisei 1 are in the same row.
+        const auto showa64 = MakeEnUsGregorianDate(1989, 1, 3);
+        const auto heisei1 = MakeEnUsGregorianDate(1989, 6, 1);
+
+        auto formatJapaneseYear = [](::Windows::Foundation::DateTime date)
+        {
+            auto formatter = ref new ::Windows::Globalization::DateTimeFormatting::DateTimeFormatter(
+                L"year",
+                GetEnUsLanguages(),
+                L"ZZ",
+                ::Windows::Globalization::CalendarIdentifiers::Japanese,
+                ::Windows::Globalization::ClockIdentifiers::TwentyFourHour);
+            return formatter->Format(date);
+        };
+
+        RunOnUIThread([&]()
+        {
+            cv = ref new xaml_controls::CalendarView();
+            cv->Language = L"en-US";
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Japanese;
+            cv->MinDate = MakeEnUsGregorianDate(1988, 1, 15);
+            cv->MaxDate = MakeEnUsGregorianDate(1992, 12, 15);
+            cv->DisplayMode = xaml_controls::CalendarViewDisplayMode::Year;
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            cv->SetYearDecadeDisplayDimensions(4 /*columns*/, 4 /*rows*/);
+            cv->SetDisplayDate(showa64);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            nextButton = safe_cast<xaml_controls::Button^>(CalendarHelper::GetTemplateChild(cv, L"NextButton"));
+            yearViewScrollViewer = safe_cast<xaml_controls::ScrollViewer^>(CalendarHelper::GetTemplateChild(cv, L"YearViewScrollViewer"));
+
+            LOG_OUTPUT(L"The year view starts at Showa 64.");
+            VERIFY_ARE_NOT_EQUAL(formatJapaneseYear(showa64), formatJapaneseYear(heisei1));
+            VERIFY_ARE_EQUAL(formatJapaneseYear(showa64), cv->TemplateSettings->HeaderText);
+        });
+
+        auto viewChangedEvent = std::make_shared<Event>();
+        auto viewChangedRegistration = CreateSafeEventRegistration(xaml_controls::ScrollViewer, ViewChanged);
+        viewChangedRegistration.Attach(yearViewScrollViewer,
+            ref new ::Windows::Foundation::EventHandler<xaml_controls::ScrollViewerViewChangedEventArgs^>(
+            [viewChangedEvent](Platform::Object^, xaml_controls::ScrollViewerViewChangedEventArgs^ e)
+        {
+            if (!e->IsIntermediate)
+            {
+                viewChangedEvent->Set();
+            }
+        }));
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Click Next: the next year, Heisei 1, starts in the same row as Showa 64.");
+            auto nextButtonPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(nextButton);
+            safe_cast<xaml_automation::Provider::IInvokeProvider^>(nextButtonPeer->GetPattern(xaml_automation_peers::PatternInterface::Invoke))->Invoke();
+        });
+
+        LOG_OUTPUT(L"The year view still scrolls down, to Heisei 1.");
+        viewChangedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(formatJapaneseYear(heisei1), cv->TemplateSettings->HeaderText);
+        });
+    }
+
+    void CalendarViewIntegrationTests::VerifyKeyDownHandledByAppOrFromNonItemIsIgnored()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ cv = nullptr;
+        xaml_controls::Primitives::CalendarPanel^ monthViewPanel = nullptr;
+        const auto november15 = MakeEnUsGregorianDate(2000, 11, 15);
+        const auto november22 = MakeEnUsGregorianDate(2000, 11, 22);
+
+        // Owned by the handler (captured by value): whether to handle keys, and the last key args it saw.
+        struct PanelKeyDownState
+        {
+            bool handleKeys = false;
+            Microsoft::UI::Xaml::Input::KeyRoutedEventArgs^ lastArgs = nullptr;
+        };
+        auto state = std::make_shared<PanelKeyDownState>();
+
+        auto verifyFocusedDate = [&](::Windows::Foundation::DateTime expectedDate)
+        {
+            auto focusedItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(cv->XamlRoot));
+            VERIFY_IS_TRUE(focusedItem != nullptr);
+            VERIFY_IS_TRUE(IsSameEnUsGregorianDay(expectedDate, focusedItem->Date));
+        };
+
+        auto keyDownRegistration = CreateSafeEventRegistration(xaml::FrameworkElement, KeyDown);
+        auto releaseStoredArgs = wil::scope_exit([&]()
+        {
+            RunOnUIThread([&]()
+            {
+                state->lastArgs = nullptr;
+            });
+        });
+
+        RunOnUIThread([&]()
+        {
+            cv = ref new xaml_controls::CalendarView();
+            cv->Language = L"en-US";
+            cv->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Gregorian;
+            cv->FirstDayOfWeek = ::Windows::Globalization::DayOfWeek::Sunday;
+            cv->MinDate = MakeEnUsGregorianDate(2000, 11, 1);
+            cv->MaxDate = MakeEnUsGregorianDate(2000, 12, 31);
+            cv->SetDisplayDate(november15);
+            TestServices::WindowHelper->WindowContent = cv;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            monthViewPanel = safe_cast<xaml_controls::Primitives::CalendarPanel^>(CalendarHelper::GetTemplateChild(cv, L"MonthViewPanel"));
+        });
+
+        keyDownRegistration.Attach(monthViewPanel, ref new Microsoft::UI::Xaml::Input::KeyEventHandler(
+            [state](Platform::Object^, Microsoft::UI::Xaml::Input::KeyRoutedEventArgs^ e)
+        {
+            state->lastArgs = e;
+            if (state->handleKeys)
+            {
+                e->Handled = true;
+            }
+        }));
+
+        RunOnUIThread([&]()
+        {
+            xaml_controls::CalendarViewDayItem^ startItem = nullptr;
+            for (unsigned i = 0; i < monthViewPanel->Children->Size; ++i)
+            {
+                auto dayItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(monthViewPanel->Children->GetAt(i));
+                if (dayItem != nullptr && IsSameEnUsGregorianDay(dayItem->Date, november15))
+                {
+                    startItem = dayItem;
+                    break;
+                }
+            }
+            VERIFY_IS_NOT_NULL(startItem);
+            VERIFY_IS_TRUE(startItem->Focus(xaml::FocusState::Keyboard));
+            state->handleKeys = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"The app handles Down on its way from the day item to the CalendarView: focus stays on 2000-11-15.");
+        TestServices::KeyboardHelper->Down();
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(state->lastArgs);
+            VERIFY_ARE_EQUAL(::Windows::System::VirtualKey::Down, state->lastArgs->Key);
+            verifyFocusedDate(november15);
+            state->lastArgs = nullptr;
+            state->handleKeys = false;
+        });
+
+        LOG_OUTPUT(L"Unhandled, Down moves focus one week down, to 2000-11-22.");
+        TestServices::KeyboardHelper->Down();
+        TestServices::WindowHelper->WaitForIdle();
+        xaml_controls::Button^ headerButton = nullptr;
+        RunOnUIThread([&]()
+        {
+            verifyFocusedDate(november22);
+
+            // The handler still holds the args of that key press, which came from a day item.
+            VERIFY_IS_NOT_NULL(state->lastArgs);
+            VERIFY_ARE_EQUAL(::Windows::System::VirtualKey::Down, state->lastArgs->Key);
+            headerButton = safe_cast<xaml_controls::Button^>(CalendarHelper::GetTemplateChild(cv, L"HeaderButton"));
+            VERIFY_IS_TRUE(headerButton->Focus(xaml::FocusState::Keyboard));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Down from the header button isn't a date navigation: focus stays on the header button and the month view stays.");
+        TestServices::KeyboardHelper->Down();
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            auto focusedElement = Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(cv->XamlRoot);
+            VERIFY_IS_TRUE(AreSameObject(headerButton, focusedElement));
+            VERIFY_ARE_EQUAL(xaml_controls::CalendarViewDisplayMode::Month, cv->DisplayMode);
+        });
     }
 } } } } } } // Microsoft::UI::Xaml::Tests::Enterprise::CalendarView
 

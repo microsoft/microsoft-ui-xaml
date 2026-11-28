@@ -383,4 +383,80 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             } };
     }
 
+    // The helpers below pin language, calendar and clock so expected dates and strings don't depend on the
+    // machine's locale (CalendarView formats with its Language, CalendarIdentifier and a 24-hour clock).
+    static Platform::Collections::Vector<Platform::String^>^ GetEnUsLanguages()
+    {
+        auto languages = ref new Platform::Collections::Vector<Platform::String^>();
+        languages->Append(L"en-US");
+        return languages;
+    }
+
+    static ::Windows::Globalization::Calendar^ CreateEnUsGregorianCalendar()
+    {
+        return ref new ::Windows::Globalization::Calendar(
+            GetEnUsLanguages(),
+            ::Windows::Globalization::CalendarIdentifiers::Gregorian,
+            ::Windows::Globalization::ClockIdentifiers::TwentyFourHour);
+    }
+
+    static ::Windows::Foundation::DateTime MakeEnUsGregorianDate(int year, int month, int day)
+    {
+        auto calendar = CreateEnUsGregorianCalendar();
+        calendar->Day = 1; // keep the date valid while the year and month change
+        calendar->Year = year;
+        calendar->Month = month;
+        calendar->Day = day;
+        calendar->Hour = 12;
+        calendar->Minute = 0;
+        calendar->Second = 0;
+        calendar->Nanosecond = 0;
+        return calendar->GetDateTime();
+    }
+
+    static bool IsSameEnUsGregorianDay(::Windows::Foundation::DateTime lhs, ::Windows::Foundation::DateTime rhs)
+    {
+        auto lhsCalendar = CreateEnUsGregorianCalendar();
+        lhsCalendar->SetDateTime(lhs);
+        auto rhsCalendar = CreateEnUsGregorianCalendar();
+        rhsCalendar->SetDateTime(rhs);
+        return lhsCalendar->Era == rhsCalendar->Era &&
+            lhsCalendar->Year == rhsCalendar->Year &&
+            lhsCalendar->Month == rhsCalendar->Month &&
+            lhsCalendar->Day == rhsCalendar->Day;
+    }
+
+    static ::Windows::Globalization::DayOfWeek GetEnUsGregorianDayOfWeek(::Windows::Foundation::DateTime date)
+    {
+        auto calendar = CreateEnUsGregorianCalendar();
+        calendar->SetDateTime(date);
+        return calendar->DayOfWeek;
+    }
+
+    static Platform::String^ FormatEnUsGregorian(Platform::String^ formatTemplate, ::Windows::Foundation::DateTime date)
+    {
+        auto formatter = ref new ::Windows::Globalization::DateTimeFormatting::DateTimeFormatter(
+            formatTemplate,
+            GetEnUsLanguages(),
+            L"ZZ",
+            ::Windows::Globalization::CalendarIdentifiers::Gregorian,
+            ::Windows::Globalization::ClockIdentifiers::TwentyFourHour);
+        return formatter->Format(date);
+    }
+
+    // Compares COM identity; different interface hats of the same object are not reference-equal.
+    static bool AreSameObject(Platform::Object^ lhs, Platform::Object^ rhs)
+    {
+        if (lhs == nullptr || rhs == nullptr)
+        {
+            return lhs == nullptr && rhs == nullptr;
+        }
+
+        Microsoft::WRL::ComPtr<IUnknown> lhsUnknown;
+        Microsoft::WRL::ComPtr<IUnknown> rhsUnknown;
+        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(lhs)->QueryInterface(IID_PPV_ARGS(&lhsUnknown)));
+        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(rhs)->QueryInterface(IID_PPV_ARGS(&rhsUnknown)));
+        return lhsUnknown.Get() == rhsUnknown.Get();
+    }
+
 } } } } } }

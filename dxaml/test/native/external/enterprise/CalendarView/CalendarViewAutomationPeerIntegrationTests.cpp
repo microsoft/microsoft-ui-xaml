@@ -13,6 +13,11 @@
 #include "CalendarHelper.h"
 #include <UIAutomationHelper.h>
 #include <TreeHelper.h>
+#include <roapi.h>
+#include <algorithm>
+#include <vector>
+
+#undef GetClassName // Conflicts with automation peer method of the same name
 
 using namespace std;
 using namespace Microsoft::UI::Xaml::Tests::Common;
@@ -31,6 +36,127 @@ namespace local {
             return PeerFromProvider(provider);
         }
     };
+
+    unsigned GetLength(Platform::Array<xaml_automation::Provider::IRawElementProviderSimple^>^ providers)
+    {
+        return providers == nullptr ? 0u : providers->Length;
+    }
+
+    xaml_automation_peers::AutomationPeer^ GetPeerFromProvider(xaml_automation::Provider::IRawElementProviderSimple^ provider)
+    {
+        VERIFY_IS_TRUE(provider != nullptr);
+        auto bridge = ref new BridgeAutomationPeer();
+        auto peer = bridge->CallPeerFromProvider(provider);
+        VERIFY_IS_TRUE(peer != nullptr);
+        return peer;
+    }
+
+    xaml::UIElement^ GetOwnerFromProvider(xaml_automation::Provider::IRawElementProviderSimple^ provider)
+    {
+        return safe_cast<xaml_automation_peers::FrameworkElementAutomationPeer^>(GetPeerFromProvider(provider))->Owner;
+    }
+
+    xaml_controls::CalendarView^ CreatePinnedCalendarView(::Windows::Foundation::DateTime minDate, ::Windows::Foundation::DateTime maxDate)
+    {
+        auto calendarView = ref new xaml_controls::CalendarView();
+        calendarView->Language = L"en-US";
+        calendarView->CalendarIdentifier = ::Windows::Globalization::CalendarIdentifiers::Gregorian;
+        calendarView->FirstDayOfWeek = ::Windows::Globalization::DayOfWeek::Sunday;
+        calendarView->MinDate = minDate;
+        calendarView->MaxDate = maxDate;
+        calendarView->SetDisplayDate(minDate);
+        xaml_automation::AutomationProperties::SetName(calendarView, L"CalendarView");
+        return calendarView;
+    }
+
+    xaml_controls::CalendarViewDayItem^ FindRealizedDayItem(xaml_controls::CalendarView^ calendarView, ::Windows::Foundation::DateTime date)
+    {
+        auto dayItems = ref new Platform::Collections::Vector<xaml_controls::CalendarViewDayItem^>();
+        Microsoft::UI::Xaml::Tests::Common::TreeHelper::GetVisualChildrenByType(calendarView, dayItems);
+        for (auto dayItem : dayItems)
+        {
+            if (IsSameEnUsGregorianDay(dayItem->Date, date))
+            {
+                return dayItem;
+            }
+        }
+        return nullptr;
+    }
+
+    // Verifies GridProvider::GetItem(row, column) in month view returns the day item for expectedDate, that the
+    // column matches the day of the week (FirstDayOfWeek is Sunday) and that the item reports the same grid position.
+    void VerifyMonthViewGridItem(
+        xaml_automation::Provider::IGridProvider^ gridProvider,
+        int row,
+        int column,
+        ::Windows::Foundation::DateTime expectedDate)
+    {
+        LOG_OUTPUT(L"GetItem(%d, %d)", row, column);
+        auto provider = gridProvider->GetItem(row, column);
+        VERIFY_IS_TRUE(provider != nullptr);
+
+        auto dayItem = safe_cast<xaml_controls::CalendarViewDayItem^>(GetOwnerFromProvider(provider));
+        VERIFY_IS_TRUE(IsSameEnUsGregorianDay(expectedDate, dayItem->Date));
+        VERIFY_ARE_EQUAL(column, static_cast<int>(GetEnUsGregorianDayOfWeek(dayItem->Date)));
+
+        auto gridItemProvider = safe_cast<xaml_automation::Provider::IGridItemProvider^>(GetPeerFromProvider(provider));
+        VERIFY_ARE_EQUAL(row, gridItemProvider->Row);
+        VERIFY_ARE_EQUAL(column, gridItemProvider->Column);
+    }
+
+    // Must run on the UIA thread. Returns a client manager whose current element is the descendant (with the given
+    // AutomationId) of rootManager's current element, so event handlers can be attached to that element only.
+    std::shared_ptr<AutomationClient::AutomationClientManager> CreateClientManagerForDescendant(
+        const std::shared_ptr<AutomationClient::AutomationClientManager>& rootManager,
+        const wchar_t* automationId)
+    {
+        wrl::ComPtr<IUIAutomation> automation;
+        rootManager->GetAutomation(&automation);
+        wrl::ComPtr<IUIAutomationElement> rootElement;
+        rootManager->GetCurrentUIAutomationElement(&rootElement);
+        VERIFY_IS_TRUE(rootElement != nullptr);
+
+        wil::unique_variant automationIdVariant;
+        automationIdVariant.vt = VT_BSTR;
+        automationIdVariant.bstrVal = ::SysAllocString(automationId);
+        wrl::ComPtr<IUIAutomationCondition> condition;
+        VERIFY_SUCCEEDED(automation->CreatePropertyCondition(UIA_AutomationIdPropertyId, automationIdVariant, &condition));
+
+        wrl::ComPtr<IUIAutomationElement> element;
+        VERIFY_SUCCEEDED(rootElement->FindFirst(TreeScope_Descendants, condition.Get(), &element));
+        VERIFY_IS_TRUE(element != nullptr);
+
+        auto manager = std::make_shared<AutomationClient::AutomationClientManager>();
+        manager->SetCurrentUIAutomationElement(element.Get());
+        return manager;
+    }
+
+    // IIDs of the public CalendarView interfaces, from the Microsoft.UI.Xaml.Controls metadata.
+    const GUID c_iidICalendarView = { 0xE786081E, 0xB680, 0x56AB, { 0xBF, 0xBB, 0x52, 0xD5, 0xB1, 0x7C, 0x36, 0x5E } };
+    const GUID c_iidICalendarViewFactory = { 0x2F31D1EB, 0x8229, 0x517C, { 0xB3, 0xA6, 0x5A, 0x5F, 0x28, 0x72, 0x4E, 0x8F } };
+    const GUID c_iidICalendarViewStatics = { 0x9553E6FC, 0xE4DA, 0x57D4, { 0x94, 0x72, 0x7F, 0x8E, 0xD5, 0xFF, 0x72, 0x19 } };
+
+    // Returns the IIDs reported by IInspectable::GetIids and verifies the object implements each of them.
+    std::vector<GUID> GetVerifiedIids(IInspectable* object)
+    {
+        ULONG count = 0;
+        IID* iids = nullptr;
+        VERIFY_SUCCEEDED(object->GetIids(&count, &iids));
+        auto freeIids = wil::scope_exit([&]() { ::CoTaskMemFree(iids); });
+
+        std::vector<GUID> result(iids, iids + count);
+        for (const auto& iid : result)
+        {
+            wrl::ComPtr<IUnknown> unknown;
+            VERIFY_SUCCEEDED(object->QueryInterface(iid, reinterpret_cast<void**>(unknown.GetAddressOf())));
+        }
+        return result;
+    }
+
+    bool ContainsIid(const std::vector<GUID>& iids, const GUID& iid)
+    {
+        return std::find(iids.begin(), iids.end(), iid) != iids.end();
+    }
 }
 
 
@@ -720,6 +846,555 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
         {
             notificationEventHandler->ConfirmAndUnregister();
+        });
+    }
+
+    void CalendarViewAutomationPeerIntegrationTests::VerifyCalendarViewPeerPatternsAndReadOnlyContract()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ calendarView = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            calendarView = local::CreatePinnedCalendarView(MakeEnUsGregorianDate(2000, 11, 15), MakeEnUsGregorianDate(2001, 1, 15));
+            TestServices::WindowHelper->WindowContent = calendarView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            VERIFY_IS_TRUE(peer != nullptr);
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"CalendarView"), peer->GetClassName());
+            VERIFY_ARE_EQUAL(xaml_automation_peers::AutomationControlType::Calendar, peer->GetAutomationControlType());
+
+            LOG_OUTPUT(L"The Grid, Table, Selection and Value patterns are implemented by the CalendarView peer itself.");
+            const xaml_automation_peers::PatternInterface supportedPatterns[] =
+            {
+                xaml_automation_peers::PatternInterface::Grid,
+                xaml_automation_peers::PatternInterface::Table,
+                xaml_automation_peers::PatternInterface::Selection,
+                xaml_automation_peers::PatternInterface::Value,
+            };
+            for (auto pattern : supportedPatterns)
+            {
+                VERIFY_IS_TRUE(AreSameObject(peer, peer->GetPattern(pattern)));
+            }
+
+            LOG_OUTPUT(L"Other patterns fall back to the base peer, which doesn't support them.");
+            VERIFY_IS_TRUE(peer->GetPattern(xaml_automation_peers::PatternInterface::Invoke) == nullptr);
+            VERIFY_IS_TRUE(peer->GetPattern(xaml_automation_peers::PatternInterface::Toggle) == nullptr);
+
+            auto tableProvider = safe_cast<xaml_automation::Provider::ITableProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Table));
+            VERIFY_ARE_EQUAL(xaml_automation::RowOrColumnMajor::RowMajor, tableProvider->RowOrColumnMajor);
+            VERIFY_ARE_EQUAL(0u, local::GetLength(tableProvider->GetRowHeaders()));
+
+            auto selectionProvider = safe_cast<xaml_automation::Provider::ISelectionProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Selection));
+            VERIFY_IS_FALSE(selectionProvider->IsSelectionRequired);
+
+            LOG_OUTPUT(L"The Value pattern is read-only: SetValue is not implemented and doesn't select a date.");
+            auto valueProvider = safe_cast<xaml_automation::Provider::IValueProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Value));
+            VERIFY_IS_TRUE(valueProvider->IsReadOnly);
+
+            bool threwNotImplemented = false;
+            try
+            {
+                valueProvider->SetValue(L"November 20, 2000");
+            }
+            catch (Platform::NotImplementedException^)
+            {
+                threwNotImplemented = true;
+            }
+            VERIFY_IS_TRUE(threwNotImplemented);
+            VERIFY_ARE_EQUAL(0u, calendarView->SelectedDates->Size);
+        });
+    }
+
+    void CalendarViewAutomationPeerIntegrationTests::VerifyCalendarViewPeerGridAndTableInMonthView()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ calendarView = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            // 2000-11-15 is a Wednesday, so with Sunday as the first day of the week the first item is in column 3.
+            calendarView = local::CreatePinnedCalendarView(MakeEnUsGregorianDate(2000, 11, 15), MakeEnUsGregorianDate(2001, 1, 15));
+            TestServices::WindowHelper->WindowContent = calendarView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            auto gridProvider = safe_cast<xaml_automation::Provider::IGridProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Grid));
+
+            LOG_OUTPUT(L"Month view: 7 columns (days of the week) and NumberOfWeeksInView (default 6) rows.");
+            VERIFY_ARE_EQUAL(7, gridProvider->ColumnCount);
+            VERIFY_ARE_EQUAL(6, gridProvider->RowCount);
+
+            LOG_OUTPUT(L"The first row starts before MinDate: the cells before it are empty and MinDate is in column 3.");
+            VERIFY_IS_TRUE(gridProvider->GetItem(0, 0) == nullptr);
+            VERIFY_IS_TRUE(gridProvider->GetItem(0, 2) == nullptr);
+            local::VerifyMonthViewGridItem(gridProvider, 0, 3, MakeEnUsGregorianDate(2000, 11, 15));
+            local::VerifyMonthViewGridItem(gridProvider, 0, 6, MakeEnUsGregorianDate(2000, 11, 18));
+            local::VerifyMonthViewGridItem(gridProvider, 1, 0, MakeEnUsGregorianDate(2000, 11, 19));
+            local::VerifyMonthViewGridItem(gridProvider, 2, 4, MakeEnUsGregorianDate(2000, 11, 30));
+
+            LOG_OUTPUT(L"The column headers are the week day names, starting with FirstDayOfWeek.");
+            auto tableProvider = safe_cast<xaml_automation::Provider::ITableProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Table));
+            auto columnHeaders = tableProvider->GetColumnHeaders();
+            const wchar_t* sundayFirstNames[] = { L"Sunday", L"Monday", L"Tuesday", L"Wednesday", L"Thursday", L"Friday", L"Saturday" };
+            VERIFY_ARE_EQUAL(7u, local::GetLength(columnHeaders));
+            for (unsigned i = 0; i < 7; ++i)
+            {
+                VERIFY_ARE_EQUAL(ref new Platform::String(sundayFirstNames[i]), local::GetPeerFromProvider(columnHeaders[i])->GetName());
+            }
+
+            calendarView->FirstDayOfWeek = ::Windows::Globalization::DayOfWeek::Monday;
+            calendarView->NumberOfWeeksInView = 3;
+            calendarView->SetDisplayDate(MakeEnUsGregorianDate(2001, 1, 10));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            auto gridProvider = safe_cast<xaml_automation::Provider::IGridProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Grid));
+
+            LOG_OUTPUT(L"RowCount follows NumberOfWeeksInView.");
+            VERIFY_ARE_EQUAL(7, gridProvider->ColumnCount);
+            VERIFY_ARE_EQUAL(3, gridProvider->RowCount);
+
+            LOG_OUTPUT(L"After scrolling away from the first row, each visible row is a full week starting on Monday.");
+            const auto firstRowFirstItem = gridProvider->GetItem(0, 0);
+            VERIFY_IS_TRUE(firstRowFirstItem != nullptr);
+            auto firstDate = safe_cast<xaml_controls::CalendarViewDayItem^>(local::GetOwnerFromProvider(firstRowFirstItem))->Date;
+            VERIFY_IS_GREATER_THAN(firstDate.UniversalTime, MakeEnUsGregorianDate(2000, 11, 20).UniversalTime);
+            VERIFY_ARE_EQUAL(::Windows::Globalization::DayOfWeek::Monday, GetEnUsGregorianDayOfWeek(firstDate));
+
+            const long long ticksPerDay = 24LL * 60 * 60 * 10000000;
+            for (int row = 0; row < 2; ++row)
+            {
+                for (int column = 0; column < 7; ++column)
+                {
+                    auto provider = gridProvider->GetItem(row, column);
+                    VERIFY_IS_TRUE(provider != nullptr);
+                    auto date = safe_cast<xaml_controls::CalendarViewDayItem^>(local::GetOwnerFromProvider(provider))->Date;
+                    ::Windows::Foundation::DateTime expected{ firstDate.UniversalTime + (row * 7 + column) * ticksPerDay };
+                    VERIFY_IS_TRUE(IsSameEnUsGregorianDay(expected, date));
+
+                    auto gridItemProvider = safe_cast<xaml_automation::Provider::IGridItemProvider^>(local::GetPeerFromProvider(provider));
+                    VERIFY_ARE_EQUAL(row, gridItemProvider->Row);
+                    VERIFY_ARE_EQUAL(column, gridItemProvider->Column);
+                }
+            }
+
+            LOG_OUTPUT(L"The column headers follow the new FirstDayOfWeek.");
+            auto tableProvider = safe_cast<xaml_automation::Provider::ITableProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Table));
+            auto columnHeaders = tableProvider->GetColumnHeaders();
+            const wchar_t* mondayFirstNames[] = { L"Monday", L"Tuesday", L"Wednesday", L"Thursday", L"Friday", L"Saturday", L"Sunday" };
+            VERIFY_ARE_EQUAL(7u, local::GetLength(columnHeaders));
+            for (unsigned i = 0; i < 7; ++i)
+            {
+                VERIFY_ARE_EQUAL(ref new Platform::String(mondayFirstNames[i]), local::GetPeerFromProvider(columnHeaders[i])->GetName());
+            }
+        });
+    }
+
+    void CalendarViewAutomationPeerIntegrationTests::VerifyCalendarViewPeerGridAndRowHeadersInYearView()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ calendarView = nullptr;
+        const auto november2000 = MakeEnUsGregorianDate(2000, 11, 15);
+        const auto january2001 = MakeEnUsGregorianDate(2001, 1, 15);
+
+        RunOnUIThread([&]()
+        {
+            // Three months (Nov 2000 - Jan 2001) shown on a 3 x 2 year view.
+            calendarView = local::CreatePinnedCalendarView(november2000, january2001);
+            calendarView->DisplayMode = xaml_controls::CalendarViewDisplayMode::Year;
+            TestServices::WindowHelper->WindowContent = calendarView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            calendarView->SetYearDecadeDisplayDimensions(3 /*columns*/, 2 /*rows*/);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            auto gridProvider = safe_cast<xaml_automation::Provider::IGridProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Grid));
+            auto tableProvider = safe_cast<xaml_automation::Provider::ITableProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Table));
+
+            LOG_OUTPUT(L"Year view uses the year/decade display dimensions and has no column headers.");
+            VERIFY_ARE_EQUAL(3, gridProvider->ColumnCount);
+            VERIFY_ARE_EQUAL(2, gridProvider->RowCount);
+            VERIFY_ARE_EQUAL(0u, local::GetLength(tableProvider->GetColumnHeaders()));
+
+            LOG_OUTPUT(L"Items are the months in range, laid out from the first cell; there is no fourth month.");
+            auto novemberItem = gridProvider->GetItem(0, 0);
+            auto januaryItem = gridProvider->GetItem(0, 2);
+            VERIFY_IS_TRUE(novemberItem != nullptr);
+            VERIFY_IS_TRUE(januaryItem != nullptr);
+            VERIFY_IS_TRUE(gridProvider->GetItem(1, 0) == nullptr);
+
+            auto novemberPeer = local::GetPeerFromProvider(novemberItem);
+            auto januaryPeer = local::GetPeerFromProvider(januaryItem);
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"CalendarViewItem"), novemberPeer->GetClassName());
+            VERIFY_IS_FALSE(AreSameObject(novemberPeer, januaryPeer));
+
+            auto januaryGridItem = safe_cast<xaml_automation::Provider::IGridItemProvider^>(januaryPeer);
+            VERIFY_ARE_EQUAL(0, januaryGridItem->Row);
+            VERIFY_ARE_EQUAL(2, januaryGridItem->Column);
+
+            LOG_OUTPUT(L"In year view each item's row header is the year it belongs to.");
+            auto novemberRowHeaders = safe_cast<xaml_automation::Provider::ITableItemProvider^>(novemberPeer->GetPattern(xaml_automation_peers::PatternInterface::TableItem))->GetRowHeaderItems();
+            auto januaryRowHeaders = safe_cast<xaml_automation::Provider::ITableItemProvider^>(januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::TableItem))->GetRowHeaderItems();
+            VERIFY_ARE_EQUAL(1u, local::GetLength(novemberRowHeaders));
+            VERIFY_ARE_EQUAL(1u, local::GetLength(januaryRowHeaders));
+            VERIFY_ARE_EQUAL(FormatEnUsGregorian(L"year", november2000), local::GetPeerFromProvider(novemberRowHeaders[0])->GetName());
+            VERIFY_ARE_EQUAL(FormatEnUsGregorian(L"year", january2001), local::GetPeerFromProvider(januaryRowHeaders[0])->GetName());
+
+            calendarView->DisplayMode = xaml_controls::CalendarViewDisplayMode::Decade;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            auto gridProvider = safe_cast<xaml_automation::Provider::IGridProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Grid));
+
+            LOG_OUTPUT(L"Decade view: the items are the years 2000 and 2001, and they have no row headers.");
+            VERIFY_ARE_EQUAL(3, gridProvider->ColumnCount);
+            VERIFY_ARE_EQUAL(2, gridProvider->RowCount);
+            auto yearItem = gridProvider->GetItem(0, 0);
+            VERIFY_IS_TRUE(yearItem != nullptr);
+            VERIFY_IS_TRUE(gridProvider->GetItem(0, 1) != nullptr);
+            VERIFY_IS_TRUE(gridProvider->GetItem(0, 2) == nullptr);
+
+            auto yearRowHeaders = safe_cast<xaml_automation::Provider::ITableItemProvider^>(local::GetPeerFromProvider(yearItem)->GetPattern(xaml_automation_peers::PatternInterface::TableItem))->GetRowHeaderItems();
+            VERIFY_ARE_EQUAL(0u, local::GetLength(yearRowHeaders));
+        });
+    }
+
+    void CalendarViewAutomationPeerIntegrationTests::VerifyCalendarViewPeerSelectionAndValue()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ calendarView = nullptr;
+        const auto november15 = MakeEnUsGregorianDate(2000, 11, 15);
+        const auto november20 = MakeEnUsGregorianDate(2000, 11, 20);
+        const auto farAwayDate = MakeEnUsGregorianDate(2009, 6, 10);
+
+        RunOnUIThread([&]()
+        {
+            // A wide range, so that a selected date years away is not realized.
+            calendarView = local::CreatePinnedCalendarView(november15, MakeEnUsGregorianDate(2010, 12, 31));
+            TestServices::WindowHelper->WindowContent = calendarView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            auto selectionProvider = safe_cast<xaml_automation::Provider::ISelectionProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Selection));
+            auto valueProvider = safe_cast<xaml_automation::Provider::IValueProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Value));
+
+            LOG_OUTPUT(L"CanSelectMultiple is true only in Multiple selection mode.");
+            VERIFY_ARE_EQUAL(xaml_controls::CalendarViewSelectionMode::Single, calendarView->SelectionMode);
+            VERIFY_IS_FALSE(selectionProvider->CanSelectMultiple);
+            calendarView->SelectionMode = xaml_controls::CalendarViewSelectionMode::None;
+            VERIFY_IS_FALSE(selectionProvider->CanSelectMultiple);
+            calendarView->SelectionMode = xaml_controls::CalendarViewSelectionMode::Multiple;
+            VERIFY_IS_TRUE(selectionProvider->CanSelectMultiple);
+
+            LOG_OUTPUT(L"Nothing selected: no selection and the value is the header text of the current view.");
+            auto headerText = calendarView->TemplateSettings->HeaderText;
+            VERIFY_IS_TRUE(headerText != nullptr && headerText->Length() > 0);
+            VERIFY_ARE_EQUAL(0u, local::GetLength(selectionProvider->GetSelection()));
+            VERIFY_ARE_EQUAL(headerText, valueProvider->Value);
+
+            LOG_OUTPUT(L"One date selected: the value is that date, formatted as 'day month.full year'.");
+            calendarView->SelectedDates->Append(november15);
+            auto expectedValue = FormatEnUsGregorian(L"day month.full year", november15);
+            VERIFY_IS_TRUE(wcsstr(expectedValue->Data(), L"November") != nullptr);
+            VERIFY_ARE_EQUAL(expectedValue, valueProvider->Value);
+            auto selection = selectionProvider->GetSelection();
+            VERIFY_ARE_EQUAL(1u, local::GetLength(selection));
+            VERIFY_IS_TRUE(IsSameEnUsGregorianDay(november15, safe_cast<xaml_controls::CalendarViewDayItem^>(local::GetOwnerFromProvider(selection[0]))->Date));
+
+            LOG_OUTPUT(L"Two dates selected: the selection lists both items in SelectedDates order, and the value falls back to the header text.");
+            calendarView->SelectedDates->Append(november20);
+            selection = selectionProvider->GetSelection();
+            VERIFY_ARE_EQUAL(2u, local::GetLength(selection));
+            VERIFY_IS_TRUE(IsSameEnUsGregorianDay(november15, safe_cast<xaml_controls::CalendarViewDayItem^>(local::GetOwnerFromProvider(selection[0]))->Date));
+            VERIFY_IS_TRUE(IsSameEnUsGregorianDay(november20, safe_cast<xaml_controls::CalendarViewDayItem^>(local::GetOwnerFromProvider(selection[1]))->Date));
+            VERIFY_ARE_EQUAL(headerText, valueProvider->Value);
+
+            LOG_OUTPUT(L"A selected date whose item isn't realized is not part of the UIA selection.");
+            calendarView->SelectedDates->Append(farAwayDate);
+            VERIFY_ARE_EQUAL(3u, calendarView->SelectedDates->Size);
+            VERIFY_IS_TRUE(local::FindRealizedDayItem(calendarView, farAwayDate) == nullptr);
+            VERIFY_ARE_EQUAL(2u, local::GetLength(selectionProvider->GetSelection()));
+
+            calendarView->SelectedDates->Clear();
+            calendarView->SelectedDates->Append(november20);
+            calendarView->DisplayMode = xaml_controls::CalendarViewDisplayMode::Year;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            auto selectionProvider = safe_cast<xaml_automation::Provider::ISelectionProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Selection));
+            auto valueProvider = safe_cast<xaml_automation::Provider::IValueProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Value));
+
+            LOG_OUTPUT(L"Year view: the selected day has no item, so the selection is empty, but the value still is the selected date.");
+            VERIFY_ARE_EQUAL(1u, calendarView->SelectedDates->Size);
+            VERIFY_ARE_EQUAL(0u, local::GetLength(selectionProvider->GetSelection()));
+            VERIFY_ARE_EQUAL(FormatEnUsGregorian(L"day month.full year", november20), valueProvider->Value);
+
+            LOG_OUTPUT(L"Year view with nothing selected: the value is the year view's header text.");
+            calendarView->SelectedDates->Clear();
+            VERIFY_ARE_EQUAL(calendarView->TemplateSettings->HeaderText, valueProvider->Value);
+        });
+    }
+
+    void CalendarViewAutomationPeerIntegrationTests::VerifySingleSelectionReplacementRaisesRemovedFromSelection()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ calendarView = nullptr;
+        const auto november15 = MakeEnUsGregorianDate(2000, 11, 15);
+        const auto november16 = MakeEnUsGregorianDate(2000, 11, 16);
+
+        Automation::AutomationClient::UIAElementInfo uiaInfo;
+        uiaInfo.m_Name = L"CalendarView";
+        uiaInfo.m_AutomationID = L"CalendarView";
+        uiaInfo.m_cType = UIA_CalendarControlTypeId;
+
+        RunOnUIThread([&]()
+        {
+            calendarView = local::CreatePinnedCalendarView(november15, MakeEnUsGregorianDate(2001, 1, 15));
+            VERIFY_ARE_EQUAL(xaml_controls::CalendarViewSelectionMode::Single, calendarView->SelectionMode);
+            calendarView->SelectedDates->Append(november15);
+            TestServices::WindowHelper->WindowContent = calendarView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // Day item names are just the day number, so give the two items unique AutomationIds to find their UIA elements.
+            auto oldDayItem = local::FindRealizedDayItem(calendarView, november15);
+            auto newDayItem = local::FindRealizedDayItem(calendarView, november16);
+            VERIFY_IS_TRUE(oldDayItem != nullptr);
+            VERIFY_IS_TRUE(newDayItem != nullptr);
+            xaml_automation::AutomationProperties::SetAutomationId(oldDayItem, L"DayItem20001115");
+            xaml_automation::AutomationProperties::SetAutomationId(newDayItem, L"DayItem20001116");
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            auto automationClientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo);
+            auto oldItemClientManager = local::CreateClientManagerForDescendant(automationClientManager, L"DayItem20001115");
+            auto newItemClientManager = local::CreateClientManagerForDescendant(automationClientManager, L"DayItem20001116");
+
+            // TreeScope_Element: each handler only sees events raised by its own day item.
+            auto oldItemRemovedEvent = std::make_shared<Event>();
+            wrl::ComPtr<Patterns::SelectionItemPatternHandler> oldItemRemovedHandler;
+            oldItemRemovedHandler.Attach(new Patterns::SelectionItemPatternHandler(oldItemClientManager, oldItemRemovedEvent, TreeScope_Element, UIA_SelectionItem_ElementRemovedFromSelectionEventId));
+            oldItemRemovedHandler->AttachEventHandler();
+
+            auto newItemRemovedEvent = std::make_shared<Event>();
+            wrl::ComPtr<Patterns::SelectionItemPatternHandler> newItemRemovedHandler;
+            newItemRemovedHandler.Attach(new Patterns::SelectionItemPatternHandler(newItemClientManager, newItemRemovedEvent, TreeScope_Element, UIA_SelectionItem_ElementRemovedFromSelectionEventId));
+            newItemRemovedHandler->AttachEventHandler();
+
+            RunOnUIThread([&]()
+            {
+                LOG_OUTPUT(L"Add 2000-11-16 to the selection through its SelectionItem pattern while 2000-11-15 is selected.");
+                auto dayItem = local::FindRealizedDayItem(calendarView, november16);
+                VERIFY_IS_TRUE(dayItem != nullptr);
+                auto dayItemPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(dayItem);
+                safe_cast<xaml_automation::Provider::ISelectionItemProvider^>(dayItemPeer->GetPattern(xaml_automation_peers::PatternInterface::SelectionItem))->AddToSelection();
+            });
+
+            LOG_OUTPUT(L"The previously selected 2000-11-15 item raises ElementRemovedFromSelection.");
+            oldItemRemovedHandler->ConfirmAndUnregister();
+
+            LOG_OUTPUT(L"The newly selected 2000-11-16 item does not raise ElementRemovedFromSelection.");
+            newItemRemovedHandler->ConfirmNegativeAndUnregister();
+        });
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Single selection mode replaced the selected date.");
+            VERIFY_ARE_EQUAL(1u, calendarView->SelectedDates->Size);
+            VERIFY_IS_TRUE(IsSameEnUsGregorianDay(november16, calendarView->SelectedDates->GetAt(0)));
+
+            auto oldItemPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(local::FindRealizedDayItem(calendarView, november15));
+            auto newItemPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(local::FindRealizedDayItem(calendarView, november16));
+            VERIFY_IS_FALSE(safe_cast<xaml_automation::Provider::ISelectionItemProvider^>(oldItemPeer->GetPattern(xaml_automation_peers::PatternInterface::SelectionItem))->IsSelected);
+            VERIFY_IS_TRUE(safe_cast<xaml_automation::Provider::ISelectionItemProvider^>(newItemPeer->GetPattern(xaml_automation_peers::PatternInterface::SelectionItem))->IsSelected);
+        });
+    }
+
+    void CalendarViewAutomationPeerIntegrationTests::VerifyBulkSelectionChangeRaisesSelectionInvalidated()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ calendarView = nullptr;
+        const auto firstDate = MakeEnUsGregorianDate(2000, 11, 15);
+
+        Automation::AutomationClient::UIAElementInfo uiaInfo;
+        uiaInfo.m_Name = L"CalendarView";
+        uiaInfo.m_AutomationID = L"CalendarView";
+        uiaInfo.m_cType = UIA_CalendarControlTypeId;
+
+        RunOnUIThread([&]()
+        {
+            calendarView = local::CreatePinnedCalendarView(firstDate, MakeEnUsGregorianDate(2001, 1, 15));
+            calendarView->SelectionMode = xaml_controls::CalendarViewSelectionMode::Multiple;
+            TestServices::WindowHelper->WindowContent = calendarView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto selectConsecutiveDates = [&](unsigned count)
+        {
+            const long long ticksPerDay = 24LL * 60 * 60 * 10000000;
+            for (unsigned i = 0; i < count; ++i)
+            {
+                calendarView->SelectedDates->Append(::Windows::Foundation::DateTime{ firstDate.UniversalTime + i * ticksPerDay });
+            }
+            VERIFY_ARE_EQUAL(count, calendarView->SelectedDates->Size);
+        };
+
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            auto automationClientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo);
+
+            LOG_OUTPUT(L"Clearing 20 selected dates (the bulk limit) raises per-item events, not Selection Invalidated.");
+            RunOnUIThread([&]() { selectConsecutiveDates(20); });
+            auto twentyEvent = std::make_shared<Event>();
+            wrl::ComPtr<AutomationClient::AutomationEventHandler> twentyHandler;
+            twentyHandler.Attach(new AutomationClient::AutomationEventHandler(automationClientManager, twentyEvent, TreeScope_Element, UIA_Selection_InvalidatedEventId));
+            twentyHandler->AttachEventHandler();
+            RunOnUIThread([&]() { calendarView->SelectedDates->Clear(); });
+            twentyHandler->ConfirmNegativeAndUnregister();
+
+            LOG_OUTPUT(L"Clearing 21 selected dates (above the bulk limit) raises Selection Invalidated on the CalendarView.");
+            RunOnUIThread([&]() { selectConsecutiveDates(21); });
+            auto twentyOneEvent = std::make_shared<Event>();
+            wrl::ComPtr<AutomationClient::AutomationEventHandler> twentyOneHandler;
+            twentyOneHandler.Attach(new AutomationClient::AutomationEventHandler(automationClientManager, twentyOneEvent, TreeScope_Element, UIA_Selection_InvalidatedEventId));
+            twentyOneHandler->AttachEventHandler();
+            RunOnUIThread([&]() { calendarView->SelectedDates->Clear(); });
+            twentyOneHandler->ConfirmAndUnregister();
+        });
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(0u, calendarView->SelectedDates->Size);
+        });
+    }
+
+    void CalendarViewAutomationPeerIntegrationTests::VerifyCalendarViewPeerAndControlGetIids()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ calendarView = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            calendarView = local::CreatePinnedCalendarView(MakeEnUsGregorianDate(2000, 11, 15), MakeEnUsGregorianDate(2001, 1, 15));
+            TestServices::WindowHelper->WindowContent = calendarView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"CalendarView lists ICalendarView among the interfaces it implements.");
+            auto controlIids = local::GetVerifiedIids(reinterpret_cast<IInspectable*>(calendarView));
+            VERIFY_IS_TRUE(local::ContainsIid(controlIids, local::c_iidICalendarView));
+
+            LOG_OUTPUT(L"The CalendarView activation factory lists its factory and statics interfaces.");
+            wrl::ComPtr<IInspectable> factory;
+            VERIFY_SUCCEEDED(::RoGetActivationFactory(
+                Microsoft::WRL::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Controls.CalendarView").Get(),
+                __uuidof(IInspectable),
+                reinterpret_cast<void**>(factory.GetAddressOf())));
+            auto factoryIids = local::GetVerifiedIids(factory.Get());
+            VERIFY_IS_TRUE(local::ContainsIid(factoryIids, local::c_iidICalendarViewFactory));
+            VERIFY_IS_TRUE(local::ContainsIid(factoryIids, local::c_iidICalendarViewStatics));
+
+            LOG_OUTPUT(L"The CalendarView peer lists the Grid, Selection, Table and Value provider interfaces.");
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            auto peerIids = local::GetVerifiedIids(reinterpret_cast<IInspectable*>(peer));
+            VERIFY_IS_TRUE(local::ContainsIid(peerIids, __uuidof(xaml_automation::Provider::IGridProvider^)));
+            VERIFY_IS_TRUE(local::ContainsIid(peerIids, __uuidof(xaml_automation::Provider::ISelectionProvider^)));
+            VERIFY_IS_TRUE(local::ContainsIid(peerIids, __uuidof(xaml_automation::Provider::ITableProvider^)));
+            VERIFY_IS_TRUE(local::ContainsIid(peerIids, __uuidof(xaml_automation::Provider::IValueProvider^)));
+        });
+    }
+
+    void CalendarViewAutomationPeerIntegrationTests::VerifyCalendarViewItemPeerInvokeAndTableItemInYearView()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::CalendarView^ calendarView = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            // Five months (Nov 2000 - Mar 2001) shown on a 3 x 2 year view: January 2001 is the third item of the first row.
+            calendarView = local::CreatePinnedCalendarView(MakeEnUsGregorianDate(2000, 11, 15), MakeEnUsGregorianDate(2001, 3, 15));
+            calendarView->DisplayMode = xaml_controls::CalendarViewDisplayMode::Year;
+            TestServices::WindowHelper->WindowContent = calendarView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            calendarView->SetYearDecadeDisplayDimensions(3 /*columns*/, 2 /*rows*/);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(calendarView);
+            auto gridProvider = safe_cast<xaml_automation::Provider::IGridProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Grid));
+            auto januaryPeer = local::GetPeerFromProvider(gridProvider->GetItem(0, 2));
+
+            LOG_OUTPUT(L"A month item is a button that supports the Invoke and TableItem patterns.");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"CalendarViewItem"), januaryPeer->GetClassName());
+            VERIFY_ARE_EQUAL(xaml_automation_peers::AutomationControlType::Button, januaryPeer->GetAutomationControlType());
+            VERIFY_IS_TRUE(AreSameObject(januaryPeer, januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::Invoke)));
+            VERIFY_IS_TRUE(AreSameObject(januaryPeer, januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::TableItem)));
+
+            LOG_OUTPUT(L"Other patterns fall back to the base peers, which don't support Toggle or SelectionItem.");
+            VERIFY_IS_TRUE(januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::Toggle) == nullptr);
+            VERIFY_IS_TRUE(januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::SelectionItem) == nullptr);
+
+            LOG_OUTPUT(L"A month item has no column header.");
+            auto tableItemProvider = safe_cast<xaml_automation::Provider::ITableItemProvider^>(januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::TableItem));
+            VERIFY_ARE_EQUAL(0u, local::GetLength(tableItemProvider->GetColumnHeaderItems()));
+
+            LOG_OUTPUT(L"Invoke the January 2001 item.");
+            safe_cast<xaml_automation::Provider::IInvokeProvider^>(januaryPeer->GetPattern(xaml_automation_peers::PatternInterface::Invoke))->Invoke();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Invoking a month switches to month view showing that month, with keyboard focus on a day of that month.");
+            VERIFY_ARE_EQUAL(xaml_controls::CalendarViewDisplayMode::Month, calendarView->DisplayMode);
+            VERIFY_ARE_EQUAL(FormatEnUsGregorian(L"month year", MakeEnUsGregorianDate(2001, 1, 15)), calendarView->TemplateSettings->HeaderText);
+
+            auto focusedItem = dynamic_cast<xaml_controls::CalendarViewDayItem^>(Microsoft::UI::Xaml::Input::FocusManager::GetFocusedElement(calendarView->XamlRoot));
+            VERIFY_IS_TRUE(focusedItem != nullptr);
+            auto focusedDate = CreateEnUsGregorianCalendar();
+            focusedDate->SetDateTime(focusedItem->Date);
+            VERIFY_ARE_EQUAL(2001, focusedDate->Year);
+            VERIFY_ARE_EQUAL(1, focusedDate->Month);
+            VERIFY_ARE_EQUAL(xaml::FocusState::Keyboard, focusedItem->FocusState);
         });
     }
 } } } } } }

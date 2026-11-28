@@ -648,6 +648,42 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestSuite", L"B")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyTypedPropertiesMapToDependencyProperties)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify every CalendarView property round-trips through its typed accessors and is exposed by its own, distinct DependencyProperty identifier.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyDayOfWeekFormatControlsWeekDayNames)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify DayOfWeekFormat formats the week day names, and an empty format falls back to the shortest day names.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyRoundedChromeFallbackPropertiesWhenForced)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that forcing the rounded CalendarViewBaseItem chrome fills unset brushes and zero margins with fallback values (debug builds only).")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyRoundedChromeKeepsUnforcedAndCustomValues)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that unset brushes and margins stay unset when the rounded CalendarViewBaseItem chrome isn't forced, and that set brushes and one-sided margins are kept when it is.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(KeyboardNavigationTestPageUpAtCalendarMinDate)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify PageUp in the first month the calendar system supports moves focus to the first date.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyKeyboardNavigationAfterReplacingTemplateWithoutViewsGrid)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that a loaded CalendarView can be re-templated with a template that has no Views grid, and that arrow keys then follow the CalendarView's own FlowDirection.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyMinDateLaterThanMaxDateFailsMeasure)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that measuring a CalendarView whose MinDate is later than its MaxDate fails, and that a valid range measures again.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyNextButtonCrossesJapaneseEraWithinOneYearViewRow)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that in year view the Next button moves from Showa 64 to Heisei 1 even though both years start in the same row.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyKeyDownHandledByAppOrFromNonItemIsIgnored)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that CalendarView doesn't navigate dates for a day item key that the app already handled, nor for a key that comes from an element that isn't a calendar item.")
+        END_TEST_METHOD()
+
 #define VerifyAllTimeZonesPartDecl(i) \
         BEGIN_TEST_METHOD(VerifyAllTimeZonesPart##i)\
             TEST_METHOD_PROPERTY(L"Description", L"CalendarView days and selected dates are in incorrect offset when timezone is on half hour.")\

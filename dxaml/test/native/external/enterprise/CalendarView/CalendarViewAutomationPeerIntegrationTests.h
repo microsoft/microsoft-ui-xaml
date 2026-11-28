@@ -51,6 +51,38 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyCalendarViewPeerPatternsAndReadOnlyContract)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify the CalendarView peer's class name, supported Grid/Table/Selection/Value patterns and their static (read-only, row-major, no row headers, SetValue not implemented) contract.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCalendarViewPeerGridAndTableInMonthView)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify the CalendarView peer's GridProvider (RowCount/ColumnCount/GetItem) and TableProvider column headers in month view.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCalendarViewPeerGridAndRowHeadersInYearView)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify the CalendarView peer's GridProvider and the year row headers of its items in year view.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCalendarViewPeerSelectionAndValue)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify the CalendarView peer's SelectionProvider (CanSelectMultiple/GetSelection) and ValueProvider (Value) for the various selection states and display modes.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifySingleSelectionReplacementRaisesRemovedFromSelection)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that replacing the selected date in Single selection mode deselects the old date and raises the ElementRemovedFromSelection UIA event.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyBulkSelectionChangeRaisesSelectionInvalidated)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that the Selection Invalidated UIA event is raised only when more than 20 dates change at once.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCalendarViewPeerAndControlGetIids)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify IInspectable::GetIids of CalendarView, its activation factory and its automation peer lists the interfaces they implement.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCalendarViewItemPeerInvokeAndTableItemInYearView)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify the year view item peer's control type, Invoke and TableItem patterns, and that invoking a month opens that month in month view.")
+        END_TEST_METHOD()
+
     private:
     };
 
