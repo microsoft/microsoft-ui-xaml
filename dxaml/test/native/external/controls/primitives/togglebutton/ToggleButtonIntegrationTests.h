@@ -49,6 +49,24 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates the toggle button can toggle through its three states. ")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DerivedToggleButtonOnToggleOverrideIsInvoked)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that clicking a ToggleButton subclass calls its OnToggle override, and that the check state only changes when the override calls the base OnToggle.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(IsThreeStatePropertyEnablesIndeterminateState)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that setting and clearing ToggleButton.IsThreeStateProperty controls whether a click moves a checked ToggleButton to indeterminate.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DisabledIndeterminateToggleButtonUsesIndeterminateDisabledState)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a disabled indeterminate ToggleButton goes to the IndeterminateDisabled visual state.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GetIidsReportsToggleButtonAndFactoryInterfaces)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that IInspectable::GetIids on a ToggleButton and on its activation factory reports IToggleButton and IToggleButtonOverrides, and IToggleButtonFactory and IToggleButtonStatics respectively, and that neither reports the other's interfaces.")
+        END_TEST_METHOD()
     };
 
 } } } } } } }
