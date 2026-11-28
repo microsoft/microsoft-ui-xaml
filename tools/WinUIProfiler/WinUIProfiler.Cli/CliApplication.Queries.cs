@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Text.Json;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Storage;
+using WinUIProfiler.Engine.Target;
 
 namespace WinUIProfiler.Cli;
 
@@ -15,7 +16,8 @@ internal static partial class CliApplication
     private sealed record EventQuery(string Path, bool Json, long? FrameId, long? RegionId, long? RowStart,
         int? ThreadId, long? FirstSeq, long? LastSeq, string? Bucket, string? Filter, int Offset, int Count);
 
-    private static int QueryCommands(string[] args, TextWriter output, TextWriter error, CancellationToken token)
+    private static int QueryCommands(string[] args, TextWriter output, TextWriter error, CancellationToken token,
+        CommandUsage? usage)
     {
         EventQuery query;
         try
@@ -33,6 +35,11 @@ internal static partial class CliApplication
                     ["--json"]);
             options.RequirePositionals(1);
             var path = Path.GetFullPath(options.Positionals[0]);
+            if (usage is not null)
+            {
+                usage.Input = "session";
+                usage.App = () => TelemetryTarget.ForSessionFile(path);
+            }
             var frame = PositiveLong(options, "--frame");
             var region = PositiveLong(options, "--region");
             var row = PositiveLong(options, "--row");

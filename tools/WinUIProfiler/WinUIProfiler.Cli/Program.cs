@@ -28,6 +28,7 @@ internal static class Program
 
         var started = Stopwatch.GetTimestamp();
         int? exitCode = null;
+        var usage = UsageTelemetry.IsEnabled ? new CommandUsage() : null;
         using var cancellation = new CancellationTokenSource();
         ConsoleCancelEventHandler handler = (_, e) =>
         {
@@ -37,17 +38,29 @@ internal static class Program
         Console.CancelKeyPress += handler;
         try
         {
-            exitCode = CliApplication.Run(args, Console.Out, Console.Error, cancellation.Token);
+            exitCode = CliApplication.Run(args, Console.Out, Console.Error, cancellation.Token, usage);
             return exitCode.Value;
         }
         finally
         {
             Console.CancelKeyPress -= handler;
-            UsageTelemetry.Track("Profiler.CliCommand", new Dictionary<string, string>
+            var properties = new Dictionary<string, string>
             {
                 ["command"] = args.Length > 0 && Commands.Contains(args[0]) ? args[0] : "unknown",
                 ["outcome"] = exitCode switch { 0 => "success", 4 => "cancelled", _ => "failed" },
-            }, new Dictionary<string, double> { ["durationSec"] = Stopwatch.GetElapsedTime(started).TotalSeconds });
+            };
+            if (usage?.Input is { } input)
+            {
+                properties["input"] = input;
+            }
+
+            if (usage?.App is { } app)
+            {
+                properties["targetApp"] = app();
+            }
+
+            UsageTelemetry.Track("Profiler.CliCommand", properties,
+                new Dictionary<string, double> { ["durationSec"] = Stopwatch.GetElapsedTime(started).TotalSeconds });
             UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
         }
     }

@@ -1412,6 +1412,7 @@ await SnapshotDiffTests.RunAsync();
 await SnapshotStorageTests.RunAsync();
 SnapshotTextureTests.Run();
 UsageTelemetryTests.Run();
+TelemetryTargetTests.Run();
 Expect(WinUIProfiler.Tests.Mcp.McpTestRunner.Run(Console.Out) == 0, "The MCP server's tests must pass.");
 Console.WriteLine("Passed: the MCP server's tools, plugin manifests and skills.");
 

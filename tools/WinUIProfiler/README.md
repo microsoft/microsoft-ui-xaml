@@ -1795,15 +1795,18 @@ a random install ID kept in `%LOCALAPPDATA%\WinUITools\install-id`:
 | --- | --- | --- |
 | `Profiler.SessionStarted` | A connection, a trace reading or an opened session file starts | Online or offline, and the target app |
 | `Profiler.SessionEnded` | It ends | Completed, cancelled or failed, and its duration |
-| `Profiler.ViewOpened` | The user first opens a tab | The tab |
-| `Profiler.CliCommand` | A CLI command ends | The command, its outcome and duration |
-| `Profiler.McpToolCall` | An MCP tool call ends | The tool, its outcome and duration |
+| `Profiler.ViewOpened` | The user first opens a tab, for a live app and for a trace or session file | The tab, and whether it shows a live app or a trace or session file |
+| `Profiler.CliCommand` | A CLI command ends | The command, its outcome and duration, and what it read (a trace, a session file or a live app) with the target app |
+| `Profiler.McpToolCall` | An MCP tool call ends | The tool, its outcome and duration, and the target app of the session file it read |
 
-The target app is named only when it is a Microsoft app; for any other app, the
-event holds a short hash of its executable's name. The events never hold source
-code, XAML, file paths, user or machine names, prompts, model output, event
-contents, call stacks, exception messages, or MCP tool arguments or results.
-`WINUI_TOOLS_CHANNEL` names how the tool was obtained, `unknown` by default.
+The target app is named only when it is a Microsoft app: its executable's version
+information names Microsoft, or its process has the name of a well-known
+Microsoft app, such as `CalculatorApp` or `WinUIGallery` (a trace or session file
+names only the process). For any other app, the event holds a short hash of its
+executable's name. The events never hold source code, XAML, file paths, user or
+machine names, prompts, model output, event contents, call stacks, exception
+messages, or MCP tool arguments or results. `WINUI_TOOLS_CHANNEL` names how the
+tool was obtained, `unknown` by default.
 
 ## Limitations
 

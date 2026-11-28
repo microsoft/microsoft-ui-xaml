@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Microsoft.Data.Sqlite;
 using ModelContextProtocol;
 using WinUIProfiler.Engine.Storage;
@@ -134,9 +135,24 @@ internal static class SessionCatalog
 
     /// <summary>
     /// The session file a tool reads: the newest in the folder when sessionPath is empty, else sessionPath as a full
-    /// path, or as a file name in the folder, with or without its extension.
+    /// path, or as a file name in the folder, with or without its extension. The usage event of the tool call that
+    /// resolves it names its app (see <see cref="Resolved"/>).
     /// </summary>
     internal static string Resolve(string? sessionPath, string? folder = null)
+    {
+        var path = Find(sessionPath, folder);
+        if (Resolved.Value is { } resolved)
+        {
+            resolved.Value = path;
+        }
+
+        return path;
+    }
+
+    /// <summary>Set by each tool call, to learn the session file it read.</summary>
+    internal static AsyncLocal<StrongBox<string?>?> Resolved { get; } = new();
+
+    private static string Find(string? sessionPath, string? folder)
     {
         var directory = folder ?? DefaultFolder;
         var text = sessionPath is null ? "" : Clean(sessionPath);

@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,6 +11,8 @@ using Microsoft.Extensions.Logging;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+using WinUIProfiler.Engine.Target;
+using WinUIProfiler.Mcp.Sessions;
 using WinUITools.Telemetry;
 
 namespace WinUIProfiler.Mcp;
@@ -103,13 +106,16 @@ internal static class Program
             .WithToolsFromAssembly(typeof(Program).Assembly, ToolSerializerOptions)
             .WithRequestFilters(filters => filters.AddCallToolFilter(TrackToolCall));
 
-    // Sends one usage event for each tool call: the tool's name, outcome and duration, never its arguments or result.
+    // Sends one usage event for each tool call: the tool's name, outcome and duration, and the app of the session file it
+    // read, named as the app names it; never its arguments or result.
     private static McpRequestHandler<CallToolRequestParams, CallToolResult> TrackToolCall(
         McpRequestHandler<CallToolRequestParams, CallToolResult> next) =>
         async (request, cancellationToken) =>
         {
             var started = Stopwatch.GetTimestamp();
             var outcome = "failed";
+            var session = new StrongBox<string?>();
+            SessionCatalog.Resolved.Value = session;
             try
             {
                 var result = await next(request, cancellationToken).ConfigureAwait(false);
@@ -124,11 +130,19 @@ internal static class Program
             finally
             {
                 var name = request.Params?.Name;
-                UsageTelemetry.Track("Profiler.McpToolCall", new Dictionary<string, string>
+                var properties = new Dictionary<string, string>
                 {
                     ["mcpTool"] = name is not null && ToolNames.Contains(name) ? name : "unknown",
                     ["outcome"] = outcome,
-                }, new Dictionary<string, double> { ["durationMs"] = Stopwatch.GetElapsedTime(started).TotalMilliseconds });
+                };
+                if (session.Value is { } path && UsageTelemetry.IsEnabled)
+                {
+                    properties["input"] = "session";
+                    properties["targetApp"] = TelemetryTarget.ForSessionFile(path);
+                }
+
+                UsageTelemetry.Track("Profiler.McpToolCall", properties,
+                    new Dictionary<string, double> { ["durationMs"] = Stopwatch.GetElapsedTime(started).TotalMilliseconds });
             }
         };
 }
