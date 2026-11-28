@@ -50,6 +50,7 @@ void TabViewItem::OnApplyTemplate()
     }
 
     m_headerContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(s_contentPresenterName, controlProtected));
+    m_isHeaderContentPresenterCollapsed = false;
 
     auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this));
     auto internalTabView = tabView
@@ -338,12 +339,49 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
     OnHeaderChanged();
 }
 
+void TabViewItem::OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent)
+{
+    __super::OnContentChanged(oldContent, newContent);
+
+    UpdateHeaderContentPresenterVisibility();
+}
+
+void TabViewItem::UpdateHeaderContentPresenterVisibility()
+{
+    if (const auto headerContentPresenter = m_headerContentPresenter.get())
+    {
+        // When the header is null or empty, the header ContentPresenter implicitly displays this TabViewItem's
+        // Content instead. That is fine for strings and data items, but a UIElement Content is already displayed
+        // in the tab content area and can't have two parents (E_INVALIDARG), so collapse the header instead.
+        const auto header = Header();
+        const auto headerAsPropertyValue = header.try_as<winrt::IPropertyValue>();
+        const bool isHeaderNullOrEmpty = !header ||
+            (headerAsPropertyValue &&
+             headerAsPropertyValue.Type() == winrt::PropertyType::String &&
+             headerAsPropertyValue.GetString().empty());
+        const bool shouldCollapse = isHeaderNullOrEmpty && Content().try_as<winrt::UIElement>();
+
+        if (shouldCollapse && !m_isHeaderContentPresenterCollapsed)
+        {
+            headerContentPresenter.Visibility(winrt::Visibility::Collapsed);
+            m_isHeaderContentPresenterCollapsed = true;
+        }
+        else if (!shouldCollapse && m_isHeaderContentPresenterCollapsed)
+        {
+            headerContentPresenter.ClearValue(winrt::UIElement::VisibilityProperty());
+            m_isHeaderContentPresenterCollapsed = false;
+        }
+    }
+}
+
 void TabViewItem::OnHeaderChanged()
 {
     if (const auto headerContentPresenter = m_headerContentPresenter.get())
     {
         headerContentPresenter.Content(Header());
     }
+
+    UpdateHeaderContentPresenterVisibility();
 
     if (m_firstTimeSettingToolTip)
     {
