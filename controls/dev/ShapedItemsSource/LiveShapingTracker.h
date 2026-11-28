@@ -23,8 +23,8 @@ public:
 
     void SetChangeHandler(ChangeHandler handler) { m_changeHandler = std::move(handler); }
 
-    // Idempotent: re-subscribing an already-tracked item is a no-op.
-    void Subscribe(winrt::IInspectable const& item);
+    // Idempotent: re-subscribing an already-tracked item is a no-op. False when the item cannot report edits.
+    bool Subscribe(winrt::IInspectable const& item);
     void Unsubscribe(winrt::IInspectable const& item);
     // Revokes every subscription whose item is not in `live`.
     void RetainOnly(std::unordered_set<void const*> const& live);
