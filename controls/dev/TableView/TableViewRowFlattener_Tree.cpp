@@ -49,11 +49,11 @@ namespace
         case PropertyType::Double:
         {
             // Bit-exact, as the view compares them: decimal text would merge nearby values (1e-7 and 2e-7). -0 is 0.
-            double value = (type == PropertyType::Single) ? static_cast<double>(scalar.GetSingle()) : scalar.GetDouble();
-            value = (value == 0) ? 0 : value;
+            double number = (type == PropertyType::Single) ? static_cast<double>(scalar.GetSingle()) : scalar.GetDouble();
+            number = (number == 0) ? 0 : number;
             uint64_t bits = 0;
-            static_assert(sizeof(bits) == sizeof(value));
-            memcpy(&bits, &value, sizeof(bits));
+            static_assert(sizeof(bits) == sizeof(number));
+            memcpy(&bits, &number, sizeof(bits));
             wchar_t buffer[17]{};
             swprintf_s(buffer, L"%016llx", static_cast<unsigned long long>(bits));
             text = buffer;
