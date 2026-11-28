@@ -85,6 +85,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: Test ResourceLoadingIntegrationTests hitting targettype assert
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EmbeddedDataUsesReadOnlyPriMapping)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that MRT memory buffers expose embedded bytes directly from a read-only PRI mapping")
+        END_TEST_METHOD()
+
     private:
     };
 } } } } } }
