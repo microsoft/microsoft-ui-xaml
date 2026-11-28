@@ -57,6 +57,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that Frame navigations work when restoring a navigation state without navigating to the current page.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(NavigationStateRoundTripsUInt8Char16AndBooleanParameters)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that SetNavigationState recreates UInt8, Char16 and Boolean navigation parameters with their property type and value, and GetNavigationState serializes them back unchanged.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(CacheModeDisabled)
             TEST_METHOD_PROPERTY(L"Description", L"Jupiter Navigation main test suite (Ported from Legacy:CacheModeDisabled)")
         END_TEST_METHOD()

@@ -85,6 +85,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: Test ResourceLoadingIntegrationTests hitting targettype assert
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CustomResourceTypedValuesRoundTripThroughObjectProperty)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verifies that Int64, UInt64, Matrix and Matrix3D values provided by a CustomXamlResourceLoader are converted by XAML and read back from an Object-typed property")
+        END_TEST_METHOD()
     private:
     };
 } } } } } }

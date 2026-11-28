@@ -353,6 +353,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify the BindingFailed event if the binding couldn't connect to a string indexer.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(TemplatedParentBindingOutsideTemplateUsesFallbackValue)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify that a RelativeSource TemplatedParent binding on an element without a templated parent resolves to an empty source and uses FallbackValue, while the same binding inside a ControlTemplate reads the templated parent.")
+            END_TEST_METHOD()
+
         private:
         };
 

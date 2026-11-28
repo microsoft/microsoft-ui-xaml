@@ -4172,4 +4172,50 @@ namespace Framework { namespace DataBinding {
         VerifyBindingTraceHelper(xamlString, expectedMessage);
     }
 
+    void BindingIntegrationTests::TemplatedParentBindingOutsideTemplateUsesFallbackValue()
+    {
+        TestCleanupWrapper cleanup;
+        StackPanel^ rootPanel = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            rootPanel = safe_cast<StackPanel^>(XamlReader::Load(
+                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <Border x:Name='withFallback' Tag='{Binding Tag, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=fallback}' />"
+                L"  <Border x:Name='withoutFallback' Tag='{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}' />"
+                L"  <ContentControl x:Name='templated' Tag='parentTag'>"
+                L"    <ContentControl.Template>"
+                L"      <ControlTemplate TargetType='ContentControl'>"
+                L"        <Border Tag='{Binding Tag, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=fallback}' />"
+                L"      </ControlTemplate>"
+                L"    </ContentControl.Template>"
+                L"  </ContentControl>"
+                L"</StackPanel>"));
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Without a templated parent the binding source is empty, so the FallbackValue is used.");
+            auto withFallback = safe_cast<Border^>(rootPanel->FindName(L"withFallback"));
+            auto withFallbackTag = safe_cast<Platform::String^>(withFallback->Tag);
+            VERIFY_IS_NOT_NULL(withFallbackTag);
+            VERIFY_ARE_STRINGS_EQUAL(L"fallback", withFallbackTag->Data());
+
+            LOG_OUTPUT(L"Without a templated parent and without a FallbackValue the target keeps its default (null) value.");
+            auto withoutFallback = safe_cast<Border^>(rootPanel->FindName(L"withoutFallback"));
+            VERIFY_IS_NULL(withoutFallback->Tag);
+
+            LOG_OUTPUT(L"Inside a ControlTemplate the same binding reads the templated parent's value instead of the FallbackValue.");
+            auto templated = safe_cast<ContentControl^>(rootPanel->FindName(L"templated"));
+            VERIFY_ARE_EQUAL(1, VisualTreeHelper::GetChildrenCount(templated));
+            auto templateRoot = safe_cast<Border^>(VisualTreeHelper::GetChild(templated, 0));
+            auto templateRootTag = safe_cast<Platform::String^>(templateRoot->Tag);
+            VERIFY_IS_NOT_NULL(templateRootTag);
+            VERIFY_ARE_STRINGS_EQUAL(L"parentTag", templateRootTag->Data());
+        });
+    }
+
 } } } } } }

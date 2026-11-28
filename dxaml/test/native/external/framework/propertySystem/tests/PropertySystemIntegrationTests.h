@@ -183,6 +183,42 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         END_TEST_METHOD()
 
         TEST_METHOD(CompactEnumConversion)
+
+        BEGIN_TEST_METHOD(RectHelperFactoryMethodsValidateAndNormalize)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates RectHelper.FromCoordinatesAndDimensions/FromPoints/FromLocationAndSize results, argument validation and point normalization.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(RectHelperEdgeAccessorsHandleEmptyAndZeroSizedRects)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates RectHelper.GetLeft/GetTop/GetRight/GetBottom for regular, zero-sized, negative-height and empty rects.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(RectHelperEqualsAndUnionWithPoint)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates RectHelper.Equals field-by-field and empty semantics, and RectHelper.UnionWithPoint on every side of a rect.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(RectHelperDipsRectToPhysicalRectScalesEveryField)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the private IRectHelperStaticsPrivate.DipsRectToPhysicalRect scales every field of the rect by the same positive scale, including a known test rasterization scale of 1.5.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(XamlBoxedStructRejectsScalarAndArrayPropertyValueGetters)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that struct values boxed by XAML (Thickness, CornerRadius) report OtherType, are not numeric scalars and reject every scalar/array IPropertyValue getter with E_NOTIMPL.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(XamlBoxedEnumReportsNumericScalarAndUInt32Value)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that enum values boxed by XAML report IsNumericScalar and return their value through GetInt32 and GetUInt32.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EnumPropertyAcceptsInt32AndUInt32Boxes)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that an enum-typed core property accepts boxed Int32 and UInt32 values and maps them to the enum value.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(XamlBoxedValuesListTheirInterfacesFromGetIids)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates IInspectable::GetIids on XAML-created struct and enum boxes and on the RectHelper activation factory: the list contains the implemented public interfaces and each listed interface can be queried.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(XamlBoxedDoubleOnInt32PropertyIsConvertedAndBooleanIsRejected)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that an Int32-typed core property accepts a boxed Double and rejects a boxed Boolean without changing its value.")
+        END_TEST_METHOD()
     };
 
     ref class MyItemTemplateSelector : public Microsoft::UI::Xaml::Controls::DataTemplateSelector

@@ -468,4 +468,126 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             VERIFY_IS_NULL(button->Background);
         });
     }
+
+    // Reads a 64-bit integral value without depending on whether it is boxed as Int64 or UInt64.
+    static UINT64 ReadNonNegative64BitIntegral(IPropertyValue^ propertyValue)
+    {
+        switch (propertyValue->Type)
+        {
+        case PropertyType::UInt64:
+            return propertyValue->GetUInt64();
+        case PropertyType::Int64:
+        {
+            const INT64 signedValue = propertyValue->GetInt64();
+            VERIFY_IS_GREATER_THAN_OR_EQUAL(signedValue, 0ll);
+            return static_cast<UINT64>(signedValue);
+        }
+        default:
+            VERIFY_FAIL(L"Expected a 64-bit integral property value.");
+            return 0;
+        }
+    }
+
+    static void VerifyRuntimeClassName(Platform::Object^ value, const wchar_t* expectedName)
+    {
+        HSTRING className = nullptr;
+        VERIFY_SUCCEEDED(reinterpret_cast<IInspectable*>(value)->GetRuntimeClassName(&className));
+        Microsoft::WRL::Wrappers::HString classNameOwner;
+        classNameOwner.Attach(className);
+        LOG_OUTPUT(L"Runtime class name: %s", classNameOwner.GetRawBuffer(nullptr));
+        VERIFY_ARE_EQUAL(0, wcscmp(expectedName, classNameOwner.GetRawBuffer(nullptr)));
+    }
+
+    void ResourceLoadingIntegrationTests::CustomResourceTypedValuesRoundTripThroughObjectProperty()
+    {
+        TestCleanupWrapper cleanup([]()
+        {
+            RunOnUIThread([]()
+            {
+                Microsoft::UI::Xaml::Resources::CustomXamlResourceLoader::Current = nullptr;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+        });
+
+        RunOnUIThread([]()
+        {
+            Platform::Object^ int64Box = PropertyValue::CreateInt64(-9000000000000ll);
+            Platform::Object^ uint64Box = PropertyValue::CreateUInt64(5000000000ull);
+
+            Matrix matrix;
+            matrix.M11 = 1.5;
+            matrix.M12 = 2;
+            matrix.M21 = 3;
+            matrix.M22 = 4;
+            matrix.OffsetX = 5;
+            matrix.OffsetY = -6;
+            Platform::Object^ matrixBox = matrix;
+
+            Media3D::Matrix3D matrix3D;
+            matrix3D.M11 = 1;  matrix3D.M12 = 2;  matrix3D.M13 = 3;  matrix3D.M14 = 4;
+            matrix3D.M21 = 5;  matrix3D.M22 = 6;  matrix3D.M23 = 7;  matrix3D.M24 = 8;
+            matrix3D.M31 = 9;  matrix3D.M32 = 10; matrix3D.M33 = 11; matrix3D.M34 = 12;
+            matrix3D.OffsetX = 13; matrix3D.OffsetY = 14; matrix3D.OffsetZ = 15; matrix3D.M44 = 16;
+            Platform::Object^ matrix3DBox = matrix3D;
+
+            auto customResourceLoader = ref new CustomResourceLoader;
+            customResourceLoader->AddResource(L"int64Value", int64Box);
+            customResourceLoader->AddResource(L"uint64Value", uint64Box);
+            customResourceLoader->AddResource(L"matrixValue", matrixBox);
+            customResourceLoader->AddResource(L"matrix3DValue", matrix3DBox);
+
+            auto panel = safe_cast<StackPanel^>(XamlReader::Load(
+                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"    <Border x:Name='int64Border' Tag='{CustomResource int64Value}' />"
+                L"    <Border x:Name='uint64Border' Tag='{CustomResource uint64Value}' />"
+                L"    <Border x:Name='matrixBorder' Tag='{CustomResource matrixValue}' />"
+                L"    <Border x:Name='matrix3DBorder' Tag='{CustomResource matrix3DValue}' />"
+                L"</StackPanel>"));
+
+            LOG_OUTPUT(L"An Int64 value beyond the Int32 range is read back as the same Int64 value.");
+            auto int64Tag = safe_cast<Border^>(panel->FindName(L"int64Border"))->Tag;
+            auto int64Value = safe_cast<IPropertyValue^>(int64Tag);
+            VERIFY_ARE_EQUAL(PropertyType::Int64, int64Value->Type);
+            VERIFY_ARE_EQUAL(-9000000000000ll, int64Value->GetInt64());
+
+            LOG_OUTPUT(L"A UInt64 value beyond the UInt32 range is read back with the same value.");
+            auto uint64Tag = safe_cast<Border^>(panel->FindName(L"uint64Border"))->Tag;
+            VERIFY_ARE_EQUAL(5000000000ull, ReadNonNegative64BitIntegral(safe_cast<IPropertyValue^>(uint64Tag)));
+
+            LOG_OUTPUT(L"A Matrix value is read back with every field unchanged.");
+            auto matrixTag = safe_cast<Border^>(panel->FindName(L"matrixBorder"))->Tag;
+            auto readMatrix = safe_cast<Matrix>(matrixTag);
+            VERIFY_ARE_EQUAL(1.5, readMatrix.M11);
+            VERIFY_ARE_EQUAL(2.0, readMatrix.M12);
+            VERIFY_ARE_EQUAL(3.0, readMatrix.M21);
+            VERIFY_ARE_EQUAL(4.0, readMatrix.M22);
+            VERIFY_ARE_EQUAL(5.0, readMatrix.OffsetX);
+            VERIFY_ARE_EQUAL(-6.0, readMatrix.OffsetY);
+            VerifyRuntimeClassName(matrixTag, L"Windows.Foundation.IReference`1<Microsoft.UI.Xaml.Media.Matrix>");
+
+            LOG_OUTPUT(L"A Matrix3D value is read back with all 16 fields unchanged.");
+            auto matrix3DTag = safe_cast<Border^>(panel->FindName(L"matrix3DBorder"))->Tag;
+            auto readMatrix3D = safe_cast<Media3D::Matrix3D>(matrix3DTag);
+            VERIFY_ARE_EQUAL(1.0, readMatrix3D.M11);
+            VERIFY_ARE_EQUAL(2.0, readMatrix3D.M12);
+            VERIFY_ARE_EQUAL(3.0, readMatrix3D.M13);
+            VERIFY_ARE_EQUAL(4.0, readMatrix3D.M14);
+            VERIFY_ARE_EQUAL(5.0, readMatrix3D.M21);
+            VERIFY_ARE_EQUAL(6.0, readMatrix3D.M22);
+            VERIFY_ARE_EQUAL(7.0, readMatrix3D.M23);
+            VERIFY_ARE_EQUAL(8.0, readMatrix3D.M24);
+            VERIFY_ARE_EQUAL(9.0, readMatrix3D.M31);
+            VERIFY_ARE_EQUAL(10.0, readMatrix3D.M32);
+            VERIFY_ARE_EQUAL(11.0, readMatrix3D.M33);
+            VERIFY_ARE_EQUAL(12.0, readMatrix3D.M34);
+            VERIFY_ARE_EQUAL(13.0, readMatrix3D.OffsetX);
+            VERIFY_ARE_EQUAL(14.0, readMatrix3D.OffsetY);
+            VERIFY_ARE_EQUAL(15.0, readMatrix3D.OffsetZ);
+            VERIFY_ARE_EQUAL(16.0, readMatrix3D.M44);
+            VerifyRuntimeClassName(matrix3DTag, L"Windows.Foundation.IReference`1<Microsoft.UI.Xaml.Media.Media3D.Matrix3D>");
+        });
+    }
+
 } } } } } }

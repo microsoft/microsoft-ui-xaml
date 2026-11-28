@@ -1351,6 +1351,141 @@ void ShapeTests::StrokeDashArrayAssert()
 
 ////////////////////////////////////////////////////////////////////////////
 
+static std::vector<BYTE> RenderElementToPixels(UIElement^ element)
+{
+    auto renderedEvent = std::make_shared<Event>();
+    auto renderSucceeded = std::make_shared<bool>(false);
+    auto pixelsEvent = std::make_shared<Event>();
+    auto pixels = std::make_shared<std::vector<BYTE>>();
+    RenderTargetBitmap^ rtb = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        rtb = ref new RenderTargetBitmap();
+        // A task-based continuation also runs when RenderAsync fails or is canceled, so the wait below never hangs.
+        create_task(rtb->RenderAsync(element)).then([renderedEvent, renderSucceeded](task<void> renderTask)
+        {
+            try
+            {
+                renderTask.get();
+                *renderSucceeded = true;
+            }
+            catch (Platform::Exception^ e)
+            {
+                LOG_OUTPUT(L"RenderAsync failed with 0x%08x.", e->HResult);
+            }
+            catch (const task_canceled&)
+            {
+                LOG_OUTPUT(L"RenderAsync was canceled.");
+            }
+            renderedEvent->Set();
+        });
+    });
+    renderedEvent->WaitForDefault();
+    VERIFY_IS_TRUE(*renderSucceeded);
+
+    RunOnUIThread([&]()
+    {
+        auto getPixelsOperation = rtb->GetPixelsAsync();
+        getPixelsOperation->Completed = ref new AsyncOperationCompletedHandler<IBuffer^>(
+            [pixels, pixelsEvent](IAsyncOperation<IBuffer^>^ operation, AsyncStatus status)
+        {
+            if (status == AsyncStatus::Completed)
+            {
+                IBuffer^ buffer = operation->GetResults();
+                pixels->resize(buffer->Length);
+                if (!pixels->empty())
+                {
+                    DataReader::FromBuffer(buffer)->ReadBytes(Platform::ArrayReference<BYTE>(pixels->data(), static_cast<unsigned int>(pixels->size())));
+                }
+            }
+            pixelsEvent->Set();
+        });
+    });
+    pixelsEvent->WaitForDefault();
+
+    return *pixels;
+}
+
+void ShapeTests::NegativeStrokeDashOffsetMatchesWrappedOffset()
+{
+    TestCleanupWrapper cleanup;
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto windowHelper = TestServices::WindowHelper;
+    xaml_shapes::Line^ negativeOffsetLine = nullptr;
+    xaml_shapes::Line^ beyondPeriodOffsetLine = nullptr;
+    xaml_shapes::Line^ wrappedOffsetLine = nullptr;
+    xaml_shapes::Line^ zeroOffsetLine = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        // The dash pattern {2, 2} is expressed in multiples of the stroke thickness, so its period is 4.
+        // An offset of -1 must be wrapped into [0, 4) by the dasher, i.e. it must behave like an offset of 3.
+        // An offset of -5 is more than one period below zero and wraps to the same offset of 3.
+        auto createDashedLine = [](double dashOffset)
+        {
+            auto line = ref new xaml_shapes::Line();
+            line->X1 = 0;
+            line->Y1 = 6;
+            line->X2 = 96;
+            line->Y2 = 6;
+            line->Width = 100;
+            line->Height = 12;
+            line->StrokeThickness = 4;
+            line->Stroke = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Black);
+            line->StrokeDashArray = ref new DoubleCollection();
+            line->StrokeDashArray->Append(2);
+            line->StrokeDashArray->Append(2);
+            line->StrokeDashOffset = dashOffset;
+            return line;
+        };
+
+        negativeOffsetLine = createDashedLine(-1);
+        beyondPeriodOffsetLine = createDashedLine(-5);
+        wrappedOffsetLine = createDashedLine(3);
+        zeroOffsetLine = createDashedLine(0);
+
+        StackPanel^ root = ref new StackPanel();
+        root->Background = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::White);
+        root->Children->Append(negativeOffsetLine);
+        root->Children->Append(beyondPeriodOffsetLine);
+        root->Children->Append(wrappedOffsetLine);
+        root->Children->Append(zeroOffsetLine);
+        windowHelper->WindowContent = root;
+    });
+    windowHelper->WaitForIdle();
+
+    auto negativeOffsetPixels = RenderElementToPixels(negativeOffsetLine);
+    auto beyondPeriodOffsetPixels = RenderElementToPixels(beyondPeriodOffsetLine);
+    auto wrappedOffsetPixels = RenderElementToPixels(wrappedOffsetLine);
+    auto zeroOffsetPixels = RenderElementToPixels(zeroOffsetLine);
+
+    LOG_OUTPUT(L"> Rendered %u (offset -1), %u (offset -5), %u (offset 3) and %u (offset 0) bytes.",
+        static_cast<unsigned int>(negativeOffsetPixels.size()),
+        static_cast<unsigned int>(beyondPeriodOffsetPixels.size()),
+        static_cast<unsigned int>(wrappedOffsetPixels.size()),
+        static_cast<unsigned int>(zeroOffsetPixels.size()));
+    // An empty buffer means GetPixelsAsync failed or was canceled; none of the comparisons below is meaningful then.
+    VERIFY_IS_FALSE(negativeOffsetPixels.empty());
+    VERIFY_IS_FALSE(beyondPeriodOffsetPixels.empty());
+    VERIFY_IS_FALSE(wrappedOffsetPixels.empty());
+    VERIFY_IS_FALSE(zeroOffsetPixels.empty());
+    VERIFY_ARE_EQUAL(negativeOffsetPixels.size(), wrappedOffsetPixels.size());
+
+    LOG_OUTPUT(L"> Offset -1 renders exactly like the wrapped offset 3.");
+    VERIFY_IS_TRUE(negativeOffsetPixels == wrappedOffsetPixels);
+
+    LOG_OUTPUT(L"> Offset -5 (more than one period below zero) also renders exactly like the wrapped offset 3.");
+    VERIFY_IS_TRUE(beyondPeriodOffsetPixels == wrappedOffsetPixels);
+
+    LOG_OUTPUT(L"> Offset 0 renders differently, so the comparison above is meaningful.");
+    // RenderTargetBitmap captures the dashes' ink bounds, so the zero-offset bitmap may also differ in size.
+    VERIFY_IS_FALSE(negativeOffsetPixels == zeroOffsetPixels);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void ShapeTests::ShapeWithLinearGradientBrushAbsolute()
 {
     ShapeWithLinearGradientBrushAbsoluteInternal(DCompRendering::WUCCompleteSynchronousCompTree);
