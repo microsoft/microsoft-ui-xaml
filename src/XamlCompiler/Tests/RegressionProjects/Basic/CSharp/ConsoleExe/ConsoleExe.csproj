@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+  <Import Project="$(CommonFilesPath)AppPreamble.cs.props" />
+
+  <PropertyGroup>
+    <!-- A desktop app built as a console exe must still get an STA Main (#11028). -->
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ConsoleExe</RootNamespace>
+    <AssemblyName>ConsoleExe</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+</Project>

@@ -352,10 +352,24 @@ namespace UnitTests
             DiffCodegen(@"Basic\CppWinRT\Simple\generated");
         }
 
+        // A C++ desktop app that doesn't set AppContainerApplication must get an STA wWinMain (#11028).
+        [TestMethod]
+        public void Codegen_BasicCppWinRTNoAppContainerProperty()
+        {
+            DiffCodegen(@"Basic\CppWinRT\NoAppContainerProperty\generated");
+        }
+
         [TestMethod]
         public void Codegen_BasicCS()
         {
             DiffCodegen(@"Basic\CSharp\Simple\generated");
+        }
+
+        // A desktop app built with OutputType=Exe must get an STA Main, as WinExe does (#11028).
+        [TestMethod]
+        public void Codegen_BasicCSConsoleExe()
+        {
+            DiffCodegen(@"Basic\CSharp\ConsoleExe\generated");
         }
 
         [TestMethod]

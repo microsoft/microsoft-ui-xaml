@@ -80,15 +80,13 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <EnabledXamlOptionalChanges Condition="'$(EnabledXamlOptionalChanges)' == ''"></EnabledXamlOptionalChanges>
         <DisabledXamlOptionalChanges Condition="'$(DisabledXamlOptionalChanges)' == ''"></DisabledXamlOptionalChanges>
 
-        <!-- Determine whether we are building for Win32 or UWP, while respecting any overrides..-->
+        <!-- Determine whether we are building for Win32 or UWP, while respecting any overrides.
+             Anything that isn't an app container is a desktop (Win32) app and gets an STA entry point.
+             C++ UWP projects set AppContainerApplication=true. C# UWP projects don't set AppContainerApplication;
+             they are identified by OutputType=AppContainerExe, and their Main must stay MTA for CoreApplication. -->
+        <EnableWin32Codegen Condition="'$(EnableWin32Codegen)' == '' AND '$(AppContainerApplication)' != 'true' AND '$(OutputType)' != 'AppContainerExe'">true</EnableWin32Codegen>
 
-        <!-- For native apps, AppContainerApplication is set to false for Win32 -->
-        <EnableWin32Codegen  Condition="'$(EnableWin32Codegen)' == '' AND '$(AppContainerApplication)' == 'false'">true</EnableWin32Codegen >
-
-        <!-- For managed apps, OutputType is WinExe for Win32 -->
-        <EnableWin32Codegen  Condition="'$(EnableWin32Codegen)' == '' AND '$(OutputType)' == 'WinExe'">true</EnableWin32Codegen >
-
-        <!-- If we couldn't determine whether we're building UWP or Win32, assume UWP. -->
+        <!-- Otherwise this is an app container (UWP) project. -->
         <EnableWin32Codegen  Condition="'$(EnableWin32Codegen)' == ''">false</EnableWin32Codegen>
 
         <!-- Determine whether we're using CSWinRT.  This is based off whether the property UsingMicrosoftNETSdk is set, meaning we're using .NET 5 (and therefore CSWinRT) -->
