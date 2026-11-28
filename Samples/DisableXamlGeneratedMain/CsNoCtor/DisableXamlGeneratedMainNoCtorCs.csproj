@@ -17,6 +17,7 @@
     <AppxPackageName>DisableXamlGeneratedMainNoCtorCs</AppxPackageName>
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <Configurations>Debug;Release;Debug_test</Configurations>
+    <NoWarn Condition="'$(UseCsWinRT3)' == 'true'">$(NoWarn);CSWINRT3005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
