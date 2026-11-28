@@ -17,7 +17,7 @@
             - lib
               -uap10.0
             - tools
-              - net8.0
+              - net10.0
                 - x86
                 - x64
               - net472

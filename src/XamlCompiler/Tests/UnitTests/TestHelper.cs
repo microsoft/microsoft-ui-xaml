@@ -740,8 +740,8 @@ namespace UnitTests
                 {
                     _frameworkAssemblyFilePaths = new List<string>();
 
-                    // Load .NET 8 references first because LibManagedDll and its C#/WinRT projection
-                    // closure target net8.0. The universe resolves the first simple-name match, so
+                    // Load .NET 10 references first because LibManagedDll and its C#/WinRT projection
+                    // closure target net10.0. The universe resolves the first simple-name match, so
                     // this order selects the matching BCL surface.
                     _frameworkAssemblyFilePaths.AddRange(Directory.EnumerateFiles(StagedFrameworkReferencesPath, "*.dll"));
 

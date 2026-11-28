@@ -45,7 +45,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestNetSdkVersion)" />
     <PackageReference Include="Axe.Windows" Version="1.1.7" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
     <PackageReference Include="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
     <PackageReference Include="Microsoft.Windows.SDK.cpp" Version="$(MicrosoftWindowsSDKCppNugetPackageVersion)" />
@@ -171,7 +170,7 @@
     <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="%3CRunSettings%3E" Overwrite="true" />
     <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="  %3CRunConfiguration%3E" />
     <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="    %3CTargetPlatform%3E$(Platform)%3C/TargetPlatform%3E" />
-    <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="    %3CTargetFrameworkVersion%3E.NETCoreApp,Version=v6.0%3C/TargetFrameworkVersion%3E" />
+    <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="    %3CTargetFrameworkVersion%3E$(TargetFrameworkIdentifier),Version=$(TargetFrameworkVersion)%3C/TargetFrameworkVersion%3E" />
     <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="    %3CResultsDirectory%3E$(OutDir)TestResults%3C/ResultsDirectory%3E" />
     <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="    %3CTestAdaptersPaths%3E$(OutDir)%3C/TestAdaptersPaths%3E" />
     <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="  %3C/RunConfiguration%3E" />

@@ -119,20 +119,24 @@ steps:
       arguments: 'restore build\packages.webview2.config -ConfigFile nuget.config -Source WinUI.Dependencies -PackagesDirectory $(Build.SourcesDirectory)\packages'
       includeNuGetOrg: false
 
-  - task: VSBuild@1
+  - task: MSBuild@1
     displayName: 'Restore component dependencies'
     inputs:
+      msbuildLocationMethod: 'location'
+      msbuildLocation: $(_buildToolsDirectory)\MSBuild\Current\Bin\amd64\MSBuild.exe
       solution: '$(Build.SourcesDirectory)\eng\RestoreComponentDependencies.csproj'
-      msBuildArgs: '/t:restore'
+      msbuildArguments: '/t:restore'
 
   # Same project as above; IsInternalWinUIBuild=false selects its public-package ItemGroup.
   # Skipped for the mono-build, which consumes the transport packages restored above.
-  - task: VSBuild@1
+  - task: MSBuild@1
     displayName: 'Restore OSS component dependencies'
     condition: and(succeeded(), ne(variables['IsInternalWinUIBuild'], 'true'), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
     inputs:
+      msbuildLocationMethod: 'location'
+      msbuildLocation: $(_buildToolsDirectory)\MSBuild\Current\Bin\amd64\MSBuild.exe
       solution: '$(Build.SourcesDirectory)\eng\RestoreComponentDependencies.csproj'
-      msBuildArgs: '/t:restore /p:IsInternalWinUIBuild=false'
+      msbuildArguments: '/t:restore /p:IsInternalWinUIBuild=false'
 
   - task: PowerShell@2
     displayName: SetupMockArm64EC

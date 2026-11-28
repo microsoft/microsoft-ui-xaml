@@ -4,7 +4,7 @@
     <SigningMethods Include="StrongName" />
   </ItemGroup>
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net10.0</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AssemblyName>Microsoft.UI.Xaml.Markup.Compiler</AssemblyName>
     <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler</RootNamespace>
@@ -53,7 +53,7 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
     <PackageReference Include="System.Reflection.Metadata" Version="8.0.0" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <PackageReference Include="System.CodeDom" Version="8.0.0" />
     <PackageReference Include="System.Security.Permissions" Version="8.0.0" />
   </ItemGroup>

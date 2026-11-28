@@ -89,7 +89,7 @@
          as on-disk metadata (TestHelper.GetUserAssemblyPath resolves them by file name next to the
          test assembly). They are therefore consumed as build outputs, exactly as MergedWinMD and
          GenXbf are below. SkipGetTargetFrameworkProperties is required because they are SDK-style
-         net8.0 projects while this test project is net472 - a compile-time reference would be
+         net10.0 projects while this test project is net472 - a compile-time reference would be
          invalid, but a file dependency is not. -->
     <ProjectReference Include="LibManagedDll\LibManagedDll.csproj">
       <Project>{5D3B1E5D-9995-4FBE-88E9-2A36B2970307}</Project>
@@ -210,7 +210,7 @@
            Text="No XamlCompiler net472 tool dependencies found under '$(ToolsPackageLocation)\net472'." />
     <Copy SourceFiles="@(_XamlCompilerToolDependencies)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
 
-    <!-- Stage the C#/WinRT projection and .NET 8 reference closures required to resolve
+    <!-- Stage the C#/WinRT projection and .NET 10 reference closures required to resolve
          LibManagedDll. TestHelper loads them from the payload analogous to how CompileXaml receives
          them via @(ReferencePath). -->
     <PropertyGroup>
@@ -221,8 +221,8 @@
       <_SdkNetRefPackDir>$(NugetPackageDirectory)\microsoft.windows.sdk.net.ref\$(_SdkNetRefPackVersion)\lib\net6.0\</_SdkNetRefPackDir>
       <!-- Same expression LibManagedDll.csproj uses for its own IXP reference. -->
       <_IxpProjectionDir>$(LiftedIXPPackagePath)\lib\net6.0-windows$(CurrentLiftedIXPTargetPlatformVersion)\</_IxpProjectionDir>
-      <!-- $(Net8TargetingPackVersion) is the same pin eng\sdkconfig.targets applies to every .NET 8 pack. -->
-      <_NetCoreRefPackDir>$(NugetPackageDirectory)\microsoft.netcore.app.ref\$(Net8TargetingPackVersion)\ref\net8.0\</_NetCoreRefPackDir>
+      <!-- Match the targeting pack used by LibManagedDll. -->
+      <_NetCoreRefPackDir>$(NugetPackageDirectory)\microsoft.netcore.app.ref\$(Net10TargetingPackVersion)\ref\net10.0\</_NetCoreRefPackDir>
     </PropertyGroup>
     <ItemGroup>
       <_ManagedProjectionReference Include="$(ProductDir)Microsoft.WinUI.dll" />
@@ -234,7 +234,7 @@
     <Error Condition="!Exists('%(_ManagedProjectionReference.FullPath)')"
            Text="Managed projection reference not found: %(_ManagedProjectionReference.FullPath). The unit tests cannot resolve LibManagedDll's type closure without it." />
     <Error Condition="'@(_NetCoreFrameworkReference)' == ''"
-           Text="No .NET 8 reference assemblies found under '$(_NetCoreRefPackDir)'. The unit tests cannot resolve a net8.0 user assembly's type closure without them." />
+           Text="No .NET 10 reference assemblies found under '$(_NetCoreRefPackDir)'. The unit tests cannot resolve a net10.0 user assembly's type closure without them." />
     <Copy SourceFiles="@(_ManagedProjectionReference)" DestinationFolder="$(ProjectionReferencesDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(_NetCoreFrameworkReference)" DestinationFolder="$(FrameworkReferencesDir)" SkipUnchangedFiles="true" />
     <ItemGroup>

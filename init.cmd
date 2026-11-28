@@ -66,7 +66,7 @@ set fre=
 set chk=
 set _BuildArch=
 set _BuildType=
-set _DotNetMoniker=net8.0
+set _DotNetMoniker=net10.0
 set _archIsSet=
 set _noPgo=
 
@@ -131,6 +131,8 @@ if /i "%1"=="" (
     set _DotNetMoniker=net7.0
 ) else if /i "%1"=="net8" (
     set _DotNetMoniker=net8.0
+) else if /i "%1"=="net10" (
+    set _DotNetMoniker=net10.0
 ) else if /i "%1"=="/nopgo" (
     set _noPgo=1
 )  else (
@@ -274,7 +276,7 @@ goto :SkipDevCmd
     if errorlevel 1 (echo Could not set up a developer command prompt && exit /b %ERRORLEVEL%)
 :SkipDevCmd
 
-if "%VisualStudioVersion%" == "16.0" (echo Visual Studio 2019 is not supported. && exit /b /1)
+if "%VisualStudioVersion%" LSS "18.0" (echo Visual Studio 2026 or later is required for the .NET 10 SDK. && exit /b 1)
 
 set PATH=%RepoRoot%\.buildtools\MSBuild\Current\Bin\amd64;%RepoRoot%\.tools;%RepoRoot%\.tools\VSS.NuGet.AuthHelper;%RepoRoot%\tools;%RepoRoot%\dxaml\scripts;%PATH%
 
