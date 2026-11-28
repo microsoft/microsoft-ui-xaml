@@ -2261,6 +2261,15 @@ _Check_return_ HRESULT DesktopWindowImpl::get_WindowHandle(_Out_ HWND* pValue)
 
 void DesktopWindowImpl::Shutdown()
 {
+    // Keep the window's non-client input source alive until its parent HWND is destroyed.
+    // Its final release can destroy helper HWNDs and synchronously send parent notifications.
+    // The island always holds the source, unlike WindowChrome.
+    wrl::ComPtr<ixp::IInputNonClientPointerSource> nonClientInputSource;
+    if (auto xamlIslandRoot = static_cast<DirectUI::XamlIslandRoot*>(m_desktopWindowXamlSource->GetXamlIslandRootNoRef()))
+    {
+        nonClientInputSource = static_cast<CXamlIslandRoot*>(xamlIslandRoot->GetHandle())->GetInputNonClientPointerSource();
+    }
+
     if (AreNewWindowingApisEnabled())
     {
         RefreshWindowPlacementEligibility();
