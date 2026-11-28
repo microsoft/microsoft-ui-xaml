@@ -738,6 +738,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies the view raises PropertyChanged for CanGroup and CanBuildHierarchy when a hierarchy or a group description turns them off and back on, and not for other rule changes.")]
+        public void VerifyCapabilityChangesRaisePropertyChanged()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = new CollectionViewSource { Source = MakeTree() };
+                var view = cvs.View;
+                var log = new List<string>();
+                ((INotifyPropertyChanged)view).PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == "CanGroup" || e.PropertyName == "CanBuildHierarchy")
+                    {
+                        log.Add(e.PropertyName);
+                    }
+                };
+
+                cvs.HierarchyDescription = new PropertyHierarchyDescription(IdPath, ManagerPath);
+                Verify.AreEqual("CanGroup", string.Join(",", log), "A tree cannot group.");
+                log.Clear();
+                cvs.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending));
+                Verify.AreEqual(string.Empty, string.Join(",", log), "A sort changes neither.");
+                cvs.HierarchyDescription = null;
+                Verify.AreEqual("CanGroup", string.Join(",", log), "Flat again: it can group.");
+
+                log.Clear();
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("Dept"));
+                Verify.AreEqual("CanBuildHierarchy", string.Join(",", log), "A grouped view cannot build a tree.");
+                log.Clear();
+                cvs.GroupDescriptions.Clear();
+                Verify.AreEqual("CanBuildHierarchy", string.Join(",", log), "Ungrouped: it can.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a removed node is unreachable while its Children list raises its Reset: NodeFromItem finds nothing for its item, and the node reads as detached.")]
+        public void VerifyRemovedNodeIsUnreachableDuringItsReset()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var list = MakeTree();
+                var hierarchy = (ICollectionViewHierarchy)MakeTreeSource(list).View;
+                var ben = Named(list, "Ben");
+                var benNode = hierarchy.NodeFromItem(ben);
+                var children = benNode.Children;
+                Verify.AreEqual(1, children.Count, "Ben has Dan.");
+                var seen = new List<string>();
+                children.VectorChanged += (s, e) =>
+                {
+                    if (e.CollectionChange == CollectionChange.Reset)
+                    {
+                        seen.Add($"found={hierarchy.NodeFromItem(ben) != null},hasChildren={benNode.HasChildren},parent={benNode.Parent != null}");
+                    }
+                };
+
+                list.Remove(ben);
+                Verify.AreEqual("found=False,hasChildren=False,parent=False", string.Join(";", seen), "Detached before its Children said so.");
+                Verify.IsNull(hierarchy.NodeFromItem(ben), "Still gone.");
+                Verify.AreEqual("Ada(0) Cy(1) Dan(0) Eve(0) Fay(1) Gus(0)", Tree((ICollectionView)hierarchy), "Dan is a root.");
+            });
+        }
         #endregion
 
         #region Helpers

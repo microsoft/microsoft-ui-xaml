@@ -1138,7 +1138,8 @@ namespace Microsoft.UI.Xaml.Data
         [OrderHint(4)]
         Windows.Foundation.Boolean IsContext { get; }
 
-        // Whether Children has any node, without making the list; PropertyChanged("HasChildren") when it changes.
+        // Whether Children has any node, without making the list. A node raises PropertyChanged("HasChildren") when it
+        // changes (INotifyPropertyChanged); a control watches Children instead for a node that does not implement it.
         [PropertyKind(PropertyKind.PropertyOnly)]
         [OrderHint(5)]
         Windows.Foundation.Boolean HasChildren { get; }

@@ -97,10 +97,9 @@ namespace DirectUI
         // Sets the description without recomputing (ApplyPropertiesToView applies the rules after).
         _Check_return_ HRESULT SetHierarchyDescription(_In_opt_ xaml_data::IHierarchyDescription* pValue);
         _Check_return_ HRESULT OnHierarchyDescriptionChanged(_In_ HierarchyDescription* pDescription);
-        bool HasHierarchyDescription() const
-        {
-            return !!m_tpHierarchyDescription;
-        }
+        // A hierarchy description is set and the experimental feature is on; with the feature off it is ignored.
+        bool HasHierarchyDescription() const;
+        static bool IsHierarchyEnabled();
         // Grouping and a hierarchy exclude each other; checked before either rule is added.
         static _Check_return_ HRESULT CheckHierarchyWithoutGrouping(UINT groupCount);
 
@@ -280,6 +279,7 @@ namespace DirectUI
         _Check_return_ HRESULT RestoreHierarchyItem(UINT sourceIndex, bool isFiltering, bool isResorting, _In_opt_ IInspectable* pItem, const std::function<bool(UINT)>& isSkipped, _Out_ bool* pIsApplied);
         ShapingEngine::HierarchyOutput GetHierarchyOutput() const;
         void WalkHierarchy(EReferenceTrackerWalkType walkType);
+        _Check_return_ HRESULT RaiseCapabilityChanges();
         void ReleaseHierarchy();
         bool HasSortDirtyLiveItems() const;
         bool IsSortDirtyAfterSourceChange(wfc::CollectionChange change, UINT index, UINT sourceIndex) const;
@@ -418,5 +418,8 @@ namespace DirectUI
         std::shared_ptr<ShapingEngine::HierarchyStore> m_spHierarchy;
         TrackerPtr<wfc::IVector<IInspectable*>> m_tpNodeList;
         bool m_isHierarchical = false;
+        // CanGroup / CanBuildHierarchy as last announced (PropertyChanged when a rule change flips them).
+        bool m_lastCanGroup = true;
+        bool m_lastCanBuildHierarchy = true;
     };
 }

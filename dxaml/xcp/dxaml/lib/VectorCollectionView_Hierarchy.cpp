@@ -636,12 +636,14 @@ IFACEMETHODIMP NodeListVector::add_VectorChanged(_In_ wfc::VectorChangedEventHan
 {
     ARG_NOTNULL_RETURN(pHandler, "handler");
     ARG_VALIDRETURNPOINTER(pToken);
+    IFC_RETURN(CheckThread());
     m_handlers.AddHandler(pHandler, pToken);
     return S_OK;
 }
 
 IFACEMETHODIMP NodeListVector::remove_VectorChanged(EventRegistrationToken token)
 {
+    IFC_RETURN(CheckThread());
     IFC_RETURN(m_handlers.RemoveHandler(token));
     return S_OK;
 }
@@ -890,14 +892,17 @@ _Check_return_ HRESULT HierarchyStore::AllocateNode(
 
 _Check_return_ HRESULT HierarchyStore::FreeNode(NodeId id)
 {
-    auto& node = nodes[id];
-    ReleaseProjection(id);
+    // Unreachable before its objects are told (a Children handler may look the item up), so no new object is bound to
+    // an id about to be reused.
+    nodes[id].isKept = false;
     if (m_isIdentityIndexed)
     {
         ctl::ComPtr<IInspectable> spItem;
         IFC_RETURN(m_items.GetAt(id, spItem.ReleaseAndGetAddressOf()));
         IndexIdentity(id, spItem.Get(), false /* isAdded */);
     }
+    ReleaseProjection(id);
+    auto& node = nodes[id];
     FreeKeyObject(node.keyObjectSlot);
     FreeKeyObject(node.parentKeyObjectSlot);
     if (sort && node.slot != SortKeyStore::c_noSlot)
@@ -982,13 +987,21 @@ void HierarchyStore::ReleaseProjection(NodeId id)
     const UINT slot = std::exchange(node.projectionSlot, c_noTrackerSlot);
     auto refs = std::exchange(m_projections[slot], ProjectionRefs());
     m_freeProjections.push_back(slot);
-    if (auto spChildren = ResolveWeak<NodeListVector>(refs.children))
+    DetachRefs(refs, true /* isRaised */);
+}
+
+// The node first, so a handler of its Children's Reset already sees it detached (no parent, no children).
+void HierarchyStore::DetachRefs(ProjectionRefs& refs, bool isRaised)
+{
+    auto spProjection = ResolveWeak<CollectionViewNode>(refs.node);
+    auto spChildren = ResolveWeak<NodeListVector>(refs.children);
+    if (spProjection)
     {
-        IGNOREHR(spChildren->Detach(true /* isRaised */));
+        spProjection->Detach(isRaised);
     }
-    if (auto spProjection = ResolveWeak<CollectionViewNode>(refs.node))
+    if (spChildren)
     {
-        spProjection->Detach(true /* isRaised */);
+        IGNOREHR(spChildren->Detach(isRaised));
     }
 }
 
@@ -1004,14 +1017,7 @@ void HierarchyStore::DetachProjections(bool isRaised)
         }
         auto refs = std::exchange(m_projections[slot], ProjectionRefs());
         m_freeProjections.push_back(slot);
-        if (auto spChildren = ResolveWeak<NodeListVector>(refs.children))
-        {
-            IGNOREHR(spChildren->Detach(isRaised));
-        }
-        if (auto spProjection = ResolveWeak<CollectionViewNode>(refs.node))
-        {
-            spProjection->Detach(isRaised);
-        }
+        DetachRefs(refs, isRaised);
     }
 }
 
@@ -1459,6 +1465,11 @@ _Check_return_ HRESULT HierarchyStore::FindInsertPosition(NodeId id, const std::
 
 _Check_return_ HRESULT HierarchyStore::GetProjection(NodeId id, _Outptr_ xaml_data::ICollectionViewNode** ppNode)
 {
+    *ppNode = nullptr;
+    if (id >= nodes.size() || !nodes[id].isAllocated || !nodes[id].isKept)
+    {
+        return S_OK;
+    }
     auto spProjection = LiveProjection(id);
     if (!spProjection)
     {
@@ -2067,9 +2078,36 @@ IFACEMETHODIMP VectorCollectionView::put_HierarchyDescription(_In_opt_ xaml_data
     return S_OK;
 }
 
+bool VectorCollectionView::IsHierarchyEnabled()
+{
+    return !!Feature_ExperimentalApi::IsEnabled();
+}
+
+bool VectorCollectionView::HasHierarchyDescription() const
+{
+    return m_tpHierarchyDescription && IsHierarchyEnabled();
+}
+
+_Check_return_ HRESULT VectorCollectionView::RaiseCapabilityChanges()
+{
+    BOOLEAN canGroup = TRUE;
+    BOOLEAN canBuildHierarchy = TRUE;
+    IFC_RETURN(get_CanGroup(&canGroup));
+    IFC_RETURN(get_CanBuildHierarchy(&canBuildHierarchy));
+    if (std::exchange(m_lastCanGroup, !!canGroup) != !!canGroup)
+    {
+        IFC_RETURN(ContainRaiseFailure(RaisePropertyChanged(STR_LEN_PAIR(L"CanGroup"))));
+    }
+    if (std::exchange(m_lastCanBuildHierarchy, !!canBuildHierarchy) != !!canBuildHierarchy)
+    {
+        IFC_RETURN(ContainRaiseFailure(RaisePropertyChanged(STR_LEN_PAIR(L"CanBuildHierarchy"))));
+    }
+    return S_OK;
+}
+
 _Check_return_ HRESULT VectorCollectionView::SetHierarchyDescription(_In_opt_ xaml_data::IHierarchyDescription* pValue)
 {
-    if (pValue)
+    if (pValue && IsHierarchyEnabled())
     {
         UINT groupCount = 0;
         if (m_tpGroupDescriptions)

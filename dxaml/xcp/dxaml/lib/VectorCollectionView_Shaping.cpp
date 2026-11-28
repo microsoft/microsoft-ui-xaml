@@ -277,7 +277,7 @@ IFACEMETHODIMP VectorCollectionView::get_CanFilter(_Out_ BOOLEAN* pValue)
 IFACEMETHODIMP VectorCollectionView::get_CanGroup(_Out_ BOOLEAN* pValue)
 {
     ARG_VALIDRETURNPOINTER(pValue);
-    *pValue = !m_tpHierarchyDescription;
+    *pValue = !HasHierarchyDescription();
     return S_OK;
 }
 
@@ -373,7 +373,7 @@ _Check_return_ HRESULT VectorCollectionView::HasShapingRules(_Out_ bool* pHasRul
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
 
-    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort || m_spFilterEvents || m_tpHierarchyDescription;
+    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort || m_spFilterEvents || HasHierarchyDescription();
     return S_OK;
 }
 
@@ -388,6 +388,7 @@ _Check_return_ HRESULT VectorCollectionView::OnShapingRulesChanged()
     // Only a rule change starts incremental loading over, not a source change RunPendingRecompute replays.
     ResetIncrementalLoadState();
     IFC_RETURN(ApplyShapingRules());
+    IFC_RETURN(RaiseCapabilityChanges());
     return S_OK;
 }
 
@@ -413,7 +414,7 @@ _Check_return_ HRESULT VectorCollectionView::ApplyShapingRules()
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
     const bool isGrouping = (groupCount > 0);
-    if (m_tpHierarchyDescription)
+    if (HasHierarchyDescription())
     {
         IFC_RETURN(CheckHierarchyWithoutGrouping(groupCount));
     }
@@ -590,7 +591,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
         UINT slot = 0;
     };
 
-    if (m_tpHierarchyDescription && !m_isGrouping)
+    if (HasHierarchyDescription() && !m_isGrouping)
     {
         IFC_RETURN(RefreshHierarchy());
         return S_OK;

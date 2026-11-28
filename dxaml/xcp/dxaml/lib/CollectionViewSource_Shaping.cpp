@@ -136,7 +136,7 @@ namespace
 
         _Check_return_ HRESULT CheckCanGroup()
         {
-            if (m_kind != DescriptionsKind::GroupDescriptions || !m_ownerRef)
+            if (m_kind != DescriptionsKind::GroupDescriptions || !m_ownerRef || !VectorCollectionView::IsHierarchyEnabled())
             {
                 return S_OK;
             }
@@ -709,7 +709,7 @@ _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCo
 
     IFC_RETURN(EnsureShapingDescriptions());
     IFC_RETURN(get_HierarchyDescription(spHierarchy.ReleaseAndGetAddressOf()));
-    if (spHierarchy)
+    if (spHierarchy && VectorCollectionView::IsHierarchyEnabled())
     {
         UINT groupCount = 0;
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
@@ -878,7 +878,7 @@ _Check_return_ HRESULT CollectionViewSource::OnHierarchyDescriptionChanged(_In_ 
     ctl::ComPtr<xaml_data::IHierarchyDescription> spHierarchy;
     IFC_RETURN(get_HierarchyDescription(spHierarchy.ReleaseAndGetAddressOf()));
     UINT groupCount = 0;
-    if (spHierarchy && m_tpGroupDescriptions)
+    if (spHierarchy && m_tpGroupDescriptions && VectorCollectionView::IsHierarchyEnabled())
     {
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }

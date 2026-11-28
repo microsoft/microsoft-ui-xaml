@@ -142,7 +142,8 @@ namespace DirectUI::ShapingEngine
     // The public node (WPF has none; modelled on CollectionViewGroupInternal). Children is created on first read and
     // follows the store from then on. The store holds both weakly: a node nobody references is released, and the next
     // read makes a new one (with the Children list, if that one is still referenced). The node leaves the store when its
-    // item is removed or filtered out, or when the view recomputes; it then keeps its last values and Parent is null.
+    // item is removed or filtered out, or when the view recomputes. A detached node is inert: it keeps Item, Key and
+    // IsContext, Parent is null, HasChildren is false, Children is empty, and it raises no further changes.
     class __declspec(novtable) __declspec(uuid("41f15b16-a44e-4ab2-9e19-dbce5b56ed1b")) CollectionViewNode :
         public xaml_data::ICollectionViewNode,
         public xaml_data::ICustomPropertyProvider,
@@ -312,8 +313,8 @@ namespace DirectUI::ShapingEngine
         // Detaches every public node (the view recomputed or stopped being hierarchical).
         void DetachProjections(bool isRaised);
 
-        // Changes that move more than c_maxFlatEvents rows of the flat list in total, between Begin and the outermost End,
-        // publish it as one Reset at the End.
+        // Between Begin and the outermost End, the flat list gets row events for the first c_maxFlatEvents rows changed in
+        // total; once a change would pass that, it gets no more row events and one Reset at the End.
         void BeginFlatBatch();
         _Check_return_ HRESULT EndFlatBatch(const HierarchyOutput& output, bool isPublished);
 
@@ -341,6 +342,8 @@ namespace DirectUI::ShapingEngine
         _Check_return_ HRESULT AppendNodeVector(NodeId parent, UINT position, NodeId id, const HierarchyOutput& output);
         ctl::ComPtr<NodeListVector> NodeVector(NodeId parent, const HierarchyOutput& output);
         UINT EnsureProjectionSlot(NodeId id);
+        struct ProjectionRefs;
+        void DetachRefs(ProjectionRefs& refs, bool isRaised);
 
         TrackerPtrVector<IInspectable> m_items;
         TrackerPtrVector<IInspectable> m_keyObjects;
