@@ -118,6 +118,14 @@ internal sealed class ProcessRecordingGroup : IDisposable
         (recording.Source.ProcessCreatedUtc is not { } created || eventFileTime >= created.ToFileTimeUtc());
     internal bool IsWriting => recordings.Values.Any(recording => recording.Writer is not null);
 
+    internal void MarkHardFaultCaptureEnabled()
+    {
+        foreach (var recording in recordings.Values)
+        {
+            recording.Writer?.MarkHardFaultCaptureEnabled();
+        }
+    }
+
     // Stores a live CPU sample in its process's session file, on any thread. It doesn't wait for the writer, which
     // counts the sample as dropped when its queue is full.
     internal void PostSample(CompletedSample sample)

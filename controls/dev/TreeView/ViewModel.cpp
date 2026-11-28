@@ -27,7 +27,7 @@ void SelectedTreeNodeVector::UpdateSelection(winrt::TreeViewNode const& node, Tr
         if (auto viewModel = m_viewModel.get())
         {
             viewModel->UpdateSelection(node, state);
-            viewModel->NotifyContainerOfSelectionChange(node, state);
+            viewModel->NotifyContainerOfSelectionChange(node, winrt::get_self<TreeViewNode>(node)->SelectionState());
         }
     }
 }
@@ -91,24 +91,95 @@ bool SelectedTreeNodeVector::Contains(winrt::TreeViewNode const& node)
     return GetVectorInnerImpl()->IndexOf(node, index);
 }
 
+namespace
+{
+    struct ScopedSelectionVectorNotification
+    {
+        explicit ScopedSelectionVectorNotification(com_ptr<ViewModel> const& viewModel)
+            : m_viewModel(viewModel)
+        {
+            if (m_viewModel)
+            {
+                m_viewModel->EnterSelectionVectorNotification();
+            }
+        }
+
+        ~ScopedSelectionVectorNotification()
+        {
+            if (m_viewModel)
+            {
+                m_viewModel->ExitSelectionVectorNotification();
+            }
+        }
+
+        ScopedSelectionVectorNotification(ScopedSelectionVectorNotification const&) = delete;
+        ScopedSelectionVectorNotification& operator=(ScopedSelectionVectorNotification const&) = delete;
+
+    private:
+        com_ptr<ViewModel> m_viewModel;
+    };
+}
+
 // Default write methods will trigger TreeView visual updates.
 // If you want to update vector content without notifying TreeViewNodes, use "core" version of the methods.
 void SelectedTreeNodeVector::InsertAtCore_NoContainsCheck(unsigned int index, winrt::TreeViewNode const& node)
 {
     MUX_ASSERT(!Contains(node));
 
-    GetVectorInnerImpl()->InsertAt(index, node);
+    const auto viewModel = m_viewModel.get();
+    const bool alreadyInsertedInSelectedItems = viewModel && viewModel->ConsumePendingInsertedItemFromSelectedItems(node);
+    const bool isNestedNotification = viewModel && viewModel->IsInSelectionVectorNotification();
+    const uint64_t versionBefore = viewModel ? viewModel->IncrementSelectionMutationVersion() : 0;
 
-    // Keep SelectedItems and SelectedNodes in sync
-    if (auto viewModel = m_viewModel.get())
+    {
+        ScopedSelectionVectorNotification notificationGuard(viewModel);
+        GetVectorInnerImpl()->InsertAt(index, node);
+    }
+
+    // Keep SelectedItems and SelectedNodes in sync.
+    if (viewModel)
     {
         auto selectedItems = viewModel->GetSelectedItems();
-        if (selectedItems.Size() != Size())
+        auto selectedItemsImpl = winrt::get_self<SelectedItemsVector>(selectedItems);
+
+        if (!isNestedNotification && viewModel->SelectionMutationVersion() == versionBefore)
+        {
+            // Fast path: no re-entrant selection mutation occurred during VectorChanged.
+            if (!alreadyInsertedInSelectedItems)
+            {
+                if (auto item = viewModel->ItemFromNode(node))
+                {
+                    if (!viewModel->IsContentMode() || !selectedItemsImpl->Contains(item))
+                    {
+                        const uint32_t insertIndex = std::min(index, selectedItemsImpl->Size());
+                        const uint64_t itemVersionBefore = viewModel->SelectionMutationVersion();
+                        selectedItemsImpl->InsertAt_NoContainsCheck(insertIndex, item, /*syncSelectedNodes*/ false);
+                        if (viewModel->SelectionMutationVersion() == itemVersionBefore + 1 || selectedItemsImpl->Contains(item))
+                        {
+                            viewModel->TrackItemSelected(item);
+                        }
+                    }
+                }
+            }
+            return;
+        }
+
+        // Re-entrant callback mutated selection: reconcile by identity if node is still selected.
+        uint32_t currentIndex = index;
+        if ((currentIndex < Size() && GetVectorInnerImpl()->GetAt(currentIndex) == node) ||
+            GetVectorInnerImpl()->IndexOf(node, currentIndex))
         {
             if (auto item = viewModel->ItemFromNode(node))
             {
-                winrt::get_self<SelectedItemsVector>(selectedItems)->InsertAt_NoContainsCheck(index, item);
-                viewModel->TrackItemSelected(item);
+                if (!selectedItemsImpl->Contains(item))
+                {
+                    const uint32_t insertIndex = std::min(currentIndex, selectedItemsImpl->Size());
+                    selectedItemsImpl->InsertAt_NoContainsCheck(insertIndex, item, /*syncSelectedNodes*/ false);
+                }
+                if (selectedItemsImpl->Contains(item))
+                {
+                    viewModel->TrackItemSelected(item);
+                }
             }
         }
     }
@@ -116,17 +187,93 @@ void SelectedTreeNodeVector::InsertAtCore_NoContainsCheck(unsigned int index, wi
 
 void SelectedTreeNodeVector::RemoveAtCore(unsigned int index)
 {
-    GetVectorInnerImpl()->RemoveAt(index);
+    const auto viewModel = m_viewModel.get();
+    const auto removedNode = GetVectorInnerImpl()->GetAt(index);
+    const bool alreadyRemovedFromSelectedItems = viewModel && viewModel->ConsumePendingRemovedItemFromSelectedItems(removedNode);
+    const bool isNestedNotification = viewModel && viewModel->IsInSelectionVectorNotification();
+    const uint64_t versionBefore = viewModel ? viewModel->IncrementSelectionMutationVersion() : 0;
 
-    // Keep SelectedItems and SelectedNodes in sync
-    if (auto viewModel = m_viewModel.get())
+    {
+        ScopedSelectionVectorNotification notificationGuard(viewModel);
+        GetVectorInnerImpl()->RemoveAt(index);
+    }
+
+    // Keep SelectedItems and SelectedNodes in sync.
+    if (viewModel)
     {
         auto selectedItems = viewModel->GetSelectedItems();
-        if (selectedItems.Size() != Size())
+        auto selectedItemsImpl = winrt::get_self<SelectedItemsVector>(selectedItems);
+        const bool noReentrantMutation = !isNestedNotification && viewModel->SelectionMutationVersion() == versionBefore;
+
+        if (noReentrantMutation && alreadyRemovedFromSelectedItems)
         {
-            const auto item = selectedItems.GetAt(index);
-            selectedItems.RemoveAt(index);
-            viewModel->TrackItemUnselected(item);
+            return;
+        }
+
+        const auto item = viewModel->ItemFromNode(removedNode);
+        if (!item)
+        {
+            return;
+        }
+
+        if (noReentrantMutation)
+        {
+            // Fast path: verify item identity in O(1) at index (or back() when m_originNode shifts Content-mode indices).
+            const uint32_t originOffset = (viewModel->IsContentMode() && Size() > 0 && GetVectorInnerImpl()->GetAt(0) == viewModel->OriginNode()) ? 1u : 0u;
+            if (!viewModel->IsContentMode() || selectedItems.Size() == Size() + 1 - originOffset)
+            {
+                uint32_t candidateIndex = UINT32_MAX;
+                if (index < selectedItems.Size() && selectedItems.GetAt(index) == item)
+                {
+                    candidateIndex = index;
+                }
+                else if (selectedItems.Size() > 0 && selectedItems.GetAt(selectedItems.Size() - 1) == item)
+                {
+                    candidateIndex = selectedItems.Size() - 1;
+                }
+
+                if (candidateIndex != UINT32_MAX)
+                {
+                    const uint64_t itemVersionBefore = viewModel->SelectionMutationVersion();
+                    selectedItemsImpl->RemoveAtCore(candidateIndex, /*syncSelectedNodes*/ false);
+                    if (viewModel->SelectionMutationVersion() == itemVersionBefore + 1 || !selectedItemsImpl->Contains(item))
+                    {
+                        viewModel->TrackItemUnselected(item);
+                    }
+                    return;
+                }
+            }
+        }
+
+        // Slow path (re-entrant mutation, order drift, or duplicate Content in Content mode): reconcile by identity.
+        if (noReentrantMutation || !Contains(removedNode))
+        {
+            bool itemStillSelected = false;
+            if (viewModel->IsContentMode())
+            {
+                for (uint32_t i = 0; i < Size(); ++i)
+                {
+                    if (viewModel->ItemFromNode(GetVectorInnerImpl()->GetAt(i)) == item)
+                    {
+                        itemStillSelected = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!itemStillSelected)
+            {
+                uint32_t itemIndex = 0;
+                if (selectedItemsImpl->IndexOf_OptimizedForRemove(item, itemIndex))
+                {
+                    const uint64_t itemVersionBefore = viewModel->SelectionMutationVersion();
+                    selectedItemsImpl->RemoveAtCore(itemIndex, /*syncSelectedNodes*/ false);
+                    if (viewModel->SelectionMutationVersion() == itemVersionBefore + 1 || !selectedItemsImpl->Contains(item))
+                    {
+                        viewModel->TrackItemUnselected(item);
+                    }
+                }
+            }
         }
     }
 }
@@ -160,20 +307,57 @@ void SelectedItemsVector::InsertAt(unsigned int index, winrt::IInspectable const
     }
 }
 
-void SelectedItemsVector::InsertAt_NoContainsCheck(unsigned int index, winrt::IInspectable const& item)
+void SelectedItemsVector::InsertAt_NoContainsCheck(unsigned int index, winrt::IInspectable const& item, bool syncSelectedNodes)
 {
     MUX_ASSERT(!Contains(item));
-    GetVectorInnerImpl()->InsertAt(index, item);
 
-    // Keep SelectedNodes and SelectedItems in sync
-    if (auto viewModel = m_viewModel.get())
+    const auto viewModel = m_viewModel.get();
+    const bool isNestedNotification = viewModel && viewModel->IsInSelectionVectorNotification();
+    const uint64_t versionBefore = viewModel ? viewModel->IncrementSelectionMutationVersion() : 0;
+
+    {
+        ScopedSelectionVectorNotification notificationGuard(viewModel);
+        GetVectorInnerImpl()->InsertAt(index, item);
+    }
+
+    // Keep SelectedNodes and SelectedItems in sync.
+    if (viewModel && syncSelectedNodes)
     {
         auto selectedNodes = viewModel->GetSelectedNodes();
-        if (selectedNodes.Size() != Size())
+        auto insertNode = [&viewModel, &selectedNodes, &item](uint32_t targetIndex, winrt::TreeViewNode const& node)
+        {
+            viewModel->SetPendingInsertedItemFromSelectedItems(item);
+            auto clearPending = gsl::finally([&viewModel]()
+            {
+                viewModel->SetPendingInsertedItemFromSelectedItems(nullptr);
+            });
+            selectedNodes.InsertAt(std::min(targetIndex, selectedNodes.Size()), node);
+        };
+
+        if (!isNestedNotification && viewModel->SelectionMutationVersion() == versionBefore)
         {
             if (auto node = viewModel->NodeFromItem(item))
             {
-                selectedNodes.InsertAt(index, node);
+                auto selectedNodesImpl = winrt::get_self<SelectedTreeNodeVector>(selectedNodes);
+                if (!selectedNodesImpl->Contains(node))
+                {
+                    insertNode(index, node);
+                }
+            }
+            return;
+        }
+
+        uint32_t currentIndex = index;
+        if ((currentIndex < Size() && GetVectorInnerImpl()->GetAt(currentIndex) == item) ||
+            GetVectorInnerImpl()->IndexOf(item, currentIndex))
+        {
+            if (auto node = viewModel->NodeFromItem(item))
+            {
+                auto selectedNodesImpl = winrt::get_self<SelectedTreeNodeVector>(selectedNodes);
+                if (!selectedNodesImpl->Contains(node))
+                {
+                    insertNode(currentIndex, node);
+                }
             }
         }
     }
@@ -187,15 +371,73 @@ void SelectedItemsVector::SetAt(unsigned int index, winrt::IInspectable const& i
 
 void SelectedItemsVector::RemoveAt(unsigned int index)
 {
-    GetVectorInnerImpl()->RemoveAt(index);
+    RemoveAtCore(index, /*syncSelectedNodes*/ true);
+}
 
-    // Keep SelectedNodes and SelectedItems in sync
-    if (auto viewModel = m_viewModel.get())
+void SelectedItemsVector::RemoveAtCore(unsigned int index, bool syncSelectedNodes)
+{
+    const auto viewModel = m_viewModel.get();
+    const auto removedItem = GetVectorInnerImpl()->GetAt(index);
+    const bool isNestedNotification = viewModel && viewModel->IsInSelectionVectorNotification();
+    const uint64_t versionBefore = viewModel ? viewModel->IncrementSelectionMutationVersion() : 0;
+
+    {
+        ScopedSelectionVectorNotification notificationGuard(viewModel);
+        GetVectorInnerImpl()->RemoveAt(index);
+    }
+
+    // Keep SelectedNodes and SelectedItems in sync.
+    if (viewModel && syncSelectedNodes)
     {
         auto selectedNodes = viewModel->GetSelectedNodes();
-        if (Size() != selectedNodes.Size())
+        auto removeNodeAt = [&viewModel, &selectedNodes, &removedItem](uint32_t targetIndex)
         {
-            selectedNodes.RemoveAt(index);
+            viewModel->SetPendingRemovedItemFromSelectedItems(removedItem);
+            auto clearPending = gsl::finally([&viewModel]()
+            {
+                viewModel->SetPendingRemovedItemFromSelectedItems(nullptr);
+            });
+            selectedNodes.RemoveAt(targetIndex);
+        };
+
+        const bool noReentrantMutation = !isNestedNotification && viewModel->SelectionMutationVersion() == versionBefore;
+        if (noReentrantMutation)
+        {
+            // Fast path: verify node identity in O(1) at index (or back() during reverse Clear()).
+            if (index < selectedNodes.Size() && viewModel->ItemFromNode(selectedNodes.GetAt(index)) == removedItem)
+            {
+                removeNodeAt(index);
+                return;
+            }
+            if (selectedNodes.Size() > 0 && viewModel->ItemFromNode(selectedNodes.GetAt(selectedNodes.Size() - 1)) == removedItem)
+            {
+                removeNodeAt(selectedNodes.Size() - 1);
+                return;
+            }
+        }
+
+        if (noReentrantMutation || !Contains(removedItem))
+        {
+            if (auto node = viewModel->NodeFromItem(removedItem))
+            {
+                auto selectedNodesImpl = winrt::get_self<SelectedTreeNodeVector>(selectedNodes);
+                uint32_t nodeIndex = 0;
+                if (selectedNodesImpl->IndexOf_OptimizedForRemove(node, nodeIndex))
+                {
+                    removeNodeAt(nodeIndex);
+                }
+            }
+            else
+            {
+                for (uint32_t i = selectedNodes.Size(); i > 0; --i)
+                {
+                    if (viewModel->ItemFromNode(selectedNodes.GetAt(i - 1)) == removedItem)
+                    {
+                        removeNodeAt(i - 1);
+                        break;
+                    }
+                }
+            }
         }
     }
 }
@@ -298,6 +540,11 @@ void ViewModel::SelectSingleItem(winrt::IInspectable const& item)
     auto trackSelection = gsl::finally([this]() { EndSelectionChanges(); });
     BeginSelectionChanges();
 
+    auto selectedNodes = GetSelectedNodes();
+    if (selectedNodes.Size() > 0)
+    {
+        selectedNodes.Clear();
+    }
     auto selectedItems = GetSelectedItems();
     if (selectedItems.Size() > 0)
     {
@@ -826,8 +1073,9 @@ void ViewModel::UpdateNodeSelection(winrt::TreeViewNode const& selectNode, TreeN
         switch (selectionState)
         {
         case TreeNodeSelectionState::Selected:
+            // Store the ChildrenChanged token before raising VectorChanged so a re-entrant removal finds its token.
+            m_selectedNodeChildrenChangedEventTokenVector.push_back(node->ChildrenChanged({ this, &ViewModel::SelectedNodeChildrenChanged }));
             selectedNodes->InsertAtCore_NoContainsCheck(selectedNodes->Size(), selectNode);
-            m_selectedNodeChildrenChangedEventTokenVector.push_back(winrt::get_self<TreeViewNode>(selectNode)->ChildrenChanged({ this, &ViewModel::SelectedNodeChildrenChanged }));
             break;
 
         case TreeNodeSelectionState::PartialSelected:
@@ -835,9 +1083,10 @@ void ViewModel::UpdateNodeSelection(winrt::TreeViewNode const& selectNode, TreeN
             unsigned int index;
             if (selectedNodes->IndexOf(selectNode, index))
             {
-                selectedNodes->RemoveAtCore(index);
-                winrt::get_self<TreeViewNode>(selectNode)->ChildrenChanged(m_selectedNodeChildrenChangedEventTokenVector[index]);
+                const auto token = m_selectedNodeChildrenChangedEventTokenVector[index];
                 m_selectedNodeChildrenChangedEventTokenVector.erase(m_selectedNodeChildrenChangedEventTokenVector.begin() + index);
+                node->ChildrenChanged(token);
+                selectedNodes->RemoveAtCore(index);
             }
             break;
         }
@@ -973,11 +1222,50 @@ void ViewModel::TrackItemUnselected(winrt::IInspectable item)
 
 winrt::TreeViewNode ViewModel::GetAssociatedNode(winrt::IInspectable item)
 {
+    // Look in the visible rows first. They are the tree's nodes in tree order without the collapsed parts, so an item
+    // on screen is found without walking the collapsed parts before it. An item that is not visible falls back to the
+    // search of the whole tree below.
+    if (auto node = GetVisibleNodeWithContent(item))
+    {
+        return node;
+    }
+
     if(auto treeView = m_TreeView.get())
     {
         if(auto treeViewImpl = winrt::get_self<TreeView>(treeView))
         {
             return treeViewImpl->GetAssociatedNode(item);
+        }
+    }
+
+    return nullptr;
+}
+
+winrt::TreeViewNode ViewModel::GetVisibleNodeWithContent(winrt::IInspectable const& item)
+{
+    if (!item)
+    {
+        return nullptr;
+    }
+
+    const auto origin = m_originNode.safe_get();
+    const auto size = Size();
+    for (uint32_t i = 0; i < size; i++)
+    {
+        auto node = GetNodeAt(i);
+        if (node.Content() == item)
+        {
+            // A row can briefly outlive its node's removal while app code runs from a change notification. Like the
+            // tree search, count only a node that is still in this tree.
+            auto ancestor = node.Parent();
+            while (ancestor && ancestor != origin)
+            {
+                ancestor = ancestor.Parent();
+            }
+            if (ancestor)
+            {
+                return node;
+            }
         }
     }
 
@@ -992,6 +1280,26 @@ winrt::IInspectable ViewModel::ItemFromNode(winrt::TreeViewNode const& node)
 winrt::TreeViewNode ViewModel::NodeFromItem(winrt::IInspectable const& item)
 {
     return m_isContentMode ? GetAssociatedNode(item) : item.try_as<winrt::TreeViewNode>();
+}
+
+bool ViewModel::ConsumePendingInsertedItemFromSelectedItems(winrt::TreeViewNode const& node)
+{
+    if (m_pendingInsertedItemFromSelectedItems && ItemFromNode(node) == m_pendingInsertedItemFromSelectedItems)
+    {
+        m_pendingInsertedItemFromSelectedItems = nullptr;
+        return true;
+    }
+    return false;
+}
+
+bool ViewModel::ConsumePendingRemovedItemFromSelectedItems(winrt::TreeViewNode const& node)
+{
+    if (m_pendingRemovedItemFromSelectedItems && ItemFromNode(node) == m_pendingRemovedItemFromSelectedItems)
+    {
+        m_pendingRemovedItemFromSelectedItems = nullptr;
+        return true;
+    }
+    return false;
 }
 
 bool ViewModel::IndexOfNode(winrt::TreeViewNode const& targetNode, uint32_t& index)
@@ -1082,6 +1390,32 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
     }
 }
 
+void ViewModel::RemoveDetachedSelectedNodes()
+{
+    auto selectedNodes = winrt::get_self<SelectedTreeNodeVector>(m_selectedNodes.get());
+    for (unsigned int i = 0; i < selectedNodes->Size(); i++)
+    {
+        auto selectNode = selectedNodes->GetAt(i);
+        auto ancestorNode = selectNode.Parent();
+        while (ancestorNode && ancestorNode.Parent())
+        {
+            ancestorNode = ancestorNode.Parent();
+        }
+
+        if (ancestorNode != m_originNode.get())
+        {
+            const auto token = m_selectedNodeChildrenChangedEventTokenVector[i];
+            m_selectedNodeChildrenChangedEventTokenVector.erase(m_selectedNodeChildrenChangedEventTokenVector.begin() + i);
+            winrt::get_self<TreeViewNode>(selectNode)->ChildrenChanged(token);
+            selectedNodes->RemoveAtCore(i);
+
+            // We've removed the node at position i, so we should keep i at the same position
+            // because the new node at position i is a different one.
+            i--;
+        }
+    }
+}
+
 void ViewModel::SelectedNodeChildrenChanged(winrt::TreeViewNode const& sender, winrt::IInspectable const& args)
 {
     winrt::CollectionChange collectionChange = args.as<winrt::IVectorChangedEventArgs>().CollectionChange();
@@ -1105,24 +1439,12 @@ void ViewModel::SelectedNodeChildrenChanged(winrt::TreeViewNode const& sender, w
     case (winrt::CollectionChange::ItemChanged):
     {
         auto newNode = changingChildrenNode.Children().GetAt(index);
-        UpdateNodeSelection(newNode, NodeSelectionState(changingChildrenNode));
-
-        auto selectedNodes = winrt::get_self<SelectedTreeNodeVector>(m_selectedNodes.get());
-        for (unsigned int i = 0; i < selectedNodes->Size(); i++)
+        if (!IsInSingleSelectionMode())
         {
-            auto selectNode = selectedNodes->GetAt(i);
-            auto ancestorNode = selectNode.Parent();
-            while (ancestorNode && ancestorNode.Parent())
-            {
-                ancestorNode = ancestorNode.Parent();
-            }
-
-            if (ancestorNode != m_originNode.get())
-            {
-                selectedNodes->RemoveAtCore(i);
-                m_selectedNodeChildrenChangedEventTokenVector.erase(m_selectedNodeChildrenChangedEventTokenVector.begin() + i);
-            }
+            UpdateNodeSelection(newNode, NodeSelectionState(changingChildrenNode));
         }
+
+        RemoveDetachedSelectedNodes();
         break;
     }
 
@@ -1132,32 +1454,13 @@ void ViewModel::SelectedNodeChildrenChanged(winrt::TreeViewNode const& sender, w
         //This checks if there are still children, then re-evaluates parents selection based on current state of remaining children
         //If a node has 2 children selected, and 1 unselected, and the unselected is removed, we then change the parent node to selected.
         //If the last child is removed, we preserve the current selection state of the parent, and this code need not execute.
-        if (changingChildrenNode.Children().Size() > 0)
+        if (!IsInSingleSelectionMode() && changingChildrenNode.Children().Size() > 0)
         {
             auto firstChildNode = changingChildrenNode.Children().GetAt(0);
             UpdateSelectionStateOfAncestors(firstChildNode);
         }
 
-        auto selectedNodes = winrt::get_self<SelectedTreeNodeVector>(m_selectedNodes.get());
-        for (unsigned int i = 0; i < selectedNodes->Size(); i++)
-        {
-            auto selectNode = selectedNodes->GetAt(i);
-            auto ancestorNode = selectNode.Parent();
-            while (ancestorNode && ancestorNode.Parent())
-            {
-                ancestorNode = ancestorNode.Parent();
-            }
-
-            if (ancestorNode != m_originNode.get())
-            {
-                selectedNodes->RemoveAtCore(i);
-                m_selectedNodeChildrenChangedEventTokenVector.erase(m_selectedNodeChildrenChangedEventTokenVector.begin() + i);
-
-                // We've removed the node at position i, so we should keep i at the same position
-                // because the new node at position i is a different one.
-                i--;
-            }
-        }
+        RemoveDetachedSelectedNodes();
         break;
     }
 

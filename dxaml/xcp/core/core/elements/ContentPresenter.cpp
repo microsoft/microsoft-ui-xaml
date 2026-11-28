@@ -647,6 +647,15 @@ _Check_return_ HRESULT CContentPresenter::ApplyTemplate(_Out_ bool& fAddedVisual
             CUIElement* pUI = do_pointer_cast<CUIElement>(m_content.AsObject());
             if (pUI)
             {
+                // The content can still be unloading from this presenter: Invalidate() (e.g. ContentTemplate set to null again)
+                // removed it as our child, which started its unload transition, and it stays parented here until the transition
+                // ends. Finish that unload now (like Popup does when it reopens) instead of rejecting the content.
+                CUIElementCollection* children = GetChildren();
+                if (children && children->IsUnloadingElement(pUI))
+                {
+                    IFC(CTransition::CancelTransitions(pUI));
+                }
+
                 if (pUI->IsAssociated() && !pUI->DoesAllowMultipleAssociation())
                 {
                     IFC(E_INVALIDARG);

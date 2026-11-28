@@ -244,10 +244,13 @@ public:
         bool,     IsVirtual,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM3(VisualSurfaceChanged,
+    // Role is 0 for brush, 1 for mask. UIElementId is the current core element;
+    // unlinking clears both SurfaceId and UIElementId.
+    DEFINE_TRACELOGGING_EVENT_PARAM4(VisualSurfaceChanged,
         uint64_t, VisualId,
         uint64_t, SurfaceId,
         uint32_t, Role,
+        uint64_t, UIElementId,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
 };

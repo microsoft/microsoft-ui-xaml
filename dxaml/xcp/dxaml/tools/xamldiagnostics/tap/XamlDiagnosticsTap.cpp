@@ -150,6 +150,16 @@ public:
 
     // IXamlDiagnostics Interface
 
+    STDMETHOD(TryGetExistingElementVisual)(
+        _In_ InstanceHandle element,
+        _Outptr_result_maybenull_ IInspectable** visual) override
+    {
+        wrl::ComPtr<IXamlDiagnosticsPrivate> diagnostics;
+        RETURN_IF_FAILED(m_xamlDiagnostics.As(&diagnostics));
+        RETURN_IF_FAILED(diagnostics->TryGetExistingElementVisual(element, visual));
+        return S_OK;
+    }
+
     STDMETHOD(GetDispatcher)(
         _Outptr_ IInspectable** ppDispatcher) override;
 

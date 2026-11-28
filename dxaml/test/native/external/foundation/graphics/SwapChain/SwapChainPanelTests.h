@@ -155,7 +155,36 @@ public:
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Task 62658820: Re-enable after fixing AV crash (0xC0000005) in Microsoft.UI.Input.dll from the IXP transport bump.
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(CreateCoreIndependentInputSourceThreadingContract)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that CreateCoreIndependentInputSource fails with RPC_E_WRONG_THREAD on the UI thread and returns null for DeviceKinds::None off the UI thread.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(CompositionScaleDependencyPropertiesMatchGetters)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the CompositionScaleX/Y dependency properties report the same values as the CompositionScaleX/Y getters.")
+    END_TEST_METHOD()
+
 private:
+    struct IndependentInputSourceThreadingObservation
+    {
+        HRESULT uiThreadCallResult;
+        HRESULT offThreadNoneCallResult;
+        bool offThreadNoneResultIsNull;
+    };
+
+    struct CompositionScaleObservation
+    {
+        bool scaleXPropertyIsNull;
+        bool scaleYPropertyIsNull;
+        bool scalePropertiesAreSameObject;
+        float scaleXFromGetter;
+        float scaleXFromProperty;
+        float scaleYFromGetter;
+        float scaleYFromProperty;
+    };
+
+    IndependentInputSourceThreadingObservation ObserveIndependentInputSourceThreading();
+    CompositionScaleObservation ObserveCompositionScaleProperties();
+
     inline Platform::String^ GetPathToFiles() const;
 
     void HitTestChildWUCInternal();

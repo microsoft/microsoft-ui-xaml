@@ -45,6 +45,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that ItemsWrapGrids properly updated their cached elements during scrolling.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyGetInsertionIndexesVertical)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates IInsertionPanel.GetInsertionIndexes on a vertically wrapping ItemsWrapGrid for interior and past-the-end points.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyGetInsertionIndexesHorizontal)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates IInsertionPanel.GetInsertionIndexes on a horizontally wrapping ItemsWrapGrid for interior and past-the-end points.")
+        END_TEST_METHOD()
+
         //
         // Platform:Desktop
         //
@@ -54,6 +62,22 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         //
 
     private:
+        struct InsertionIndexes
+        {
+            int first;
+            int second;
+        };
+
+        // GetInsertionIndexes results for fixed probe points; the test methods own the assertions.
+        struct InsertionIndexProbes
+        {
+            InsertionIndexes leadingHalfOfItem4;
+            InsertionIndexes trailingHalfOfItem4;
+            InsertionIndexes trailingHalfOfLastItem;
+        };
+
+        InsertionIndexProbes ProbeInsertionIndexes(xaml_controls::Orientation orientation);
+
         static const int s_itemCount = 8;
         static const int s_itemCountForVirtualization = 27;
 
