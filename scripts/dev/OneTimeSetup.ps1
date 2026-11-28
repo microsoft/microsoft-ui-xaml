@@ -119,7 +119,7 @@ function Install-MSBuild
 # Use the current official Visual Studio Build Tools installer URL.
 Download -Uri https://aka.ms/vs/17/release/vs_BuildTools.exe -OutFile vs_buildtools.exe
 # Note: Not passing "--quiet" because the install takes a long time, making it important to see the progress
-$installed = LaunchSetupAndWait vs_buildtools.exe  -ArgumentList " --add Microsoft.VisualStudio.Workload.MSBuildTools --config $PSScriptRoot\..\..\.vsconfig --wait"
+$installed = LaunchSetupAndWait vs_buildtools.exe  -ArgumentList " --add Microsoft.VisualStudio.Workload.MSBuildTools --config $PSScriptRoot\..\..\.vsconfig_buildtools --wait"
 if (!$installed)
 {
     # try to figure out what went wrong
