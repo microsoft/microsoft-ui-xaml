@@ -2338,6 +2338,157 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region Focus after ItemsSource changes (task.ms/56189664)
+
+        // The rows of the body are items of an ItemsRepeater. When a sort or filter clears the row that has focus, the
+        // repeater moves focus away from the cleared row after the next layout pass, and TableView restores body focus
+        // to the same projected row index (TableView_Keyboard.cpp CaptureBodyFocusForReshape). These tests check that the
+        // two agree on one final target.
+
+        // Scenario: keyboard focus on body row 1; the table is sorted (Reset of the projection).
+        // Expected: focus ends on the live row at projected index 1 (TableView keeps the row index across a re-shape), not
+        //           on a header and not on a cleared row.
+        // A failure means: the repeater's deferred focus move and TableView's restore disagree, or focus is left on a
+        //                  cleared row.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that sorting with focus on a body row leaves focus on the live row at the same projected index.")]
+        public void VerifySortWithFocusedRowKeepsFocusOnLiveRowAtSameIndex()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateShapedTable(TableViewSource.From(MakeShapedPeople()));
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            FocusBodyRow(tableView, 1);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending)));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.AreEqual(1, GetFocusedLiveRowIndex(tableView), "Focus stays at projected row index 1."));
+        }
+
+        // Scenario: keyboard focus on body row 1; the table is sorted; then focus moves Down.
+        // Expected: the Down move starts from TableView's restored position, so focus ends on the live row at index 2.
+        // A failure means: the position TableView remembers is an interim target (for example the repeater's), so
+        //                  keyboard navigation continues from the wrong row.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that after a sort with focus on a body row, a Down move continues from the restored row.")]
+        public void VerifyDownAfterSortWithFocusedRowContinuesFromRestoredRow()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateShapedTable(TableViewSource.From(MakeShapedPeople()));
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            FocusBodyRow(tableView, 1);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending)));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => Verify.AreEqual(1, GetFocusedLiveRowIndex(tableView), "Precondition: focus is restored to row 1."));
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Down,
+                new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content })));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.AreEqual(2, GetFocusedLiveRowIndex(tableView), "Down moves to the next row."));
+        }
+
+        // Scenario: keyboard focus on a body row; a filter removes every row; then the filter is cleared.
+        // Expected: with no rows focus is not on a cleared row (it is outside the body rows); after the filter is cleared
+        //           there is no exception and focus is still not on a cleared row.
+        // A failure means: focus stays on a cleared, off-screen row while the table is empty.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that filtering all rows away with focus on a body row does not leave focus on a cleared row, and clearing the filter does not throw.")]
+        public void VerifyFilterToEmptyWithFocusedRowDoesNotLeaveFocusOnClearedRow()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            FocusBodyRow(tableView, 1);
+
+            RunOnUIThread.Execute(() => source.Filter(o => false));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, GetProjectedCount(tableView), "Precondition: no rows are projected.");
+                VerifyFocusNotOnClearedRow(tableView);
+            });
+
+            RunOnUIThread.Execute(() => source.ClearFilter());
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyFocusNotOnClearedRow(tableView));
+        }
+
+        private static void FocusBodyRow(TableView tableView, int rowIndex)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(rowIndex) as TableViewRow;
+                Verify.IsNotNull(row, $"Precondition: row {rowIndex} is realized.");
+                Verify.IsTrue(row.Focus(FocusState.Keyboard), "Precondition: the body row takes focus.");
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => Verify.AreEqual(rowIndex, GetFocusedLiveRowIndex(tableView), "Precondition: focus is on the body row."));
+        }
+
+        // The projected index of the live row that contains focus. Fails if focus is on a header or on a cleared row.
+        private static int GetFocusedLiveRowIndex(TableView tableView)
+        {
+            var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+            var repeater = GetRowsRepeater(tableView);
+            var header = GetHeaderHost(tableView);
+            UIElement container = null;
+            for (var node = focused; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                Verify.AreNotEqual<object>(header, node, "Focus is not on the header row.");
+                var parent = VisualTreeHelper.GetParent(node);
+                if (parent == repeater)
+                {
+                    container = node as UIElement;
+                    break;
+                }
+            }
+
+            Log.Comment($"Focused {focused?.GetType().Name}; row index {(container == null ? "none" : repeater.GetElementIndex(container).ToString())}.");
+            Verify.IsNotNull(container, "Focus is in a body row.");
+            if (container == null)
+            {
+                return -1;
+            }
+            int index = repeater.GetElementIndex(container);
+            Verify.IsTrue(index >= 0, "The focused row is realized (not a cleared row).");
+            return index;
+        }
+
+        private static void VerifyFocusNotOnClearedRow(TableView tableView)
+        {
+            var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+            var repeater = GetRowsRepeater(tableView);
+            for (var node = focused; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (VisualTreeHelper.GetParent(node) == repeater)
+                {
+                    int index = repeater.GetElementIndex((UIElement)node);
+                    Log.Comment($"Focused {focused.GetType().Name} in body row {index}.");
+                    Verify.IsTrue(index >= 0, "Focus is not on a cleared row.");
+                    return;
+                }
+            }
+            Log.Comment($"Focused {focused?.GetType().Name ?? "<null>"} outside the body rows.");
+        }
+
+        #endregion
     }
 
     internal static class TableViewShapingTestHelpers

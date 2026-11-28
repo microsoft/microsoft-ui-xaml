@@ -775,8 +775,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]// Issue 1018
-        [TestProperty("Ignore", "True")]
+        [TestMethod]
         public void ValidateFocusMoveOnElementCleared()
         {
             ItemsRepeater repeater = null;
@@ -790,10 +789,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             // dataSource: 0 1 2 3 4 
             // Index 0 deleted, focus should be on the new element which has index 0
+            // Wait for GotFocus so that the repeater tracks the focused element before the change.
+            FocusItem(repeater, 0);
             SharedHelpers.RunActionsWithWait(
                 new Action[]
                 {
-                    () => { MoveFocusToIndex(repeater, 0); },
                     () => { dataSource.Remove(0 /* index */, 1 /* count */, false /* reset*/); },
                     () => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "1" /* expectedContent */); }
                 });
@@ -801,27 +801,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // dataSource: 1 2 3 4 
             // Last element deleted, focus should move to the previous element
             int lastIndex = dataSource.Inner.Count - 1;
+            // Wait for GotFocus so that the repeater tracks the focused element before the change.
+            FocusItem(repeater, lastIndex);
             SharedHelpers.RunActionsWithWait(
                 new Action[]
                 {
-                    () => { MoveFocusToIndex(repeater, lastIndex); },
                     () => { dataSource.Remove(lastIndex /* index */, 1 /* count */, false /* reset*/); },
                     () => { ValidateCurrentFocus(repeater, 2 /*expectedIndex */, "3" /* expectedContent */); }
                 });
 
             // dataSource: 1 2 3 
             // Remove multiple elements
+            // Wait for GotFocus so that the repeater tracks the focused element before the change.
+            FocusItem(repeater, 0);
             SharedHelpers.RunActionsWithWait(
                 new Action[]
                 {
-                    () => { MoveFocusToIndex(repeater, 0); },
                     () => { dataSource.Remove(0 /* index */, 2 /* count */, false /* reset*/); },
                     () => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "3" /* expectedContent */); }
                 });
         }
 
-        [TestMethod] //Issue 1018
-        [TestProperty("Ignore", "True")]
+        [TestMethod]
         public void ValidateFocusMoveOnElementClearedWithUniqueIds()
         {
             ItemsRepeater repeater = null;
@@ -835,10 +836,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             // dataSource: 0 1 2 3 4 
             // Index 0 deleted, focus should be on the new element which has index 0
+            // Wait for GotFocus so that the repeater tracks the focused element before the change.
+            FocusItem(repeater, 0);
             SharedHelpers.RunActionsWithWait(
                 new Action[]
                 {
-                    () => { MoveFocusToIndex(repeater, 0); },
                     () => { dataSource.Remove(0 /* index */, 1 /* count */, true /* reset*/); },
                     () => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "1" /* expectedContent */); }
                 });
@@ -846,20 +848,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // dataSource: 1 2 3 4 
             // Last element deleted, focus should move to the previous element
             int lastIndex = dataSource.Inner.Count - 1;
+            // Wait for GotFocus so that the repeater tracks the focused element before the change.
+            FocusItem(repeater, lastIndex);
             SharedHelpers.RunActionsWithWait(
                 new Action[]
                 {
-                    () => { MoveFocusToIndex(repeater, lastIndex); },
                     () => { dataSource.Remove(lastIndex /* index */, 1 /* count */, true /* reset*/); },
                     () => { ValidateCurrentFocus(repeater, 2 /*expectedIndex */, "3" /* expectedContent */); }
                 });
 
             // dataSource: 1 2 3 
             // Reset should keep the focused element as long as the unique id matches.
+            // Wait for GotFocus so that the repeater tracks the focused element before the change.
+            FocusItem(repeater, 0);
             SharedHelpers.RunActionsWithWait(
                 new Action[]
                 {
-                    () => { MoveFocusToIndex(repeater, 0); },
                     () => { dataSource.Reset(); },
                     () =>
                     {
@@ -870,10 +874,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             // dataSource: 1 2 3 
             // Remove multiple elements
+            // Wait for GotFocus so that the repeater tracks the focused element before the change.
+            FocusItem(repeater, 0);
             SharedHelpers.RunActionsWithWait(
                 new Action[]
                 {
-                    () => { MoveFocusToIndex(repeater, 0); },
                     () => { dataSource.Remove(0 /* index */, 2 /* count */, true /* reset*/); },
                     () => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "3" /* expectedContent */); }
                 });
@@ -1183,10 +1188,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
         // Scenario: focus a Button item and remove it from the source (also for the first and last items).
         // Expected: focus moves to the next realized item, or to the previous one when the last item was removed.
-        // Ignored: reproduces focus jumping to the first item when the focused item is removed (PC-FOCUS-ON-REMOVE);
-        //          currently fails because focus lands on item 0 instead of the adjacent item.
+        // A failure means: focus jumps to the first item (or stays on the removed element) when the focused item is removed.
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product concern PC-FOCUS-ON-REMOVE, same behavior as Issue 1018: after removing the focused 'Item #2', expected focus on the adjacent 'Item #3' (new index 2); actual focus is on 'Item #0' (index 0).
         [TestProperty("Description", "Verifies that removing the focused item moves focus to the next realized item, or to the previous one when the last item is removed.")]
         public void VerifyFocusMovesToAdjacentItemWhenFocusedItemRemoved()
         {
@@ -1195,10 +1198,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
         // Scenario: same as the previous test with non-Control item containers whose child Button has focus.
         // Expected: focus moves to the Button inside the adjacent item.
-        // Ignored: reproduces focus jumping to the first item when the focused item is removed (PC-FOCUS-ON-REMOVE);
-        //          currently fails because focus lands on the first item's Button.
+        // A failure means: focus jumps to the first item's Button when the focused item is removed.
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product concern PC-FOCUS-ON-REMOVE, same behavior as Issue 1018: after removing the item whose Button 'Item #2' is focused, expected focus on Button 'Item #3' (new index 2); actual focus is on Button 'Item #0' (index 0).
         [TestProperty("Description", "Same as VerifyFocusMovesToAdjacentItemWhenFocusedItemRemoved when item containers are not Controls: focus moves to a focusable descendant of the adjacent item.")]
         public void VerifyFocusMovesToAdjacentItemDescendantWhenFocusedItemRemoved()
         {
