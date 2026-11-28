@@ -1000,8 +1000,7 @@ namespace ChartsSample
         }
 
         private void ApplyEdit(Action edit, Action sync, TextBlock status, string success,
-            string invalid = "That value is not supported. The current setting has been restored.", Chart chart = null,
-            string announcement = null)
+            string invalid = "That value is not supported. The current setting has been restored.", Chart chart = null)
         {
             if (!_ready || _syncing || _closing) return;
             _lastEditSucceeded = false;
@@ -1010,7 +1009,7 @@ namespace ChartsSample
                 edit();
                 // Brush changes alone can leave the rendered plot at its previous appearance.
                 chart?.InvalidateArrange();
-                AnnounceStatus(status, success, announcement);
+                AnnounceStatus(status, success);
                 _lastEditSucceeded = true;
             }
             catch (ArgumentException)
@@ -1024,19 +1023,22 @@ namespace ChartsSample
         }
 
         // A live-region update is dropped when focus moves at the same time (leaving an edited field,
-        // or a button disabled by the edit), so raise a notification after focus has settled.
-        private void AnnounceStatus(TextBlock target, string message, string announcement = null)
+        // or a button disabled by the edit), so raise LiveRegionChanged after focus has settled.
+        private void AnnounceStatus(TextBlock target, string message)
         {
             target.Text = message;
-            announcement ??= message;
-            if (string.IsNullOrEmpty(announcement)) return;
+            if (string.IsNullOrEmpty(message)) return;
+            RaiseLiveRegionChanged(target);
+        }
+
+        private void RaiseLiveRegionChanged(TextBlock target)
+        {
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
-                FrameworkElementAutomationPeer.CreatePeerForElement(target)?.RaiseNotificationEvent(
-                    AutomationNotificationKind.Other,
-                    AutomationNotificationProcessing.MostRecent,
-                    announcement,
-                    "ChartsSampleStatus");
+                // FromElement is null until a UIA client has reached the element; create the peer then.
+                var peer = FrameworkElementAutomationPeer.FromElement(target) ??
+                    FrameworkElementAutomationPeer.CreatePeerForElement(target);
+                peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
             });
         }
 
@@ -1121,13 +1123,14 @@ namespace ChartsSample
         private void SetDateInterval(DateTimeAxis axis, ComboBox box, TextBlock warning, TextBlock status, bool daily)
         {
             if (!_ready || _syncing || _closing) return;
-            string note = DateIntervalNote((DateTimeIntervalType)box.SelectedIndex, daily);
             ApplyEdit(() => axis.IntervalType = (DateTimeIntervalType)box.SelectedIndex, () =>
             {
                 box.SelectedIndex = (int)axis.IntervalType;
                 warning.Text = DateIntervalNote(axis.IntervalType, daily);
                 warning.Visibility = warning.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
-            }, status, "Date interval updated.", announcement: note.Length > 0 ? $"Date interval updated. {note}" : null);
+                // The note shows in its own live region, so the status stays short and it is read once.
+                if (warning.Text.Length > 0) RaiseLiveRegionChanged(warning);
+            }, status, "Date interval updated.");
         }
 
         private static string DateIntervalNote(DateTimeIntervalType interval, bool daily) => interval switch

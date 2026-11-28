@@ -90,7 +90,7 @@ namespace winrt::ChartsSample::implementation
         void ApplyEdit(std::function<void()> const& edit,
             Microsoft::UI::Xaml::Controls::TextBlock const& status, winrt::hstring const& message,
             Microsoft::UI::Xaml::Controls::Charts::Chart const& chart = nullptr,
-            std::function<void()> const& restore = nullptr, winrt::hstring const& announcement = {});
+            std::function<void()> const& restore = nullptr);
         void ApplyAxisEdit(std::function<void()> const& edit);
         void ApplyExampleEdit(bool area, std::function<void()> const& edit, winrt::hstring const& message);
         void ApplyLineEdit(std::function<void()> const& edit, winrt::hstring const& message);
@@ -106,7 +106,7 @@ namespace winrt::ChartsSample::implementation
         void SetAreaAppearance(int32_t colorIndex, int32_t fillIndex);
         void SetBarColor(int32_t colorIndex);
         void ReportError(winrt::hresult_error const& error, Microsoft::UI::Xaml::Controls::TextBlock const& status);
-        void AnnounceStatus(winrt::hstring const& message);
+        void AnnounceStatus(Microsoft::UI::Xaml::Controls::TextBlock const& target, winrt::hstring const& message);
         void SyncPresentationKnobs();
         void SyncAxisControls(bool includeDateTime = true);
         void QueueLinearAxisEdit(Microsoft::UI::Xaml::Controls::NumberBox const& box, int property);
