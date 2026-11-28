@@ -1413,7 +1413,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(71, GetProjectedCount(tableView), "Big and its 70 children.");
-                Verify.AreEqual(ExpandCollapseState.Expanded, GetRowExpandCollapse(FindTreeRow(tableView, "Big")).ExpandCollapseState, "Expanded.");
+                var bigRow = (TableViewRow)GetRowsRepeater(tableView).TryGetElement(0);
+                Verify.AreEqual(ExpandCollapseState.Expanded, GetRowExpandCollapse(bigRow).ExpandCollapseState, "Expanded.");
             });
         }
 
