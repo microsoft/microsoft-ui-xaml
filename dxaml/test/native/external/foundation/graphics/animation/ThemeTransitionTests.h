@@ -129,6 +129,10 @@ public:
     BEGIN_TEST_METHOD(ValidateGridViewPortalAddDeleteThemeTransitionStoryboards)
         TEST_METHOD_PROPERTY(L"Description", L"Validates the AddDeleteThemeTransition portal storyboards of a GridView item that moves to another row or column after a single delete or insert, with the distance taken from the ItemsWrapGrid clip.")
     END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(CanReshowContentPresenterContentWhileItIsUnloading)
+        TEST_METHOD_PROPERTY(L"Description", L"A ContentPresenter that rebuilds its child (e.g. ContentTemplate set to null again) while its UIElement content has an unload transition must keep showing the content instead of failing with E_INVALIDARG (#11047).")
+    END_TEST_METHOD()
 private:
     void TestThemeTransitionXaml(Platform::String^ path);
 

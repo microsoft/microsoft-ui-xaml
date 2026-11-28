@@ -38,7 +38,8 @@ internal static class SessionSchema
             LauncherProcessId INTEGER, -- the process that created the target, when known: its parent for a launch from
                                        -- the app, or for a recorded trace the parent the kernel's process start event names
             LauncherName TEXT,         -- its executable name without .exe, when known
-            CpuDatabaseVersion INTEGER); -- null without CPU data; otherwise the required .sqlite.cpu companion version
+            CpuDatabaseVersion INTEGER, -- null without CPU data; otherwise the required .sqlite.cpu companion version
+            HardFaultCaptureEnabled INTEGER NOT NULL DEFAULT 0);
         CREATE TABLE EventTypes (
             TypeId INTEGER PRIMARY KEY,
             Provider TEXT NOT NULL,    -- a XamlProvider name, such as Xaml, XamlDiagnostics or DxgKrnl; Marker for a marker provider
@@ -81,6 +82,20 @@ internal static class SessionSchema
             FrameId INTEGER NOT NULL REFERENCES Frames (FrameId),
             Bucket TEXT NOT NULL);     -- Xaml, Composition or Other
         CREATE INDEX FrameContents ON FrameEvents (FrameId);
+        CREATE TABLE DllImageEvents (  -- the target's image loads and unloads (DllIndex)
+            Seq INTEGER PRIMARY KEY REFERENCES Events (Seq),
+            Qpc INTEGER NOT NULL,
+            IsLoad INTEGER NOT NULL,
+            Source TEXT NOT NULL,      -- KernelImage (the classic kernel's events) or KernelProcess (Kernel-Process's)
+            ImageBase INTEGER NOT NULL,
+            ImageSize INTEGER NOT NULL,
+            DllPath TEXT);
+        CREATE INDEX DllImagesByBase ON DllImageEvents (ImageBase, Qpc);
+        CREATE TABLE HardFaults (      -- the target's hard page faults (DllIndex); Seq can be later than Qpc's order
+            Seq INTEGER PRIMARY KEY REFERENCES Events (Seq),
+            Qpc INTEGER NOT NULL,
+            Address INTEGER NOT NULL); -- user-mode addresses only
+        CREATE INDEX HardFaultsByAddress ON HardFaults (Address, Qpc);
         -- The events the InterestingRows view reads, found by type instead of a scan of every event.
         CREATE INDEX EventsByType ON Events (TypeId);
         CREATE TABLE GraphicsObjects (
@@ -220,6 +235,27 @@ internal static class SessionSchema
                 FROM ObjectEvents m JOIN Objects o ON o.ObjectId = m.ObjectId WHERE m.Seq = e.Seq) AS Mentions,
             e.Payload
         FROM Events e JOIN EventTypes t ON t.TypeId = e.TypeId CROSS JOIN SessionInfo s LEFT JOIN FrameEvents r ON r.Seq = e.Seq;
+        CREATE VIEW DllLoads AS
+        -- One row per observed DLL mapping. LoadTimeMs is a timestamp, not a duration. FaultCount counts retained hard
+        -- faults in this mapping's address range and lifetime, or is null if capture is unknown or unavailable.
+        -- A trace can have both the classic kernel's image events and Kernel-Process's. Each source's mapping lasts
+        -- from its load to that source's next event at the same base; a Kernel-Process mapping that overlaps a classic
+        -- one at the same base is the same mapping and is not listed again.
+        WITH Mappings AS MATERIALIZED (
+            SELECT *, LEAD(Qpc) OVER (PARTITION BY Source, ImageBase ORDER BY Qpc, Seq) AS EndQpc
+            FROM DllImageEvents WHERE ImageBase > 0
+        )
+        SELECT m.Seq, m.Qpc, (m.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS LoadTimeMs, m.DllPath,
+            CASE WHEN s.HardFaultCaptureEnabled OR EXISTS (SELECT 1 FROM HardFaults) THEN (
+                SELECT COUNT(*) FROM HardFaults f
+                WHERE f.Address >= m.ImageBase AND f.Address < m.ImageBase + m.ImageSize
+                    AND f.Qpc >= m.Qpc AND (m.EndQpc IS NULL OR f.Qpc < m.EndQpc)
+            ) END AS FaultCount
+        FROM Mappings m CROSS JOIN SessionInfo s
+        WHERE m.IsLoad AND m.ImageSize > 0 AND m.DllPath LIKE '%.dll' AND NOT (m.Source = 'KernelProcess' AND EXISTS (
+            SELECT 1 FROM Mappings c
+            WHERE c.Source = 'KernelImage' AND c.IsLoad AND c.ImageBase = m.ImageBase
+                AND (m.EndQpc IS NULL OR c.Qpc < m.EndQpc) AND (c.EndQpc IS NULL OR m.Qpc < c.EndQpc)));
         CREATE VIEW TickEvents AS
         -- The events of each tick (EventDetails' columns), read through the tick's index: a tick's events are
         -- SELECT ... FROM TickEvents WHERE TickId = :tick ORDER BY Seq.
@@ -407,9 +443,11 @@ internal static class SessionSchema
         FROM Found r;
         CREATE VIEW InterestingRowEvents AS
         -- The events of each interesting row: its thread's events from StartSeq to StopSeq. For a region, RowType is 'Region'
-        -- and RowStartSeq is its RegionId. A focus change that another thread wrote is not among them.
+        -- and RowStartSeq is its RegionId. A focus change that another thread wrote is not among them, nor are the kernel's
+        -- image and hard fault events, which arrive out of order (see DllLoads).
         SELECT r.Type AS RowType, r.StartSeq AS RowStartSeq, r.RegionId, d.*
-        FROM InterestingRows r JOIN EventDetails d ON d.ThreadId = r.ThreadId AND d.Seq BETWEEN r.StartSeq AND r.StopSeq;
+        FROM InterestingRows r JOIN EventDetails d ON d.ThreadId = r.ThreadId AND d.Seq BETWEEN r.StartSeq AND r.StopSeq
+        WHERE d.Provider NOT IN ('KernelProcess', 'KernelImage', 'KernelMemory');
         CREATE VIEW FrameList AS
         -- The Frames tab's list, in order (ListIndex). ItemType Tick: every tick, with the region that ends with it (RegionId).
         -- Region: every region, right above the tick it ends with, or by its start when no tick has its stop as last event.
@@ -540,6 +578,8 @@ internal static class SessionSchema
                 'SELECT * FROM FrameList WHERE InInteresting ORDER BY ListIndex'),
             ('LaunchSummary', 'When the first 10 ticks that drew ended, from process start or recording start', 'Position',
                 'SELECT * FROM LaunchSummary'),
+            ('DllLoads', 'Observed DLL paths, load timestamps, and attributed hard page faults', 'Seq',
+                'SELECT LoadTimeMs, FaultCount, DllPath FROM DllLoads ORDER BY Qpc, Seq'),
             ('CpuSampleDetails', 'Every CPU sample of the target''s threads: its time, thread and the frame it was in', 'SampleId',
                 'SELECT Ms, Frame, StackId FROM CpuSampleDetails WHERE ThreadId = :thread AND Ms BETWEEN :from AND :to ORDER BY Ms'),
             ('HotFunctions', 'CPU samples by thread and the frame they were in, most first', 'ThreadId, then Frame',

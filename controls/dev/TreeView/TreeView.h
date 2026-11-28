@@ -82,4 +82,7 @@ private:
     winrt::ListViewBase::DragItemsStarting_revoker m_dragItemsStartingRevoker{};
     winrt::ListViewBase::DragItemsCompleted_revoker m_dragItemsCompletedRevoker{};
     winrt::ListViewBase::SelectionChanged_revoker m_selectionChangedRevoker{};
+
+    bool m_isSyncingSelection{ false };
+    bool m_coalesceSelectionChange{ false };
 };

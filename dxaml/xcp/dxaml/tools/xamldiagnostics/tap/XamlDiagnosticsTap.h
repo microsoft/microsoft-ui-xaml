@@ -245,6 +245,10 @@ interface __declspec(uuid("{e6755030-f33e-4864-931e-06368e30a84a}"))
         _In_ RECT rect,
         _Out_ unsigned int* pCount,
         _Deref_post_opt_count_(*pCount) InstanceHandle** ppInstanceHandles) = 0;
+
+    STDMETHOD(TryGetExistingElementVisual)(
+        _In_ InstanceHandle element,
+        _Outptr_result_maybenull_ IInspectable** visual) = 0;
 };
 
 HRESULT XamlDiagnosticsTap_CreateInstance(

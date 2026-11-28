@@ -1,6 +1,7 @@
 #pragma once
 #include <windows.h>
 #include <unknwn.h>
+#include <inspectable.h>
 #include <wrl/client.h>
 #include <cstddef>
 #include <cstdint>
@@ -28,8 +29,16 @@ namespace WinUIProfiler::Tap::ResourceSnapshotAbi
     };
 #pragma pack(pop)
 
-    MIDL_INTERFACE("e79e0da1-cf7f-4fa6-b557-fa0de39add1d")
+    MIDL_INTERFACE("4c8cedb4-d1f4-4ac9-955c-b11afa8bcbb0")
     DiagnosticsPrivate : public IUnknown
+    {
+        virtual HRESULT STDMETHODCALLTYPE GetResourceSnapShot(Snapshot* snapshot) = 0;
+        virtual HRESULT STDMETHODCALLTYPE TryGetExistingElementVisual(uint64_t element, IInspectable** visual) = 0;
+    };
+
+    // Older runtimes expose only the resource method under the previous private IID.
+    MIDL_INTERFACE("e79e0da1-cf7f-4fa6-b557-fa0de39add1d")
+    LegacyResourceDiagnostics : public IUnknown
     {
         virtual HRESULT STDMETHODCALLTYPE GetResourceSnapShot(Snapshot* snapshot) = 0;
     };
@@ -47,7 +56,11 @@ namespace WinUIProfiler::Tap::ResourceSnapshotAbi
         if (!diagnostics) return E_POINTER;
         Microsoft::WRL::ComPtr<DiagnosticsPrivate> resources;
         const HRESULT status = diagnostics->QueryInterface(IID_PPV_ARGS(&resources));
-        if (FAILED(status)) return status;
-        return resources->GetResourceSnapShot(&snapshot);
+        if (SUCCEEDED(status)) return resources->GetResourceSnapShot(&snapshot);
+        if (status != E_NOINTERFACE) return status;
+        Microsoft::WRL::ComPtr<LegacyResourceDiagnostics> legacy;
+        const HRESULT legacyStatus = diagnostics->QueryInterface(IID_PPV_ARGS(&legacy));
+        if (FAILED(legacyStatus)) return legacyStatus;
+        return legacy->GetResourceSnapShot(&snapshot);
     }
 }

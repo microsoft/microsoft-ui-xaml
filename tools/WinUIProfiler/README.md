@@ -97,6 +97,22 @@ the launcher with git (see `WinUIProfiler.Launcher\README.md`). The host's nativ
 is staged beside the executable. Distribute the complete output directory,
 not the executable alone.
 
+The **Dlls** tab lists image loads observed during a live launch or attach, or in an
+imported ETL. It reads the session SQLite file's `DllLoads` view. `LoadTimeMs` is
+the image mapping timestamp relative to the recording start, not a load duration.
+`FaultCount` counts retained hard page faults within that mapping's address range
+and observed lifetime. Live hard-fault capture requires administrator rights; an
+ETL must include kernel hard-fault events. A live recording with hard-fault capture
+enabled shows zero when no faults were observed for a DLL. A dash means capture
+was unavailable or could not be confirmed. DLLs already loaded before capture are not listed.
+The writer indexes image events in `DllImageEvents` and hard faults in `HardFaults`,
+so the view reads in time proportional to the matching rows. When an image is seen
+from both the Kernel-Process and classic kernel image sources, the classic row is
+kept for that mapping; mappings seen by only one source are kept as they are. A hard
+fault whose thread's process is not yet known is held until the thread is identified.
+Kernel image, process and memory events are excluded from region event lists.
+The CLI's `record` command also stores DLL loads for the selected process from an ETL.
+
 Run the event compatibility, DirectX capture/storage and snapshot resource regression checks from this directory:
 
 ```powershell
@@ -149,6 +165,17 @@ to join surface-initialization and Direct3D11 resource events, and checks the ac
 control without the opt-in provider. Offsets identify the gutter-excluded content origin.
 Observations describe transient update textures, not exclusive surface or element GPU bytes.
 The test reads existing ETLs and does not require elevated capture permissions.
+
+Fresh `VisualSurfaceChanged` events carry `VisualId`, `SurfaceId`, `Role`, and
+`UIElementId`, in that order. The element ID is the core UI element pointer
+already held by the renderer, not its WinRT identity. Role 0 is the brush and
+role 1 is the mask. A zero surface clears that role while retaining the current
+element; unlinking a primitive clears both roles with zero surface and element
+IDs. Reused primitives report their new element with their new bindings.
+The producer does not walk the XAML, visual, or composition tree to obtain this
+identity, and adds no separate ownership event. The integration check now needs
+fresh captures containing this four-field contract; it does not infer owners
+for older captures.
 
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, then connect. The target settings include a note that connecting
@@ -303,7 +330,9 @@ The validated JSON is saved atomically under `%LOCALAPPDATA%\WinUIProfiler\Snaps
 the UI shows the node counts and saved path. Repeated captures are independent.
 Each successful capture appears in **Snapshot history**, newest first. Select an
 entry to open its viewer: expandable XAML and Composition trees, selected-node
-properties, and direct object-to-visual mapping/highlighting. The same snapshot
+properties, and direct object-to-visual mapping/highlighting for existing peers
+when supported by the target runtime (otherwise root-only links). Descendant XAML
+elements are not forced to have dedicated Composition visuals merely to create links. The same snapshot
 reuses its open viewer; different snapshots can be compared in separate windows.
 Tree labels include the XAML object's COM identity address or the Composition
 visual's IVisual interface address. Each tree has Expand all and Collapse all
@@ -457,8 +486,27 @@ threads; traversal uses `VisualTreeHelper`, `ElementCompositionPreview` and
 Composition APIs. Captures are bounded to 20 seconds, 64 MiB and 131,072 records.
 Roots have individual capture intervals, not a globally atomic timestamp.
 Unrealized/logical objects, internal HWCompNodes and private compositor trees
-are not exposed. `GetElementVisual` may materialize handout visuals. Property
-errors and scope limitations are included in the JSON rather than fabricated values.
+are not exposed. `GetElementVisual` is requested only for each XamlRoot's content
+and open popup roots, never their descendants. It may materialize a root handout;
+for non-perturbing visual-count comparisons, expose the same measurement root in
+both variants before waiting for steady state. Composition enumeration then uses
+the public ancestors and `ContainerVisual.Children`, without manufacturing
+descendant peers or counting disconnected descendant handouts. When the runtime
+supports the matching `IXamlDiagnosticsPrivate` contract, the profiler calls
+`TryGetExistingElementVisual` on each element's owning UI thread to correlate
+existing composition peers to their primary visuals in the captured hierarchy.
+The lookup never creates a visual or changes composition requirements; elements
+without peers and additional visuals without direct primary-visual ownership
+remain unlinked. The private interface is extended directly, with an updated IID
+shared by the runtime and TAP so that an older vtable cannot be called accidentally.
+Older runtimes retain root-only correlations and report that read-only descendant
+mapping is unavailable in the saved snapshot limitations. Resource snapshots
+remain readable through the previous private resource-only contract. Older snapshots
+that acquired every element's handout can contain
+capture-induced visuals and are not comparable to root-only counts. Restart such
+targets before measuring: disconnecting the profiler does not remove their
+cached handouts. Property errors and scope limitations are included in the JSON
+rather than fabricated values.
 
 ## XAML events
 

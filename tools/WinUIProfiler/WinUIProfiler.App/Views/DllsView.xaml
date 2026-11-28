@@ -1,0 +1,36 @@
+<UserControl
+    x:Class="WinUIProfiler.App.Views.DllsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUIProfiler.App.Views">
+    <Grid Padding="0,8,0,0" RowSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto,*">
+        <TextBlock x:Uid="DllsDescription" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" />
+        <TextBox x:Name="SearchBox" x:Uid="DllsSearch" Grid.Row="1" TextChanged="SearchBox_TextChanged" />
+        <InfoBar x:Name="ReadError" x:Uid="DllsReadError" Grid.Row="2" Severity="Error" IsClosable="False" />
+        <TextBlock x:Name="Status" Grid.Row="3" TextWrapping="Wrap" />
+        <ListView x:Name="DllList" x:Uid="DllsList" Grid.Row="4" SelectionMode="None">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="12,4" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.Header>
+                <Grid Padding="12,4" ColumnDefinitions="135,105,*" ColumnSpacing="12">
+                    <TextBlock x:Uid="DllsLoadTime" FontWeight="SemiBold" />
+                    <TextBlock x:Uid="DllsFaultCount" Grid.Column="1" FontWeight="SemiBold" />
+                    <TextBlock x:Uid="DllsPath" Grid.Column="2" FontWeight="SemiBold" />
+                </Grid>
+            </ListView.Header>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:DllLoadRow">
+                    <Grid ColumnDefinitions="135,105,*" ColumnSpacing="12">
+                        <TextBlock Text="{x:Bind LoadTime}" />
+                        <TextBlock Grid.Column="1" Text="{x:Bind FaultCount}" />
+                        <TextBlock Grid.Column="2" Text="{x:Bind DllPath}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</UserControl>

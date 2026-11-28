@@ -2488,4 +2488,148 @@ void RenderTargetBitmapTests::RotatedAndProjectedClipsRTBWUCFull()
     }
 }
 
+void RenderTargetBitmapTests::ScrollViewerContentOnPixelGridWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
+    ScrollViewerContentOnPixelGridInternal(1.25f);
+    ScrollViewerContentOnPixelGridInternal(1.0f);
+}
+
+//------------------------------------------------------------------------
+//
+// Captures the same text at the same offset once as ScrollViewer content
+// (a manipulatable comp node, which is pixel snapped) and once inside a
+// Border, and verifies the two bitmaps match. 12.8 x 5.6 DIPs is a whole
+// number of pixels at scale 1.25 but not a whole number of DIPs, so snapping
+// to DIPs inside the capture would shift the ScrollViewer text by
+// 0.25 x 0.5 pixels.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::ScrollViewerContentOnPixelGridInternal(float scale)
+{
+    LOG_OUTPUT(L"Scale %f", scale);
+    TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(wf::Size(400, 300), scale);
+
+    Border^ scrollViewerHost = nullptr;
+    Border^ borderHost = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        const Thickness contentOffset({12.8, 5.6, 0, 0});
+
+        auto makeText = []()
+        {
+            auto text = ref new TextBlock();
+            text->Text = L"QWEASDZXCabcdefg";
+            text->Foreground = ref new SolidColorBrush(Colors::White);
+            return text;
+        };
+
+        auto makeHost = [](UIElement^ child)
+        {
+            auto host = ref new Border();
+            host->Width = 200;
+            host->Height = 100;
+            host->Background = ref new SolidColorBrush(Colors::Black);
+            host->Child = child;
+            return host;
+        };
+
+        auto scrollViewer = ref new ScrollViewer();
+        scrollViewer->Margin = contentOffset;
+        scrollViewer->VerticalScrollBarVisibility = ScrollBarVisibility::Hidden;
+        auto scrollingText = makeText();
+        scrollingText->Height = 400;
+        scrollViewer->Content = scrollingText;
+        scrollViewerHost = makeHost(scrollViewer);
+
+        auto border = ref new Border();
+        border->Margin = contentOffset;
+        border->Child = makeText();
+        borderHost = makeHost(border);
+
+        auto root = ref new StackPanel();
+        root->Children->Append(scrollViewerHost);
+        root->Children->Append(borderHost);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    auto capture = [](UIElement^ element, int& width, int& height)
+    {
+        auto renderedEvent = std::make_shared<Event>();
+        auto getPixelsEvent = std::make_shared<Event>();
+        RenderTargetBitmap^ rtb = nullptr;
+        wf::IAsyncOperation<IBuffer^>^ getPixelsAsyncOperation = nullptr;
+        IBuffer^ buffer = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            rtb = ref new RenderTargetBitmap();
+            create_task(rtb->RenderAsync(element)).then([renderedEvent]()
+            {
+                renderedEvent->Set();
+            });
+        });
+        renderedEvent->WaitForDefault();
+
+        RunOnUIThread([&]()
+        {
+            width = rtb->PixelWidth;
+            height = rtb->PixelHeight;
+            getPixelsAsyncOperation = rtb->GetPixelsAsync();
+            getPixelsAsyncOperation->Completed = ref new wf::AsyncOperationCompletedHandler<IBuffer^>(
+                [&buffer, getPixelsEvent](wf::IAsyncOperation<IBuffer^>^ operation, wf::AsyncStatus)
+            {
+                buffer = operation->GetResults();
+                getPixelsEvent->Set();
+            });
+        });
+        getPixelsEvent->WaitForDefault();
+
+        Platform::Array<byte>^ pixels = nullptr;
+        RunOnUIThread([&]()
+        {
+            pixels = ref new Platform::Array<byte>(buffer->Length);
+            DataReader::FromBuffer(buffer)->ReadBytes(pixels);
+        });
+        return pixels;
+    };
+
+    int scrollViewerWidth = 0, scrollViewerHeight = 0, borderWidth = 0, borderHeight = 0;
+    auto scrollViewerPixels = capture(scrollViewerHost, scrollViewerWidth, scrollViewerHeight);
+    auto borderPixels = capture(borderHost, borderWidth, borderHeight);
+
+    VERIFY_ARE_EQUAL(static_cast<int>(200 * scale + 0.5f), scrollViewerWidth);
+    VERIFY_ARE_EQUAL(static_cast<int>(100 * scale + 0.5f), scrollViewerHeight);
+    VERIFY_ARE_EQUAL(scrollViewerWidth, borderWidth);
+    VERIFY_ARE_EQUAL(scrollViewerHeight, borderHeight);
+    VERIFY_ARE_EQUAL(scrollViewerPixels->Length, borderPixels->Length);
+
+    // The text must be in the bitmap, and land on the same pixels in both.
+    unsigned int textPixels = 0;
+    unsigned int mismatchedPixels = 0;
+    for (unsigned int i = 0; i < borderPixels->Length; i += 4)
+    {
+        if (borderPixels[i + 1] > 128)
+        {
+            ++textPixels;
+        }
+
+        for (unsigned int channel = 0; channel < 3; ++channel)
+        {
+            if (std::abs(static_cast<int>(scrollViewerPixels[i + channel]) - static_cast<int>(borderPixels[i + channel])) > 8)
+            {
+                ++mismatchedPixels;
+                break;
+            }
+        }
+    }
+
+    LOG_OUTPUT(L"Text pixels: %u, mismatched pixels: %u", textPixels, mismatchedPixels);
+    VERIFY_IS_GREATER_THAN(textPixels, 0u);
+    VERIFY_ARE_EQUAL(0u, mismatchedPixels);
+}
+
 } } } } } }

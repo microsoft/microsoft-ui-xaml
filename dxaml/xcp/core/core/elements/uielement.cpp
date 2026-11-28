@@ -207,6 +207,12 @@ void PrimitiveCompositionPropertyData::ClearRenderDataList(_In_ PCRenderDataList
                 IFCFAILFAST(spChildren->Remove(visual));
             }
 
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                const auto visualId = reinterpret_cast<uint64_t>(visual);
+                XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 0, 0);
+                XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 1, 0);
+            }
             ReleaseInterface(visual);
         }
 
@@ -12013,11 +12019,19 @@ CUIElement::GetIndependentlyAnimatedBrushes(
     *ppStrokeBrush = nullptr;
 }
 
-// Determine if pixel snapping should be disabled, to prevent jittering during transform animation
+// Determine if pixel snapping should be disabled for this element's subtree
 bool CUIElement::ShouldDisablePixelSnapping()
 {
     // Enable pixel snapping by default
     bool disablePixelSnapping = false;
+
+    // RenderTargetBitmap captures this subtree with the rasterization scale applied above it, so snapping inside
+    // the capture rounds to whole DIPs rather than whole pixels and leaves content at a sub-pixel offset. At scale 1
+    // DIPs are pixels, so snapping is left on.
+    if (IsRenderTargetSource() && RootScale::GetRasterizationScaleForElement(this) != 1.0f)
+    {
+        return true;
+    }
 
     if (IsTransformOrOffsetAffectingPropertyIndependentlyAnimating())
     {

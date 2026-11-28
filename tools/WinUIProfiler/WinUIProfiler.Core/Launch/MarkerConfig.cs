@@ -235,7 +235,8 @@ public sealed class MarkerConfig
 
             // Milestones name a provider: one of these, or one the profiler always records.
             var known = new Dictionary<string, MarkerProvider>(StringComparer.OrdinalIgnoreCase);
-            foreach (var builtIn in Enum.GetValues<XamlProvider>().Where(provider => provider != XamlProvider.Marker))
+            foreach (var builtIn in Enum.GetValues<XamlProvider>()
+                .Where(provider => provider != XamlProvider.Marker && !XamlProviders.IsDllProvider(provider)))
             {
                 known[XamlProviders.NameOf(builtIn)] = new(XamlProviders.NameOf(builtIn), XamlProviders.IdOf(builtIn));
             }

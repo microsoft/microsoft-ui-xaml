@@ -69,6 +69,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(TestGetExistingElementVisual)
+                TEST_METHOD_PROPERTY(L"Description", L"Read-only visual lookup preserves existing peers without materializing missing peers.")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(TestGetExistingElementVisualOwnerThread)
+                TEST_METHOD_PROPERTY(L"Description", L"Read-only visual lookup checks the object's owning thread and returns null for non-UIElement objects.")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(TestHitTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and hit test the tree.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
