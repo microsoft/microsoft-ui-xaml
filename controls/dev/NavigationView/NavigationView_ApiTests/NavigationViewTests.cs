@@ -8346,6 +8346,368 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that resizing a NavigationView with IsPaneVisible=false below OpenPaneLength never renders a frame with the content pushed aside (screen blink, ADO 47131770).")]
+        public void VerifyPaneInvisibleContentDoesNotShiftWhileResizing()
+        {
+            var failures = new List<string>();
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Auto, NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.LeftMinimal })
+            {
+                Log.Comment($"PaneDisplayMode={paneDisplayMode}");
+                var navView = SetupPaneInvisibleNavigationView(paneDisplayMode, 400.0);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                    Verify.AreEqual(SplitViewDisplayMode.CompactOverlay, splitView.DisplayMode, "Precondition: an invisible pane collapses the SplitView to CompactOverlay");
+                    Verify.AreEqual(0.0, splitView.CompactPaneLength, "Precondition: an invisible pane has no compact strip");
+                });
+
+                // Check every mode before failing, so a RED run reports all of them.
+                var (displacedFrames, openPaneLengths) = ResizeAndCountShiftedContentFrames(navView, null /* onSizeChanged */);
+                if (displacedFrames != 0 || openPaneLengths.Count != 1)
+                {
+                    failures.Add($"{paneDisplayMode}: {displacedFrames} frames with the content shifted, {openPaneLengths.Count} RootSplitView.OpenPaneLength values");
+                }
+            }
+
+            Verify.AreEqual(0, failures.Count, "With the pane invisible, the content must stay at x=0 on every rendered frame and RootSplitView.OpenPaneLength must not track the width: " + string.Join("; ", failures));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that toggling IsPaneVisible from SizeChanged (i.e. during layout) while resizing below OpenPaneLength never renders a frame with the content pushed aside (ADO 47131770).")]
+        public void VerifyPaneVisibilityToggleDuringResizeDoesNotShiftContent()
+        {
+            // Modes whose visible pane overlays the content, so the content stays at x=0 whether or not the pane is visible.
+            // (LeftCompact keeps the SplitView in ClosedCompactLeft with the pane visible; that SplitView case is out of scope here.)
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Auto, NavigationViewPaneDisplayMode.LeftMinimal })
+            {
+                Log.Comment($"PaneDisplayMode={paneDisplayMode}");
+                var navView = SetupPaneInvisibleNavigationView(paneDisplayMode, 400.0);
+                var (displacedFrames, _) = ResizeAndCountShiftedContentFrames(navView, nv => nv.IsPaneVisible = !nv.IsPaneVisible);
+                Verify.AreEqual(0, displacedFrames, "The content must stay at x=0 on every rendered frame");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that the pane length doesn't change while the pane is invisible, is clamped to the current width when the pane becomes visible, and honors the app's OpenPaneLength (ADO 47131770).")]
+        public void VerifyOpenPaneLengthAfterPaneBecomesVisible()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Auto, NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.LeftMinimal })
+            {
+                Log.Comment($"PaneDisplayMode={paneDisplayMode}");
+                var navView = SetupPaneInvisibleNavigationView(paneDisplayMode, 600.0);
+                SplitView splitView = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                    // Start visible, so every step's hide is a real change.
+                    navView.IsPaneVisible = true;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                // Each step: hide the pane, change the width and the app's OpenPaneLength, then show the pane.
+                var steps = new[]
+                {
+                    // width, app OpenPaneLength, expected pane length once visible
+                    (248.0, 320.0, 248.0),
+                    (296.0, 320.0, 296.0),
+                    (504.0, 320.0, 320.0),
+                    (504.0, 200.0, 200.0),
+                    (264.0, 400.0, 264.0),
+                };
+                foreach (var (width, openPaneLength, expected) in steps)
+                {
+                    double hiddenLength = 0.0;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var lengthBeforeHiding = splitView.OpenPaneLength;
+                        navView.IsPaneVisible = false;
+                        Content.UpdateLayout();
+                        hiddenLength = splitView.OpenPaneLength;
+                        VerifyAreClose(lengthBeforeHiding, hiddenLength, "Hiding the pane doesn't change RootSplitView.OpenPaneLength");
+
+                        navView.Width = width - 32.0;
+                        Content.UpdateLayout();
+                        navView.Width = width;
+                        navView.OpenPaneLength = openPaneLength;
+                        Content.UpdateLayout();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        VerifyAreClose(width, navView.ActualWidth, "Precondition: NavigationView was resized");
+                        VerifyAreClose(hiddenLength, splitView.OpenPaneLength, "RootSplitView.OpenPaneLength must not change while the pane is invisible");
+
+                        navView.IsPaneVisible = true;
+                        Content.UpdateLayout();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment($"width={width} OpenPaneLength={openPaneLength}: hidden {hiddenLength} -> visible {splitView.OpenPaneLength}");
+                        VerifyAreClose(expected, navView.TemplateSettings.OpenPaneLength, "TemplateSettings.OpenPaneLength after the pane becomes visible");
+                        VerifyAreClose(expected, splitView.OpenPaneLength, "RootSplitView.OpenPaneLength after the pane becomes visible");
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that the pane length is clamped to the current width when the pane was hidden, resized, and shown again in Top mode, then the NavigationView switches back to a left mode (ADO 47131770).")]
+        public void VerifyOpenPaneLengthAfterPaneShownInTopMode()
+        {
+            var navView = SetupPaneInvisibleNavigationView(NavigationViewPaneDisplayMode.Left, 296.0);
+            RunOnUIThread.Execute(() =>
+            {
+                var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                navView.IsPaneVisible = true;
+                Content.UpdateLayout();
+                VerifyAreClose(296.0, splitView.OpenPaneLength, "Precondition: the visible pane is clamped to the width");
+
+                navView.IsPaneVisible = false;
+                Content.UpdateLayout();
+                navView.Width = 216.0;
+                Content.UpdateLayout();
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                Content.UpdateLayout();
+                navView.IsPaneVisible = true;
+                Content.UpdateLayout();
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+                Content.UpdateLayout();
+
+                VerifyAreClose(216.0, navView.ActualWidth, "Precondition: NavigationView was resized");
+                VerifyAreClose(216.0, splitView.OpenPaneLength, "RootSplitView.OpenPaneLength after returning to a left mode");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the pane length (and the PaneTitle toggle button width) when the pane becomes visible after Auto mode crossed the Compact and Expanded thresholds while the pane was invisible (ADO 47131770).")]
+        public void VerifyOpenPaneLengthAfterPaneBecomesVisibleAcrossAdaptiveThresholds()
+        {
+            var navView = SetupPaneInvisibleNavigationView(NavigationViewPaneDisplayMode.Auto, 400.0);
+            SplitView splitView = null;
+            Button togglePaneButton = null;
+            RunOnUIThread.Execute(() =>
+            {
+                splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                togglePaneButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                navView.PaneTitle = "Title";
+            });
+            IdleSynchronizer.Wait();
+
+            // width, app OpenPaneLength, expected DisplayMode, expected pane length once visible
+            var steps = new[]
+            {
+                (704.0, 800.0, NavigationViewDisplayMode.Compact, 704.0),
+                (1104.0, 1000.0, NavigationViewDisplayMode.Expanded, 1000.0),
+            };
+            foreach (var (width, openPaneLength, displayMode, expected) in steps)
+            {
+                double hiddenLength = 0.0;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.IsPaneVisible = false;
+                    Content.UpdateLayout();
+                    hiddenLength = splitView.OpenPaneLength;
+                    navView.Width = width;
+                    navView.OpenPaneLength = openPaneLength;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(displayMode, navView.DisplayMode, "Precondition: DisplayMode after the resize");
+                    VerifyAreClose(hiddenLength, splitView.OpenPaneLength, "RootSplitView.OpenPaneLength must not change while the pane is invisible");
+
+                    navView.IsPaneVisible = true;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"width={width} OpenPaneLength={openPaneLength} {displayMode}: IsPaneOpen={navView.IsPaneOpen} pane length {splitView.OpenPaneLength} toggle width {togglePaneButton.Width}");
+                    VerifyAreClose(expected, splitView.OpenPaneLength, "RootSplitView.OpenPaneLength after the pane becomes visible");
+                    if (displayMode == NavigationViewDisplayMode.Expanded)
+                    {
+                        Verify.IsTrue(navView.IsPaneOpen, "The Expanded pane opens when it becomes visible");
+                        VerifyAreClose(expected, togglePaneButton.Width, "With a PaneTitle, the open pane's toggle button spans the pane length");
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that DisplayModeChanged and PaneOpening, raised when switching from Top to Left, already see the pane length for the current width and OpenPaneLength (ADO 47131770).")]
+        public void VerifyOpenPaneLengthIsUpdatedBeforePaneDisplayModeEvents()
+        {
+            var navView = SetupPaneInvisibleNavigationView(NavigationViewPaneDisplayMode.Left, 296.0);
+            double? lengthInDisplayModeChanged = null;
+            double? lengthInPaneOpening = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                navView.IsPaneVisible = true;
+                Content.UpdateLayout();
+                VerifyAreClose(296.0, splitView.OpenPaneLength, "Precondition: the visible pane is clamped to the width");
+
+                // Width and OpenPaneLength change while in Top mode, where the pane length isn't updated.
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                Content.UpdateLayout();
+                navView.Width = 280.0;
+                navView.OpenPaneLength = 240.0;
+                Content.UpdateLayout();
+                Verify.IsFalse(navView.IsPaneOpen, "Precondition: the pane is closed in Top mode");
+
+                navView.DisplayModeChanged += (s, e) => { lengthInDisplayModeChanged = navView.TemplateSettings.OpenPaneLength; };
+                navView.PaneOpening += (s, e) => { lengthInPaneOpening = navView.TemplateSettings.OpenPaneLength; };
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"OpenPaneLength in DisplayModeChanged={lengthInDisplayModeChanged} in PaneOpening={lengthInPaneOpening} after={navView.TemplateSettings.OpenPaneLength}");
+                Verify.IsTrue(lengthInDisplayModeChanged.HasValue, "Precondition: DisplayModeChanged was raised");
+                Verify.IsTrue(lengthInPaneOpening.HasValue, "Precondition: PaneOpening was raised (Left opens the pane)");
+                VerifyAreClose(240.0, lengthInDisplayModeChanged.Value, "TemplateSettings.OpenPaneLength seen by DisplayModeChanged");
+                VerifyAreClose(240.0, lengthInPaneOpening.Value, "TemplateSettings.OpenPaneLength seen by PaneOpening");
+                VerifyAreClose(240.0, navView.TemplateSettings.OpenPaneLength, "TemplateSettings.OpenPaneLength after the switch");
+            });
+        }
+
+        private NavigationView SetupPaneInvisibleNavigationView(NavigationViewPaneDisplayMode paneDisplayMode, double width)
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView()
+                {
+                    PaneDisplayMode = paneDisplayMode,
+                    IsPaneVisible = false,
+                    Width = width,
+                    Height = 300.0,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Content = new Grid() { Background = new SolidColorBrush(Colors.Red) },
+                };
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            return navView;
+        }
+
+        // Changes the NavigationView width once per rendered frame (like dragging the window edge) from 400 down to 200 and
+        // back, and checks on every rendered frame whether the content is at x=0. Returns the number of frames with the content
+        // shifted and the RootSplitView.OpenPaneLength values seen on the frames.
+        private static (int, HashSet<double>) ResizeAndCountShiftedContentFrames(NavigationView navView, Action<NavigationView> onSizeChanged)
+        {
+            int frameCount = 0;
+            var badFrames = new List<string>();
+            var openPaneLengths = new HashSet<double>();
+            EventHandler<object> renderingHandler = null;
+            SizeChangedEventHandler sizeChangedHandler = null;
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                    var contentRoot = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(splitView, "ContentRoot");
+
+                    // Rendering is raised once per frame, just before the frame is rendered. The ADO 47131770 repro matched the shifted
+                    // states seen here with the frames that showed the blink on screen.
+                    renderingHandler = (s, e) =>
+                    {
+                        frameCount++;
+                        openPaneLengths.Add(splitView.OpenPaneLength);
+                        var contentX = contentRoot.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X;
+                        if (Math.Abs(contentX) > 0.5)
+                        {
+                            badFrames.Add($"nav={navView.ActualWidth} IsPaneVisible={navView.IsPaneVisible} openPaneLength={splitView.OpenPaneLength} contentRoot=[x{contentX} w{contentRoot.ActualWidth}]");
+                        }
+                    };
+                    CompositionTarget.Rendering += renderingHandler;
+
+                    if (onSizeChanged != null)
+                    {
+                        sizeChangedHandler = (s, e) => onSizeChanged(navView);
+                        navView.SizeChanged += sizeChangedHandler;
+                    }
+                });
+
+                var widths = new List<double>();
+                for (double w = 400.0; w >= 200.0; w -= 8.0) { widths.Add(w); }
+                for (double w = 200.0; w <= 400.0; w += 8.0) { widths.Add(w); }
+                foreach (var width in widths)
+                {
+                    int startFrame = 0;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        startFrame = frameCount;
+                        navView.Width = width;
+                    });
+                    WaitForFrames(() => frameCount - startFrame, 2);
+                }
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    CompositionTarget.Rendering -= renderingHandler;
+                    renderingHandler = null;
+                    Log.Comment($"frames={frameCount} openPaneLengths=[{string.Join(", ", openPaneLengths)}] badFrames={badFrames.Count}");
+                    foreach (var badFrame in badFrames.GetRange(0, Math.Min(badFrames.Count, 10)))
+                    {
+                        Log.Comment($"  displaced: {badFrame}");
+                    }
+                    Verify.IsGreaterThan(frameCount, widths.Count, "Precondition: frames were rendered during the resize");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    if (renderingHandler != null)
+                    {
+                        CompositionTarget.Rendering -= renderingHandler;
+                    }
+                    if (sizeChangedHandler != null)
+                    {
+                        navView.SizeChanged -= sizeChangedHandler;
+                    }
+                });
+            }
+            return (badFrames.Count, openPaneLengths);
+        }
+
+        private static void WaitForFrames(Func<int> framesSinceStart, int count)
+        {
+            var timeout = DateTime.Now.AddSeconds(5);
+            while (DateTime.Now < timeout)
+            {
+                int frames = 0;
+                RunOnUIThread.Execute(() => { frames = framesSinceStart(); });
+                if (frames >= count)
+                {
+                    return;
+                }
+                Thread.Sleep(10);
+            }
+            Verify.Fail($"Timed out waiting for {count} rendered frames");
+        }
+
+        private static void VerifyAreClose(double expected, double actual, string message)
+        {
+            Verify.IsLessThan(Math.Abs(expected - actual), 1.0, $"{message} (expected {expected}, actual {actual})");
+        }
+
         private void VerifyContentIsClippedHorizontallyDuringPaneCloseTransition(FlowDirection flowDirection)
         {
             var splitView = SetupClosedExpandedNavigationView(flowDirection, out Grid contentMarker, out Grid host);
