@@ -17,6 +17,7 @@
 #include <Patterns\InvokePatternHandler.h>
 
 #include <ChangeDPI.h>
+#include <TreeHelper.h>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
@@ -713,6 +714,796 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(width, 100);
             VERIFY_ARE_EQUAL(height, 100);
         });
+    }
+
+    //
+    // IInsertionPanel
+    //
+    // Four 100x100 items (PanelsHelper default content). StackPanel computes insertion indexes from the children's
+    // desired sizes along the stacking direction:
+    //   item 0: [0,100)  item 1: [100,200)  item 2: [200,300)  item 3: [300,400)
+    // A point in the leading half of item k lies before k; a point in the trailing half lies after k. A point exactly at
+    // the midpoint of item k is still in its leading half, so it lies before k. Every point beyond the last item,
+    // however far past it, lies after the last item, so the item before the point is the last item. The value reported
+    // for 'second' at the end of a panel (and for an empty panel) is logged but not asserted: the platform's
+    // end-of-panel convention for it is not documented.
+    //
+    void StackPanelIntegrationTests::VerifyGetInsertionIndexesVertical()
+    {
+        TestCleanupWrapper cleanup;
+        const auto probes = ProbeInsertionIndexes(Orientation::Vertical);
+
+        VERIFY_ARE_EQUAL(-1, probes.leadingHalfOfItem0.first);
+        VERIFY_ARE_EQUAL(0, probes.leadingHalfOfItem0.second);
+        VERIFY_ARE_EQUAL(0, probes.trailingHalfOfItem0.first);
+        VERIFY_ARE_EQUAL(1, probes.trailingHalfOfItem0.second);
+        VERIFY_ARE_EQUAL(0, probes.leadingHalfOfItem1.first);
+        VERIFY_ARE_EQUAL(1, probes.leadingHalfOfItem1.second);
+        VERIFY_ARE_EQUAL(0, probes.midpointOfItem1.first);
+        VERIFY_ARE_EQUAL(1, probes.midpointOfItem1.second);
+        VERIFY_ARE_EQUAL(1, probes.trailingHalfOfItem1.first);
+        VERIFY_ARE_EQUAL(2, probes.trailingHalfOfItem1.second);
+        VERIFY_ARE_EQUAL(1, probes.leadingHalfOfItem2.first);
+        VERIFY_ARE_EQUAL(2, probes.leadingHalfOfItem2.second);
+        VERIFY_ARE_EQUAL(3, probes.justPastTheEnd.first);
+        VERIFY_ARE_EQUAL(3, probes.pastTheEnd.first);
+        VERIFY_ARE_EQUAL(3, probes.moreThanHalfAnItemPastTheEnd.first);
+        VERIFY_ARE_EQUAL(-1, probes.emptyPanel.first);
+        VERIFY_IS_TRUE(probes.offThreadCallFailedWithWrongThread);
+    }
+
+    void StackPanelIntegrationTests::VerifyGetInsertionIndexesHorizontal()
+    {
+        TestCleanupWrapper cleanup;
+        const auto probes = ProbeInsertionIndexes(Orientation::Horizontal);
+
+        VERIFY_ARE_EQUAL(-1, probes.leadingHalfOfItem0.first);
+        VERIFY_ARE_EQUAL(0, probes.leadingHalfOfItem0.second);
+        VERIFY_ARE_EQUAL(0, probes.trailingHalfOfItem0.first);
+        VERIFY_ARE_EQUAL(1, probes.trailingHalfOfItem0.second);
+        VERIFY_ARE_EQUAL(0, probes.leadingHalfOfItem1.first);
+        VERIFY_ARE_EQUAL(1, probes.leadingHalfOfItem1.second);
+        VERIFY_ARE_EQUAL(0, probes.midpointOfItem1.first);
+        VERIFY_ARE_EQUAL(1, probes.midpointOfItem1.second);
+        VERIFY_ARE_EQUAL(1, probes.trailingHalfOfItem1.first);
+        VERIFY_ARE_EQUAL(2, probes.trailingHalfOfItem1.second);
+        VERIFY_ARE_EQUAL(1, probes.leadingHalfOfItem2.first);
+        VERIFY_ARE_EQUAL(2, probes.leadingHalfOfItem2.second);
+        VERIFY_ARE_EQUAL(3, probes.justPastTheEnd.first);
+        VERIFY_ARE_EQUAL(3, probes.pastTheEnd.first);
+        VERIFY_ARE_EQUAL(3, probes.moreThanHalfAnItemPastTheEnd.first);
+        VERIFY_ARE_EQUAL(-1, probes.emptyPanel.first);
+        VERIFY_IS_TRUE(probes.offThreadCallFailedWithWrongThread);
+    }
+
+    StackPanelIntegrationTests::InsertionIndexProbes StackPanelIntegrationTests::ProbeInsertionIndexes(xaml_controls::Orientation orientation)
+    {
+        const int itemCount = 4;
+        const bool isVertical = (orientation == Orientation::Vertical);
+        auto pointAt = [isVertical](float offset)
+        {
+            // The cross-axis coordinate does not affect StackPanel insertion; keep it inside the items.
+            return isVertical ? wf::Point(50.0f, offset) : wf::Point(offset, 50.0f);
+        };
+
+        auto stackPanel = PanelsHelper::AddPanelWithContent<xaml_controls::StackPanel>(PanelsHelper::CreateDefaultPanelContent(itemCount), orientation);
+        TestServices::WindowHelper->WaitForIdle();
+
+        InsertionIndexProbes probes = {};
+        xaml_controls::IInsertionPanel^ insertionPanel = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            insertionPanel = safe_cast<xaml_controls::IInsertionPanel^>(stackPanel);
+            insertionPanel->GetInsertionIndexes(pointAt(10.0f), &probes.leadingHalfOfItem0.first, &probes.leadingHalfOfItem0.second);
+            insertionPanel->GetInsertionIndexes(pointAt(60.0f), &probes.trailingHalfOfItem0.first, &probes.trailingHalfOfItem0.second);
+            insertionPanel->GetInsertionIndexes(pointAt(140.0f), &probes.leadingHalfOfItem1.first, &probes.leadingHalfOfItem1.second);
+            insertionPanel->GetInsertionIndexes(pointAt(150.0f), &probes.midpointOfItem1.first, &probes.midpointOfItem1.second);
+            insertionPanel->GetInsertionIndexes(pointAt(160.0f), &probes.trailingHalfOfItem1.first, &probes.trailingHalfOfItem1.second);
+            insertionPanel->GetInsertionIndexes(pointAt(240.0f), &probes.leadingHalfOfItem2.first, &probes.leadingHalfOfItem2.second);
+            insertionPanel->GetInsertionIndexes(pointAt(410.0f), &probes.justPastTheEnd.first, &probes.justPastTheEnd.second);
+            insertionPanel->GetInsertionIndexes(pointAt(450.0f), &probes.pastTheEnd.first, &probes.pastTheEnd.second);
+            insertionPanel->GetInsertionIndexes(pointAt(460.0f), &probes.moreThanHalfAnItemPastTheEnd.first, &probes.moreThanHalfAnItemPastTheEnd.second);
+
+            auto emptyStackPanel = ref new xaml_controls::StackPanel();
+            emptyStackPanel->Orientation = orientation;
+            safe_cast<xaml_controls::IInsertionPanel^>(emptyStackPanel)->GetInsertionIndexes(pointAt(10.0f), &probes.emptyPanel.first, &probes.emptyPanel.second);
+        });
+
+        LOG_OUTPUT(L"Leading half of item 0: first=%d second=%d.", probes.leadingHalfOfItem0.first, probes.leadingHalfOfItem0.second);
+        LOG_OUTPUT(L"Trailing half of item 0: first=%d second=%d.", probes.trailingHalfOfItem0.first, probes.trailingHalfOfItem0.second);
+        LOG_OUTPUT(L"Leading half of item 1: first=%d second=%d.", probes.leadingHalfOfItem1.first, probes.leadingHalfOfItem1.second);
+        LOG_OUTPUT(L"Trailing half of item 1: first=%d second=%d.", probes.trailingHalfOfItem1.first, probes.trailingHalfOfItem1.second);
+        LOG_OUTPUT(L"Leading half of item 2: first=%d second=%d.", probes.leadingHalfOfItem2.first, probes.leadingHalfOfItem2.second);
+        LOG_OUTPUT(L"Midpoint of item 1: first=%d second=%d.", probes.midpointOfItem1.first, probes.midpointOfItem1.second);
+        LOG_OUTPUT(L"Just past the end: first=%d second=%d.", probes.justPastTheEnd.first, probes.justPastTheEnd.second);
+        LOG_OUTPUT(L"Past the end: first=%d second=%d.", probes.pastTheEnd.first, probes.pastTheEnd.second);
+        LOG_OUTPUT(L"More than half an item past the end: first=%d second=%d.", probes.moreThanHalfAnItemPastTheEnd.first, probes.moreThanHalfAnItemPastTheEnd.second);
+        LOG_OUTPUT(L"Empty panel: first=%d second=%d.", probes.emptyPanel.first, probes.emptyPanel.second);
+
+        LOG_OUTPUT(L"Calling GetInsertionIndexes off the UI thread.");
+        try
+        {
+            int first = 0;
+            int second = 0;
+            insertionPanel->GetInsertionIndexes(pointAt(10.0f), &first, &second);
+            LOG_OUTPUT(L"The off-thread call unexpectedly succeeded: first=%d second=%d.", first, second);
+        }
+        catch (Platform::Exception^ ex)
+        {
+            LOG_OUTPUT(L"The off-thread call failed with 0x%08x.", ex->HResult);
+            probes.offThreadCallFailedWithWrongThread = (ex->HResult == RPC_E_WRONG_THREAD);
+        }
+
+        return probes;
+    }
+
+    //
+    // Property accessors and dependency properties
+    //
+    static void VerifyThicknessEquals(double left, double top, double right, double bottom, xaml::Thickness actual)
+    {
+        VERIFY_ARE_EQUAL(left, actual.Left);
+        VERIFY_ARE_EQUAL(top, actual.Top);
+        VERIFY_ARE_EQUAL(right, actual.Right);
+        VERIFY_ARE_EQUAL(bottom, actual.Bottom);
+    }
+
+    // COM identity: two references denote the same object exactly when their IUnknown pointers are equal. Handles of
+    // different projected types (e.g. SolidColorBrush^ and Brush^) point at different interfaces of the same object.
+    static bool IsSameComObject(Platform::Object^ first, Platform::Object^ second)
+    {
+        if (first == nullptr || second == nullptr)
+        {
+            return (first == nullptr) && (second == nullptr);
+        }
+
+        wrl::ComPtr<IUnknown> firstIdentity;
+        wrl::ComPtr<IUnknown> secondIdentity;
+        VERIFY_SUCCEEDED(reinterpret_cast<IInspectable*>(first)->QueryInterface(IID_PPV_ARGS(&firstIdentity)));
+        VERIFY_SUCCEEDED(reinterpret_cast<IInspectable*>(second)->QueryInterface(IID_PPV_ARGS(&secondIdentity)));
+        return firstIdentity.Get() == secondIdentity.Get();
+    }
+
+    static void VerifyCornerRadiusEquals(double topLeft, double topRight, double bottomRight, double bottomLeft, xaml::CornerRadius actual)
+    {
+        VERIFY_ARE_EQUAL(topLeft, actual.TopLeft);
+        VERIFY_ARE_EQUAL(topRight, actual.TopRight);
+        VERIFY_ARE_EQUAL(bottomRight, actual.BottomRight);
+        VERIFY_ARE_EQUAL(bottomLeft, actual.BottomLeft);
+    }
+
+    void StackPanelIntegrationTests::VerifyPropertiesMatchDependencyProperties()
+    {
+        TestCleanupWrapper cleanup;
+        const auto snapshots = CapturePropertySnapshots();
+
+        LOG_OUTPUT(L"Default values agree between the property getters and the dependency properties.");
+        VERIFY_ARE_EQUAL(xaml_controls::BackgroundSizing::InnerBorderEdge, snapshots.defaults.backgroundSizingFromGetter);
+        VERIFY_ARE_EQUAL(xaml_controls::BackgroundSizing::InnerBorderEdge, snapshots.defaults.backgroundSizingFromProperty);
+        VERIFY_ARE_EQUAL(0.0, snapshots.defaults.spacingFromGetter);
+        VERIFY_ARE_EQUAL(0.0, snapshots.defaults.spacingFromProperty);
+        VERIFY_ARE_EQUAL(xaml_controls::Orientation::Vertical, snapshots.defaults.orientationFromProperty);
+        VERIFY_IS_FALSE(snapshots.defaults.areScrollSnapPointsRegularFromProperty);
+        VERIFY_IS_TRUE(snapshots.defaults.borderBrushFromPropertyIsNull);
+        VerifyThicknessEquals(0, 0, 0, 0, snapshots.defaults.borderThicknessFromProperty);
+        VerifyThicknessEquals(0, 0, 0, 0, snapshots.defaults.paddingFromProperty);
+        VerifyCornerRadiusEquals(0, 0, 0, 0, snapshots.defaults.cornerRadiusFromProperty);
+
+        LOG_OUTPUT(L"Values set through the property setters are visible through the dependency properties.");
+        VERIFY_ARE_EQUAL(xaml_controls::BackgroundSizing::OuterBorderEdge, snapshots.afterPropertySetters.backgroundSizingFromGetter);
+        VERIFY_ARE_EQUAL(xaml_controls::BackgroundSizing::OuterBorderEdge, snapshots.afterPropertySetters.backgroundSizingFromProperty);
+        VERIFY_IS_TRUE(snapshots.afterPropertySetters.borderBrushFromGetterIsSetBrush);
+        VERIFY_IS_TRUE(snapshots.afterPropertySetters.borderBrushFromPropertyIsSetBrush);
+        VerifyThicknessEquals(1, 2, 3, 4, snapshots.afterPropertySetters.borderThicknessFromProperty);
+        VerifyThicknessEquals(9, 10, 11, 12, snapshots.afterPropertySetters.paddingFromProperty);
+        VerifyCornerRadiusEquals(5, 6, 7, 8, snapshots.afterPropertySetters.cornerRadiusFromProperty);
+        VerifyCornerRadiusEquals(5, 6, 7, 8, snapshots.afterPropertySetters.cornerRadiusFromGetter);
+        VERIFY_ARE_EQUAL(12.5, snapshots.afterPropertySetters.spacingFromGetter);
+        VERIFY_ARE_EQUAL(12.5, snapshots.afterPropertySetters.spacingFromProperty);
+        VERIFY_ARE_EQUAL(xaml_controls::Orientation::Horizontal, snapshots.afterPropertySetters.orientationFromProperty);
+        VERIFY_IS_TRUE(snapshots.afterPropertySetters.areScrollSnapPointsRegularFromProperty);
+
+        LOG_OUTPUT(L"Values set through the dependency properties are visible through the property getters.");
+        VERIFY_ARE_EQUAL(xaml_controls::BackgroundSizing::InnerBorderEdge, snapshots.afterDependencyPropertySetters.backgroundSizingFromGetter);
+        VERIFY_ARE_EQUAL(xaml_controls::BackgroundSizing::InnerBorderEdge, snapshots.afterDependencyPropertySetters.backgroundSizingFromProperty);
+        VERIFY_ARE_EQUAL(3.0, snapshots.afterDependencyPropertySetters.spacingFromGetter);
+        VERIFY_ARE_EQUAL(3.0, snapshots.afterDependencyPropertySetters.spacingFromProperty);
+    }
+
+    StackPanelIntegrationTests::PropertySnapshots StackPanelIntegrationTests::CapturePropertySnapshots()
+    {
+        PropertySnapshots snapshots = {};
+
+        RunOnUIThread([&]()
+        {
+            auto stackPanel = ref new xaml_controls::StackPanel();
+            auto borderBrush = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Yellow);
+
+            auto readSnapshot = [&]()
+            {
+                PropertySnapshot snapshot = {};
+                snapshot.backgroundSizingFromGetter = stackPanel->BackgroundSizing;
+                snapshot.backgroundSizingFromProperty = safe_cast<xaml_controls::BackgroundSizing>(stackPanel->GetValue(xaml_controls::StackPanel::BackgroundSizingProperty));
+                snapshot.spacingFromGetter = stackPanel->Spacing;
+                snapshot.spacingFromProperty = safe_cast<double>(stackPanel->GetValue(xaml_controls::StackPanel::SpacingProperty));
+                snapshot.orientationFromProperty = safe_cast<xaml_controls::Orientation>(stackPanel->GetValue(xaml_controls::StackPanel::OrientationProperty));
+                snapshot.areScrollSnapPointsRegularFromProperty = safe_cast<bool>(stackPanel->GetValue(xaml_controls::StackPanel::AreScrollSnapPointsRegularProperty));
+                snapshot.borderBrushFromPropertyIsNull = (stackPanel->GetValue(xaml_controls::StackPanel::BorderBrushProperty) == nullptr);
+                snapshot.borderBrushFromGetterIsSetBrush = IsSameComObject(borderBrush, stackPanel->BorderBrush);
+                snapshot.borderBrushFromPropertyIsSetBrush = IsSameComObject(borderBrush, stackPanel->GetValue(xaml_controls::StackPanel::BorderBrushProperty));
+                snapshot.borderThicknessFromProperty = safe_cast<xaml::Thickness>(stackPanel->GetValue(xaml_controls::StackPanel::BorderThicknessProperty));
+                snapshot.paddingFromProperty = safe_cast<xaml::Thickness>(stackPanel->GetValue(xaml_controls::StackPanel::PaddingProperty));
+                snapshot.cornerRadiusFromGetter = stackPanel->CornerRadius;
+                snapshot.cornerRadiusFromProperty = safe_cast<xaml::CornerRadius>(stackPanel->GetValue(xaml_controls::StackPanel::CornerRadiusProperty));
+                return snapshot;
+            };
+
+            snapshots.defaults = readSnapshot();
+
+            stackPanel->BackgroundSizing = xaml_controls::BackgroundSizing::OuterBorderEdge;
+            stackPanel->BorderBrush = borderBrush;
+            stackPanel->BorderThickness = xaml::ThicknessHelper::FromLengths(1, 2, 3, 4);
+            stackPanel->CornerRadius = xaml::CornerRadiusHelper::FromRadii(5, 6, 7, 8);
+            stackPanel->Padding = xaml::ThicknessHelper::FromLengths(9, 10, 11, 12);
+            stackPanel->Spacing = 12.5;
+            stackPanel->Orientation = xaml_controls::Orientation::Horizontal;
+            stackPanel->AreScrollSnapPointsRegular = true;
+            snapshots.afterPropertySetters = readSnapshot();
+
+            stackPanel->SetValue(xaml_controls::StackPanel::BackgroundSizingProperty, xaml_controls::BackgroundSizing::InnerBorderEdge);
+            stackPanel->SetValue(xaml_controls::StackPanel::SpacingProperty, 3.0);
+            snapshots.afterDependencyPropertySetters = readSnapshot();
+        });
+
+        return snapshots;
+    }
+
+    //
+    // IPaginatedPanel queries made by ListViewBase incremental loading against a StackPanel items host
+    //
+
+    // An IAsyncOperation that completes later on the UI thread, the way an incremental data source normally does.
+    ref class DeferredLoadMoreItemsOperation sealed : public wf::IAsyncOperation<xaml_data::LoadMoreItemsResult>
+    {
+    public:
+        DeferredLoadMoreItemsOperation()
+            : m_status(wf::AsyncStatus::Started)
+        {
+        }
+
+        virtual property wf::AsyncOperationCompletedHandler<xaml_data::LoadMoreItemsResult>^ Completed
+        {
+            wf::AsyncOperationCompletedHandler<xaml_data::LoadMoreItemsResult>^ get()
+            {
+                return m_completed;
+            }
+
+            void set(wf::AsyncOperationCompletedHandler<xaml_data::LoadMoreItemsResult>^ value)
+            {
+                m_completed = value;
+
+                DeferredLoadMoreItemsOperation^ self = this;
+                TestServices::WindowHelper->CurrentDispatcher->TryEnqueue(
+                    Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal,
+                    ref new Microsoft::UI::Dispatching::DispatcherQueueHandler([self]()
+                    {
+                        self->Complete();
+                    }));
+            }
+        }
+
+        virtual xaml_data::LoadMoreItemsResult GetResults()
+        {
+            xaml_data::LoadMoreItemsResult result;
+            result.Count = 0;
+            return result;
+        }
+
+        virtual property unsigned int Id
+        {
+            unsigned int get()
+            {
+                return 1;
+            }
+        }
+
+        virtual property wf::AsyncStatus Status
+        {
+            wf::AsyncStatus get()
+            {
+                return m_status;
+            }
+        }
+
+        virtual property wf::HResult ErrorCode
+        {
+            wf::HResult get()
+            {
+                wf::HResult result;
+                result.Value = S_OK;
+                return result;
+            }
+        }
+
+        virtual void Cancel()
+        {
+        }
+
+        virtual void Close()
+        {
+        }
+
+    private:
+        void Complete()
+        {
+            m_status = wf::AsyncStatus::Completed;
+            auto completed = m_completed;
+            m_completed = nullptr;
+            if (completed)
+            {
+                completed(this, m_status);
+            }
+        }
+
+        wf::AsyncStatus m_status;
+        wf::AsyncOperationCompletedHandler<xaml_data::LoadMoreItemsResult>^ m_completed;
+    };
+
+    // A read-only items source that supports incremental loading and records each load request.
+    ref class IncrementalLoadingTestSource sealed :
+        public wfc::IObservableVector<Platform::Object^>,
+        public xaml_data::ISupportIncrementalLoading
+    {
+    public:
+        IncrementalLoadingTestSource(unsigned int itemCount)
+            : m_items(ref new Platform::Collections::Vector<Platform::Object^>())
+            , m_hasMoreItems(true)
+            , m_loadRequestCount(0)
+            , m_lastRequestedCount(0)
+        {
+            for (unsigned int i = 0; i < itemCount; ++i)
+            {
+                m_items->Append(i);
+            }
+        }
+
+        property unsigned int LoadRequestCount
+        {
+            unsigned int get()
+            {
+                return m_loadRequestCount;
+            }
+        }
+
+        property unsigned int LastRequestedCount
+        {
+            unsigned int get()
+            {
+                return m_lastRequestedCount;
+            }
+        }
+
+        // ISupportIncrementalLoading
+        virtual property bool HasMoreItems
+        {
+            bool get()
+            {
+                return m_hasMoreItems;
+            }
+        }
+
+        virtual wf::IAsyncOperation<xaml_data::LoadMoreItemsResult>^ LoadMoreItemsAsync(unsigned int count)
+        {
+            ++m_loadRequestCount;
+            m_lastRequestedCount = count;
+
+            // Report the end of the data so that the list's re-evaluation after completion does not chain more loads.
+            m_hasMoreItems = false;
+            return ref new DeferredLoadMoreItemsOperation();
+        }
+
+        // IObservableVector. The ListView only reads its ItemsSource in these tests.
+        virtual event wfc::VectorChangedEventHandler<Platform::Object^>^ VectorChanged;
+
+        virtual wfc::IIterator<Platform::Object^>^ First()
+        {
+            return m_items->First();
+        }
+
+        virtual property unsigned int Size
+        {
+            unsigned int get()
+            {
+                return m_items->Size;
+            }
+        }
+
+        virtual Platform::Object^ GetAt(unsigned int index)
+        {
+            return m_items->GetAt(index);
+        }
+
+        virtual wfc::IVectorView<Platform::Object^>^ GetView()
+        {
+            return m_items->GetView();
+        }
+
+        virtual bool IndexOf(Platform::Object^ value, unsigned int* index)
+        {
+            return m_items->IndexOf(value, index);
+        }
+
+        virtual unsigned int GetMany(unsigned int startIndex, Platform::WriteOnlyArray<Platform::Object^>^ items)
+        {
+            return m_items->GetMany(startIndex, items);
+        }
+
+        virtual void SetAt(unsigned int, Platform::Object^)
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+
+        virtual void InsertAt(unsigned int, Platform::Object^)
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+
+        virtual void RemoveAt(unsigned int)
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+
+        virtual void Append(Platform::Object^)
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+
+        virtual void RemoveAtEnd()
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+
+        virtual void Clear()
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+
+        virtual void ReplaceAll(const Platform::Array<Platform::Object^>^)
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+
+    private:
+        Platform::Collections::Vector<Platform::Object^>^ m_items;
+        bool m_hasMoreItems;
+        unsigned int m_loadRequestCount;
+        unsigned int m_lastRequestedCount;
+    };
+
+    static const unsigned int s_incrementalItemCount = 40;
+    static const double s_incrementalItemExtent = 50.0;
+    static const double s_incrementalDataFetchSize = 2.0;
+    static const double s_incrementalLoadingThreshold = 1.0;
+    static const double s_incrementalViewportExtent = 200.0;
+    static const double s_incrementalCrossAxisExtent = 400.0;
+
+    // A ListView whose items host is a StackPanel with fixed-size containers along the stacking direction. The list is
+    // 200 along the stacking direction and 400 across it, so the two viewport dimensions differ.
+    static xaml_controls::ListView^ CreateListViewWithStackPanelItemsHost(xaml_controls::Orientation orientation, bool useEdgeTrigger, double itemExtent)
+    {
+        const bool isVertical = (orientation == Orientation::Vertical);
+        const std::wstring stackingExtent = std::to_wstring(s_incrementalViewportExtent);
+        const std::wstring crossAxisExtent = std::to_wstring(s_incrementalCrossAxisExtent);
+
+        std::wstring markup =
+            L"<ListView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+            L" DataFetchSize='2' IncrementalLoadingThreshold='1'";
+        markup += L" Width='" + (isVertical ? crossAxisExtent : stackingExtent) + L"'";
+        markup += L" Height='" + (isVertical ? stackingExtent : crossAxisExtent) + L"'";
+        markup += useEdgeTrigger ? L" IncrementalLoadingTrigger='Edge'" : L" IncrementalLoadingTrigger='None'";
+        if (!isVertical)
+        {
+            markup +=
+                L" ScrollViewer.HorizontalScrollMode='Enabled' ScrollViewer.HorizontalScrollBarVisibility='Auto'"
+                L" ScrollViewer.VerticalScrollMode='Disabled' ScrollViewer.VerticalScrollBarVisibility='Disabled'";
+        }
+        markup +=
+            L">"
+            L"<ListView.ItemContainerTransitions><TransitionCollection/></ListView.ItemContainerTransitions>"
+            L"<ListView.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation='";
+        markup += isVertical ? L"Vertical" : L"Horizontal";
+        markup +=
+            L"'/></ItemsPanelTemplate></ListView.ItemsPanel>"
+            L"<ListView.ItemContainerStyle><Style TargetType='ListViewItem'>"
+            L"<Setter Property='MinWidth' Value='0'/>"
+            L"<Setter Property='MinHeight' Value='0'/>"
+            L"<Setter Property='Padding' Value='0'/>"
+            L"<Setter Property='Margin' Value='0'/>"
+            L"<Setter Property='UseLayoutRounding' Value='False'/>"
+            L"<Setter Property='";
+        markup += isVertical ? L"Height" : L"Width";
+        markup += L"' Value='" + std::to_wstring(itemExtent) + L"'/>";
+        markup +=
+            L"</Style></ListView.ItemContainerStyle>"
+            L"</ListView>";
+
+        return safe_cast<xaml_controls::ListView^>(xaml_markup::XamlReader::Load(ref new Platform::String(markup.c_str())));
+    }
+
+    // Confirms the preconditions the incremental loading oracles rely on: the items host is a StackPanel, every item
+    // container has the fixed extent along the stacking direction, and the viewport is 200 along the stacking direction
+    // and larger across it.
+    static xaml_controls::ScrollViewer^ VerifyStackPanelItemsHostWithFixedExtents(xaml_controls::ListView^ listView, bool isVertical, unsigned int itemCount, double itemExtent)
+    {
+        VERIFY_IS_NOT_NULL(dynamic_cast<xaml_controls::StackPanel^>(listView->ItemsPanelRoot));
+
+        for (unsigned int i = 0; i < itemCount; ++i)
+        {
+            auto container = safe_cast<xaml::UIElement^>(listView->ContainerFromIndex(static_cast<int>(i)));
+            const double extent = static_cast<double>(isVertical ? container->DesiredSize.Height : container->DesiredSize.Width);
+            VERIFY_ARE_EQUAL(itemExtent, extent);
+        }
+
+        auto scrollViewer = dynamic_cast<xaml_controls::ScrollViewer^>(TreeHelper::GetVisualChildByName(listView, L"ScrollViewer"));
+        VERIFY_IS_NOT_NULL(scrollViewer);
+
+        const double viewportExtent = isVertical ? scrollViewer->ViewportHeight : scrollViewer->ViewportWidth;
+        const double crossAxisViewportExtent = isVertical ? scrollViewer->ViewportWidth : scrollViewer->ViewportHeight;
+        LOG_OUTPUT(L"Viewport extent along the stacking direction: %f, across it: %f.", viewportExtent, crossAxisViewportExtent);
+        VERIFY_ARE_EQUAL(s_incrementalViewportExtent, viewportExtent);
+        VERIFY_IS_GREATER_THAN(crossAxisViewportExtent, viewportExtent);
+        return scrollViewer;
+    }
+
+    // The number of items ListViewBase requests: DataFetchSize pages, where a page is the viewport divided by the
+    // average item extent along the stacking direction.
+    static unsigned int GetExpectedLoadCount(double viewportExtent)
+    {
+        return static_cast<unsigned int>(s_incrementalDataFetchSize * (viewportExtent / s_incrementalItemExtent));
+    }
+
+    static void ChangeViewAndWait(xaml_controls::ScrollViewer^ scrollViewer, bool isVertical, double offset)
+    {
+        auto viewChangedEvent = std::make_shared<Event>();
+        auto viewChangedRegistration = CreateSafeEventRegistration(xaml_controls::ScrollViewer, ViewChanged);
+
+        RunOnUIThread([&]()
+        {
+            viewChangedRegistration.Attach(scrollViewer, ref new wf::EventHandler<xaml_controls::ScrollViewerViewChangedEventArgs^>(
+                [viewChangedEvent](Platform::Object^, xaml_controls::ScrollViewerViewChangedEventArgs^ args)
+                {
+                    if (!args->IsIntermediate)
+                    {
+                        viewChangedEvent->Set();
+                    }
+                }));
+
+            LOG_OUTPUT(L"Scrolling to offset %f.", offset);
+            const bool accepted = isVertical ?
+                scrollViewer->ChangeView(nullptr, offset, nullptr, true) :
+                scrollViewer->ChangeView(offset, nullptr, nullptr, true);
+            VERIFY_IS_TRUE(accepted);
+        });
+
+        viewChangedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void StackPanelIntegrationTests::VerifyLoadMoreItemsAsyncUsesItemsPerPageVertical()
+    {
+        TestCleanupWrapper cleanup;
+        const auto observation = ObserveExplicitLoadMoreItems(Orientation::Vertical, s_incrementalItemExtent);
+
+        // Nothing is loaded until LoadMoreItemsAsync is called (IncrementalLoadingTrigger=None), then exactly one
+        // request for DataFetchSize pages of (viewport height / item height) items is made: 2 x (200 / 50). The
+        // viewport is twice as wide as it is high, so a page measured across the stacking direction would differ.
+        VERIFY_ARE_EQUAL(0u, observation.requestsBeforeAction);
+        VERIFY_ARE_EQUAL(1u, observation.requestsAfterAction);
+        VERIFY_ARE_EQUAL(observation.expectedRequestedCount, observation.lastRequestedCount);
+        VERIFY_ARE_EQUAL(8u, observation.lastRequestedCount);
+
+        // Items no larger than one pixel along the stacking direction do not define a page, so the list falls back
+        // to requesting a single item.
+        const auto onePixelItemsObservation = ObserveExplicitLoadMoreItems(Orientation::Vertical, 1.0);
+        VERIFY_ARE_EQUAL(0u, onePixelItemsObservation.requestsBeforeAction);
+        VERIFY_ARE_EQUAL(1u, onePixelItemsObservation.requestsAfterAction);
+        VERIFY_ARE_EQUAL(1u, onePixelItemsObservation.lastRequestedCount);
+    }
+
+    void StackPanelIntegrationTests::VerifyLoadMoreItemsAsyncUsesItemsPerPageHorizontal()
+    {
+        TestCleanupWrapper cleanup;
+        const auto observation = ObserveExplicitLoadMoreItems(Orientation::Horizontal, s_incrementalItemExtent);
+
+        // Nothing is loaded until LoadMoreItemsAsync is called (IncrementalLoadingTrigger=None), then exactly one
+        // request for DataFetchSize pages of (viewport width / item width) items is made: 2 x (200 / 50). The
+        // viewport is twice as high as it is wide, so a page measured across the stacking direction would differ.
+        VERIFY_ARE_EQUAL(0u, observation.requestsBeforeAction);
+        VERIFY_ARE_EQUAL(1u, observation.requestsAfterAction);
+        VERIFY_ARE_EQUAL(observation.expectedRequestedCount, observation.lastRequestedCount);
+        VERIFY_ARE_EQUAL(8u, observation.lastRequestedCount);
+
+        // Items no larger than one pixel along the stacking direction do not define a page, so the list falls back
+        // to requesting a single item.
+        const auto onePixelItemsObservation = ObserveExplicitLoadMoreItems(Orientation::Horizontal, 1.0);
+        VERIFY_ARE_EQUAL(0u, onePixelItemsObservation.requestsBeforeAction);
+        VERIFY_ARE_EQUAL(1u, onePixelItemsObservation.requestsAfterAction);
+        VERIFY_ARE_EQUAL(1u, onePixelItemsObservation.lastRequestedCount);
+    }
+
+    StackPanelIntegrationTests::IncrementalLoadObservation StackPanelIntegrationTests::ObserveExplicitLoadMoreItems(xaml_controls::Orientation orientation, double itemExtent)
+    {
+        const bool isVertical = (orientation == Orientation::Vertical);
+        xaml_controls::ListView^ listView = nullptr;
+        IncrementalLoadingTestSource^ source = nullptr;
+        IncrementalLoadObservation observation = {};
+
+        RunOnUIThread([&]()
+        {
+            listView = CreateListViewWithStackPanelItemsHost(orientation, false /* useEdgeTrigger */, itemExtent);
+            source = ref new IncrementalLoadingTestSource(s_incrementalItemCount);
+            listView->ItemsSource = source;
+            TestServices::WindowHelper->WindowContent = listView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto scrollViewer = VerifyStackPanelItemsHostWithFixedExtents(listView, isVertical, s_incrementalItemCount, itemExtent);
+            const double viewportExtent = isVertical ? scrollViewer->ViewportHeight : scrollViewer->ViewportWidth;
+            observation.expectedRequestedCount = GetExpectedLoadCount(viewportExtent);
+            observation.requestsBeforeAction = source->LoadRequestCount;
+
+            LOG_OUTPUT(L"Calling ListView.LoadMoreItemsAsync with %f-pixel items.", itemExtent);
+            auto loadOperation = listView->LoadMoreItemsAsync();
+            VERIFY_IS_NOT_NULL(loadOperation);
+
+            observation.requestsAfterAction = source->LoadRequestCount;
+            observation.lastRequestedCount = source->LastRequestedCount;
+        });
+
+        // Let the data source complete its deferred operation on the UI thread.
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Requests before: %u, after: %u; requested %u items (%u for a full page of %f-pixel items).",
+            observation.requestsBeforeAction, observation.requestsAfterAction, observation.lastRequestedCount, observation.expectedRequestedCount, s_incrementalItemExtent);
+        return observation;
+    }
+
+    //
+    // With IncrementalLoadingTrigger=Edge, the list requests more items once fewer than (IncrementalLoadingThreshold + 1)
+    // whole pages of items remain after the last item in the viewport. An item is in the viewport while its leading
+    // edge is at or before the viewport's trailing edge. Each scenario scrolls:
+    //   - by one item near the start: far from the end, nothing is requested;
+    //   - so the first item that would put the list within the threshold starts half an item past the viewport's
+    //     trailing edge: that item is not in the viewport yet, so nothing is requested;
+    //   - so that item's leading edge is exactly at the viewport's trailing edge: it is now in the viewport, so exactly
+    //     one request for DataFetchSize pages is made;
+    //   - to the end: the source reported that it has no more items, so nothing more is requested.
+    // The scenario runs with two collection sizes, so the item at the viewport's trailing edge is reached both while
+    // the panel searches its children and as the search's final candidate.
+    //
+    void StackPanelIntegrationTests::VerifyEdgeIncrementalLoadingNearEndVertical()
+    {
+        TestCleanupWrapper cleanup;
+
+        const auto observation = ObserveEdgeIncrementalLoading(Orientation::Vertical, 32);
+        VERIFY_ARE_EQUAL(0u, observation.requestsBeforeAction);
+        VERIFY_ARE_EQUAL(0u, observation.requestsAfterNearStartScroll);
+        VERIFY_ARE_EQUAL(0u, observation.requestsAfterHalfAnItemBeforeThresholdScroll);
+        VERIFY_ARE_EQUAL(1u, observation.requestsAfterThresholdScroll);
+        VERIFY_ARE_EQUAL(1u, observation.requestsAfterAction);
+        VERIFY_ARE_EQUAL(observation.expectedRequestedCount, observation.lastRequestedCount);
+
+        const auto otherSizeObservation = ObserveEdgeIncrementalLoading(Orientation::Vertical, 30);
+        VERIFY_ARE_EQUAL(0u, otherSizeObservation.requestsBeforeAction);
+        VERIFY_ARE_EQUAL(0u, otherSizeObservation.requestsAfterNearStartScroll);
+        VERIFY_ARE_EQUAL(0u, otherSizeObservation.requestsAfterHalfAnItemBeforeThresholdScroll);
+        VERIFY_ARE_EQUAL(1u, otherSizeObservation.requestsAfterThresholdScroll);
+        VERIFY_ARE_EQUAL(1u, otherSizeObservation.requestsAfterAction);
+        VERIFY_ARE_EQUAL(otherSizeObservation.expectedRequestedCount, otherSizeObservation.lastRequestedCount);
+    }
+
+    void StackPanelIntegrationTests::VerifyEdgeIncrementalLoadingNearEndHorizontal()
+    {
+        TestCleanupWrapper cleanup;
+
+        const auto observation = ObserveEdgeIncrementalLoading(Orientation::Horizontal, 32);
+        VERIFY_ARE_EQUAL(0u, observation.requestsBeforeAction);
+        VERIFY_ARE_EQUAL(0u, observation.requestsAfterNearStartScroll);
+        VERIFY_ARE_EQUAL(0u, observation.requestsAfterHalfAnItemBeforeThresholdScroll);
+        VERIFY_ARE_EQUAL(1u, observation.requestsAfterThresholdScroll);
+        VERIFY_ARE_EQUAL(1u, observation.requestsAfterAction);
+        VERIFY_ARE_EQUAL(observation.expectedRequestedCount, observation.lastRequestedCount);
+
+        const auto otherSizeObservation = ObserveEdgeIncrementalLoading(Orientation::Horizontal, 30);
+        VERIFY_ARE_EQUAL(0u, otherSizeObservation.requestsBeforeAction);
+        VERIFY_ARE_EQUAL(0u, otherSizeObservation.requestsAfterNearStartScroll);
+        VERIFY_ARE_EQUAL(0u, otherSizeObservation.requestsAfterHalfAnItemBeforeThresholdScroll);
+        VERIFY_ARE_EQUAL(1u, otherSizeObservation.requestsAfterThresholdScroll);
+        VERIFY_ARE_EQUAL(1u, otherSizeObservation.requestsAfterAction);
+        VERIFY_ARE_EQUAL(otherSizeObservation.expectedRequestedCount, otherSizeObservation.lastRequestedCount);
+    }
+
+    StackPanelIntegrationTests::IncrementalLoadObservation StackPanelIntegrationTests::ObserveEdgeIncrementalLoading(xaml_controls::Orientation orientation, unsigned int itemCount)
+    {
+        const bool isVertical = (orientation == Orientation::Vertical);
+        xaml_controls::ListView^ listView = nullptr;
+        xaml_controls::ScrollViewer^ scrollViewer = nullptr;
+        IncrementalLoadingTestSource^ source = nullptr;
+        IncrementalLoadObservation observation = {};
+        double scrollableExtent = 0.0;
+        double thresholdOffset = 0.0;
+
+        RunOnUIThread([&]()
+        {
+            listView = CreateListViewWithStackPanelItemsHost(orientation, true /* useEdgeTrigger */, s_incrementalItemExtent);
+            source = ref new IncrementalLoadingTestSource(itemCount);
+            listView->ItemsSource = source;
+            TestServices::WindowHelper->WindowContent = listView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            scrollViewer = VerifyStackPanelItemsHostWithFixedExtents(listView, isVertical, itemCount, s_incrementalItemExtent);
+            const double viewportExtent = isVertical ? scrollViewer->ViewportHeight : scrollViewer->ViewportWidth;
+            scrollableExtent = isVertical ? scrollViewer->ScrollableHeight : scrollViewer->ScrollableWidth;
+
+            // Near the start, many more pages than the one-page threshold remain past the viewport.
+            VERIFY_IS_GREATER_THAN(scrollableExtent, 4 * viewportExtent);
+
+            // The first item that puts the list within the threshold when it is the last item in the viewport.
+            const unsigned int itemsPerPage = static_cast<unsigned int>(viewportExtent / s_incrementalItemExtent);
+            const unsigned int thresholdItemIndex = itemCount - static_cast<unsigned int>((s_incrementalLoadingThreshold + 1) * itemsPerPage);
+            thresholdOffset = thresholdItemIndex * s_incrementalItemExtent - viewportExtent;
+            LOG_OUTPUT(L"%u items, viewport extent: %f, scrollable extent: %f; item %u starts at the viewport's trailing edge at offset %f.",
+                itemCount, viewportExtent, scrollableExtent, thresholdItemIndex, thresholdOffset);
+            VERIFY_IS_GREATER_THAN(thresholdOffset, 2 * s_incrementalItemExtent);
+            VERIFY_IS_LESS_THAN(thresholdOffset, scrollableExtent);
+
+            observation.expectedRequestedCount = GetExpectedLoadCount(viewportExtent);
+            observation.requestsBeforeAction = source->LoadRequestCount;
+        });
+
+        LOG_OUTPUT(L"Scrolling by one item near the start.");
+        ChangeViewAndWait(scrollViewer, isVertical, s_incrementalItemExtent);
+        RunOnUIThread([&]()
+        {
+            observation.requestsAfterNearStartScroll = source->LoadRequestCount;
+        });
+
+        LOG_OUTPUT(L"Scrolling so the threshold item starts half an item past the viewport.");
+        ChangeViewAndWait(scrollViewer, isVertical, thresholdOffset - s_incrementalItemExtent / 2);
+        RunOnUIThread([&]()
+        {
+            observation.requestsAfterHalfAnItemBeforeThresholdScroll = source->LoadRequestCount;
+        });
+
+        LOG_OUTPUT(L"Scrolling so the threshold item starts exactly at the viewport's trailing edge.");
+        ChangeViewAndWait(scrollViewer, isVertical, thresholdOffset);
+        RunOnUIThread([&]()
+        {
+            observation.requestsAfterThresholdScroll = source->LoadRequestCount;
+            observation.lastRequestedCount = source->LastRequestedCount;
+        });
+
+        // Let the data source complete its deferred operation on the UI thread.
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Scrolling to the end.");
+        ChangeViewAndWait(scrollViewer, isVertical, scrollableExtent);
+        RunOnUIThread([&]()
+        {
+            observation.requestsAfterAction = source->LoadRequestCount;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Requests initially: %u, near the start: %u, half an item before the threshold: %u, at the threshold: %u, at the end: %u; requested %u items, expected %u.",
+            observation.requestsBeforeAction, observation.requestsAfterNearStartScroll, observation.requestsAfterHalfAnItemBeforeThresholdScroll,
+            observation.requestsAfterThresholdScroll, observation.requestsAfterAction, observation.lastRequestedCount, observation.expectedRequestedCount);
+        return observation;
     }
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::StackPanel
