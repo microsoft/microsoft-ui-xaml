@@ -23,8 +23,10 @@
         <ClInclude Include="CalendarLayoutStrategyUnitTests.h"/>
         <ClInclude Include="FakeLayoutDataInfoProvider.h"/>
         <ClInclude Include="OrientationBasedMeasures.h"/>
+        <ClInclude Include="WrappingLayoutStrategyUnitTests.h"/>
 
         <ClCompile Include="CalendarLayoutStrategyUnitTests.cpp"/>
+        <ClCompile Include="WrappingLayoutStrategyUnitTests.cpp"/>
     </ItemGroup>
 
     <ItemDefinitionGroup>
