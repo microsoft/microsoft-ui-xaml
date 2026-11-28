@@ -16,11 +16,223 @@
 #include <UIAutomationCoreApi.h>
 #include <UIAutomationHelper.h>
 #include <MockTextPatternObject.h>
+#include <vector>
+#include <string>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace Microsoft::UI::Xaml::Tests::Automation;
 using namespace test_infra;
 using namespace Microsoft::UI::Xaml::Tests::Automation::Patterns;
+
+#pragma warning(push)
+#pragma warning(disable: 4100) // Unreferenced parameters are legal for formal interface implementations.
+
+namespace TextRangeMocks {
+
+    namespace xap = ::Microsoft::UI::Xaml::Automation::Provider;
+    using TextEndpoint = ::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint;
+    using TextUnit = ::Microsoft::UI::Xaml::Automation::Text::TextUnit;
+
+    struct FindTextCall
+    {
+        std::wstring text;
+        bool backward;
+        bool ignoreCase;
+    };
+
+    // Builds the color directly; Windows::UI::ColorHelper would load Windows.UI.Xaml.dll into the test process.
+    inline ::Windows::UI::Color MakeColor(unsigned char a, unsigned char r, unsigned char g, unsigned char b)
+    {
+        ::Windows::UI::Color color = {};
+        color.A = a;
+        color.R = r;
+        color.G = g;
+        color.B = b;
+        return color;
+    }
+
+    // Text range provider that records every call it receives and returns distinct values.
+    [::Windows::Foundation::Metadata::WebHostHiddenAttribute]
+    ref class RecordingTextRange sealed : public xap::ITextRangeProvider2
+    {
+    public:
+        RecordingTextRange(Platform::String^ label)
+            : m_label(label)
+            , m_returnNullClone(false)
+            , m_getEnclosingElementCount(0)
+            , m_addToSelectionCount(0)
+            , m_removeFromSelectionCount(0)
+            , m_showContextMenuCount(0)
+        {
+        }
+
+        property Platform::String^ Label { Platform::String^ get() { return m_label; } }
+
+        virtual xap::ITextRangeProvider^ Clone()
+        {
+            return m_returnNullClone ? nullptr : ref new RecordingTextRange(L"clone");
+        }
+
+        virtual bool Compare(xap::ITextRangeProvider^ textRangeProvider) { return textRangeProvider == this; }
+
+        virtual int CompareEndpoints(TextEndpoint endpoint, xap::ITextRangeProvider^ textRangeProvider, TextEndpoint targetEndpoint)
+        {
+            auto target = dynamic_cast<RecordingTextRange^>(textRangeProvider);
+            m_compareEndpointsCalls.push_back(std::make_pair(endpoint, targetEndpoint));
+            m_compareEndpointsTargets.push_back(target ? std::wstring(target->Label->Data()) : std::wstring(L"<unexpected>"));
+            return -7;
+        }
+
+        virtual void ExpandToEnclosingUnit(TextUnit unit) {}
+
+        virtual xap::ITextRangeProvider^ FindAttribute(int attributeId, Platform::Object^ value, bool backward) { return nullptr; }
+
+        virtual xap::ITextRangeProvider^ FindText(Platform::String^ text, bool backward, bool ignoreCase)
+        {
+            m_findTextCalls.push_back(FindTextCall{ text ? std::wstring(text->Data()) : std::wstring(), backward, ignoreCase });
+            if (Platform::String::CompareOrdinal(text, L"abc") == 0)
+            {
+                return ref new RecordingTextRange(L"found");
+            }
+            return nullptr;
+        }
+
+        virtual Platform::Object^ GetAttributeValue(int attributeId)
+        {
+            switch (attributeId)
+            {
+            case UIA_ForegroundColorAttributeId:
+                return ref new xaml_media::SolidColorBrush(MakeColor(0xFF, 0x12, 0x34, 0x56));
+            case UIA_UnderlineColorAttributeId:
+                // A brush that is not a SolidColorBrush has no single color.
+                return ref new xaml_media::LinearGradientBrush();
+            case UIA_TabsAttributeId:
+                return (ref new Platform::Collections::Vector<double>())->GetView();
+            case UIA_AnnotationTypesAttributeId:
+                return (ref new Platform::Collections::Vector<int>())->GetView();
+            default:
+                return nullptr;
+            }
+        }
+
+        virtual void GetBoundingRectangles(Platform::Array<double>^* returnValue)
+        {
+            auto rectangles = ref new Platform::Array<double>(8);
+            for (unsigned int i = 0; i < rectangles->Length; ++i)
+            {
+                rectangles[i] = 10.0 * (i + 1);
+            }
+            *returnValue = rectangles;
+        }
+
+        virtual xap::IRawElementProviderSimple^ GetEnclosingElement()
+        {
+            ++m_getEnclosingElementCount;
+            return m_enclosingElement;
+        }
+
+        virtual Platform::String^ GetText(int maxLength) { return m_label; }
+        virtual int Move(TextUnit unit, int count) { return 0; }
+        virtual int MoveEndpointByUnit(TextEndpoint endpoint, TextUnit unit, int count) { return 0; }
+        virtual void MoveEndpointByRange(TextEndpoint endpoint, xap::ITextRangeProvider^ textRangeProvider, TextEndpoint targetEndpoint) {}
+        virtual void Select() {}
+        virtual void AddToSelection() { ++m_addToSelectionCount; }
+        virtual void RemoveFromSelection() { ++m_removeFromSelectionCount; }
+        virtual void ScrollIntoView(bool alignToTop) { m_scrollIntoViewCalls.push_back(alignToTop); }
+        virtual Platform::Array<xap::IRawElementProviderSimple^>^ GetChildren() { return ref new Platform::Array<xap::IRawElementProviderSimple^>(0); }
+
+        // ITextRangeProvider2
+        virtual void ShowContextMenu() { ++m_showContextMenuCount; }
+
+    internal:
+        bool m_returnNullClone;
+        xap::IRawElementProviderSimple^ m_enclosingElement;
+        std::vector<std::pair<TextEndpoint, TextEndpoint>> m_compareEndpointsCalls;
+        std::vector<std::wstring> m_compareEndpointsTargets;
+        std::vector<FindTextCall> m_findTextCalls;
+        int m_getEnclosingElementCount;
+        int m_addToSelectionCount;
+        int m_removeFromSelectionCount;
+        std::vector<bool> m_scrollIntoViewCalls;
+        int m_showContextMenuCount;
+
+    private:
+        Platform::String^ m_label;
+    };
+
+    // Text range provider that does not implement ITextRangeProvider2.
+    [::Windows::Foundation::Metadata::WebHostHiddenAttribute]
+    ref class PlainTextRange sealed : public xap::ITextRangeProvider
+    {
+    public:
+        virtual xap::ITextRangeProvider^ Clone() { return ref new PlainTextRange(); }
+        virtual bool Compare(xap::ITextRangeProvider^ textRangeProvider) { return textRangeProvider == this; }
+        virtual int CompareEndpoints(TextEndpoint endpoint, xap::ITextRangeProvider^ textRangeProvider, TextEndpoint targetEndpoint) { return 0; }
+        virtual void ExpandToEnclosingUnit(TextUnit unit) {}
+        virtual xap::ITextRangeProvider^ FindAttribute(int attributeId, Platform::Object^ value, bool backward) { return nullptr; }
+        virtual xap::ITextRangeProvider^ FindText(Platform::String^ text, bool backward, bool ignoreCase) { return nullptr; }
+        virtual Platform::Object^ GetAttributeValue(int attributeId) { return nullptr; }
+        virtual void GetBoundingRectangles(Platform::Array<double>^* returnValue) { *returnValue = ref new Platform::Array<double>(0); }
+        virtual xap::IRawElementProviderSimple^ GetEnclosingElement() { return nullptr; }
+        virtual Platform::String^ GetText(int maxLength) { return L"plain"; }
+        virtual int Move(TextUnit unit, int count) { return 0; }
+        virtual int MoveEndpointByUnit(TextEndpoint endpoint, TextUnit unit, int count) { return 0; }
+        virtual void MoveEndpointByRange(TextEndpoint endpoint, xap::ITextRangeProvider^ textRangeProvider, TextEndpoint targetEndpoint) {}
+        virtual void Select() {}
+        virtual void AddToSelection() {}
+        virtual void RemoveFromSelection() {}
+        virtual void ScrollIntoView(bool alignToTop) {}
+        virtual Platform::Array<xap::IRawElementProviderSimple^>^ GetChildren() { return ref new Platform::Array<xap::IRawElementProviderSimple^>(0); }
+    };
+
+    // Button peer whose text pattern document range is supplied by the test.
+    [::Windows::Foundation::Metadata::WebHostHiddenAttribute]
+    ref class RecordingRangePeer sealed : public xaml_automation_peers::ButtonAutomationPeer, public xap::ITextProvider
+    {
+    public:
+        RecordingRangePeer(xaml_controls::Button^ owner) : xaml_automation_peers::ButtonAutomationPeer(owner) {}
+
+        virtual Platform::Array<xap::ITextRangeProvider^>^ GetSelection() { return ref new Platform::Array<xap::ITextRangeProvider^>(0); }
+        virtual Platform::Array<xap::ITextRangeProvider^>^ GetVisibleRanges() { return ref new Platform::Array<xap::ITextRangeProvider^>(0); }
+        virtual xap::ITextRangeProvider^ RangeFromChild(xap::IRawElementProviderSimple^ childElement) { return nullptr; }
+        virtual xap::ITextRangeProvider^ RangeFromPoint(::Windows::Foundation::Point screenLocation) { return nullptr; }
+        virtual property xap::ITextRangeProvider^ DocumentRange { xap::ITextRangeProvider^ get() { return m_documentRange; } }
+        virtual property ::Microsoft::UI::Xaml::Automation::SupportedTextSelection SupportedTextSelection
+        {
+            ::Microsoft::UI::Xaml::Automation::SupportedTextSelection get() { return ::Microsoft::UI::Xaml::Automation::SupportedTextSelection::Single; }
+        }
+
+    internal:
+        xap::ITextRangeProvider^ m_documentRange;
+
+        xap::IRawElementProviderSimple^ GetProviderForPeer(xaml_automation_peers::AutomationPeer^ peer)
+        {
+            return ProviderFromPeer(peer);
+        }
+
+    protected:
+        Platform::Object^ GetPatternCore(xaml_automation_peers::PatternInterface patternInterface) override
+        {
+            if (patternInterface == xaml_automation_peers::PatternInterface::Text)
+            {
+                return this;
+            }
+            return __super::GetPatternCore(patternInterface);
+        }
+    };
+
+    [::Windows::Foundation::Metadata::WebHostHiddenAttribute]
+    ref class RecordingRangeHostButton sealed : public xaml_controls::Button
+    {
+    protected:
+        xaml_automation_peers::AutomationPeer^ OnCreateAutomationPeer() override
+        {
+            return ref new RecordingRangePeer(this);
+        }
+    };
+}
+
+#pragma warning(pop)
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Automation { namespace TextRange {
 
@@ -654,6 +866,282 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_SUCCEEDED(iuiautomationTextRange->Compare(iuiautomationTextRange.Get(), &areSame));
             VERIFY_ARE_EQUAL(!!areSame, valueToReturnForCompare);
             VERIFY_IS_TRUE(otherRangeProvidedFromParam == range);
+        });
+    }
+
+    namespace
+    {
+        void VerifyUiaRangeText(IUIAutomationTextRange* range, const wchar_t* expectedText)
+        {
+            VERIFY_IS_NOT_NULL(range);
+            AutoBSTR text;
+            VERIFY_SUCCEEDED(range->GetText(-1, text.ReleaseAndGetAddressOf()));
+            VERIFY_IS_TRUE(static_cast<bool>(text), L"Expected a non-null BSTR.");
+            AutoBSTR::VerifyAreEqual(expectedText, text);
+        }
+
+        // XAML marshals an empty Tabs/AnnotationTypes list as VT_EMPTY (CUIAWindow::CValueToVariant), which UIA reports to
+        // clients as its reserved NotSupported value. An empty SAFEARRAY of the attribute's documented element type is the
+        // other valid representation; any other value (a scalar, another object, the MixedAttribute sentinel, a non-empty or
+        // differently typed array) is a marshalling error.
+        void VerifyEmptyCollectionAttribute(VARIANT* value, VARTYPE expectedElementType)
+        {
+            LOG_OUTPUT(L"Attribute variant type: %d.", static_cast<int>(value->vt));
+            if ((value->vt & VT_ARRAY) != 0)
+            {
+                VERIFY_ARE_EQUAL(static_cast<int>(VT_ARRAY | expectedElementType), static_cast<int>(value->vt));
+                VERIFY_IS_NOT_NULL(value->parray);
+                LONG lower = 0;
+                LONG upper = -1;
+                VERIFY_SUCCEEDED(SafeArrayGetLBound(value->parray, 1, &lower));
+                VERIFY_SUCCEEDED(SafeArrayGetUBound(value->parray, 1, &upper));
+                VERIFY_ARE_EQUAL(0, static_cast<int>(upper - lower + 1));
+            }
+            else
+            {
+                VERIFY_ARE_EQUAL(static_cast<int>(VT_UNKNOWN), static_cast<int>(value->vt));
+                AutomationClient::AutomationClientManager clientManager;
+                wrl::ComPtr<IUIAutomation> automation;
+                clientManager.GetAutomation(&automation);
+                wrl::ComPtr<IUnknown> notSupportedValue;
+                VERIFY_SUCCEEDED(automation->get_ReservedNotSupportedValue(&notSupportedValue));
+                VERIFY_IS_NOT_NULL(notSupportedValue.Get());
+                VERIFY_IS_TRUE(value->punkVal == notSupportedValue.Get());
+            }
+        }
+    }
+
+    void TextRangeIntegrationTests::VerifyCustomTextRangeProviderMarshalling()
+    {
+        TestCleanupWrapper cleanup;
+
+        TextRangeMocks::RecordingRangeHostButton^ host = nullptr;
+        xaml_controls::Button^ enclosingCell = nullptr;
+        TextRangeMocks::RecordingRangePeer^ peer = nullptr;
+        TextRangeMocks::RecordingTextRange^ documentRange = nullptr;
+        auto releaseOnUIThread = wil::scope_exit([&]()
+        {
+            RunOnUIThread([&]()
+            {
+                if (documentRange)
+                {
+                    documentRange->m_enclosingElement = nullptr;
+                }
+                if (peer)
+                {
+                    peer->m_documentRange = nullptr;
+                }
+                documentRange = nullptr;
+                peer = nullptr;
+                enclosingCell = nullptr;
+                host = nullptr;
+            });
+        });
+
+        RunOnUIThread([&]()
+        {
+            auto root = ref new xaml_controls::StackPanel();
+            host = ref new TextRangeMocks::RecordingRangeHostButton();
+            host->Content = ref new Platform::String(L"RangeMock");
+            xaml_automation::AutomationProperties::SetName(host, L"RangeMock");
+            enclosingCell = ref new xaml_controls::Button();
+            enclosingCell->Content = ref new Platform::String(L"EnclosingCell");
+            xaml_automation::AutomationProperties::SetName(enclosingCell, L"EnclosingCell");
+            root->Children->Append(host);
+            root->Children->Append(enclosingCell);
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            peer = static_cast<TextRangeMocks::RecordingRangePeer^>(xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(host));
+            VERIFY_IS_NOT_NULL(peer);
+            auto enclosingPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(enclosingCell);
+            documentRange = ref new TextRangeMocks::RecordingTextRange(L"document");
+            documentRange->m_enclosingElement = peer->GetProviderForPeer(enclosingPeer);
+            peer->m_documentRange = documentRange;
+        });
+
+        Automation::AutomationClient::UIAElementInfo uiaInfo = {};
+        uiaInfo.m_Name = L"RangeMock";
+
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            wrl::ComPtr<IUIAutomationElement> element;
+            auto clientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo);
+            clientManager->GetCurrentUIAutomationElement(&element);
+            VERIFY_IS_NOT_NULL(element.Get());
+
+            wrl::ComPtr<IUIAutomationTextPattern> textPattern;
+            VERIFY_SUCCEEDED(element->GetCurrentPatternAs(UIA_TextPatternId, __uuidof(IUIAutomationTextPattern), &textPattern));
+            VERIFY_IS_NOT_NULL(textPattern.Get());
+
+            wrl::ComPtr<IUIAutomationTextRange> document;
+            VERIFY_SUCCEEDED(textPattern->get_DocumentRange(&document));
+            VerifyUiaRangeText(document.Get(), L"document");
+
+            LOG_OUTPUT(L"Clone returns the provider's clone.");
+            wrl::ComPtr<IUIAutomationTextRange> clone;
+            VERIFY_SUCCEEDED(document->Clone(&clone));
+            VerifyUiaRangeText(clone.Get(), L"clone");
+
+            LOG_OUTPUT(L"CompareEndpoints passes both endpoints and the other range, and returns the provider's result.");
+            int compareResult = 0;
+            VERIFY_SUCCEEDED(document->CompareEndpoints(TextPatternRangeEndpoint_End, clone.Get(), TextPatternRangeEndpoint_Start, &compareResult));
+            VERIFY_ARE_EQUAL(-7, compareResult);
+
+            LOG_OUTPUT(L"FindText passes the text and both flags and returns the provider's range.");
+            AutoBSTR abc(L"abc");
+            wrl::ComPtr<IUIAutomationTextRange> found;
+            VERIFY_SUCCEEDED(document->FindText(abc, TRUE, FALSE, &found));
+            VerifyUiaRangeText(found.Get(), L"found");
+            AutoBSTR zzz(L"zzz");
+            const HRESULT notFoundResult = document->FindText(zzz, FALSE, TRUE, found.ReleaseAndGetAddressOf());
+            LOG_OUTPUT(L"FindText for text the provider does not find returned 0x%08x.", notFoundResult);
+            VERIFY_SUCCEEDED(notFoundResult);
+            VERIFY_IS_NULL(found.Get());
+
+            LOG_OUTPUT(L"A SolidColorBrush color attribute is reported as a COLORREF (0x00BBGGRR).");
+            AutoVariant attribute;
+            VERIFY_SUCCEEDED(document->GetAttributeValue(UIA_ForegroundColorAttributeId, attribute.ReleaseAndGetAddressOf()));
+            VERIFY_ARE_EQUAL(static_cast<int>(VT_I4), static_cast<int>(attribute.Storage()->vt));
+            VERIFY_ARE_EQUAL(0x563412, static_cast<int>(attribute.Storage()->lVal));
+
+            LOG_OUTPUT(L"A color attribute that is not a SolidColorBrush is reported as 0.");
+            VERIFY_SUCCEEDED(document->GetAttributeValue(UIA_UnderlineColorAttributeId, attribute.ReleaseAndGetAddressOf()));
+            VERIFY_ARE_EQUAL(static_cast<int>(VT_I4), static_cast<int>(attribute.Storage()->vt));
+            VERIFY_ARE_EQUAL(0, static_cast<int>(attribute.Storage()->lVal));
+
+            LOG_OUTPUT(L"Empty collection attributes are reported as empty (an empty typed array or UIA's NotSupported value).");
+            VERIFY_SUCCEEDED(document->GetAttributeValue(UIA_TabsAttributeId, attribute.ReleaseAndGetAddressOf()));
+            VerifyEmptyCollectionAttribute(attribute.Storage(), VT_R8);
+            VERIFY_SUCCEEDED(document->GetAttributeValue(UIA_AnnotationTypesAttributeId, attribute.ReleaseAndGetAddressOf()));
+            VerifyEmptyCollectionAttribute(attribute.Storage(), VT_I4);
+
+            LOG_OUTPUT(L"GetBoundingRectangles returns every provider value; sizes and relative offsets are preserved.");
+            SAFEARRAY* rectangles = nullptr;
+            VERIFY_SUCCEEDED(document->GetBoundingRectangles(&rectangles));
+            auto destroyRectangles = wil::scope_exit([&]() { if (rectangles) { SafeArrayDestroy(rectangles); } });
+            VERIFY_IS_NOT_NULL(rectangles);
+            LONG lower = 0;
+            LONG upper = -1;
+            VERIFY_SUCCEEDED(SafeArrayGetLBound(rectangles, 1, &lower));
+            VERIFY_SUCCEEDED(SafeArrayGetUBound(rectangles, 1, &upper));
+            VERIFY_ARE_EQUAL(8, static_cast<int>(upper - lower + 1));
+            double values[8] = {};
+            for (LONG i = 0; i < 8; ++i)
+            {
+                LONG index = lower + i;
+                VERIFY_SUCCEEDED(SafeArrayGetElement(rectangles, &index, &values[i]));
+                LOG_OUTPUT(L"Rectangle value %d = %f", static_cast<int>(i), values[i]);
+            }
+            VERIFY_ARE_EQUAL(30.0, values[2]);
+            VERIFY_ARE_EQUAL(40.0, values[3]);
+            VERIFY_ARE_EQUAL(70.0, values[6]);
+            VERIFY_ARE_EQUAL(80.0, values[7]);
+            VERIFY_ARE_EQUAL(40.0, values[4] - values[0]);
+            VERIFY_ARE_EQUAL(40.0, values[5] - values[1]);
+
+            LOG_OUTPUT(L"GetEnclosingElement returns the element for the provider's enclosing element.");
+            wrl::ComPtr<IUIAutomationElement> enclosing;
+            VERIFY_SUCCEEDED(document->GetEnclosingElement(&enclosing));
+            VERIFY_IS_NOT_NULL(enclosing.Get());
+            AutoBSTR enclosingName;
+            VERIFY_SUCCEEDED(enclosing->get_CurrentName(enclosingName.ReleaseAndGetAddressOf()));
+            VERIFY_IS_TRUE(static_cast<bool>(enclosingName));
+            AutoBSTR::VerifyAreEqual(L"EnclosingCell", enclosingName);
+
+            LOG_OUTPUT(L"Selection and scrolling calls reach the provider.");
+            VERIFY_SUCCEEDED(document->AddToSelection());
+            VERIFY_SUCCEEDED(document->RemoveFromSelection());
+            VERIFY_SUCCEEDED(document->ScrollIntoView(FALSE));
+            VERIFY_SUCCEEDED(document->ScrollIntoView(TRUE));
+
+            LOG_OUTPUT(L"ShowContextMenu reaches an ITextRangeProvider2 provider.");
+            wrl::ComPtr<IUIAutomationTextRange2> document2;
+            VERIFY_SUCCEEDED(document.As(&document2));
+            VERIFY_SUCCEEDED(document2->ShowContextMenu());
+        });
+
+        RunOnUIThread([&]()
+        {
+            documentRange->m_returnNullClone = true;
+            peer->m_documentRange = ref new TextRangeMocks::PlainTextRange();
+        });
+
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            wrl::ComPtr<IUIAutomationElement> element;
+            auto clientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo);
+            clientManager->GetCurrentUIAutomationElement(&element);
+            VERIFY_IS_NOT_NULL(element.Get());
+
+            wrl::ComPtr<IUIAutomationTextPattern> textPattern;
+            VERIFY_SUCCEEDED(element->GetCurrentPatternAs(UIA_TextPatternId, __uuidof(IUIAutomationTextPattern), &textPattern));
+            VERIFY_IS_NOT_NULL(textPattern.Get());
+
+            LOG_OUTPUT(L"A provider without ITextRangeProvider2 cannot show a context menu.");
+            wrl::ComPtr<IUIAutomationTextRange> plain;
+            VERIFY_SUCCEEDED(textPattern->get_DocumentRange(&plain));
+            VerifyUiaRangeText(plain.Get(), L"plain");
+            wrl::ComPtr<IUIAutomationTextRange2> plain2;
+            HRESULT showContextMenuResult = plain.As(&plain2);
+            if (SUCCEEDED(showContextMenuResult))
+            {
+                showContextMenuResult = plain2->ShowContextMenu();
+            }
+            LOG_OUTPUT(L"ShowContextMenu on a provider without ITextRangeProvider2 returned 0x%08x.", showContextMenuResult);
+            VERIFY_IS_TRUE(FAILED(showContextMenuResult));
+        });
+
+        RunOnUIThread([&]()
+        {
+            peer->m_documentRange = documentRange;
+        });
+
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            wrl::ComPtr<IUIAutomationElement> element;
+            auto clientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo);
+            clientManager->GetCurrentUIAutomationElement(&element);
+            VERIFY_IS_NOT_NULL(element.Get());
+
+            wrl::ComPtr<IUIAutomationTextPattern> textPattern;
+            VERIFY_SUCCEEDED(element->GetCurrentPatternAs(UIA_TextPatternId, __uuidof(IUIAutomationTextPattern), &textPattern));
+            wrl::ComPtr<IUIAutomationTextRange> document;
+            VERIFY_SUCCEEDED(textPattern->get_DocumentRange(&document));
+
+            LOG_OUTPUT(L"Clone for a provider that returns no clone does not produce a range.");
+            wrl::ComPtr<IUIAutomationTextRange> clone;
+            const HRESULT cloneResult = document->Clone(&clone);
+            LOG_OUTPUT(L"Clone returned 0x%08x.", cloneResult);
+            VERIFY_SUCCEEDED(cloneResult);
+            VERIFY_IS_NULL(clone.Get());
+        });
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1u, static_cast<unsigned int>(documentRange->m_compareEndpointsCalls.size()));
+            VERIFY_ARE_EQUAL(static_cast<int>(xaml_automation::Text::TextPatternRangeEndpoint::End), static_cast<int>(documentRange->m_compareEndpointsCalls[0].first));
+            VERIFY_ARE_EQUAL(static_cast<int>(xaml_automation::Text::TextPatternRangeEndpoint::Start), static_cast<int>(documentRange->m_compareEndpointsCalls[0].second));
+            VERIFY_IS_TRUE(documentRange->m_compareEndpointsTargets[0] == L"clone");
+
+            VERIFY_ARE_EQUAL(2u, static_cast<unsigned int>(documentRange->m_findTextCalls.size()));
+            VERIFY_IS_TRUE(documentRange->m_findTextCalls[0].text == L"abc");
+            VERIFY_IS_TRUE(documentRange->m_findTextCalls[0].backward);
+            VERIFY_IS_FALSE(documentRange->m_findTextCalls[0].ignoreCase);
+            VERIFY_IS_TRUE(documentRange->m_findTextCalls[1].text == L"zzz");
+            VERIFY_IS_FALSE(documentRange->m_findTextCalls[1].backward);
+            VERIFY_IS_TRUE(documentRange->m_findTextCalls[1].ignoreCase);
+
+            VERIFY_ARE_EQUAL(1, documentRange->m_getEnclosingElementCount);
+            VERIFY_ARE_EQUAL(1, documentRange->m_addToSelectionCount);
+            VERIFY_ARE_EQUAL(1, documentRange->m_removeFromSelectionCount);
+            VERIFY_ARE_EQUAL(2u, static_cast<unsigned int>(documentRange->m_scrollIntoViewCalls.size()));
+            VERIFY_IS_FALSE(documentRange->m_scrollIntoViewCalls[0]);
+            VERIFY_IS_TRUE(documentRange->m_scrollIntoViewCalls[1]);
+            VERIFY_ARE_EQUAL(1, documentRange->m_showContextMenuCount);
         });
     }
 

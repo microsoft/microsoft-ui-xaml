@@ -34,6 +34,54 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyGetCaretRange)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that we can call GetCaretRange correctly.")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyTextRangeCompareAndCompareEndpoints)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies Compare and CompareEndpoints on TextBlock text ranges, including ranges from another TextBlock.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyParagraphPageAndDocumentUnits)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies expanding and moving RichTextBlock and TextBlock text ranges by paragraph, page and document.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyFormatUnitBoundaries)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies expanding and moving text ranges by format units across bold, italic and nested inlines.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyTextAttributeValuesFromElements)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies the UIA text attribute values reported for formatted RichTextBlock and TextBlock text.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyGetBoundingRectangles)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies the bounding rectangles reported for wrapped TextBlock text ranges.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyTextRangeScrollIntoView)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that ScrollIntoView on a TextBlock text range scrolls the containing ScrollViewer.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyTextRangeSelectAndSelectionModes)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies Select, AddToSelection and RemoveFromSelection on TextBlock text ranges.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyMoveEndpointByRangeAndClamping)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies MoveEndpointByRange and that character moves stop at the start and end of the document.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyHyperlinkChildrenAndEnclosingElement)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies GetChildren and GetEnclosingElement for TextBlock text ranges with and without a Hyperlink.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyRichTextBlockOverflowRangesAndClamping)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies text ranges of a RichTextBlock whose content overflows into a RichTextBlockOverflow: clamping to the end of the RichTextBlock's part, and GetChildren and Select on the overflow's ranges.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyEndpointMovesAtDocumentEdgesAndCrossing)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies endpoint moves by line, paragraph and format at the start and end of a RichTextBlock document, and moving the end back across the start.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyRichTextBlockInlineUIContainerAndLinkChildren)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that the children of a RichTextBlock text range are the element in an InlineUIContainer and the Hyperlink, in document order.")
+        END_TEST_METHOD()
     };
 
 } } } } } }

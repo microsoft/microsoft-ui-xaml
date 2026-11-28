@@ -1081,4 +1081,95 @@ void AutomationPeerIntegrationTests::VerifyPeerFromPointWithNon100DpiIsCorrect()
 }
 
 
+void AutomationPeerIntegrationTests::VerifyItemContainerFindItemByPropertyIds()
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::ListView^ listView = nullptr;
+    auto releaseOnUIThread = wil::scope_exit([&]()
+    {
+        RunOnUIThread([&]()
+        {
+            listView = nullptr;
+        });
+    });
+
+    RunOnUIThread([&]()
+    {
+        listView = ref new xaml_controls::ListView();
+        xaml_automation::AutomationProperties::SetName(listView, L"ItemContainerList");
+        const wchar_t* names[] = { L"Item1", L"Item2", L"Item3" };
+        const wchar_t* ids[] = { L"id1", L"id2", L"id3" };
+        for (int i = 0; i < 3; ++i)
+        {
+            auto item = ref new xaml_controls::ListViewItem();
+            item->Content = ref new Platform::String(names[i]);
+            xaml_automation::AutomationProperties::SetName(item, ref new Platform::String(names[i]));
+            xaml_automation::AutomationProperties::SetAutomationId(item, ref new Platform::String(ids[i]));
+            listView->Items->Append(item);
+        }
+        listView->SelectedIndex = 1;
+        TestServices::WindowHelper->WindowContent = listView;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        Automation::AutomationClient::UIAElementInfo uiaInfo = {};
+        uiaInfo.m_Name = L"ItemContainerList";
+        auto clientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo);
+        wrl::ComPtr<IUIAutomationElement> listElement;
+        clientManager->GetCurrentUIAutomationElement(&listElement);
+        VERIFY_IS_NOT_NULL(listElement.Get());
+
+        wrl::ComPtr<IUIAutomationItemContainerPattern> itemContainer;
+        VERIFY_SUCCEEDED(listElement->GetCurrentPatternAs(UIA_ItemContainerPatternId, __uuidof(IUIAutomationItemContainerPattern), &itemContainer));
+        VERIFY_IS_NOT_NULL(itemContainer.Get());
+
+        auto verifyName = [](IUIAutomationElement* element, const wchar_t* expectedName)
+        {
+            VERIFY_IS_NOT_NULL(element);
+            AutoBSTR name;
+            VERIFY_SUCCEEDED(element->get_CurrentName(name.ReleaseAndGetAddressOf()));
+            VERIFY_IS_TRUE(static_cast<bool>(name));
+            AutoBSTR::VerifyAreEqual(expectedName, name);
+        };
+
+        LOG_OUTPUT(L"Find by Name.");
+        Common::AutoVariant nameValue;
+        nameValue.SetString(L"Item2");
+        wrl::ComPtr<IUIAutomationElement> found;
+        VERIFY_SUCCEEDED(itemContainer->FindItemByProperty(nullptr, UIA_NamePropertyId, *nameValue.Storage(), &found));
+        verifyName(found.Get(), L"Item2");
+
+        LOG_OUTPUT(L"Find by AutomationId.");
+        Common::AutoVariant idValue;
+        idValue.SetString(L"id3");
+        VERIFY_SUCCEEDED(itemContainer->FindItemByProperty(nullptr, UIA_AutomationIdPropertyId, *idValue.Storage(), found.ReleaseAndGetAddressOf()));
+        verifyName(found.Get(), L"Item3");
+
+        LOG_OUTPUT(L"Find by ControlType, first from the start and then after the first match.");
+        Common::AutoVariant controlTypeValue;
+        controlTypeValue.SetInt(UIA_ListItemControlTypeId);
+        wrl::ComPtr<IUIAutomationElement> firstListItem;
+        VERIFY_SUCCEEDED(itemContainer->FindItemByProperty(nullptr, UIA_ControlTypePropertyId, *controlTypeValue.Storage(), &firstListItem));
+        verifyName(firstListItem.Get(), L"Item1");
+        VERIFY_SUCCEEDED(itemContainer->FindItemByProperty(firstListItem.Get(), UIA_ControlTypePropertyId, *controlTypeValue.Storage(), found.ReleaseAndGetAddressOf()));
+        verifyName(found.Get(), L"Item2");
+
+        LOG_OUTPUT(L"Find by IsSelected.");
+        Common::AutoVariant selectedValue;
+        selectedValue.SetBool(true);
+        VERIFY_SUCCEEDED(itemContainer->FindItemByProperty(nullptr, UIA_SelectionItemIsSelectedPropertyId, *selectedValue.Storage(), found.ReleaseAndGetAddressOf()));
+        verifyName(found.Get(), L"Item2");
+
+        LOG_OUTPUT(L"A property that ItemContainer does not support is rejected, not treated as a search with no match.");
+        Common::AutoVariant helpTextValue;
+        helpTextValue.SetString(L"Item1");
+        const HRESULT unsupportedResult = itemContainer->FindItemByProperty(nullptr, UIA_HelpTextPropertyId, *helpTextValue.Storage(), found.ReleaseAndGetAddressOf());
+        LOG_OUTPUT(L"FindItemByProperty(HelpText) returned 0x%08x.", unsupportedResult);
+        VERIFY_FAILED(unsupportedResult);
+        VERIFY_IS_NULL(found.Get());
+    });
+}
+
 } } } } } }
