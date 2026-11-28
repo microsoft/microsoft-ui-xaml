@@ -661,6 +661,78 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies HasChildren says whether a node has kept children without making its Children list, and raises PropertyChanged(HasChildren) when the first child arrives and when the last one leaves.")]
+        public void VerifyHasChildren()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var list = MakeTree();
+                var hierarchy = (ICollectionViewHierarchy)MakeTreeSource(list).View;
+                var ada = hierarchy.NodeFromItem(Named(list, "Ada"));
+                var gus = hierarchy.NodeFromItem(Named(list, "Gus"));
+                Verify.IsTrue(ada.HasChildren, "Ada has children.");
+                Verify.IsFalse(gus.HasChildren, "Gus has none.");
+                Verify.AreEqual(true, ((ICustomPropertyProvider)ada).GetCustomProperty("HasChildren").GetValue(ada), "Bindable.");
+
+                var log = new List<string>();
+                ((INotifyPropertyChanged)gus).PropertyChanged += (s, e) => log.Add($"{e.PropertyName}={gus.HasChildren}");
+                list.Add(new TreeEmployee { Id = 9, ManagerId = 7, Name = "Ivy" });
+                Verify.AreEqual("HasChildren=True", string.Join(",", log), "Gus's first child.");
+                list.Add(new TreeEmployee { Id = 10, ManagerId = 7, Name = "Jo" });
+                Verify.AreEqual("HasChildren=True", string.Join(",", log), "A second child changes nothing.");
+                list.RemoveAt(list.Count - 1);
+                list.RemoveAt(list.Count - 1);
+                Verify.AreEqual("HasChildren=True,HasChildren=False", string.Join(",", log), "Gus's last child left.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies IndexOf on CollectionNodes and on a Children list finds a node of that list, and nothing else: an item, or a node of another list.")]
+        public void VerifyNodeListIndexOf()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var list = MakeTree();
+                var hierarchy = (ICollectionViewHierarchy)MakeTreeSource(list).View;
+                var roots = hierarchy.CollectionNodes;
+                var eve = hierarchy.NodeFromItem(Named(list, "Eve"));
+                var cy = hierarchy.NodeFromItem(Named(list, "Cy"));
+                var adaChildren = hierarchy.NodeFromItem(Named(list, "Ada")).Children;
+                Verify.AreEqual(1, roots.IndexOf(eve), "Eve is the second root.");
+                Verify.AreEqual(1, adaChildren.IndexOf(cy), "Cy is Ada's second child.");
+                Verify.AreEqual(-1, roots.IndexOf(cy), "Cy is not a root.");
+                Verify.AreEqual(-1, adaChildren.IndexOf(eve), "Eve is not Ada's child.");
+                Verify.AreEqual(-1, roots.IndexOf(Named(list, "Eve")), "An item is not a node.");
+                Verify.IsTrue(roots.Contains(eve), "Contains agrees.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies removing a parent whose children each head a subtree of more than 64 rows publishes the flat list with one Reset, and the result replays and equals a recompute.")]
+        public void VerifyLargeReparentPublishesOneReset()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var list = new ObservableCollection<TreeEmployee> { new TreeEmployee { Id = 1, Name = "Top" } };
+                var id = 10;
+                for (var child = 0; child < 3; child++)
+                {
+                    var childId = id++;
+                    list.Add(new TreeEmployee { Id = childId, ManagerId = 1, Name = $"C{child}" });
+                    for (var leaf = 0; leaf < 70; leaf++)
+                    {
+                        list.Add(new TreeEmployee { Id = id++, ManagerId = childId, Name = $"L{child}.{leaf}" });
+                    }
+                }
+                var cvs = MakeTreeSource(list);
+                var checker = new ReplayChecker(cvs.View);
+                list.RemoveAt(0);
+                checker.Check("remove the top of three large subtrees", list, cvs);
+                Verify.AreEqual(1, checker.Resets, "One Reset of the flat list, not one per re-rooted subtree.");
+            });
+        }
+
         #endregion
 
         #region Helpers
