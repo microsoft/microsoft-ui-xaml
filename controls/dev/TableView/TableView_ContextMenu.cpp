@@ -117,19 +117,6 @@ bool TableViewDetails::IsOwnRequestSource(
     return false;
 }
 
-void TableViewDetails::SuppressContextFlyoutWhileEditing(
-    winrt::FlyoutBase const& flyout,
-    winrt::TableView const& owner)
-{
-    if (owner && winrt::get_self<TableView>(owner)->AreContextMenusSuppressed())
-    {
-        // This is still Opening: a Closing veto must not expose a menu over an uncommitted edit.
-        auto const closingRevoker = flyout.Closing(winrt::auto_revoke,
-            [](auto&&, winrt::FlyoutBaseClosingEventArgs const& args) { args.Cancel(false); });
-        flyout.Hide();
-    }
-}
-
 std::optional<TableViewDetails::ContextMenuTarget> TableView::ResolveHeaderContextMenuTarget(
     winrt::ContextRequestedEventArgs const& args)
 {
@@ -170,14 +157,6 @@ std::optional<TableViewDetails::ContextMenuTarget> TableView::ResolveHeaderConte
     }
 
     return std::nullopt;
-}
-
-void TableView::SuppressContextRequestWhileEditing(winrt::ContextRequestedEventArgs const& args)
-{
-    if (!args.Handled() && AreContextMenusSuppressed())
-    {
-        args.Handled(true);
-    }
 }
 
 void TableView::OnHeaderContextRequested(winrt::ContextRequestedEventArgs const& args)
@@ -372,12 +351,12 @@ bool TableView::IsContextMenuRequestCurrent(
 {
     return IsContextMenuTargetCurrent(target) &&
         (target.Kind != TableViewDetails::ContextMenuTargetKind::Body ||
-            (ItemsSource() == sourceSnapshot && !AreContextMenusSuppressed()));
+            ItemsSource() == sourceSnapshot);
 }
 
 bool TableView::FocusContextMenuTargetFromPointer(TableViewDetails::ContextMenuTarget const& target)
 {
-    if (m_isProcessingContextMenu || AreContextMenusSuppressed() || !IsContextMenuTargetCurrent(target))
+    if (m_isProcessingContextMenu || !IsContextMenuTargetCurrent(target))
     {
         return false;
     }
@@ -483,14 +462,6 @@ bool TableView::ProcessContextMenuRequest(
     // Defensive: the framework fail-fasts a synchronous nested ShowContextMenu before it reaches
     // here, so this only guards against a future path that re-enters while focus or menu app code runs.
     if (m_isProcessingContextMenu)
-    {
-        return true;
-    }
-
-    // No TableView menu shows while a cell is editing: the request is handled with nothing shown,
-    // so the row and table menus cannot open through the native chain either. An editor with its
-    // own menu (a TextBox) has already shown it and handled the request.
-    if (AreContextMenusSuppressed())
     {
         return true;
     }

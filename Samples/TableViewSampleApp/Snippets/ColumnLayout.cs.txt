@@ -1,10 +1,11 @@
 public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-private static TableViewTextColumn Text(string header, string path, GridLength width) =>
+// A text column shows the property through DisplayMemberBinding.
+private static TableViewColumn Text(string header, string path, GridLength width) =>
     new()
     {
         Header = header,
-        Binding = new Binding { Path = new PropertyPath(path) },
+        DisplayMemberBinding = new Binding { Path = new PropertyPath(path) },
         Width = width,
         CanSort = false,
     };
@@ -19,7 +20,7 @@ private static TableViewTemplateColumn Templated(string header, string templateK
         CanSort = false,
     };
 
-private static TableViewTextColumn LockedRole(GridLength width)
+private static TableViewColumn LockedRole(GridLength width)
 {
     var column = Text(LockedRoleHeader, nameof(Person.Role), width);
     // Per-column opt-out of the resize gripper. Setting Width from code still applies.

@@ -582,7 +582,7 @@ TableView::TableView()
             });
     }
 
-    // Use bubbling KeyDown so focused editors can consume typing keys before row navigation.
+    // Use bubbling KeyDown so focused cell content can consume typing keys before row navigation.
     m_keyDownHandler = winrt::KeyEventHandler(
         [weakThis](winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
         {
@@ -694,31 +694,6 @@ TableView::TableView()
                 // the edge the previous direction chose.
                 strongThis->RefreshGridLinesOnRealizedRows();
                 strongThis->QueueTerminalGridLineRefresh();
-            }
-        });
-
-    // Editing gestures. Separate from the navigation handlers above; the key sets are disjoint.
-    // handledEventsToo is required because a single-line TextBox marks Enter handled and the commit
-    // must still run - each key case in OnKeyDownForEditing owns its own Handled policy.
-    m_editingKeyDownHandler = winrt::KeyEventHandler(
-        [weakThis](winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                strongThis->OnKeyDownForEditing(sender, args);
-            }
-        });
-    AddHandler(winrt::UIElement::KeyDownEvent(), winrt::box_value(m_editingKeyDownHandler), true /* handledEventsToo */);
-
-    // Commit when focus leaves the open editor. Uses the typed LosingFocus event so the incoming
-    // focus target is known - a plain LostFocus cannot tell "moved inside the editor" from
-    // "clicked another cell".
-    m_editingLosingFocusRevoker = LosingFocus(winrt::auto_revoke,
-        [weakThis](winrt::UIElement const& sender, winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs const& args)
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                strongThis->OnLosingFocusForEditing(sender, args);
             }
         });
 
@@ -946,18 +921,6 @@ try
         m_headerHostGotFocusRevoker.revoke();
     }
     m_headerContextRequestedRevoker.revoke();
-    m_templateRootContextRequestedRevoker.revoke();
-
-    // Below the TableView so TableView.ContextFlyout (and any ancestor's) stays closed while a cell
-    // is editing; the framework shows an element's ContextFlyout before its own handlers run.
-    m_templateRootContextRequestedRevoker = TableViewDetails::HookTemplateRootContextRequested(*this,
-        [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                strongThis->SuppressContextRequestWhileEditing(args);
-            }
-        });
     if (auto oldBodyScroller = m_bodyScroller.get())
     {
         oldBodyScroller.ViewChanged(m_bodyScrollerViewChangedToken);
@@ -1476,20 +1439,8 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
 
     try
     {
-        // The edited item is about to leave the control. Forced, because the data set is already gone
-        // by the time a handler could react, so the close cannot be vetoed. No-focus teardown: this is
-        // a dependency-property change callback, and moving focus from one re-enters the framework.
-        if (IsEditing())
-        {
-            TerminateEditWithoutVisualRestore(false /* insideLayoutPass */, true /* sourceReplaced */);
-        }
-
-        // The current cell belongs to the old data set. Left alone, CurrentItem keeps returning an item
-        // that is not in the new source, BeginEdit fails with no diagnostic, and the discarded item
-        // stays rooted by the tracker. WPF DataGrid likewise resets CurrentItem/CurrentCell here.
-        //
-        // Per-row begin-edit press state needs no reset: it is compared by item identity, so an entry
-        // left over from the previous data set can never match an item from the new one.
+        // The current cell belongs to the old data set; left alone, the discarded item stays rooted by
+        // the tracker. WPF DataGrid likewise resets CurrentItem/CurrentCell here.
         SetCurrentCell(nullptr, nullptr);
 
         // The column set changed; reset the shared cursor so first header entry does not skip an
@@ -1512,9 +1463,6 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         // projection, so the reported sort state and the chevron go with it - otherwise they describe
         // an order the new rows are not in.
         ResetSortStateForNewItemsSource();
-        // Deferred reshapes target the discarded data set.
-        m_pendingEditReshapes.clear();
-        m_reshapesAfterEditCloses.clear();
         AdoptItemsSource();
         RefreshRowsPipeline();
     }
@@ -2166,14 +2114,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
             }
         });
         AttachSourceTip(tableViewSource);
-        // Live reshape must not end the user's edit, nor re-aim focus away from a Tab move still
-        // waiting for its row; DrainCoalescedEditReshape and EndPendingTabEditMove resume it.
-        sourceImpl->SetLiveShapingHold([weakThis]()
-        {
-            auto strongThis = weakThis.get();
-            return strongThis && (strongThis->IsEditing() || strongThis->IsTabEditMovePending());
-        });
-        // CustomSortComparer ranks are frozen at header sort; re-place the edited row.
+        // CustomSortComparer ranks are frozen at header sort; re-place the changed row.
         sourceImpl->SetLiveItemChangedHook([weakThis](winrt::IInspectable const& item, bool reshapePending)
         {
             auto strongThis = weakThis.get();
@@ -2291,19 +2232,11 @@ void TableView::OnTableViewSourceProjectionChanged()
     // The repeater's focus rescue during recycling must not be mistaken for the user's position.
     SuppressBodyFocusTrackingForThisTurn();
 
-    // Capture first: RefreshRowsPipeline tears down realized rows synchronously, and
-    // TerminateEditWithoutVisualRestore can move focus before that.
+    // Capture first: RefreshRowsPipeline tears down realized rows synchronously.
     CaptureBodyFocusForReshape();
 
     // A shaping verb swapped the projected shape after we bound, so the cached view and row
     // metadata describe the previous projection. Re-read them and re-drive the rows.
-    if (IsEditing())
-    {
-        // The edited item may not exist in the new projection. Forced, for the same reason as an
-        // ItemsSource swap: the shape is already gone by the time a handler could veto it.
-        TerminateEditWithoutVisualRestore();
-    }
-
     RefreshRowsPipeline();
     QueueGroupExpansionRowRefresh();
 
@@ -2483,12 +2416,6 @@ void TableView::OnRowsSourceResetForFocus(
     SuppressBodyFocusTrackingForThisTurn();
 
     CaptureBodyFocusForReshape();
-
-    // Close the edit before the repeater recycles the editor's container for another record.
-    if (IsEditing())
-    {
-        TerminateEditWithoutVisualRestore();
-    }
 }
 
 void TableView::UpdateEmptyState()
@@ -2862,25 +2789,7 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
     RefreshFrozenColumns();
 }
 
-// A column becoming read-only must close an edit open ON THAT COLUMN, for the same reason the
-// control-level IsReadOnly does: otherwise the user keeps an editor, and a committable value, on a
-// cell that now reports it cannot be edited. Uses the no-focus teardown because this arrives from a
-// dependency-property change callback, where moving focus re-enters focus/layout processing.
-void TableView::OnColumnIsReadOnlyChanged(winrt::TableViewColumn const& column)
-{
-    RefreshCellFocusLevelsInternal();
-    if (!column || !IsEditing())
-    {
-        return;
-    }
-
-    if (m_currentEditColumn.get() == column)
-    {
-        TerminateEditWithoutVisualRestore();
-    }
-}
-
-// Read-only state decides which cells are actionable, so the cell tab stops are restamped. A focused
+// Column state decides which cells are actionable, so the cell tab stops are restamped. A focused
 // cell that stopped being actionable hands focus to its row.
 void TableView::RefreshCellFocusLevelsInternal()
 {
@@ -2914,22 +2823,6 @@ void TableView::RefreshCellFocusLevelsInternal()
                     TVDiag::LogRetailF(L"[TableView] Moving focus off an inactive cell failed.");
                 }
             });
-    }
-}
-
-void TableView::OnIsReadOnlyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
-{
-    RefreshCellFocusLevelsInternal();
-    // Turning the control read-only must close an open cell, or the user keeps an editor - and a
-    // committable value - on a control that now reports it cannot be edited. Forced, because
-    // read-only is a control-level statement a handler must not veto. Uses the no-focus teardown:
-    // this runs from a DP change callback, where moving focus re-enters focus/layout processing.
-    if (IsReadOnly())
-    {
-        if (IsEditing())
-        {
-            TerminateEditWithoutVisualRestore();
-        }
     }
 }
 
@@ -3011,32 +2904,6 @@ void TableView::OnRowElementClearing(
 {
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
-        // A recycled row is about to be re-bound to a different item; an edit left open would keep
-        // an editor over the new item, and the next commit would write into the wrong data object.
-        // ElementClearing runs inside the repeater's measure pass, so this must not restore the
-        // display visual.
-        if (row == m_currentEditRow.get())
-        {
-            if (!TerminateEditWithoutVisualRestore(true /* insideLayoutPass */))
-            {
-                // The teardown was refused - the only way that happens here is an edit still in the
-                // Beginning window, where app code (a BeginningEdit handler or the editing binding)
-                // mutated the collection and recycled the row underneath us. The row
-                // must not go back to the pool holding a live editor, so abandon it directly and
-                // make BeginEdit unwind instead of promoting to Editing.
-                winrt::get_self<TableViewRow>(row)->AbandonCellEdit();
-                m_abandonPendingBeginEdit = true;
-                ++m_editGeneration;
-                m_currentEditRow.set(nullptr);
-                m_currentEditItem.set(nullptr);
-                m_currentEditColumn.set(nullptr);
-                m_editUneditedValue.set(nullptr);
-
-                TVDiag::LogRetailF(
-                    L"[TableView] A row was recycled while an edit was still opening; the edit was abandoned.");
-            }
-        }
-
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
         // No longer the drilled row; the cursor level and column survive for re-entry.
         if (auto const drilled = m_cellLevelRow.get(); drilled && IsSameObject(row, drilled))
@@ -3675,7 +3542,7 @@ void TableView::RebuildHeadersCore()
             }
 
             const bool headerIsResizable = CanUserResizeColumns() && column.CanUserResize();
-            const bool headerIsSortable = canUserSortColumns && column.CanSort();
+            const bool headerIsSortable = canUserSortColumns && IsColumnUserSortableInternal(column);
             if (!styleSetsCornerRadius)
             {
                 AttachFocusCornerRadius(header);
@@ -4012,26 +3879,7 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
     if (!CanUserSortColumns())
     {
         CancelPendingSortRestore();
-        // A sort cannot run while an edit is opening, and must not close it once open; clear once no edit is open.
-        if (m_editState == EditState::Beginning)
-        {
-            QueueReshapeAfterEditCloses(TableViewTip::Operation::Sort, [this]()
-            {
-                // A source sort the app declared since the opt-out is newer: adopt it before clearing.
-                if (std::exchange(m_sortReconcileQueued, false))
-                {
-                    ReconcileSortStateWithSource();
-                }
-                if (!CanUserSortColumns())
-                {
-                    ClearSortInternal(false);
-                }
-            });
-        }
-        else
-        {
-            ClearSortInternal(false);
-        }
+        ClearSortInternal(false);
     }
 }
 
@@ -4045,26 +3893,8 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
     // app's source sort keeps it: the app owns that axis.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None && !IsSortLitOnlyByApp())
     {
-        if (m_editState == EditState::Beginning)
-        {
-            QueueReshapeAfterEditCloses(TableViewTip::Operation::Sort, [this, weakColumn = winrt::make_weak(column)]()
-            {
-                // A source sort the app declared since the opt-out is newer: adopt it before clearing.
-                if (std::exchange(m_sortReconcileQueued, false))
-                {
-                    ReconcileSortStateWithSource();
-                }
-                if (auto const optedOut = weakColumn.get(); optedOut && !optedOut.CanSort() && !IsSortLitOnlyByApp())
-                {
-                    SortByColumnInternal(optedOut, winrt::SortDirection::None, false, false);
-                }
-            });
-        }
-        else
-        {
-            // Bypasses the CanSort gate that just closed; the public methods keep refusing.
-            SortByColumnInternal(column, winrt::SortDirection::None, false, false);
-        }
+        // Bypasses the CanSort gate that just closed; the public methods keep refusing.
+        SortByColumnInternal(column, winrt::SortDirection::None, false, false);
     }
 }
 
@@ -4208,10 +4038,6 @@ void TableView::ReclaimItemsSource()
     }
 
     AdoptItemsSource(true /* reclaimActiveSource */);
-    if (!m_activeSourceReleased)
-    {
-        QueueDeferredEditReshapeDrain();
-    }
     // While drained, OnRowsRepeaterLoaded re-sources the repeater.
     if (!m_rowsSourceDrained)
     {
@@ -4756,13 +4582,6 @@ bool TableView::AutoFitColumn(const winrt::TableViewColumn& column)
             winrt::UIElement const cell = TableViewCellsPanel::CellForColumn(rowImpl->GetCellsHostPanelInternal(), column);
             if (!cell)
             {
-                return;
-            }
-
-            // An open editor is not the data's width; hold the column's current width for that row.
-            if (cell == rowImpl->GetEditingCellWrapper())
-            {
-                fitted = std::max(fitted, column.ActualWidth());
                 return;
             }
 

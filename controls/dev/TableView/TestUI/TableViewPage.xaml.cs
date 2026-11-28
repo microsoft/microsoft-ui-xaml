@@ -19,8 +19,8 @@ using Facts = Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestP
 
 namespace MUXControlsTestApp
 {
-    // Data item for the TableView interaction test page. Raises INotifyPropertyChanged so committed
-    // edits and source mutations are observable through the control, and exposes a nested value so
+    // Data item for the TableView interaction test page. Raises INotifyPropertyChanged so source
+    // mutations are observable through the control, and exposes a nested value so
     // dotted bindings can be authored in compiled markup.
     public sealed class TableViewTestPerson : INotifyPropertyChanged
     {
@@ -176,18 +176,10 @@ namespace MUXControlsTestApp
             CellControlsTableView.ItemsSource = _cellControlsItems;
             GroupedTableView.ItemsSource = _groupedSource;
 
-            // Reports the column each edit opens on. Appends rather than overwrites so a test can tell a
-            // second F2 that did nothing from one that re-reported the same column.
-            BasicTableView.BeginningEdit += OnBasicTableViewBeginningEdit;
-            BasicTableView.CellEditEnding += OnBasicTableViewCellEditEnding;
-            BasicTableView.GettingFocus += OnBasicTableViewGettingFocus;
-
-            _basicItems[0].PropertyChanged += OnFirstItemPropertyChanged;
-            FirstItemNameTextBlock.Text = _basicItems[0].Name;
-
             ScrollingTableView.LayoutUpdated += OnScrollingTableViewLayoutUpdated;
 
             HookHierarchyTables();
+            InitializeFixtureCells();
             HookContextMenuTable();
         }
 
@@ -333,228 +325,10 @@ namespace MUXControlsTestApp
             return null;
         }
 
-        private void OnFirstItemPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            FirstItemNameTextBlock.Text = _basicItems[0].Name;
-        }
-
-        private void OnBasicTableViewCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
-        {
-            EditEndReportTextBlock.Text += args.EditAction + ";";
-            if (VetoCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
-            {
-                args.Cancel = true;
-            }
-
-            if (SortOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
-            {
-                // Raised while the edit is closing, so the control replays the sort once the commit completes.
-                TableViewColumn age = BasicTableView.Columns.FirstOrDefault(column => (column.Header as string) == "Age");
-                if (age != null)
-                {
-                    BasicTableView.SortByColumn(age, SortDirection.Descending);
-                }
-            }
-
-            if (FocusHeaderInCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
-            {
-                FindDescendant<TableViewColumnHeader>(BasicTableView)?.Focus(FocusState.Programmatic);
-            }
-
-            if (HideAgeInCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
-            {
-                AgeColumn.Visibility = Visibility.Collapsed;
-            }
-
-            if (DisableSecondRowInCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
-            {
-                TableViewRow row = FindRowForItem(BasicTableView, _basicItems[1]);
-                if (row != null)
-                {
-                    ReenableDisabledRow();
-                    _disabledRow = row;
-                    _disabledRowItem = row.DataContext;
-                    row.DataContextChanged += OnDisabledRowDataContextChanged;
-                    row.IsEnabled = false;
-                }
-            }
-        }
-
-        private void OnBasicTableViewGettingFocus(UIElement sender, GettingFocusEventArgs args)
-        {
-            if (RedirectSecondRowFocusCheckBox.IsChecked != true)
-            {
-                return;
-            }
-
-            for (DependencyObject node = args.NewFocusedElement; node != null; node = VisualTreeHelper.GetParent(node))
-            {
-                if (node is TableViewRow row)
-                {
-                    if (object.Equals(row.DataContext, _basicItems[1]) &&
-                        FindDescendant<TableViewColumnHeader>(BasicTableView) is TableViewColumnHeader header)
-                    {
-                        args.TrySetNewFocusedElement(header);
-                    }
-                    return;
-                }
-            }
-        }
-
-        private void OnHideAgeInCommitUnchecked(object sender, RoutedEventArgs e)
-        {
-            AgeColumn.Visibility = Visibility.Visible;
-        }
-
-        private void OnDisableSecondRowInCommitUnchecked(object sender, RoutedEventArgs e)
-        {
-            ReenableDisabledRow();
-        }
-
-        private static TableViewRow FindRowForItem(DependencyObject root, object item)
-        {
-            if (root is TableViewRow row && object.Equals(row.DataContext, item))
-            {
-                return row;
-            }
-
-            int count = VisualTreeHelper.GetChildrenCount(root);
-            for (int i = 0; i < count; i++)
-            {
-                TableViewRow found = FindRowForItem(VisualTreeHelper.GetChild(root, i), item);
-                if (found != null)
-                {
-                    return found;
-                }
-            }
-
-            return null;
-        }
-
-        // Reports the editor an edit opened, by an in-process visual-tree walk. Posted at Low priority: the
-        // editor does not exist yet while BeginningEdit runs, and focus moves into it after layout.
-        // A cell's display visual is a TextBlock, so the only TextBox under the table is the open editor.
-        private void ProbeEditor()
-        {
-            var editor = FindDescendant<TextBox>(BasicTableView);
-            if (editor == null)
-            {
-                EditorProbeTextBlock.Text += "no-editor;";
-                return;
-            }
-
-            string automationName = AutomationProperties.GetName(editor);
-            EditorProbeTextBlock.Text +=
-                editor.GetType().Name + "|" +
-                (string.IsNullOrEmpty(automationName) ? "-" : automationName) + "|" +
-                editor.Text + "|focus=" +
-                IsSelfOrDescendant(editor, FocusManager.GetFocusedElement(XamlRoot) as DependencyObject) + "|" +
-                ProbeEditorAlignment(editor) + ";";
-        }
-
-        // Text line bounds of the edited column's display cell, captured before the editor replaces it.
-        private Windows.Foundation.Rect? _displayLine;
-
-        private void CaptureDisplayLine(object item, TableViewColumn column)
-        {
-            _displayLine = null;
-            var header = FindBasicHeaderCell(column);
-            if (header == null)
-            {
-                return;
-            }
-
-            var columnBounds = BoundsInTable(header);
-            var display = FindDescendants<TextBlock>(BasicTableView).FirstOrDefault(t =>
-            {
-                var bounds = BoundsInTable(t);
-                double centre = bounds.Left + (bounds.Width / 2);
-                return ReferenceEquals(t.DataContext, item) && centre >= columnBounds.Left && centre <= columnBounds.Right;
-            });
-            if (display != null)
-            {
-                var line = display.ContentStart.GetCharacterRect(Microsoft.UI.Xaml.Documents.LogicalDirection.Forward);
-                line.Union(display.ContentEnd.GetCharacterRect(Microsoft.UI.Xaml.Documents.LogicalDirection.Backward));
-                _displayLine = display.TransformToVisual(BasicTableView).TransformBounds(line);
-            }
-        }
-
-        private Windows.Foundation.Rect BoundsInTable(FrameworkElement element) =>
-            element.TransformToVisual(BasicTableView).TransformBounds(new Windows.Foundation.Rect(0, 0, element.ActualWidth, element.ActualHeight));
-
-        // "align=dx:<start-edge delta>,dy:<top delta, or line-bottom delta when the line heights differ>,lines:<display>/<editor>".
-        private string ProbeEditorAlignment(TextBox editor)
-        {
-            if (_displayLine == null)
-            {
-                return "align=no-display-text";
-            }
-            // GetRectFromCharacterIndex throws for empty text.
-            if (string.IsNullOrEmpty(editor.Text))
-            {
-                return "align=empty-editor";
-            }
-
-            // Flush the SizeChanged padding pass.
-            editor.UpdateLayout();
-            var d = _displayLine.Value;
-            var contentElement = FindDescendants<ScrollViewer>(editor).FirstOrDefault(s => s.Name == "ContentElement");
-            if (!(contentElement?.Content is FrameworkElement textView))
-            {
-                return "align=no-text-view";
-            }
-            var e = textView.TransformToVisual(BasicTableView).TransformBounds(EditorLineRect(editor, textView));
-            // Both rects are in the table's own coordinates, which are mirrored under RTL, so Left is the line's start edge.
-            double dx = e.Left - d.Left;
-            double dy = Math.Abs(e.Height - d.Height) <= 0.5 ? e.Top - d.Top : e.Bottom - d.Bottom;
-            return string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                "align=dx:{0:0.##},dy:{1:0.##},lines:{2:0.##}/{3:0.##}", dx, dy, d.Height, e.Height);
-        }
-
-        // The editor's text line in its text view's coordinates. GetRectFromCharacterIndex is relative to the text
-        // view and leaves out an RTL line's right alignment, so under RTL the line is placed against the text view's
-        // start (right) edge: the RTL check compares the text view's start edge, not the glyphs.
-        internal static Windows.Foundation.Rect EditorLineRect(TextBox editor, FrameworkElement textView)
-        {
-            var first = editor.GetRectFromCharacterIndex(0, false);
-            var last = editor.GetRectFromCharacterIndex(Math.Max(0, editor.Text.Length - 1), true);
-            double width = Math.Max(0, last.Right - first.Left);
-            double left = editor.FlowDirection == FlowDirection.RightToLeft ? textView.ActualWidth - width : first.Left;
-            return new Windows.Foundation.Rect(left, first.Top, width, first.Height);
-        }
-
         private void OnToggleBasicFlowDirectionClick(object sender, RoutedEventArgs e)
         {
             BasicTableView.FlowDirection = BasicTableView.FlowDirection == FlowDirection.RightToLeft
                 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
-        }
-
-        private void OnToggleScrollingFlowDirectionClick(object sender, RoutedEventArgs e)
-        {
-            ScrollingTableView.FlowDirection = ScrollingTableView.FlowDirection == FlowDirection.RightToLeft
-                ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
-        }
-
-        private static bool IsSelfOrDescendant(DependencyObject root, DependencyObject candidate)
-        {
-            while (candidate != null)
-            {
-                if (ReferenceEquals(candidate, root))
-                {
-                    return true;
-                }
-
-                candidate = VisualTreeHelper.GetParent(candidate);
-            }
-
-            return false;
-        }
-
-        private void OnBasicTableViewBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
-        {
-            EditColumnReportTextBlock.Text += (args.Column?.Header?.ToString() ?? "null") + ";";
-            CaptureDisplayLine(args.Item, args.Column);
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, ProbeEditor);
         }
 
         // Hooks the first realized row's CommonStates group and logs every transition. Walking the visual
@@ -707,7 +481,6 @@ namespace MUXControlsTestApp
 
         private TableViewSource _hierarchySource;
         private TableViewSource _hierarchyRtlSource;
-        private int _hierarchyBeginningEditCount;
         private bool _hierarchyRefreshQueued;
 
         private static TableViewSource CreateHierarchySource()
@@ -730,12 +503,6 @@ namespace MUXControlsTestApp
 
         private void HookHierarchyTables()
         {
-            HierarchyTable.BeginningEdit += (s, args) =>
-            {
-                _hierarchyBeginningEditCount++;
-                QueueHierarchyReadoutRefresh();
-            };
-            HierarchyTable.CellEditEnding += (s, args) => QueueHierarchyReadoutRefresh();
             HierarchyTable.SelectionChanged += (s, args) => QueueHierarchyReadoutRefresh();
 
             // Expansion changes re-project rows, which always re-lays out the table.
@@ -748,11 +515,6 @@ namespace MUXControlsTestApp
         // A fresh source per table: every test starts from the same all-collapsed, unshaped, unselected state.
         private void ResetHierarchy()
         {
-            if (HierarchyTable.IsEditing)
-            {
-                HierarchyTable.CancelEdit();
-            }
-
             _hierarchySource = CreateHierarchySource();
             _hierarchyRtlSource = CreateHierarchySource();
             HierarchyTable.ItemsSource = _hierarchySource;
@@ -763,7 +525,6 @@ namespace MUXControlsTestApp
                 HierarchyRtlTable.DeselectAll();
             }
 
-            _hierarchyBeginningEditCount = 0;
             QueueHierarchyReadoutRefresh();
         }
 
@@ -797,9 +558,7 @@ namespace MUXControlsTestApp
             string text =
                 Facts.TreeField + "=" + ProjectionLabel(HierarchyTable) + ";" +
                 Facts.RtlTreeField + "=" + ProjectionLabel(HierarchyRtlTable) + ";" +
-                Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name) + ";" +
-                Facts.BeginningEditField + "=" + _hierarchyBeginningEditCount + ";" +
-                Facts.EditingField + "=" + HierarchyTable.IsEditing;
+                Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name);
 
             if (HierarchyReadout.Text != text)
             {
@@ -862,9 +621,6 @@ namespace MUXControlsTestApp
         private string _contextMenuItem = Facts.NoneValue;
         private string _contextMenuTarget = Facts.NoneValue;
         private string _contextMenuFocus = Facts.NoneValue;
-        private bool _cancelEditorMenuCloseOnce;
-        private bool _editorMenuOpen;
-        private int _editorMenuClosings;
 
         private void HookContextMenuTable()
         {
@@ -875,18 +631,6 @@ namespace MUXControlsTestApp
 
             ContextMenuTable.ItemsSource = _contextMenuItems;
             ContextMenuTable.SelectionChanged += (s, args) => RefreshContextMenuReadout();
-
-            // IsEditing flips after these events return, so refresh once they have.
-            ContextMenuTable.BeginningEdit += (s, args) => DispatcherQueue.TryEnqueue(() =>
-            {
-                if (_cancelEditorMenuCloseOnce)
-                {
-                    ConfigureEditorMenuWithCancelledClose();
-                    _cancelEditorMenuCloseOnce = false;
-                }
-                RefreshContextMenuReadout();
-            });
-            ContextMenuTable.CellEditEnding += (s, args) => DispatcherQueue.TryEnqueue(RefreshContextMenuReadout);
 
             foreach (string key in new[] { Facts.CellMenu, Facts.HeaderMenu, Facts.TemplateMenu, Facts.RowMenu, Facts.RowTemplateMenu, Facts.TableMenu })
             {
@@ -926,20 +670,9 @@ namespace MUXControlsTestApp
 
         private void OnResetContextMenuClick(object sender, RoutedEventArgs e)
         {
-            if (ContextMenuTable.IsEditing)
-            {
-                ContextMenuTable.CancelEdit();
-            }
-
             if (ContextMenuTable.IsLoaded)
             {
                 ContextMenuTable.DeselectAll();
-            }
-
-            // An edit test may have committed a new name; later tests expect the seeded ones.
-            for (int i = 0; i < _contextMenuItems.Count; i++)
-            {
-                _contextMenuItems[i].Name = Facts.ContextMenuName(i);
             }
 
             if (!ReferenceEquals(ContextMenuTable.ItemsSource, _contextMenuItems))
@@ -955,44 +688,7 @@ namespace MUXControlsTestApp
             _contextMenuItem = Facts.NoneValue;
             _contextMenuTarget = Facts.NoneValue;
             _contextMenuFocus = Facts.NoneValue;
-            _cancelEditorMenuCloseOnce = false;
-            _editorMenuOpen = false;
-            _editorMenuClosings = 0;
             RefreshContextMenuReadout();
-        }
-
-        private void OnCancelEditorMenuCloseClick(object sender, RoutedEventArgs e) => _cancelEditorMenuCloseOnce = true;
-
-        private void ConfigureEditorMenuWithCancelledClose()
-        {
-            var editor = FindDescendant<TextBox>(ContextMenuTable);
-            if (editor == null)
-            {
-                throw new InvalidOperationException("The context-menu test requires an active text editor.");
-            }
-
-            var flyout = new CommandBarFlyout { AlwaysExpanded = true, AreOpenCloseAnimationsEnabled = false };
-            flyout.SecondaryCommands.Add(new AppBarButton { Label = "Keep editing" });
-            flyout.Opened += (s, args) =>
-            {
-                _editorMenuOpen = true;
-                RefreshContextMenuReadout();
-            };
-            flyout.Closing += (s, args) =>
-            {
-                _editorMenuClosings++;
-                if (_editorMenuClosings == 1)
-                {
-                    args.Cancel = true;
-                }
-                RefreshContextMenuReadout();
-            };
-            flyout.Closed += (s, args) =>
-            {
-                _editorMenuOpen = false;
-                RefreshContextMenuReadout();
-            };
-            editor.ContextFlyout = flyout;
         }
 
         // Groups ContextMenuTable by City; Reset ungroups it.
@@ -1040,9 +736,6 @@ namespace MUXControlsTestApp
                 Facts.ItemField + "=" + _contextMenuItem + ";" +
                 Facts.TargetField + "=" + _contextMenuTarget + ";" +
                 Facts.FocusField + "=" + _contextMenuFocus + ";" +
-                Facts.EditorMenuOpenField + "=" + _editorMenuOpen + ";" +
-                Facts.EditorMenuClosingsField + "=" + _editorMenuClosings + ";" +
-                Facts.EditingField + "=" + ContextMenuTable.IsEditing + ";" +
                 Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name);
 
             if (ContextMenuReadout.Text != text)
@@ -1286,28 +979,74 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void OnIsReadOnlyToggled(object sender, RoutedEventArgs e)
+        // TableView has no editing, so a plain text cell is not a focus target. The cell-level keyboard tests
+        // need actionable cells: these columns get a cell menu (a tooltip on ContextMenuTable's Age, whose
+        // tests need a cell without a menu). InactiveCellsCheckBox removes them.
+        private readonly List<TableViewColumn> _fixtureMenuColumns = new List<TableViewColumn>();
+        private readonly List<TableViewColumn> _hierarchyFixtureMenuColumns = new List<TableViewColumn>();
+        private bool _fixtureCellsInactive;
+
+        private void InitializeFixtureCells()
         {
-            BasicTableView.IsReadOnly = ((CheckBox)sender).IsChecked == true;
-            RtlTableView.IsReadOnly = BasicTableView.IsReadOnly;
-            ContextMenuTable.IsReadOnly = BasicTableView.IsReadOnly;
-            ScrollingTableView.IsReadOnly = BasicTableView.IsReadOnly;
+            foreach (var table in new[] { BasicTableView, RtlTableView, ScrollingTableView, HierarchyTable, HierarchyRtlTable })
+            {
+                var target = ReferenceEquals(table, HierarchyTable) ? _hierarchyFixtureMenuColumns : _fixtureMenuColumns;
+                foreach (var column in table.Columns)
+                {
+                    if (column.CellContextFlyout == null && column.CellToolTipBinding == null &&
+                        !Equals(column.Header, "ReadOnlyCity") &&
+                        (IsFixtureTextColumn(column) || ReferenceEquals(column, TemplateColumn)))
+                    {
+                        target.Add(column);
+                    }
+                }
+            }
+
+            ApplyFixtureCells();
+            SetFixtureCellMenus(_hierarchyFixtureMenuColumns, true);
         }
 
-        private void OnAllowGroupedEditingToggled(object sender, RoutedEventArgs e)
+        // The text columns are template columns over the page's *TextCellTemplate resources.
+        private bool IsFixtureTextColumn(TableViewColumn column)
         {
-            GroupedTableView.IsReadOnly = ((CheckBox)sender).IsChecked != true;
+            if (column is TableViewTemplateColumn templateColumn && templateColumn.CellTemplate != null)
+            {
+                foreach (var key in new[] { "AgeTextCellTemplate", "CityTextCellTemplate", "DeptTextCellTemplate", "IdTextCellTemplate", "NameTextCellTemplate", "ScoreTextCellTemplate" })
+                {
+                    if (ReferenceEquals(templateColumn.CellTemplate, Resources[key]))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
-        private void OnHideScoreColumnToggled(object sender, RoutedEventArgs e)
+        private void ApplyFixtureCells()
         {
-            ScoreColumn.Visibility = ((CheckBox)sender).IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
+            SetFixtureCellMenus(_fixtureMenuColumns, !_fixtureCellsInactive);
+            ContextMenuTable.Columns[Facts.ContextMenuAgeColumn].CellToolTipBinding =
+                _fixtureCellsInactive ? null : new Binding { Path = new PropertyPath("Age") };
         }
 
-        private void OnShowExtraEditColumnsToggled(object sender, RoutedEventArgs e)
+        private static void SetFixtureCellMenus(List<TableViewColumn> columns, bool active)
         {
-            var visibility = ((CheckBox)sender).IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-            PairColumn.Visibility = visibility;
+            foreach (var column in columns)
+            {
+                MenuFlyout menu = null;
+                if (active)
+                {
+                    menu = new MenuFlyout();
+                    menu.Items.Add(new MenuFlyoutItem { Text = "Cell" });
+                }
+                column.CellContextFlyout = menu;
+            }
+        }
+
+        private void OnInactiveCellsToggled(object sender, RoutedEventArgs e)
+        {
+            _fixtureCellsInactive = ((CheckBox)sender).IsChecked == true;
+            ApplyFixtureCells();
         }
 
         // Guarded because IsChecked="True" in markup raises Checked during InitializeComponent, before the
@@ -1354,8 +1093,8 @@ namespace MUXControlsTestApp
             BasicTableView.ItemsSource = ((CheckBox)sender).IsChecked == true ? new ObservableCollection<TableViewTestPerson>() : _basicItems;
         }
 
-        // A menu makes RtlAge, beyond the viewport, the only actionable column of the read-only RTL
-        // table, and the hierarchy table becomes a wide read-only tree.
+        // With InactiveCellsCheckBox set, a menu makes RtlAge, beyond the viewport, the only actionable
+        // column of the RTL table, and the hierarchy table becomes a wide tree of inactive cells.
         private void OnScrollFixturesToggled(object sender, RoutedEventArgs e)
         {
             bool on = ((CheckBox)sender).IsChecked == true;
@@ -1364,7 +1103,7 @@ namespace MUXControlsTestApp
             RtlTableView.Columns[1].Width = new GridLength(on ? 400 : 220);
             RtlTableView.Columns[2].CellContextFlyout = on ? menu : null;
             HierarchyTable.Columns[2].Width = new GridLength(on ? 500 : 100);
-            HierarchyTable.IsReadOnly = on;
+            SetFixtureCellMenus(_hierarchyFixtureMenuColumns, !on);
             if (on && ScrollingTableView.Columns.Count == 4)
             {
                 ScrollingTableView.Columns.Add(new TableViewTemplateColumn
@@ -1473,11 +1212,12 @@ namespace MUXControlsTestApp
         {
             _addedColumnCount++;
 
-            BasicTableView.Columns.Add(new TableViewTextColumn
+            BasicTableView.Columns.Add(new TableViewTemplateColumn
             {
                 Header = "Added " + _addedColumnCount,
                 Width = new GridLength(120),
-                Binding = new Binding { Path = new PropertyPath("City") },
+                SortMemberPath = "City",
+                CellTemplate = (DataTemplate)Resources["CityTextCellTemplate"],
             });
         }
 

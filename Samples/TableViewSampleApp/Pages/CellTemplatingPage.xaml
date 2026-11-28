@@ -6,15 +6,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:pages="using:TableViewSampleApp.Pages"
+    xmlns:models="using:TableViewSampleApp.Models"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
         Header="Cell templating"
-        Description="TableViewTemplateColumn renders each cell from a DataTemplate: a read-only visual such as the Department chip, or an editor such as a CheckBox, a date or time picker, a ComboBox or a Button with a Flyout. Each editor is two-way bound to its Person row, so an edit survives scrolling and sorting. Controls in a CellTemplate are always live: TableView.IsReadOnly and the edit events govern only editors supplied through CellEditingTemplate. From the keyboard, arrow to the cell and press Enter to reach its editor; Esc returns to the cell. Sorting a template column uses its SortMemberPath, the value behind the control. The Join date editor option swaps that column's CellTemplate at run time."
+        Description="TableViewTemplateColumn renders each cell from a DataTemplate: a read-only visual such as the Department chip, or an editor such as a CheckBox, a TextBox, a date or time picker, a ComboBox or a Button with a Flyout. Each editor is two-way bound to its Person row, so an edit survives scrolling and sorting. Controls in a CellTemplate are always live; TableView itself has no edit mode. From the keyboard, arrow to the cell and press Enter to reach its editor; Esc returns to the cell. The Role column shows the app-owned edit-on-demand pattern instead: a TextBlock until F2 or a double-tap swaps in a TextBox, Enter commits, Esc cancels. Sorting a template column uses its SortMemberPath, the value behind the control. The Join date editor option swaps that column's CellTemplate at run time."
         Snippet="CellTemplating"
         StretchExample="True"
-        TryIt="Arrow to a row's Active cell, press Enter to reach the checkbox and press Space, then open its Join date, Shift, Office or Details editor. Scroll the row out of view and back: the value you set is still there. Click the Join date header to sort by the date value, then switch the Join date editor in the rail."
-        WhatToLookFor="Scrolling recycles the chip, checkbox and picker elements, yet each row shows its own value again, because every editor is bound to the model rather than to the element. Template columns sort by SortMemberPath (JoinDate, ShiftStart, Office), not by the text a control displays. This page shows the full editor catalogue, so the table is wider than the window and scrolls horizontally on purpose.">
+        TryIt="Select a row and press F2, or double-tap a Role cell: type a new role and press Enter, or press Esc to keep the old one. Clear the text and press Enter to see the validation tip. Type in a Notes cell and Tab away. Arrow to a row's Active cell, press Enter to reach the checkbox and press Space, then open its Join date, Shift, Office or Details editor. Scroll the row out of view and back: the value you set is still there. Click the Role or Join date header to sort by the committed value."
+        WhatToLookFor="Scrolling recycles the chip, checkbox, text box and picker elements, yet each row shows its own value again, because every editor is bound to the model rather than to the element. The Role editor's state (IsEditingRole, PendingRole) lives on the Person too, so the TextBox is loaded only in the row being edited, and the model's Role changes only on commit. Template columns sort by SortMemberPath (Role, JoinDate, ShiftStart, Office), not by the text a control displays. This page shows the full editor catalogue, so the table is wider than the window and scrolls horizontally on purpose.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -24,17 +25,57 @@
                 AutomationProperties.Name="People with templated cells"
                 ItemsSource="{x:Bind Source}"
                 SelectionMode="Single"
-                IsReadOnly="False"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
                 <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
-                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}" IsReadOnly="True" HeaderToolTip="Read-only text column. Takes the width the other columns leave."/>
+                <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" HeaderToolTip="Read-only text column. Takes the width the other columns leave." DisplayMemberBinding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department" HeaderToolTip="Read-only chip template: a tinted badge with a colour dot and the department name."/>
+                <!-- Edit on demand: the app owns the edit state (IsEditingRole, PendingRole) on the item,
+                     so a recycled row realizes the TextBox only for the person being edited. -->
+                <tv:TableViewTemplateColumn Header="Role" Width="160" SortMemberPath="Role" HeaderToolTip="Edit on demand: press F2 or double-tap the cell. Enter commits, Esc cancels, leaving the cell commits.">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:Person">
+                            <Grid Background="Transparent" DoubleTapped="OnRoleCellDoubleTapped">
+                                <TextBlock
+                                    Text="{x:Bind Role, Mode=OneWay}"
+                                    ToolTipService.ToolTip="{x:Bind Role, Mode=OneWay}"
+                                    Visibility="{x:Bind pages:CellTemplatingPage.CollapsedWhen(IsEditingRole), Mode=OneWay}"
+                                    Style="{StaticResource CellTextStyle}"/>
+                                <TextBox
+                                    x:Name="RoleEditor"
+                                    x:Load="{x:Bind IsEditingRole, Mode=OneWay}"
+                                    AutomationProperties.AutomationId="CellTemplatingRoleEditor"
+                                    Text="{x:Bind PendingRole, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    MinWidth="0"
+                                    Margin="6,2"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Role for {0}'}"
+                                    Loaded="OnRoleBoxLoaded"
+                                    PreviewKeyDown="OnRoleBoxPreviewKeyDown"
+                                    TextChanged="OnRoleBoxTextChanged"
+                                    LostFocus="OnRoleBoxLostFocus"/>
+                            </Grid>
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
                 <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" HeaderToolTip="Editable CheckBox. Arrow to the cell, press Enter, then Space."/>
                 <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate" HeaderToolTip="Editable date. Sorts by the JoinDate value, not by the text the picker shows."/>
                 <tv:TableViewTemplateColumn Header="Shift" Width="150" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart" HeaderToolTip="Start of the daily shift, 24-hour clock. Editable TimePicker; sorts by the TimeSpan."/>
                 <tv:TableViewTemplateColumn Header="Office" Width="150" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office" HeaderToolTip="Editable ComboBox constrained to the office list."/>
+                <tv:TableViewTemplateColumn Header="Notes" Width="180" SortMemberPath="Notes" HeaderToolTip="Always-live TextBox. Arrow to the cell, press Enter and type; the note is written when focus leaves.">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:Person">
+                            <TextBox
+                                Text="{x:Bind Notes, Mode=TwoWay}"
+                                PlaceholderText="Add a note"
+                                MinWidth="0"
+                                Margin="6,2"
+                                VerticalAlignment="Center"
+                                AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Notes for {0}'}"/>
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
                 <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" HeaderToolTip="Opens a Flyout anchored to the invoking cell."/>
             </tv:TableView>
             <!-- /snippet -->
@@ -73,6 +114,15 @@
                     Header="Actions"
                     Description="Each action writes the Person model, and the templates follow through their two-way bindings, including rows scrolled out of view. Watch the table and the Last action readout. Actions that change one row need a selected row.">
                     <StackPanel Spacing="8">
+                        <Button
+                            x:Name="EditRoleButton"
+                            AutomationProperties.AutomationId="CellTemplatingEditRoleButton"
+                            Content="Edit selected row's role"
+                            Click="OnEditRoleClick"
+                            ToolTipService.ToolTip="Opens the selected row's Role editor, the same as F2. Enter commits, Esc cancels."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
                         <Button
                             x:Name="CheckAllActiveButton"
                             AutomationProperties.AutomationId="CellTemplatingCheckAllActiveButton"
@@ -115,6 +165,15 @@
                 <controls:StatusPanel x:Name="Status" AutomationIdPrefix="CellTemplating">
                     <TextBlock x:Name="ActiveCountText" controls:StatusPanel.Label="Active" Text="0 of 0"/>
                 </controls:StatusPanel>
+
+                <!-- Targeted at the open Role editor in code; it does not take focus, so typing continues. -->
+                <TeachingTip
+                    x:Name="RoleErrorTip"
+                    AutomationProperties.AutomationId="CellTemplatingRoleErrorTip"
+                    Title="Role can't be empty"
+                    Subtitle="Type a role and press Enter, or press Esc to keep the current one."
+                    PreferredPlacement="Bottom"
+                    IsLightDismissEnabled="False"/>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>

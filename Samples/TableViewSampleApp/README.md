@@ -76,14 +76,18 @@ ships in the Tabular DLL rather than in MUXC. Without the merge the app throws
 `XamlParseException 0x802B000A` during its first layout pass, which surfaces as a `0xC000027B`
 stowed exception a few seconds after launch.
 
-Declare columns, or the table renders rows with no header row and no cells:
+Declare columns, or the table renders rows with no header row and no cells. A plain text column
+sets `DisplayMemberBinding`; the binding's path is also its sort key:
 
 ```xml
 <tabular:TableView x:Name="Table">
-  <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-  <tabular:TableViewTextColumn Header="Age"  Binding="{Binding Age}" />
+  <tabular:TableViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" />
 </tabular:TableView>
 ```
+
+The generated cell is a read-only `TextBlock` that is centred, trimmed with an ellipsis and padded
+for the table's `Density`. Use a `TableViewTemplateColumn` with a `CellTemplate` for anything else;
+`CellTextStyle` (in `App.xaml`) styles a `TextBlock` inside such a template.
 
 `TableView` is `[MUX_PREVIEW]`, so C# usage raises `CS8305` and XAML usage raises `WMC1501`
 ("for evaluation purposes only"). This sample suppresses `CS8305`; the XAML warnings are left
@@ -96,15 +100,14 @@ visible on purpose.
 - Column layout &amp; sizing (Pixel / Star widths, Min/Max clamps, drag-to-resize) and column
   lifecycle (add, remove, reorder at runtime), plus header visibility
 - Tooltips, context menus, grid lines (including hiding the header lines), cell templating,
-  text wrapping, row height, cell editing (with `INotifyDataErrorInfo` validation that keeps a rejected
-  edit open), empty state, density, and grouped rows
+  text wrapping, row height, empty state, density, and grouped rows
 - Hierarchical rows (`TableViewSource.ParentBy`): one flat list of people, by manager or by mentor,
   composed with filter, sort and grouping, and `IsLiveShaping` reshaping the tree when a row's property changes.
   The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
   GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
   pages whose rows have no parent relation show those modes disabled with the reason
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
-- `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
+- `TableViewTemplateColumn` usage (text and richer cells) with source snippets embedded in the
   sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
   a region, run `powershell -File tools\Update-Snippets.ps1` and include the result. The build checks
   that every snippet is current and that every `Snippet` / `SourceSnippet` / `AdditionalSnippet` a

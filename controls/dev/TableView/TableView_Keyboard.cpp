@@ -31,7 +31,7 @@ namespace
     using TableViewDetails::IsKeyDown;
 
     // Row cells carry the same column Tag as header cells, so finding a tagged ancestor is not
-    // enough: the walk must actually reach the header host, or a focused cell (an open editor,
+    // enough: the walk must actually reach the header host, or a focused cell (hosted cell content,
     // most visibly) would resolve to a column and let arrow keys resize it.
     // Returns the focused header cell in headerCell, so a caller that needs the cell does not have
     // to scan the header band again to find what this walk already passed through.
@@ -501,9 +501,8 @@ void TableView::OnTableGettingFocus(
         args.TryCancel();
         return;
     }
-    // Popup-aware so an editor's dropdown counts as inside; a focused Hyperlink stands in as its text
-    // host. Focus that was in this table and has left the live tree is XAML's rescue after a reset or
-    // editor teardown.
+    // Popup-aware so hosted content's dropdown counts as inside; a focused Hyperlink stands in as its text
+    // host. Focus that was in this table and has left the live tree is XAML's rescue after a reset.
     winrt::DependencyObject const selfObject = *this;
     auto oldFocus = args.OldFocusedElement();
     if (auto const textElement = oldFocus.try_as<winrt::Microsoft::UI::Xaml::Documents::TextElement>())
@@ -961,13 +960,6 @@ bool TableView::FocusBodyEntryTarget(bool select, winrt::FocusState focusState)
     }
     return true;
 }
-// Editable means F2 opens an editor: a text column needs a Binding to generate one.
-bool TableView::IsColumnCellEditableInternal(const winrt::TableViewColumn& column)
-{
-    return column && !IsReadOnly() && !column.IsReadOnly() &&
-        (column.CellEditingTemplate() || (column.try_as<winrt::TableViewTextColumn>() && column.as<winrt::TableViewTextColumn>().Binding()));
-}
-
 // Records the focused header column into the shared cursor for body entry.
 void TableView::OnHeaderHostGotFocus(
     const winrt::IInspectable& /*sender*/,
@@ -1258,10 +1250,6 @@ void TableView::OnPreviewKeyDownForNavigation(
     const winrt::KeyRoutedEventArgs& args)
 {
     m_navKeyHandledEarly = false;
-    if (TryHandleKeyDuringPendingTabEditMove(args))
-    {
-        return;
-    }
     using winrt::Windows::System::VirtualKey;
     const auto pressed = args.Key();
     const bool isModifier = pressed == VirtualKey::Shift || pressed == VirtualKey::Control || pressed == VirtualKey::Menu ||
@@ -1367,45 +1355,17 @@ void TableView::OnPreviewKeyDownForNavigation(
     if ((args.Key() == winrt::Windows::System::VirtualKey::PageUp ||
             args.Key() == winrt::Windows::System::VirtualKey::PageDown) &&
         !args.Handled() &&
-        !IsFocusInsideEditingElement() &&
         IsFocusExactlyOnBodyItem())
     {
         args.Handled(true);
     }
 }
 
-// Shared by the Preview and bubbling navigation handlers so both agree on who owns a paging key.
-bool TableView::IsFocusInsideEditingElement() const
-{
-    if (!IsEditing())
-    {
-        return false;
-    }
-
-    auto const editingElement = CurrentEditingElement();
-    auto const root = XamlRoot();
-    if (!editingElement || !root)
-    {
-        return false;
-    }
-
-    // Popup-aware: an open ComboBox editor's dropdown items are not visual descendants of the editor.
-    return TableViewDetails::IsWithinElementPopupAware(winrt::FocusManager::GetFocusedElement(root), editingElement, root);
-}
-
 void TableView::OnKeyDownForNavigation(
     const winrt::IInspectable& /*sender*/,
     const winrt::KeyRoutedEventArgs& args)
 {
-    // While editing, let the editor own keys; otherwise PageUp/PageDown can recycle the edited row
-    // mid-edit. WPF DataGrid does the same.
-    if (IsFocusInsideEditingElement())
-    {
-        return;
-    }
-
-    // After the editing guard so an open editor keeps its arrow keys; Alt+Arrow cannot shadow the
-    // bare navigation arrows below.
+    // Alt+Arrow cannot shadow the bare navigation arrows below.
     if (TryHandleHeaderColumnResizeKey(args))
     {
         return;
@@ -2028,9 +1988,6 @@ void TableView::RestoreBodyFocusAfterReshape()
     m_pendingBodyFocusItem = nullptr;
     m_pendingBodyFocusFromKeyboard = false;
     m_pendingBodyFocusOrigin = nullptr;
-    // The re-shape re-aims focus at the captured row, so a pending Tab target is no longer where
-    // focus will land.
-    EndPendingTabEditMove();
 
     m_reshapeFocusArmedThisTurn = true;
     if (auto const queue = DispatcherQueue())
@@ -2123,7 +2080,6 @@ void TableView::CancelReshapeFocusRestore()
 {
     m_pendingReshapeFocusRow = -1;
     m_pendingBodyFocusItem = nullptr;
-    EndPendingTabEditMove();
     m_pendingBodyFocusFromKeyboard = false;
     m_pendingBodyFocusOrigin = nullptr;
     m_requestedBodyVerticalOffset.reset();
@@ -2150,12 +2106,6 @@ void TableView::CancelReshapeFocusRestoreForUserInput()
     if (m_pendingReshapeFocusRow >= 0)
     {
         CancelReshapeFocusRestore();
-    }
-    else if (m_tabEditMovePending)
-    {
-        // The restore landed and handed its Tab move to a posted BeginEdit; input before that
-        // runs is still newer intent.
-        EndPendingTabEditMove();
     }
 }
 
@@ -2209,46 +2159,7 @@ void TableView::OnReshapeFocusAttempt()
 
     if (landed)
     {
-        auto const editItem = m_beginEditAfterBodyFocusItem.get();
-        auto const editColumn = m_beginEditAfterBodyFocusColumn.get();
-        // Posted: inside LayoutUpdated a CellEditingTemplate editor cannot be realized and focused.
-        auto const queue = editItem && editColumn ? DispatcherQueue() : nullptr;
-        // Hand a Tab move to the posted BeginEdit below without releasing its live-shaping hold.
-        const bool handOff = queue && std::exchange(m_tabEditMovePending, false);
         CancelReshapeFocusRestore();
-        if (handOff)
-        {
-            m_tabEditMovePending = true;
-            const uint32_t generation = m_tabEditMoveGeneration;
-            if (!queue.TryEnqueue([weakThis = get_weak(), editItem, editColumn, generation]()
-            {
-                auto const strongThis = weakThis.get();
-                if (!strongThis || strongThis->m_tabEditMoveGeneration != generation)
-                {
-                    // Escape, another key, or a newer restore retired the move.
-                    return;
-                }
-                try
-                {
-                    // The column can be hidden or locked, and focus can move to another cell of
-                    // the row, while the row realizes.
-                    if (!strongThis->IsEditing() && strongThis->IsColumnCellEditableInternal(editColumn) &&
-                        strongThis->IsBodyFocusOnCell(editItem, editColumn))
-                    {
-                        strongThis->BeginEdit(editItem, editColumn);
-                    }
-                }
-                catch (...)
-                {
-                    // Best-effort; never fail-fast the dispatcher.
-                }
-                // Resumes live shaping only if the edit did not open; its close resumes otherwise.
-                strongThis->EndPendingTabEditMove();
-            }))
-            {
-                EndPendingTabEditMove();
-            }
-        }
         return;
     }
 
@@ -3340,15 +3251,12 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::Dep
 
     ArmCellLevelRowInternal(row);
 
-    if (!IsEditing())
+    if (auto const column = rowImpl->GetCellOwningColumn(focusedCell))
     {
-        if (auto const column = rowImpl->GetCellOwningColumn(focusedCell))
+        winrt::IInspectable item{ nullptr };
+        if (rowIndex >= 0 && TryGetItemAtRowIndex(rowIndex, item) && item)
         {
-            winrt::IInspectable item{ nullptr };
-            if (rowIndex >= 0 && TryGetItemAtRowIndex(rowIndex, item) && item)
-            {
-                SetCurrentCell(item, column);
-            }
+            SetCurrentCell(item, column);
         }
     }
 }
@@ -3651,7 +3559,6 @@ bool TableView::TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs
 {
     if (args.Handled() ||
         args.Key() != winrt::Windows::System::VirtualKey::Enter ||
-        IsEditing() ||
         IsKeyDown(winrt::VirtualKey::Menu) ||
         IsKeyDown(winrt::VirtualKey::Control) ||
         IsKeyDown(winrt::VirtualKey::Shift))
@@ -3672,8 +3579,7 @@ bool TableView::TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs
         return false;
     }
 
-    // Enter reaches focusable display content, not the editor: F2 owns editing, while template
-    // columns need Enter to reach controls such as ComboBox/CheckBox inside the single tab stop.
+    // Template columns need Enter to reach controls such as ComboBox/CheckBox inside the single tab stop.
     auto const cell = winrt::get_self<TableViewRow>(row)->GetVisibleCellInternal(columnIndex);
     auto const cellElement = cell.try_as<winrt::FrameworkElement>();
     if (!cellElement)
@@ -3700,7 +3606,6 @@ bool TableView::TryHandleCellInteractionNavigationKey(const winrt::KeyRoutedEven
 {
     if (args.Handled() ||
         !m_cellInteractionActive ||
-        IsEditing() ||
         IsKeyDown(winrt::VirtualKey::Menu) ||
         IsKeyDown(winrt::VirtualKey::Control))
     {
@@ -3767,8 +3672,7 @@ bool TableView::TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArg
 {
     if (args.Handled() ||
         args.Key() != winrt::Windows::System::VirtualKey::Escape ||
-        !m_cellInteractionActive ||
-        IsEditing())
+        !m_cellInteractionActive)
     {
         return false;
     }

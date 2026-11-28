@@ -2,16 +2,55 @@
     x:Name="PeopleTable"
     AutomationProperties.Name="People with templated cells"
     ItemsSource="{x:Bind Source}"
-    SelectionMode="Single"
-    IsReadOnly="False">
+    SelectionMode="Single">
     <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}" IsReadOnly="True"/>
+    <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <!-- Edit on demand: the app owns the edit state (IsEditingRole, PendingRole) on the item,
+         so a recycled row realizes the TextBox only for the person being edited. -->
+    <tv:TableViewTemplateColumn Header="Role" Width="160" SortMemberPath="Role">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate x:DataType="models:Person">
+                <Grid Background="Transparent" DoubleTapped="OnRoleCellDoubleTapped">
+                    <TextBlock
+                        Text="{x:Bind Role, Mode=OneWay}"
+                        ToolTipService.ToolTip="{x:Bind Role, Mode=OneWay}"
+                        Visibility="{x:Bind pages:CellTemplatingPage.CollapsedWhen(IsEditingRole), Mode=OneWay}"
+                        Style="{StaticResource CellTextStyle}"/>
+                    <TextBox
+                        x:Name="RoleEditor"
+                        x:Load="{x:Bind IsEditingRole, Mode=OneWay}"
+                        Text="{x:Bind PendingRole, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        MinWidth="0"
+                        Margin="6,2"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Role for {0}'}"
+                        Loaded="OnRoleBoxLoaded"
+                        PreviewKeyDown="OnRoleBoxPreviewKeyDown"
+                        TextChanged="OnRoleBoxTextChanged"
+                        LostFocus="OnRoleBoxLostFocus"/>
+                </Grid>
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
     <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
     <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
     <tv:TableViewTemplateColumn Header="Shift" Width="150" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart"/>
     <tv:TableViewTemplateColumn Header="Office" Width="150" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office"/>
+    <tv:TableViewTemplateColumn Header="Notes" Width="180" SortMemberPath="Notes">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate x:DataType="models:Person">
+                <TextBox
+                    Text="{x:Bind Notes, Mode=TwoWay}"
+                    PlaceholderText="Add a note"
+                    MinWidth="0"
+                    Margin="6,2"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Notes for {0}'}"/>
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
     <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
 </tv:TableView>
 

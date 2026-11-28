@@ -6,8 +6,8 @@
     Style="{StaticResource DefaultTableViewStyle}"
     SelectionMode="Single">
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+    <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
     <tv:TableViewTemplateColumn Header="Status" Width="120" CellTemplate="{StaticResource ActiveStatusChipTemplate}" SortMemberPath="IsActive"/>
-    <tv:TableViewTextColumn Header="Role" Width="200" Binding="{Binding Role}"/>
+    <tv:TableViewColumn Header="Role" Width="200" DisplayMemberBinding="{Binding Role}"/>
 </tv:TableView>

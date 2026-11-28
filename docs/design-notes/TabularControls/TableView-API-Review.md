@@ -7,7 +7,7 @@
 | **Namespace / binary** | `Microsoft.UI.Xaml.Controls.Tabular`, `Microsoft.UI.Xaml.Controls.Tabular.dll`. Every type is `[MUX_PREVIEW]`. |
 | **Companion docs** | [API spec](../../api-specs/TableView/TableView-spec.md), [dev spec](TableView-dev-spec.md), [functional spec](TableView-functional-spec.md), [hierarchy API spec](Hierarchical-Data-Rows-API-Spec.md) |
 
-The IDLs are the source of truth for shape. This document reviews the whole proposed surface, so its sorting, grouping, selection-lookup and data sections (§1.2, §2.1, §2.3, §2.4 `IndexOf`/`StartBringItemIntoView`, §2.6, and the matching rows of §3 to §5) describe the proposed data-shaping surface; members of it that this branch's IDL does not have are marked *(proposed; not in this IDL)*. The editing surface and `TableViewTextColumn` are in this IDL and are reviewed as they are (§1.3, §2.5); removing them is proposed separately. Where a contract depends on implementation that has not landed or been validated at run time, it says so.
+The IDLs are the source of truth for shape. This document reviews the whole proposed surface, so its sorting, grouping, selection-lookup and data sections (§1.2, §2.1, §2.3, §2.4 `IndexOf`/`StartBringItemIntoView`, §2.6, and the matching rows of §3 to §5) describe the proposed data-shaping surface; members of it that this branch's IDL does not have are marked *(proposed; not in this IDL)*. Where a contract depends on implementation that has not landed or been validated at run time, it says so.
 
 ## 1. Purpose and scope
 
@@ -41,9 +41,14 @@ These members are part of the proposed data-shaping surface.
 | Removed | `TableViewGroupHeader.ToggleRequested`, `TableViewGroupHeaderToggleRequestedEventArgs` (proposed; not in this IDL) | Internal header→owner wiring; headers are control-created so apps could not subscribe usefully. Replaced by TableView-level events. |
 | Removed | `TableViewGroupInfo.Level` (proposed; not in this IDL) | Always 0 and 0-based while `TableViewRow.Level` is 1-based. Re-add with nested grouping. |
 
-### 1.3 Editing and `TableViewTextColumn`
+### 1.3 Editing removal
 
-Unchanged by this review. Removing the editing surface (`TableView.IsReadOnly`, `IsEditing`, `CommitEdit`, `CancelEdit`, `BeginningEdit`, `CellEditEnding`, their args, `TableViewEditAction`, `TableViewColumn.IsReadOnly`, `CellEditingTemplate`, and the cell peer's `IValueProvider`) and `TableViewTextColumn` is proposed separately. The cleanups in §1.1 apply to them as they stand: the cell peer constructor change covers the editable cell, and cell regeneration (`NotifyCellContentChanged`) covers `TableViewTextColumn.Binding` and `CellEditingTemplate`.
+| | Member | Reason |
+|---|---|---|
+| Added | `TableViewColumn.DisplayMemberBinding` (`Binding`, CLR) | Restores the template-free "bind a collection, render data cleanly" baseline without a new column type, after `TableViewTextColumn` was cut: a read-only `TextBlock` cell bound against the row item, whose `Path` is the sort key when `SortMemberPath` is empty. WPF `GridViewColumn.DisplayMemberBinding` precedent, including its precedence: `DisplayMemberBinding` over `CellTemplate`, so a template column ignores its `CellTemplate` while `DisplayMemberBinding` is set. |
+| Removed | The editing surface: `TableView.IsReadOnly`, `IsEditing`, `CommitEdit`, `CancelEdit`, `BeginningEdit`, `CellEditEnding`, their args, `TableViewEditAction`, `TableViewColumn.IsReadOnly`, `CellEditingTemplate` | Not part of TableView (§2.5). TableView is always read-only, as the old default `IsReadOnly = true`. |
+| Removed | `TableViewTextColumn` (and `Binding`) | Not part of TableView (§5). A display-only text cell is `TableViewColumn.DisplayMemberBinding`; a styled one is a `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`, with `SortMemberPath` set. An unrealized row's UIA name comes from the visible columns' `DisplayMemberBinding` values, as its realized cells show them. |
+| Removed | `IValueProvider` on `TableViewCellAutomationPeer` (`Value`, `IsReadOnly`, `SetValue`) | On `main` the cell exposed `IValueProvider` only while editing was enabled (`SupportsValuePattern`); with editing removed it has no purpose. A cell's text is its UIA `Name`; screen readers navigate cells through the `Grid`/`Table` patterns. |
 
 ## 2. API surface by area
 
@@ -64,14 +69,13 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 | Sort members | — | See §2.3. |
 | `Visibility` | `Visibility`, `Visible` | Collapsed columns are absent from layout and from the UIA grid. |
 | `FrozenEdge` | `TableViewFrozenEdge`, `None` | `Leading` pins only within the contiguous prefix from column 0. Out-of-range values act as `None`. |
+| `DisplayMemberBinding` | `Binding` (CLR) | Read-only `TextBlock` cell bound against the row item (centred, density padding, ellipsis); `null` → the base column's cell is empty. Takes precedence over `CellTemplate` on a template column, as `GridViewColumn.DisplayMemberBinding` does in WPF. Its `Path` is the sort key when `SortMemberPath` is empty and the binding has no `Source`/`RelativeSource`/`ElementName`. Changing it regenerates realized cells. |
 | `CellToolTipBinding` | `Binding` (CLR) | Per-cell tooltip content, evaluated against the row item. |
 | `CellContextFlyout`, `HeaderContextFlyout` | `FlyoutBase` | See §2.7. |
-| `IsReadOnly`, `CellEditingTemplate` | DPs, `false` / `null` | Per-column editing; see §2.5. |
-| `overridable GenerateElementCore(Object)` | `FrameworkElement` | Creates the cell element; the base returns `null` (an empty cell). `dataItem` is for initial setup only; content must bind to the inherited `DataContext` because rows recycle. |
-| `protected NotifyCellContentChanged()` | `void` | Regenerates realized cells for this column and resets `Auto` width. Once the table is in a live tree (has a `XamlRoot`), regeneration is always asynchronous: it is posted once per dispatcher turn, however many times it is requested. Until then it is immediate. A change to the column being edited ends that edit synchronously, as before; any other change waits while a cell edit is open and regenerates after it closes. `CellTemplate`, `TableViewTextColumn.Binding`, `CellEditingTemplate` and `CellToolTipBinding` changes regenerate the same way. |
-| `overridable GetSortMemberPathCore()` | `String` | Effective sort path; the base returns `SortMemberPath`, `TableViewTextColumn` falls back to its `Binding`'s path, and an app-derived column can override it. |
-| `TableViewTextColumn.Binding` | `Binding` (CLR) | `TextBlock` cell bound against the row item (centred, density padding, ellipsis); edited through a built-in `TextBox` unless `CellEditingTemplate` is set. Changing it regenerates realized cells. |
-| `TableViewTemplateColumn.CellTemplate` | `DataTemplate` DP | Null → empty cell (never `ToString()`). |
+| `overridable GenerateElementCore(Object)` | `FrameworkElement` | Creates the cell element; the base returns the `DisplayMemberBinding` cell or `null`. `dataItem` is for initial setup only; content must bind to the inherited `DataContext` because rows recycle. |
+| `protected NotifyCellContentChanged()` | `void` | Regenerates realized cells for this column and resets `Auto` width. Once the table is in a live tree (has a `XamlRoot`), regeneration is always asynchronous: it is posted once per dispatcher turn, however many times it is requested. Until then it is immediate. `DisplayMemberBinding`, `CellTemplate` and `CellToolTipBinding` changes regenerate the same way. |
+| `overridable GetSortMemberPathCore()` | `String` | Effective sort path; the base returns `SortMemberPath`, else `DisplayMemberBinding`'s path, and an app-derived column can override it. |
+| `TableViewTemplateColumn.CellTemplate` | `DataTemplate` DP | Ignored while `DisplayMemberBinding` is set (WPF `GridViewColumn` precedence: `DisplayMemberBinding`, `CellTemplate`, `CellTemplateSelector`). Both null → empty cell (never `ToString()`). |
 | `TableViewColumnHeader` | sealed `ContentControl`, no ctor; `Column` (get) | `TargetType` for header styles. A header replaced by a header rebuild reads `Column == null`. |
 | `TableView.Columns` | `IVector<TableViewColumn>` (get) | Collection order = visual and UIA order. |
 
@@ -84,9 +88,10 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 | `TableView.CanUserSortColumns` | `Boolean`, `true` | Gates user input (pointer, keyboard, UIA Invoke on the header) for the whole table; `SortByColumn`/`ToggleSortDirection` ignore it. Turning it off clears the active column sort. (Proposed; not in this IDL: user input only, keeping the active sort, as WPF does.) |
 | `TableViewColumn.CanSort` (`CanUserSort` proposed) | `Boolean`, `true` | Gates user input and `SortByColumn`/`ToggleSortDirection` for this column; `SortByColumn(column, None)` still clears. Turning it off clears the column's sort, unless only the app's source sort lights it. (Proposed; not in this IDL: user input only, keeping the active sort, as WPF does.) |
 | `TableViewColumn.SortDirection` | `SortDirection` (get), `None` | Set by the control on a column sort. (Proposed; not in this IDL: settable by the app as display only, including in XAML or before the column is added, honoured when it joins `Columns`; the last added wins.) |
-| `TableViewColumn.SortMemberPath` | `String` | Path for a column sort; empty → `GetSortMemberPathCore()` (`TableViewTextColumn` falls back to its `Binding`'s path). |
+| `TableViewColumn.SortMemberPath` | `String` | Path for a column sort; empty → `GetSortMemberPathCore()` (the base falls back to `DisplayMemberBinding`'s path). |
 | `TableViewColumn.SortCycle` | `TableViewSortCycle`, `AscendingDescending` | Header/`ToggleSortDirection` cycle; `*None` variants add a step back to source order. |
 | `TableViewColumn.CustomSortComparer` | `ITableViewSortComparer` | `Int32 Compare(Object left, Object right)`; wins over the path; must be pure. An exception from it is contained: that pair compares equal, the sort and arrow commit and `Sorted` is raised; the fault is logged as an app fault. |
+| Changing a sorted column's key (`SortMemberPath`, `DisplayMemberBinding`, `CustomSortComparer`) | — | Re-sorts the column in place, or clears its sort when no key is left; see [the spec's "Sort keys" section](../../api-specs/TableView/TableView-spec.md#sort-keys). |
 | `SortByColumn(column, direction)` | `Boolean` | Declares the control's sort axis. `None` clears. |
 | `ToggleSortDirection(column)` | `Boolean` | Advances the column's `SortCycle`. |
 | `TableView.ClearSort()` | `Boolean` | Clears the column sort and, with it, every sort axis on the source. `false` when no column is sorted. |
@@ -126,20 +131,9 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 
 **Nuances.** Selection follows the item across reshapes; removing it clears the selection. `Select` before `ItemsSource` is set or while `SelectionMode == None` is a no-op (not queued). Selection is stashed across unload/reload. Keyboard follows the treegrid model (dev spec); selection follows focus for Up/Down; Ctrl+click toggles.
 
-### 2.5 Editing
+### 2.5 Editing (not part of TableView)
 
-| Member | Type | Semantics / default |
-|---|---|---|
-| `TableView.IsReadOnly` | `Boolean`, `true` | Editing is opt-in. Turning it on while an edit is open closes the edit. |
-| `TableView.IsEditing` | `Boolean` (get) | `true` while a cell edit is open. |
-| `TableView.CommitEdit()` / `CancelEdit()` | `Boolean` | Close the open edit; `false` when there is none or a handler vetoes. |
-| `BeginningEdit` | `TableViewBeginningEditEventArgs` (`Item`, `Column`, `Cancel`) | Raised before an edit opens; cancellable. |
-| `CellEditEnding` | `TableViewCellEditEndingEventArgs` (`Item`, `Column`, `EditAction`, `Cancel`) | Raised before an edit closes; cancelling keeps it open. A forced close (source reset, unload) cannot be vetoed. |
-| `TableViewColumn.IsReadOnly` | `Boolean`, `false` | Per-column opt-out. |
-| `TableViewColumn.CellEditingTemplate` | `DataTemplate` | Editor for any column type; a column with neither this nor a built-in editor (`TableViewTextColumn`) is not editable. |
-| `TableViewCellAutomationPeer` `IValueProvider` | — | Offered while the cell is editable with a `TextBox` editor; `SetValue` runs the same edit lifecycle as a user. |
-
-Removing this surface and `TableViewTextColumn` is proposed separately (§1.3); this review does not change it. A cell-content change requested while an edit is open (`NotifyCellContentChanged`, or a `Binding`, `CellTemplate`, `CellEditingTemplate` or `CellToolTipBinding` change) for another column does not close the edit: the regeneration waits until it closes. The same change to the edited column ends the edit synchronously, as before, because its editor was generated from the previous content; a change made from a `BeginningEdit` handler opens the edit with the new content; a change made after the editor is generated abandons the opening edit; a change made from a `CellEditEnding` handler lets that close finish with its own action.
+TableView is a read-only table: it has no editing API, edit mode or edit gestures, and no `TableViewTextColumn`, and neither is planned (removed members: §1.3, §5). Apps that need editing build it in a `CellTemplate`; editing scenarios belong to a DataGrid-class control. The named scenarios (Task Manager, File Explorer details view, File properties) need at most a one-field rename, which an app owns by swapping the cell template (for example from F2 through a `handledEventsToo` key handler); see [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance). Live controls in a `TableViewTemplateColumn.CellTemplate` are unaffected, and the cell peer has no `Value` pattern (§1.3): a cell's text is its UIA `Name`.
 
 ### 2.6 Grouping and hierarchy
 
@@ -183,7 +177,7 @@ Removing this surface and `TableViewTextColumn` is proposed separately (§1.3); 
 |---|---|---|---|---|
 | `TableViewAutomationPeer` | no | `(TableView)` | `DataGrid` | `Selection`, `Grid`, `Table`, `ItemContainer` |
 | `TableViewRowAutomationPeer` | no | `(TableViewRow)` | `DataItem` | `SelectionItem`, `ExpandCollapse` |
-| `TableViewCellAutomationPeer` | no | `(FrameworkElement owner)`: typed `FrameworkElement` because the cell element type is internal; validated at run time (`E_INVALIDARG` unless a prepared TableView cell with a row, column and index) | `DataItem` (localized `cell`) | `GridItem`, `TableItem`, `Value` (editable cells) |
+| `TableViewCellAutomationPeer` | no | `(FrameworkElement owner)`: typed `FrameworkElement` because the cell element type is internal; validated at run time (`E_INVALIDARG` unless a prepared TableView cell with a row, column and index) | `DataItem` (localized `cell`) | `GridItem`, `TableItem` |
 | `TableViewColumnHeaderAutomationPeer` | no | `(TableViewColumnHeader)` | `HeaderItem` | `Invoke` (+ `Transform`, implementation-only) |
 | `TableViewGroupHeaderAutomationPeer` | no | `(TableViewGroupHeader)` | `Group` | `ExpandCollapse`, `GridItem` |
 
@@ -215,7 +209,7 @@ Data-shaping parity is reviewed with the proposed data-shaping surface. The one 
 
 | Capability | TableView | Precedent | Class |
 |---|---|---|---|
-| Column types | `TableViewTextColumn` (text, editable), `TableViewTemplateColumn`, derivable base | WPF/WCT `DataGridTextColumn`, `DataGridTemplateColumn`, plus check-box and combo-box columns (unv.); WPF `GridViewColumn.DisplayMemberBinding`/`CellTemplate`. | P; more built-ins G |
+| Column types | Base column with `DisplayMemberBinding` (read-only text), `TableViewTemplateColumn`, derivable base | WPF `GridViewColumn.DisplayMemberBinding`/`CellTemplate`; WPF/WCT `DataGridTextColumn`, `DataGridTemplateColumn`, plus check-box and combo-box columns (unv.). | P; editable text and more built-ins G |
 | Cell factory | `GenerateElementCore` | ItemsRepeater `ElementFactory.GetElement`/`GetElementCore`; WPF `GenerateElement`/`GenerateEditingElement` (unv.). | P |
 | Cell refresh hook | `NotifyCellContentChanged()` | WPF `RefreshCellContent` (unv.). | P |
 | Width type | `GridLength` (Pixel/Auto/Star) | WPF `DataGridLength` (adds `SizeToHeader`/`SizeToCells`); WCT `ColumnWidth`. | I; auto-fit G |
@@ -251,7 +245,7 @@ Data-shaping parity is reviewed with the proposed data-shaping surface. The one 
 
 | Capability | TableView | Precedent | Class |
 |---|---|---|---|
-| Cell editing | `IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`, `CellEditingTemplate`, `TableViewTextColumn` editor | WPF/WCT `DataGrid` editing (`IsReadOnly`, `BeginEdit`, `CellEditEnding`, row editing). | P (no public `BeginEdit`; removal proposed separately, §1.3) |
+| Cell editing | none; live controls in `CellTemplate` only | WPF/WCT `DataGrid` editing (`IsReadOnly`, `BeginEdit`, `CellEditEnding`, row editing). | G (not part of TableView; DataGrid-class control, §2.5) |
 
 ### 3.6 Grouping and hierarchy
 
@@ -298,6 +292,7 @@ Data-shaping parity is reviewed with the proposed data-shaping surface. The one 
 | Per-column `FrozenEdge` instead of `FrozenColumnCount` | Leaves room for trailing pinning per column. |
 | Display-only settable `SortDirection` (proposed; not in this IDL) | Separates sort state (arrow) from sort execution, as WCT/AG Grid/TanStack/MUI do. |
 | `CanUser*` gate user input only | WPF naming and semantics; programmatic APIs are the app's own decision. True of the resize gates today; for the sort gates it is proposed (§2.3). |
+| No editing | Read-only table; the named scenarios need at most an app-owned rename (§2.5). Editing scenarios belong to a DataGrid-class control. |
 | Containers and columns unsealed | WinUI container convention (`ItemContainer`, `TreeViewItem`); sealing later is breaking. |
 | No row headers, no column virtualization | Target is ~5–50 columns; row headers out of scope (`HeadersVisibility` has no `Row`). |
 
@@ -307,11 +302,11 @@ Data-shaping parity is reviewed with the proposed data-shaping surface. The one 
 |---|---|---|---|
 | Seal `TableViewColumn`, or add a cell-refresh hook | IDL feedback #6 | Hook added (`NotifyCellContentChanged`); stays unsealed | Derivation is a supported scenario. |
 | Seal `TableViewTemplateColumn`, `TableViewRow`, `TableViewCellsPanel` | IDL feedback #7, #8, #29; stability review | Not taken | WinUI keeps containers and panels unsealed (`ItemContainer`, `TreeViewItem`, `NavigationViewItem`, `WrapPanel`). The gap is a row factory, not sealing (§6). |
-| `TableViewTextColumn` (`Binding`, built-in `TextBox` editor) | API review 2026-11-11 | Removal proposed separately | Kept in this review (§1.3). |
+| `TableViewTextColumn` (`Binding`, built-in `TextBox` editor) | API review 2026-11-11 | Not part of TableView | Overkill: a column type for one property. Display-only text is `TableViewColumn.DisplayMemberBinding` on the base column (WPF `GridViewColumn` precedent), so no new type; a styled text cell is a `TableViewTemplateColumn` with a bound `TextBlock` (TableView has no cell editing, §2.5). Unrealized rows are named from the visible columns' `DisplayMemberBinding` values (with their converters); columns without one contribute nothing, and a row with no such text falls back to the item's `ToString`. An editable text cell is an app-owned editor in a `CellTemplate`. |
 | Settable `TableViewGroupHeader.IsExpanded` routed to the owner | TVS feedback (TreeView/Expander precedent); an earlier proposal | Rejected: read-only + `ExpandGroup`/`CollapseGroup` | Headers are pooled and re-created on every reshape; expansion is intent keyed by group identity, so the API takes a key on the owner. |
 | Remove `TableViewGroupInfo.ItemCountText` | IDL feedback #23; an earlier proposal | Kept | A localized, culture-formatted string the group header template binds; `{Binding}` cannot reproduce the localized format. |
 | Remove `TableViewGroupInfo.IsExpandable` | IDL feedback #24 (optional) | Kept | Not constant: empty groups and hierarchical groups make it vary; drives the `NotExpandable` state. |
-| Cell editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, edit events and args, `CellEditingTemplate`) | API review 2026-11-11 | Removal proposed separately | Kept in this review (§1.3, §2.5). |
+| Cell editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, edit events and args, `CellEditingTemplate`) | API review 2026-11-11 | Not part of TableView | See §2.5. |
 | Rename `SortDirection` → `TableViewSortDirection`; reuse `ListSortDirection` | TVS feedback A12; precedent P14 | Not taken | Shared shaping enum; `None` is required. |
 | `Select(Object)` | IDL feedback #4 | Not taken | `IndexOf` + `Select(Int32)` keeps one selection API (ItemsView). |
 | Move peer ctors to a TestHooks IDL | Stability review | Not taken; owner-element ctors instead | `(TableViewColumnHeader)` and `(FrameworkElement)` owner ctors follow the WinUI peer convention and validate the owner. |

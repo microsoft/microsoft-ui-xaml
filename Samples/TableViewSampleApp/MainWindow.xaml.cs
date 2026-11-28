@@ -48,7 +48,6 @@ public sealed partial class MainWindow : Window
         ["Hierarchy"] = typeof(HierarchyPage),
         ["TextWrap"] = typeof(TextWrapPage),
         ["CellTemplating"] = typeof(CellTemplatingPage),
-        ["CellEditing"] = typeof(CellEditingPage),
         ["EmptyState"] = typeof(EmptyStatePage),
         ["Density"] = typeof(DensityPage),
         ["RightToLeft"] = typeof(RightToLeftPage),

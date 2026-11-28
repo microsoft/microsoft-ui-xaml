@@ -16,7 +16,7 @@ namespace TableViewTelemetry
     namespace Feature
     {
         constexpr uint32_t Sorting = 1u << 0;
-        constexpr uint32_t Editing = 1u << 1;
+        // 1u << 1 was Editing; do not reuse it.
         constexpr uint32_t Filtering = 1u << 2;
         constexpr uint32_t Grouping = 1u << 3;
         constexpr uint32_t Hierarchy = 1u << 4;
@@ -25,9 +25,10 @@ namespace TableViewTelemetry
     // TableView_Instance's ColumnKinds bits. A column whose class is not one of ours is the app's.
     namespace ColumnKind
     {
-        constexpr uint32_t Text = 1u << 0;
+        // Bit 0 (Text) is retired; not reused so existing telemetry stays comparable.
         constexpr uint32_t Template = 1u << 1;
         constexpr uint32_t AppDerived = 1u << 2;
+        constexpr uint32_t DisplayMemberBinding = 1u << 3;
     }
     // TableView_Instance's SourceKinds bits: a plain collection TableView projected, or the app's own TableViewSource.
     namespace SourceKind
@@ -85,14 +86,13 @@ namespace TableViewTelemetry
     // Use counts only into the session it happened in, and only once the instance has shown rows.
     void MarkUsed(Session& session, uint64_t startedIn, uint32_t feature) noexcept;
 
-    // The feature a measured operation exercises, or 0. Editing is used by a commit, not by opening an editor.
+    // The feature a measured operation exercises, or 0.
     constexpr uint32_t FeatureOf(TableViewTip::Operation operation) noexcept
     {
         switch (operation)
         {
         case TableViewTip::Operation::Sort: return Feature::Sorting;
         case TableViewTip::Operation::Filter: return Feature::Filtering;
-        case TableViewTip::Operation::CommitEdit: return Feature::Editing;
         default: return 0;
         }
     }

@@ -147,7 +147,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // The single builder behind every fixture TableView. 
         //      itemsSource defaults to MakeItems() for bound tables, null for unbound tables.
         //      headers default to a single "Name" column (pass an empty array for a column-less table).
-        //      bound: true binds each text column to the property named by its header
+        //      bound: true binds each text template column to the property named by its header
         //                  (a header with no matching property renders empty cells); 
         //      bound: false leaves the columns purely structural.
         internal static TableView CreateTableView(
@@ -163,22 +163,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             foreach (var header in headers ?? new[] { "Name" })
             {
-                tableView.Columns.Add(MakeTextColumn(header, bound: bound));
+                tableView.Columns.Add(MakeTextTemplateColumn(header, bound: bound));
             }
 
             return tableView;
         }
 
-        // A text column bound one-way to bindingPath (defaulting to the header). Width is left at the
-        // column default unless supplied. Pass bound: false for a header-only column whose cells stay
-        // empty - the unbound structural column CreateTableView(bound: false) uses.
-        internal static TableViewTextColumn MakeTextColumn(string header, string bindingPath = null, GridLength? width = null, bool bound = true)
+        // A template column showing bindingPath (defaulting to the header) in a TextBlock and sorting
+        // on it. Width is left at the column default unless supplied. Pass bound: false
+        // for a header-only column whose cells stay empty - the unbound structural column
+        // CreateTableView(bound: false) uses.
+        internal static TableViewTemplateColumn MakeTextTemplateColumn(string header, string bindingPath = null, GridLength? width = null, bool bound = true)
         {
-            var column = new TableViewTextColumn { Header = header };
+            var column = new TableViewTemplateColumn { Header = header };
 
             if (bound)
             {
-                column.Binding = new Binding { Path = new PropertyPath(bindingPath ?? header), Mode = BindingMode.OneWay };
+                var path = bindingPath ?? header;
+                column.CellTemplate = MakeTextCellTemplate(path);
+                column.SortMemberPath = path;
             }
 
             if (width.HasValue)
@@ -187,6 +190,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             return column;
+        }
+
+        // A base column whose cells are the control-generated DisplayMemberBinding TextBlock bound to
+        // path, sorting on it. Use this, not MakeTextTemplateColumn, when a test relies on behaviour
+        // only generated text cells get (density font size and text padding). Width is left at the
+        // column default unless supplied.
+        internal static TableViewColumn MakeDisplayMemberColumn(string header, string path, GridLength? width = null)
+        {
+            var column = new TableViewColumn
+            {
+                Header = header,
+                SortMemberPath = path,
+                DisplayMemberBinding = new Binding { Path = new PropertyPath(path) },
+            };
+
+            if (width.HasValue)
+            {
+                column.Width = width.Value;
+            }
+
+            return column;
+        }
+
+        // Plain text cells are not focus targets; a cell menu makes every cell actionable, so the
+        // body can reach cell level.
+        internal static void MakeCellsActionable(TableView tableView)
+        {
+            foreach (var column in tableView.Columns)
+            {
+                column.CellContextFlyout = new MenuFlyout();
+            }
+        }
+
+        internal static DataTemplate MakeTextCellTemplate(string path)
+        {
+            var binding = path == "." ? "{Binding}" : "{Binding " + global::System.Security.SecurityElement.Escape(path) + "}";
+            return (DataTemplate)XamlReader.Load(
+                "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                $"<TextBlock Text='{binding}' VerticalAlignment='Center' Padding='8,4,8,4' TextTrimming='CharacterEllipsis'/>" +
+                "</DataTemplate>");
         }
 
         // A template column whose cells inflate cellTemplate. Width is left at the column default
@@ -381,7 +424,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // The general fixture builder: a TableView over items (default sample rows) sized width x
-        // height, with text columns each bound to "Name" at the given widths. Defaults to a single
+        // height, with text template columns each bound to "Name" at the given widths. Defaults to a single
         // 200px "Name" column when none are supplied.
         internal static TableView CreateTableViewWithColumns(
             object items = null,
@@ -398,7 +441,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             foreach (var (header, columnWidth) in columns)
             {
-                tableView.Columns.Add(MakeTextColumn(header, "Name", columnWidth));
+                tableView.Columns.Add(MakeTextTemplateColumn(header, "Name", columnWidth));
             }
 
             return tableView;
@@ -677,8 +720,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return group.CurrentState?.Name;
         }
 
-        // The TextBlock a cell renders, whichever column type produced it: a text column generates one
-        // directly, a template column generates a ContentPresenter that inflates one.
+        // The TextBlock a cell renders: an app-derived column may generate one directly, a template
+        // column generates a ContentPresenter that inflates one.
         internal static TextBlock GetCellTextBlock(Grid cellWrapper)
         {
             var textBlock = GetCellContent(cellWrapper) as TextBlock ?? FindVisualChildrenByType<TextBlock>(cellWrapper).FirstOrDefault();
@@ -720,7 +763,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return tableView;
         }
 
-        // One text column and one template column over the same property, so a recycle test can check
+        // One text template column and one plain template column over the same property, so a recycle test can check
         // both content routes on the same row.
         internal static TableView CreateMixedColumnTable(List<Person> items)
         {

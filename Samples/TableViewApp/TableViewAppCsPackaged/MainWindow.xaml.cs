@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 
 namespace TableViewAppCsPackaged
 {
@@ -26,20 +27,18 @@ namespace TableViewAppCsPackaged
 
             // Second instance built entirely from code, to cover the non-markup activation path.
             var codeTable = new TableView { Height = 160, ItemsSource = People };
-            codeTable.Columns.Add(new TableViewTextColumn
-            {
-                Header = "Name",
-                Binding = new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("Name") }
-            });
-            codeTable.Columns.Add(new TableViewTextColumn
-            {
-                Header = "Age",
-                Binding = new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("Age") }
-            });
+            codeTable.Columns.Add(MakeColumn("Name", "Name"));
+            codeTable.Columns.Add(MakeColumn("Age", "Age"));
             CodeTableHost.Children.Add(codeTable);
 
             StatusText.Text = $"Both tables are bound to the same {People.Count} items.";
         }
+
+        private static TableViewColumn MakeColumn(string header, string path) => new TableViewColumn
+        {
+            Header = header,
+            DisplayMemberBinding = new Binding { Path = new PropertyPath(path) },
+        };
 
         private void ToggleTheme_Click(object sender, RoutedEventArgs e)
         {

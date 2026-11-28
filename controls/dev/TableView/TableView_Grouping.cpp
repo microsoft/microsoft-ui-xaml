@@ -497,26 +497,9 @@ void TableView::ApplyGroupExpansionByIdentity(
         return;
     }
 
-    // An open edit sits over a row that expansion is about to move or remove. Coalesce behind the
-    // termination rather than reshaping underneath it.
-    if (!TryTerminateEditForControlInitiatedReshape())
-    {
-        if (m_editState == EditState::Ending)
-        {
-            QueueCoalescedEditReshape(
-                axis == BulkExpansionAxis::Groups ? TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
-                [this, identity, desired, generation, axis, bulkGeneration, subtree]()
-            {
-                ApplyGroupExpansionByIdentity(identity, desired, generation, axis, bulkGeneration, subtree);
-            });
-        }
-        return;
-    }
-
     bool changed = false;
-    // Local strong ref: a handler may re-declare the shape and replace the provider mid-call. Edit-ending handlers
-    // ran app code above, so re-check the source before mutating; a stale request still falls through to drain
-    // queued edit reshapes.
+    // Local strong ref: a handler may re-declare the shape and replace the provider mid-call, so re-check the source
+    // before mutating.
     auto const provider = m_tableViewSourceRowMetadata;
     std::optional<winrt::ExpandCollapseState> groupStateBefore;
     if (axis == BulkExpansionAxis::Groups && !subtree &&
@@ -570,7 +553,6 @@ void TableView::ApplyGroupExpansionByIdentity(
         }
     }
 
-    DrainCoalescedEditReshape();
 
     // Announce only once the tree has actually moved. Raising while the mutation was still queued
     // told clients to re-read a structure that had not changed yet.
@@ -877,7 +859,7 @@ void TableView::CollapseAllRows()
 }
 
 // Bulk counterpart of ApplyGroupExpansionByIdentity for either axis. Runs inline (no UIA
-// callout), but still coalesces behind an in-flight edit.
+// callout).
 void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
 {
     if (!m_tableViewSourceRowMetadata)
@@ -885,7 +867,7 @@ void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
-    // Keep documented no-ops from committing an open edit.
+    // A documented no-op when the axis is absent.
     const bool hasAxis = (axis == BulkExpansionAxis::Rows)
         ? m_tableViewSourceRowMetadata->IsHierarchicalSource()
         : IsTableViewSourceGrouped();
@@ -895,7 +877,7 @@ void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
     }
 
     // Stamped at the request, so a per-item request made after this one - even while this one is
-    // deferred behind an ending edit - is not mistaken for an older intent.
+    // deferred - is not mistaken for an older intent.
     ++BulkExpansionGeneration(axis);
 
     ApplyBulkExpansion(expand, axis);
@@ -908,28 +890,11 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
-    // Older deferred work runs first, so a provider it replaces does not make this request look stale.
-    FlushDeferredEditReshapes();
-    // That work may have removed the axis; a documented no-op must not end an open edit.
-    if (!m_tableViewSourceRowMetadata ||
-        !((axis == BulkExpansionAxis::Rows) ? m_tableViewSourceRowMetadata->IsHierarchicalSource() : IsTableViewSourceGrouped()))
+    if (!((axis == BulkExpansionAxis::Rows) ? m_tableViewSourceRowMetadata->IsHierarchicalSource() : IsTableViewSourceGrouped()))
     {
         return;
     }
     const uint64_t generation = m_rowMetadataGeneration;
-    if (!TryTerminateEditForControlInitiatedReshape())
-    {
-        if (m_editState == EditState::Ending)
-        {
-            QueueCoalescedEditReshape(
-                axis == BulkExpansionAxis::Groups ? TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
-                [this, expand, axis]()
-            {
-                ApplyBulkExpansion(expand, axis);
-            });
-        }
-        return;
-    }
 
     // Both axes: row expansion under groups also recycles focused header containers.
     auto const focusedGroupIdentity = CaptureFocusedContainerForRestore();
@@ -937,7 +902,7 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     bool changed = false;
     try
     {
-        // Local strong ref, as in ApplyGroupExpansionByIdentity; edit-ending handlers may have
+        // Local strong ref, as in ApplyGroupExpansionByIdentity; GroupExpanding handlers may have
         // replaced or cleared the source.
         auto const provider = m_tableViewSourceRowMetadata;
         if (provider && generation == m_rowMetadataGeneration)
@@ -964,7 +929,6 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     {
     }
 
-    DrainCoalescedEditReshape();
 
     if (changed)
     {

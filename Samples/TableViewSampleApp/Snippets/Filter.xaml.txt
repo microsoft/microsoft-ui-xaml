@@ -18,7 +18,7 @@
     SelectionMode="Single"
     EmptyTemplate="{StaticResource FilterEmptyTemplate}">
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+    <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
     <!-- A template column sorts by SortMemberPath, the value behind the template. -->
     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
     <tv:TableViewTemplateColumn Header="Role" Width="200" CellTemplate="{StaticResource RoleTextBoxTemplate}" SortMemberPath="Role"/>

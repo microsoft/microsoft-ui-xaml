@@ -15,6 +15,7 @@
 #include "TableViewAutomationPeer.properties.cpp"
 
 #include <algorithm>
+#include <optional>
 
 TableViewAutomationPeer::TableViewAutomationPeer(winrt::TableView const& owner)
     : ReferenceTracker(owner)
@@ -23,52 +24,113 @@ TableViewAutomationPeer::TableViewAutomationPeer(winrt::TableView const& owner)
 
 namespace
 {
-    // A realized row's name as composed from its text cells, read from the item without realizing the row.
-    winrt::hstring ComposeTextColumnValues(TableView& table, winrt::IInspectable const& item)
+    // Composes an unrealized row's name from its DisplayMemberBinding cells, read from the item
+    // without realizing the row. Holds one bound probe per column so a scan over many rows
+    // rebinds nothing; the destructor drops the bindings and the last item.
+    class DisplayMemberNameComposer
     {
-        std::wstring composed;
-        auto const separator = LocalizedOrFallbackForTableViewAutomation(SR_TableViewCellTextSeparator, L", ");
-        winrt::TextBlock probe{ nullptr };
-        for (auto const& column : table.Columns())
+    public:
+        explicit DisplayMemberNameComposer(TableView& table)
+            : m_separator(LocalizedOrFallbackForTableViewAutomation(SR_TableViewCellTextSeparator, L", "))
         {
-            auto const textColumn = IsVisibleColumn(column) ? column.try_as<winrt::TableViewTextColumn>() : nullptr;
-            auto const binding = textColumn ? textColumn.Binding() : nullptr;
-            // A detached probe cannot resolve element-relative sources.
-            if (!binding || !binding.ElementName().empty() || binding.RelativeSource())
+            for (auto const& column : table.Columns())
             {
-                continue;
-            }
-            if (!probe)
-            {
-                probe = winrt::TextBlock{};
-                // Converters and StringFormat format for the target's language, which a cell inherits.
+                auto const binding = IsVisibleColumn(column) ? column.DisplayMemberBinding() : nullptr;
+                // A detached probe cannot resolve element-relative sources.
+                if (!binding || !binding.ElementName().empty() || binding.RelativeSource())
+                {
+                    continue;
+                }
+                winrt::TextBlock probe;
+                // Converters format for the target's language, which a cell inherits.
                 probe.Language(table.Language());
+                try
+                {
+                    winrt::BindingOperations::SetBinding(probe, winrt::TextBlock::TextProperty(), binding);
+                }
+                catch (winrt::hresult_error const&)
+                {
+                    continue;
+                }
+                m_probes.push_back({ probe, binding });
             }
-            winrt::hstring text;
+        }
+
+        ~DisplayMemberNameComposer()
+        {
+            for (auto const& probe : m_probes)
+            {
+                Unbind(probe.element);
+            }
+        }
+
+        DisplayMemberNameComposer(DisplayMemberNameComposer const&) = delete;
+        DisplayMemberNameComposer& operator=(DisplayMemberNameComposer const&) = delete;
+
+        winrt::hstring Compose(winrt::IInspectable const& item)
+        {
+            std::wstring composed;
+            if (!item)
+            {
+                return {};
+            }
+            for (auto const& probe : m_probes)
+            {
+                winrt::hstring text;
+                try
+                {
+                    probe.element.DataContext(item);
+                    text = probe.element.Text();
+                }
+                catch (winrt::hresult_error const&)
+                {
+                    // An app converter that throws only costs that column's text; rebind so the
+                    // failed evaluation's leftover Text cannot leak into a later row.
+                    Unbind(probe.element);
+                    try
+                    {
+                        winrt::BindingOperations::SetBinding(probe.element, winrt::TextBlock::TextProperty(), probe.binding);
+                    }
+                    catch (winrt::hresult_error const&)
+                    {
+                    }
+                }
+                if (text.empty())
+                {
+                    continue;
+                }
+                if (!composed.empty())
+                {
+                    composed += m_separator.c_str();
+                }
+                composed += text;
+            }
+            return winrt::hstring{ composed };
+        }
+
+    private:
+        struct Probe
+        {
+            winrt::TextBlock element;
+            winrt::Binding binding;
+        };
+
+        // Clears the binding before the DataContext so the binding is not re-evaluated against null.
+        static void Unbind(winrt::TextBlock const& probe) noexcept
+        {
             try
             {
-                winrt::BindingOperations::SetBinding(probe, winrt::TextBlock::TextProperty(), binding);
-                probe.DataContext(item);
-                text = probe.Text();
                 probe.ClearValue(winrt::TextBlock::TextProperty());
                 probe.DataContext(nullptr);
             }
-            catch (winrt::hresult_error const&)
+            catch (...)
             {
-                // An app converter that throws only costs that column's text.
             }
-            if (text.empty())
-            {
-                continue;
-            }
-            if (!composed.empty())
-            {
-                composed += separator.c_str();
-            }
-            composed += text;
         }
-        return winrt::hstring{ composed };
-    }
+
+        winrt::hstring m_separator;
+        std::vector<Probe> m_probes;
+    };
 
     // A container-free data-item peer for a selected, unrealized row. Reads never realize it; once
     // realized it forwards to the row's peer but keeps its own RuntimeId.
@@ -241,8 +303,8 @@ namespace
             }
             // Read from the source: m_item may be a weak reference to a box nothing else keeps alive.
             auto const tableImpl = winrt::get_self<TableView>(m_table.get());
-            auto const item = tableImpl->UnwrapEditingDataItem(tableImpl->GetRowsRepeaterInternal().ItemsSourceView().GetAt(index));
-            if (auto const composed = ComposeTextColumnValues(*tableImpl, item); !composed.empty())
+            auto const item = tableImpl->UnwrapDataItem(tableImpl->GetRowsRepeaterInternal().ItemsSourceView().GetAt(index));
+            if (auto const composed = DisplayMemberNameComposer{ *tableImpl }.Compose(item); !composed.empty())
             {
                 return composed;
             }
@@ -393,7 +455,7 @@ namespace
             auto const matches = [&](int32_t index)
             {
                 return index >= 0 && index < count &&
-                    m_item.SameIdentityAs(tableImpl->UnwrapEditingDataItem(view.GetAt(index)));
+                    m_item.SameIdentityAs(tableImpl->UnwrapDataItem(view.GetAt(index)));
             };
             // The selected index first: after an insert, m_lastIndex can hold another occurrence of the item.
             for (const int32_t hint : { selectedIndex, m_lastIndex })
@@ -474,7 +536,7 @@ namespace
                 return row == m_row.get() && IsBound(row);
             }
             return m_byIndex ||
-                m_item.SameIdentityAs(winrt::get_self<TableView>(m_table.get())->UnwrapEditingDataItem(row.DataContext()));
+                m_item.SameIdentityAs(winrt::get_self<TableView>(m_table.get())->UnwrapDataItem(row.DataContext()));
         }
 
         winrt::TableViewRow RealizedRow(int32_t index)
@@ -794,18 +856,6 @@ winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
     return clipped;
 }
 
-void TableViewAutomationPeer::ShowContextMenuCore()
-{
-    // The base raises ContextRequested on the TableView itself, which shows its own
-    // ContextFlyout before the template-root suppression hook can see it.
-    if (auto const impl = GetImpl(); impl && impl->AreContextMenusSuppressed())
-    {
-        return;
-    }
-
-    __super::ShowContextMenuCore();
-}
-
 void TableViewAutomationPeer::RaiseStructureChangedForSortChange()
 {
     // Same children, new order.
@@ -1022,7 +1072,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
         const bool hasSelectedIndex = view && selectedIndex < view.Count();
         if (hasSelectedIndex)
         {
-            item = impl->UnwrapEditingDataItem(view.GetAt(selectedIndex));
+            item = impl->UnwrapDataItem(view.GetAt(selectedIndex));
         }
         auto const rowElement = repeater.TryGetElement(selectedIndex);
         if (rowElement)
@@ -1081,7 +1131,7 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateSelectedItemPeer(Table
         }
         auto const repeater = table.GetRowsRepeaterInternal();
         const bool byIndex = !item || !TableView::SameInspectableIdentity(
-            item, table.UnwrapEditingDataItem(repeater.ItemsSourceView().GetAt(index)));
+            item, table.UnwrapDataItem(repeater.ItemsSourceView().GetAt(index)));
         peer = winrt::make_self<TableViewRowItemAutomationPeer>(
             table.get_strong().as<winrt::TableView>(), item, index, byIndex).as<winrt::AutomationPeer>();
     }
@@ -1249,7 +1299,8 @@ static bool MatchesItemName(
     TableView& table,
     winrt::IInspectable const& item,
     winrt::UIElement const& element,
-    winrt::hstring const& requested)
+    winrt::hstring const& requested,
+    std::optional<DisplayMemberNameComposer>& composer)
 {
     if (element)
     {
@@ -1259,8 +1310,22 @@ static bool MatchesItemName(
         }
         return false;
     }
-    auto const group = TryGetGroupedEntry(item);
-    auto const name = group ? table.GetGroupHeaderNameCandidate(*group) : ItemToName(item);
+    if (auto const group = TryGetGroupedEntry(item))
+    {
+        auto const name = table.GetGroupHeaderNameCandidate(*group);
+        return !name.empty() && name == requested;
+    }
+    // Same name an unrealized row's peer reports (GetNameCore).
+    auto const dataItem = table.UnwrapDataItem(item);
+    if (!composer)
+    {
+        composer.emplace(table);
+    }
+    auto name = composer->Compose(dataItem);
+    if (name.empty())
+    {
+        name = ItemToName(dataItem);
+    }
     return !name.empty() && name == requested;
 }
 
@@ -1348,6 +1413,8 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
 
     // Null property means "return the next item" per IItemContainerProvider.
     const bool matchAny = !property;
+    // Built on the first unrealized row a Name search reaches, then reused for the rest of the scan.
+    std::optional<DisplayMemberNameComposer> nameComposer;
 
     for (int32_t i = startIndex + 1; i < count; ++i)
     {
@@ -1368,14 +1435,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
             // Realized row peer names override item text for custom AutomationProperties.Name.
             if (property == winrt::AutomationElementIdentifiers::NameProperty())
             {
-                isMatch = MatchesItemName(*impl, item, repeater.TryGetElement(i), StringPropertyValue(value));
-            }
-            // ValueValue — match by cell value (text content).
-            else if (property == winrt::ValuePatternIdentifiers::ValueProperty())
-            {
-                hstring requested = StringPropertyValue(value);
-                hstring candidate = ItemToName(item);
-                isMatch = (candidate == requested);
+                isMatch = MatchesItemName(*impl, item, repeater.TryGetElement(i), StringPropertyValue(value), nameComposer);
             }
             // Match only explicit row AutomationId values; defaults are empty.
             else if (property == winrt::AutomationElementIdentifiers::AutomationIdProperty())
@@ -1470,7 +1530,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
         if (rowElement)
         {
             if (property == winrt::AutomationElementIdentifiers::NameProperty() &&
-                !MatchesItemName(*impl, item, rowElement, StringPropertyValue(value)))
+                !MatchesItemName(*impl, item, rowElement, StringPropertyValue(value), nameComposer))
             {
                 continue;
             }

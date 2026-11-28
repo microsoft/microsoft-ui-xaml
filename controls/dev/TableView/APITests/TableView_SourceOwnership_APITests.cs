@@ -283,6 +283,115 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection, "A refused sort leaves the column state unchanged.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a reclaimed table does not re-rank its comparer sort with a comparer a Sorting handler declined.")]
+        public void VerifyReclaimDoesNotApplyDeclinedComparer()
+        {
+            TableView tableView = null;
+            StackPanel host = null;
+            int sortingCount = 0;
+            int sortedCount = 0;
+            var comparerOrder = new[] { "Asha", "Ines", "Owen", "Rafa", "Diego", "Meiriannwen" };
+            List<ShapedPerson> people = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeShapedPeople();
+                tableView = CreateTableView(TableViewSource.From(people), headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                tableView.Columns[0].CustomSortComparer = new LengthThenOrdinalComparer();
+                host = new StackPanel();
+                host.Children.Add(tableView);
+                LoadContent(host);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the comparer column sorts.");
+                tableView.Sorting += (s, e) => { sortingCount++; e.Cancel = true; };
+                tableView.Sorted += (s, e) => sortedCount++;
+                tableView.Columns[0].CustomSortComparer = new ReverseNameComparer();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, sortingCount, "Precondition: the comparer change is offered and declined.");
+                host.Children.Remove(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                // Reorders under the accepted comparer, unseen while unloaded.
+                people.First(p => p.Name == "Mei").Name = "Meiriannwen";
+                host.Children.Add(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, sortingCount, "The reclaim must not offer the declined comparer again.");
+                Verify.AreEqual(0, sortedCount, "The reclaim must not install the declined comparer.");
+                VerifySequence(comparerOrder, RowValues(tableView, person => person.Name), "the rows must keep the accepted comparer's order");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sorted column's key change made while another table owned the source re-sorts once the table reclaims it.")]
+        public void VerifyReclaimAppliesKeyChangeMadeWhileOwnedByOther()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource shared = null;
+            StackPanel host = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                shared = TableViewSource.From(MakeShapedPeople());
+                first = CreateTableView(shared, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+            });
+
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(first.SortByColumn(first.Columns[0], SortDirection.Ascending), "Precondition: the first table sorts Name.");
+                first.Sorting += (s, e) => events.Add($"Sorting:{e.Direction}");
+                first.Sorted += (s, e) => events.Add($"Sorted:{e.Direction}");
+                host.Children.Remove(first);
+                second = CreateTableView(shared, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host.Children.Add(second);
+            });
+
+            SettleLayout(second);
+            RunOnUIThread.Execute(() => first.Columns[0].SortMemberPath = "Role");
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, events.Count, "Precondition: no sort runs while another table owns the source.");
+                host.Children.Remove(second);
+                host.Children.Add(first);
+            });
+
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(new[] { "Sorting:Ascending", "Sorted:Ascending" }, events, "the reclaim must apply the key change as one transition");
+                var roles = RowValues(first, person => person.Role);
+                VerifySequence(roles.OrderBy(role => role, StringComparer.Ordinal).ToList(), roles, "the rows must follow the new key");
+                GC.KeepAlive(second);
+            });
+        }
     }
 
     [TestClass]

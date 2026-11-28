@@ -2574,7 +2574,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region 13.3 Density
 
         [TestMethod]
-        public void VerifyDetachedTextColumnUsesStandardDensityMetrics()
+        public void VerifyDetachedDisplayMemberColumnUsesStandardDensityMetrics()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -2582,7 +2582,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
                 foreach (var density in DensityCases)
                 {
-                    var column = new TextProbeColumn();
+                    var column = new DisplayMemberProbeColumn { DisplayMemberBinding = new Binding() };
                     var detachedText = (TextBlock)column.Generate();
                     Verify.AreEqual(new Thickness(12, 5, 12, 7), detachedText.Padding,
                         "A column without an owner must use Standard text padding.");
@@ -2605,7 +2605,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyDensityTextColumnFallbackMetrics()
+        public void VerifyDensityDisplayMemberColumnFallbackMetrics()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -2617,7 +2617,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.Resources["TableViewCellTextPadding" + density.ResourceSuffix] = "Not a Thickness";
                     table.Resources[density.Density == TableViewDensity.Compact
                         ? "TableViewCellFontSizeSmall" : "TableViewCellFontSize"] = "Not a Double";
-                    var column = new TextProbeColumn();
+                    var column = new DisplayMemberProbeColumn { DisplayMemberBinding = new Binding() };
                     table.Columns.Add(column);
 
                     var text = (TextBlock)column.Generate();
@@ -5638,8 +5638,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var replacement = donor.GetValue(TableView.ColumnsProperty);
                 donor.SetValue(TableView.ColumnsProperty, new TableView().GetValue(TableView.ColumnsProperty));
                 var columns = (IList<TableViewColumn>)replacement;
-                columns.Add(MakeTextColumn("Name"));
-                columns.Add(MakeTextColumn("Role"));
+                columns.Add(MakeTextTemplateColumn("Name"));
+                columns.Add(MakeTextTemplateColumn("Role"));
 
                 tableView.SetValue(TableView.ColumnsProperty, replacement);
             });
@@ -5764,12 +5764,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 if (change == "ClearAndAddNew")
                 {
                     tableView.Columns.Clear();
-                    tableView.Columns.Add(MakeTextColumn("Name"));
-                    tableView.Columns.Add(MakeTextColumn("Role"));
+                    tableView.Columns.Add(MakeTextTemplateColumn("Name"));
+                    tableView.Columns.Add(MakeTextTemplateColumn("Role"));
                 }
                 else
                 {
-                    tableView.Columns[0] = MakeTextColumn("Name");
+                    tableView.Columns[0] = MakeTextTemplateColumn("Name");
                 }
             });
             IdleSynchronizer.Wait();
@@ -7188,7 +7188,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 foreach (var name in cases)
                 {
                     var tableView = (TableView)root.FindName(name);
-                    tableView.Columns.Add(MakeTextColumn("Name"));
+                    tableView.Columns.Add(MakeTextTemplateColumn("Name"));
                     tableView.ItemsSource = MakeItems();
                 }
 
@@ -7235,8 +7235,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #endregion
     }
 
-    // Exposes the text column's generated display cell.
-    internal partial class TextProbeColumn : TableViewTextColumn
+    // Exposes the base column's generated DisplayMemberBinding cell.
+    internal partial class DisplayMemberProbeColumn : TableViewColumn
     {
         public FrameworkElement Generate() => GenerateElementCore(null);
     }
@@ -7336,8 +7336,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             new DensityCase { Density = TableViewDensity.Compact, RowMinHeight = 24.0, CellPadding = new Thickness(12, 2, 12, 2), TextPadding = new Thickness(12, 1, 12, 3), FontSize = 14.0 },
         };
 
+        // DisplayMemberBinding cells are the control-generated text whose density metrics these tests check.
         internal static TableView CreateThemingTable()
-            => CreateTableView(headers: new[] { "Name", "Role" });
+        {
+            var tableView = CreateTableView(headers: new[] { "Name", "Role" });
+            foreach (var column in tableView.Columns)
+            {
+                column.DisplayMemberBinding = new Binding { Path = new PropertyPath(column.SortMemberPath) };
+            }
+            return tableView;
+        }
 
         internal static TableView CreateGroupedThemingTable()
         {
@@ -7512,7 +7520,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // The TextBlock TableViewTextColumn generates, which is where cell padding and font size land.
         internal static TextBlock RequireFirstCellTextBlock(TableView tableView)
         {
             var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();

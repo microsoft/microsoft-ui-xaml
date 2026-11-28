@@ -34,6 +34,7 @@ public:
     winrt::TableViewColumn Column() const { return m_column.get(); }
 
     void SetSortableInternal(bool sortable, double indicatorReserve);
+    bool IsSortableInternal() const { return m_isSortable; }
     void SetSortDirectionInternal(winrt::SortDirection direction);
 
     // Returns the gripper only while it is hosted: an unhosted gripper cannot drag.
@@ -83,7 +84,6 @@ private:
     tracker_ref<winrt::ResizeGripper> m_resizeGripper{ this };
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
-    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 
     winrt::Thickness m_templateContentMargin{};

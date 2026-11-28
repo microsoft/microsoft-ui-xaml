@@ -505,7 +505,6 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
         return;
     }
 
-    EndEditOfChangedColumn(column);
     ScheduleColumnCellRegeneration(column, resetAutoWidth);
 }
 
@@ -558,10 +557,9 @@ void TableView::ScheduleColumnCellRegeneration(const winrt::TableViewColumn& col
 }
 
 // A change still pending when a column left never reached the cells its rows kept, also those of an
-// unloaded table. It is not new content: an edit open now was generated after it, so it is
-// rescheduled, and holds for that edit, rather than ending it. It runs app code, so it is posted even
-// off a live tree, after the Columns change is tracked; it is queued before the rows' own rebuild,
-// which then restamps the regenerated cells.
+// unloaded table, so it is rescheduled. It runs app code, so it is posted even off a live tree, after
+// the Columns change is tracked; it is queued before the rows' own rebuild, which then restamps the
+// regenerated cells.
 void TableView::ScheduleReattachedColumnCellRegeneration(const winrt::TableViewColumn& column)
 {
     auto* const columnImpl = column ? winrt::get_self<TableViewColumn>(column) : nullptr;
@@ -583,47 +581,9 @@ void TableView::ScheduleReattachedColumnCellRegenerations()
     }
 }
 
-// The open editor writes through the content being replaced, so a change to the edited column ends
-// its edit at once, as the synchronous row rebuild did (TableViewRow::RebuildCellsCore, hence the
-// layout-pass close). A change from a BeginningEdit handler comes before the editor is generated,
-// so the edit opens from the new content; a later one abandons the opening edit.
-void TableView::EndEditOfChangedColumn(const winrt::TableViewColumn& column)
-{
-    if (!column || !IsEditing() || m_currentEditColumn.get() != column)
-    {
-        return;
-    }
-    if (m_editState == EditState::Beginning)
-    {
-        if (m_pendingBeginEditGeneratingEditor)
-        {
-            m_abandonPendingBeginEdit = true;
-        }
-        return;
-    }
-    // App code run by the close in progress (a CellEditEnding handler, a setter, ConvertBack, a
-    // PropertyChanged handler) made the change: that close ends the edit with its own action, and
-    // the regeneration waits for it.
-    if (m_editState == EditState::Ending || m_editValueTransferDepth > 0)
-    {
-        return;
-    }
-    TerminateEditWithoutVisualRestore(true /* insideLayoutPass */);
-}
-
 void TableView::RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth)
 {
     auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
-
-    // Regenerating would force the open edit closed. A change to the edited column ended its edit
-    // unless a close was already in progress, so any edit open now began after the change, is a Tab
-    // move, or is still closing: keep the change pending until it closes.
-    if (IsEditing() || m_tabEditMovePending)
-    {
-        columnImpl->QueueCellContentChangeInternal(resetAutoWidth);
-        HoldCellRegenerationUntilEditCloses(column);
-        return;
-    }
 
     // This regeneration also applies a change still pending from an earlier request.
     resetAutoWidth = columnImpl->TakeQueuedCellContentChangeInternal() || resetAutoWidth;
@@ -678,64 +638,6 @@ void TableView::RegenerateColumnCellsFromPost(const winrt::TableViewColumn& colu
         TVDiag::LogRetailF(L"[TableView] A posted cell regeneration failed (HRESULT 0x%08X).",
             static_cast<unsigned int>(winrt::to_hresult()));
     }
-}
-
-void TableView::HoldCellRegenerationUntilEditCloses(const winrt::TableViewColumn& column)
-{
-    winrt::get_self<TableViewColumn>(column)->InvalidateCellContentChangePostInternal();
-    auto const known = std::find_if(m_cellRegenerationsAfterEdit.begin(), m_cellRegenerationsAfterEdit.end(),
-        [&column](auto const& weakColumn) { return weakColumn.get() == column; });
-    if (known == m_cellRegenerationsAfterEdit.end())
-    {
-        m_cellRegenerationsAfterEdit.push_back(winrt::make_weak(column));
-    }
-}
-
-void TableView::ReleaseCellRegenerationsAfterEdit()
-{
-    if (m_cellRegenerationsAfterEdit.empty() || IsEditing() || m_tabEditMovePending)
-    {
-        return;
-    }
-
-    // Edit close can run inside a layout pass, so the regeneration is posted.
-    auto const queue = DispatcherQueue();
-    if (!queue)
-    {
-        return;
-    }
-    queue.TryEnqueue([weakThis = get_weak(), columns = std::exchange(m_cellRegenerationsAfterEdit, {})]()
-        {
-            auto const strongThis = weakThis.get();
-            if (!strongThis)
-            {
-                return;
-            }
-            auto const table = strongThis.as<winrt::TableView>();
-            for (auto const& weakColumn : columns)
-            {
-                auto const column = weakColumn.get();
-                auto* const columnImpl = column ? winrt::get_self<TableViewColumn>(column) : nullptr;
-                // A column that moved on is regenerated by its new owner. A newer change's own post
-                // handles it; holding here would invalidate that post.
-                if (!columnImpl || !columnImpl->HasPendingCellContentChangeInternal() ||
-                    columnImpl->IsCellContentChangePostedInternal() ||
-                    columnImpl->GetOwningTableView() != table)
-                {
-                    continue;
-                }
-                // An edit opened since was generated from the current content: the change waits for
-                // it rather than ending it.
-                if (strongThis->IsEditing() || strongThis->m_tabEditMovePending)
-                {
-                    strongThis->HoldCellRegenerationUntilEditCloses(column);
-                }
-                else
-                {
-                    strongThis->RegenerateColumnCellsFromPost(column);
-                }
-            }
-        });
 }
 
 void TableView::OnColumnHeaderChanged(const winrt::TableViewColumn& column)

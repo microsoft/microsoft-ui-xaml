@@ -116,8 +116,6 @@ private:
     void SyncExpansionToContent();
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
-    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
-    winrt::FlyoutBase::Opening_revoker m_contextFlyoutOpeningRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     tracker_ref<winrt::FrameworkElement> m_rowChrome{ this };
     tracker_ref<winrt::Border> m_contentHost{ this };

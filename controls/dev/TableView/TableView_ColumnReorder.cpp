@@ -131,8 +131,7 @@ int32_t TableView::ColumnReorderTargetIndex(const winrt::TableViewColumn& column
 
 bool TableView::TryReorderColumn(const winrt::TableViewColumn& column, int32_t slot)
 {
-    // A move never commits an open edit implicitly.
-    auto const slots = IsEditing() ? ColumnReorderSlots{} : GetColumnReorderSlots(column, true /* fullRange */);
+    auto const slots = GetColumnReorderSlots(column, true /* fullRange */);
     auto const columns = Columns();
     uint32_t from = 0;
     const int32_t to = slots.own < 0 || slot == slots.own || slot < slots.min || slot > slots.max ? -1 : ColumnReorderTargetIndex(column, slots, slot);
@@ -434,7 +433,7 @@ bool TableView::BeginColumnReorderDrag()
     auto const column = state.column.get();
     auto const row = m_headerRow.get();
     auto const host = m_headerHost.get();
-    if (column && !IsEditing())
+    if (column)
     {
         state.slots = GetColumnReorderSlots(column, true /* fullRange */);
     }

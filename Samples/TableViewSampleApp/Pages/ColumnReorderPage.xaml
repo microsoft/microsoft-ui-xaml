@@ -28,14 +28,14 @@
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTextColumn Header="ID" Width="64" Binding="{Binding EmployeeId}"/>
-                <tv:TableViewTextColumn Header="First name" Width="160" Binding="{Binding FirstName}"/>
-                <tv:TableViewTextColumn Header="Last name" Width="160" Binding="{Binding LastName}"/>
-                <tv:TableViewTextColumn Header="Department" Width="140" Binding="{Binding Department}"/>
-                <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="140" Binding="{Binding Role}"/>
-                <tv:TableViewTextColumn Header="Office" Width="120" Binding="{Binding Office}"/>
-                <tv:TableViewTextColumn Header="Email" Width="220" Binding="{Binding Email}"/>
-                <tv:TableViewTextColumn Header="Joined" Width="110" Binding="{Binding JoinDateText}"/>
+                <tv:TableViewColumn Header="ID" Width="64" DisplayMemberBinding="{Binding EmployeeId}"/>
+                <tv:TableViewColumn Header="First name" Width="160" DisplayMemberBinding="{Binding FirstName}"/>
+                <tv:TableViewColumn Header="Last name" Width="160" DisplayMemberBinding="{Binding LastName}"/>
+                <tv:TableViewColumn Header="Department" Width="140" DisplayMemberBinding="{Binding Department}"/>
+                <tv:TableViewColumn Header="Role" Width="*" MinWidth="140" DisplayMemberBinding="{Binding Role}"/>
+                <tv:TableViewColumn Header="Office" Width="120" DisplayMemberBinding="{Binding Office}"/>
+                <tv:TableViewColumn Header="Email" Width="220" DisplayMemberBinding="{Binding Email}"/>
+                <tv:TableViewColumn Header="Joined" Width="110" DisplayMemberBinding="{Binding JoinDateText}"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

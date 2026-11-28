@@ -7,15 +7,16 @@ using Microsoft.UI.Xaml.Data;
 
 namespace TableViewSampleApp.Helpers;
 
-// Column factory for pages that build their columns in code (Hierarchy), so a column is just
-// header, bound property and width.
+// Column factory for pages that build their columns in code (KeyboardNav), so a column is just
+// header, bound property and width. The cell is a DisplayMemberBinding text cell, whose path is
+// also the sort key.
 internal static class SampleColumns
 {
-    public static TableViewTextColumn Text(string header, string propertyPath, GridLength width) =>
-        new TableViewTextColumn
+    public static TableViewColumn Text(string header, string propertyPath, GridLength width) =>
+        new TableViewColumn
         {
             Header = header,
-            Binding = new Binding { Path = new PropertyPath(propertyPath) },
+            DisplayMemberBinding = new Binding { Path = new PropertyPath(propertyPath) },
             Width = width,
         };
 

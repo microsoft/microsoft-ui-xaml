@@ -103,7 +103,7 @@ public:
     // Focuses a visible cell after drilling to cell level; falls back to the row if needed.
     bool FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::FocusState state);
 
-    // Editable, hosting focusable content, or carrying a tooltip. Only these take keyboard focus.
+    // Hosting focusable content, or carrying a tooltip. Only these take keyboard focus.
     bool IsCellActionableInternal(const winrt::UIElement& cell) const;
     // First actionable cell from startVisibleIndex (inclusive) in step's direction; -1 when none.
     int32_t FindActionableCellInternal(int32_t startVisibleIndex, int32_t step) const;
@@ -136,37 +136,6 @@ public:
     void InvalidateCells();
 
 
-    bool BeginCellEdit(const winrt::TableViewColumn& column, const winrt::IInspectable& dataItem);
-
-    // Restores the display visual. Safe to call when no cell edit is open. A focused editor hands
-    // focus to `focusColumn`'s cell when given and focusable, otherwise to the edited cell.
-    void EndCellEdit(
-        winrt::TableViewEditAction action,
-        std::optional<HRESULT>* displayFailure = nullptr,
-        bool* applicationFault = nullptr,
-        winrt::TableViewColumn const& focusColumn = nullptr);
-
-    winrt::FrameworkElement GetEditingElement() const { return m_editingElement.get(); }
-
-    winrt::UIElement GetEditingCellWrapper() const { return m_editingCellWrapper.get(); }
-    winrt::UIElement GetDisplayElementForAutomation(winrt::UIElement const& cell) const
-    {
-        return m_editingCellWrapper.get() == cell || m_pendingEditingCell.get() == cell
-            ? m_editingDisplayElement.get() : nullptr;
-    }
-
-    // Drops the edit bookkeeping and puts the display visual back, WITHOUT moving focus. Used on the
-    // recycle / rebuild paths, which run inside the measure pass where changing focus would trip
-    // XAML's re-entrancy guard (0xc0000420).
-    void AbandonCellEdit();
-
-    void OnPointerPressedForEditing(
-        const winrt::IInspectable& sender,
-        const winrt::PointerRoutedEventArgs& args);
-
-    // For a Tab that closed an editor and continues from its cell, as OnKeyDown does for a focused cell.
-    void PrepareTabWalkFromCellInternal();
-
 private:
     void ResetCellAutomationNames();
     void UpdateCellPeerItems(winrt::IInspectable const& dataItem);
@@ -195,12 +164,6 @@ private:
     // binding a template column needs. GenerateDisplayElement alone is not a complete cell.
     void AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement);
 
-    // Drops begin-edit gesture state (recycle, owner change).
-    void ResetPressState();
-
-    winrt::TableViewColumn ResolvePressedColumn(
-        const winrt::IInspectable& originalSource,
-        const winrt::Point& hostPoint);
     void OnCellsHostContextRequested(winrt::ContextRequestedEventArgs const& args);
     void OnTemplateRootContextRequested(winrt::ContextRequestedEventArgs const& args);
     void OnRowContextRequested(winrt::ContextRequestedEventArgs const& args);
@@ -290,7 +253,6 @@ private:
     winrt::UIElement::ContextRequested_revoker m_cellsHostContextRequestedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_contextRequestedRevoker{};
-    winrt::FlyoutBase::Opening_revoker m_contextFlyoutOpeningRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
@@ -336,25 +298,4 @@ private:
     bool m_inRecyclePool{ false };
     winrt::weak_ref<winrt::AutomationPeer> m_itemAutomationPeer{ nullptr };
 
-    tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
-    tracker_ref<winrt::Grid> m_editingCellWrapper{ this };
-    winrt::weak_ref<winrt::UIElement> m_pendingEditingCell{ nullptr };
-    tracker_ref<winrt::FrameworkElement> m_editingElement{ this };
-    tracker_ref<winrt::UIElement> m_editingDisplayElement{ this };
-    winrt::weak_ref<winrt::TableViewCellAutomationPeer> m_editingAutomationPeer{ nullptr };
-    tracker_ref<winrt::IInspectable> m_editingAutomationItem{ this };
-    winrt::hstring m_editingAutomationValue;
-    winrt::hstring m_editingAutomationName;
-    // Row Name before the edit, so a commit that changes a derived value in other cells can publish it.
-    std::optional<winrt::hstring> m_editingRowAutomationName;
-
-    // Begin-edit gesture state. Held per row rather than on the control: a double-click that starts
-    // on one row and finishes on another is not a double-click, and per-row state makes that fall
-    // out for free. Registered handler is kept alive so it can be removed on teardown.
-    winrt::PointerEventHandler m_editingPointerPressedHandler{ nullptr };
-    uint64_t m_lastPressTimestamp{ 0 };
-    winrt::Point m_lastPressPosition{};
-    winrt::Microsoft::UI::Input::PointerDeviceType m_lastPressDeviceType{ winrt::Microsoft::UI::Input::PointerDeviceType::Mouse };
-    tracker_ref<winrt::TableViewColumn> m_lastPressColumn{ this };
-    tracker_ref<winrt::IInspectable> m_lastPressItem{ this };
 };

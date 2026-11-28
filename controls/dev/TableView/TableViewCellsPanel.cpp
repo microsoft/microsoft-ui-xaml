@@ -109,7 +109,6 @@ void TableViewCellsPanel::InvalidateMeasuredWidths()
 {
     m_measuredWidthsByColumn.clear();
     m_lastMeasuredWidthsByColumn.clear();
-    m_editingWidthInvalidated = true;
     InvalidateMeasure();
 }
 
@@ -131,19 +130,6 @@ winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSiz
     // after the loop -- the body ScrollViewer otherwise absorbs the cell's measure invalidation, so
     // TableView::MeasureOverride (and ResolveColumnWidths) would never re-run for live content changes.
     winrt::TableView ownerNeedingResolve{ nullptr };
-
-    // The cell currently hosting an editor, if any. An editor is a different control from the display
-    // element it replaced - a TextBox carries border, padding and a default MinWidth a TextBlock does
-    // not - so letting it feed the Auto-width pass makes the column visibly jump wider the instant the
-    // user starts editing, and jump back on commit. The column's width is a property of the DATA, not
-    // of which control happens to be showing it, so the editing cell is measured at the width the
-    // column already has and contributes nothing to the Auto calculation. WPF's DataGrid behaves the
-    // same way: entering edit mode does not resize the column.
-    winrt::UIElement editingCell{ nullptr };
-    if (auto const row = m_owningRow.get())
-    {
-        editingCell = winrt::get_self<TableViewRow>(row)->GetEditingCellWrapper();
-    }
 
     for (winrt::UIElement const& child : Children())
     {
@@ -171,33 +157,6 @@ winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSiz
 
         if (column.Width().GridUnitType == winrt::GridUnitType::Auto)
         {
-            // The editing cell is pinned to the column's current width and excluded from the Auto
-            // calculation entirely - no cached contribution, and no change signal, so it cannot ask
-            // the owner to re-resolve either. Normal measurement resumes for this cell as soon as the
-            // edit closes and the display element is back.
-            if (editingCell && child == editingCell)
-            {
-                child.Measure({ columnWidth > 0.0f ? columnWidth : infinity, availableSize.Height });
-                height = std::max(height, child.DesiredSize().Height);
-
-                // Carry a width forward so the column does not collapse while the edit is open.
-                // Contributing nothing would let an Auto column resolve from the header and other
-                // rows alone - and with a single realized row that means resolving to near zero,
-                // which churns layout and can rebuild the row out from under the live editor.
-                // Prefer this cell's previous measured width; fall back to the column's resolved
-                // width when the editor opened before this panel ever measured the cell.
-                auto const key = winrt::get_self<TableViewColumn>(column);
-                auto const previous = m_lastMeasuredWidthsByColumn.find(key);
-                // A density-font change must not reintroduce the old display width through the editor.
-                const double carried = (previous != m_lastMeasuredWidthsByColumn.end())
-                    ? previous->second
-                    : m_editingWidthInvalidated ? 0.0 : static_cast<double>(columnWidth);
-
-                newLastMeasured[key] = carried;
-                CacheMeasuredWidthForColumn(column, carried);
-                continue;
-            }
-
             // Only Auto columns depend on content width. Measure unconstrained to discover the cell's
             // natural width and cache it; TableView pulls the max across header + realized rows once per
             // pass to resolve the Auto column width.
@@ -251,7 +210,6 @@ winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSiz
     // Adopt this pass's measured widths as the baseline for the next pass (prunes removed/collapsed
     // columns since only columns measured above were recorded).
     m_lastMeasuredWidthsByColumn = std::move(newLastMeasured);
-    m_editingWidthInvalidated = false;
 
     // Deferred (not during this measure) so it runs after the current layout pass; TableView debounces
     // so repeated change signals collapse to a single re-resolve.

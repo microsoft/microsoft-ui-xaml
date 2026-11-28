@@ -55,7 +55,7 @@ namespace
         // Identity, not just index: a recycled container can still report an index while it has
         // already been re-bound to a different item, so either announcement - selected or removed
         // from selection - would name the wrong record.
-        auto const actualItem = winrt::get_self<TableView>(owner)->UnwrapEditingDataItem(row.DataContext());
+        auto const actualItem = winrt::get_self<TableView>(owner)->UnwrapDataItem(row.DataContext());
         return element == row && actualItem && TableView::SameInspectableIdentity(actualItem, expectedItem);
     }
 }
@@ -262,13 +262,13 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
 
     // SelectionModel indexes but does not look items up, so resolving a held item on reload still
     // needs this. Linear scan: it runs at most once per reload.
-    auto const target = UnwrapEditingDataItem(item);
+    auto const target = UnwrapDataItem(item);
     const int32_t count = view.Count();
     for (int32_t index = 0; index < count; ++index)
     {
         // Identity, not ABI-pointer equality: the same object reached through a different
         // interface (boxed values, projected interfaces) must still match.
-        if (auto const candidate = UnwrapEditingDataItem(view.GetAt(index));
+        if (auto const candidate = UnwrapDataItem(view.GetAt(index));
             candidate && SameInspectableIdentity(candidate, target))
         {
             return index;
@@ -360,8 +360,8 @@ try
 {
     const int32_t newIndex = SelectedIndexInternal();
     auto const newItem = SelectedItemInternal();
-    auto const deselectedItem = UnwrapEditingDataItem(SelectedItem());
-    auto const selectedItem = UnwrapEditingDataItem(newItem);
+    auto const deselectedItem = UnwrapDataItem(SelectedItem());
+    auto const selectedItem = UnwrapDataItem(newItem);
 
     auto const deselectedRow = FindRealizedRowForIndex(m_lastPublishedIndex);
     auto const selectedRow = FindRealizedRowForIndex(newIndex);

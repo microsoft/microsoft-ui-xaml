@@ -69,7 +69,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Application.Current.Resources = resources;
                     var tableView = new TableView { Width = 400, Height = 200 };
-                    tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                    tableView.Columns.Add(new TableViewTemplateColumn { Header = "Name" });
                     host.Children.Add(tableView);
                     Verify.IsNotNull(tableView.Template, "The regression must exercise the stock deferred template.");
 
@@ -119,8 +119,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableViewShell(MakeManyItems(4), 500, 260);
 
-                first = MakeTextColumn("Name");
-                second = MakeTextColumn("Role");
+                first = MakeTextTemplateColumn("Name");
+                second = MakeTextTemplateColumn("Role");
 
                 tableView.Columns.Add(first);
 
@@ -299,9 +299,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     VerticalAlignment = VerticalAlignment.Stretch,
                 };
 
-                pixelColumn = MakeTextColumn("Pixel", "Name", new GridLength(120.0, GridUnitType.Pixel));
-                autoColumn = MakeTextColumn("Auto", "Role", GridLength.Auto);
-                starColumn = MakeTextColumn("Star", "Name", new GridLength(1.0, GridUnitType.Star));
+                pixelColumn = MakeTextTemplateColumn("Pixel", "Name", new GridLength(120.0, GridUnitType.Pixel));
+                autoColumn = MakeTextTemplateColumn("Auto", "Role", GridLength.Auto);
+                starColumn = MakeTextTemplateColumn("Star", "Name", new GridLength(1.0, GridUnitType.Star));
 
                 tableView.Columns.Add(pixelColumn);
                 tableView.Columns.Add(autoColumn);
@@ -439,7 +439,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 items = new ObservableCollection<Person>(MakeManyItems(8));
                 tableView = CreateSelectionTable(items);
 
-                tableView.Columns.Add(MakeTextColumn("Role"));
+                tableView.Columns.Add(MakeTextTemplateColumn("Role"));
 
                 tableView.SelectionChanged += (s, e) =>
                 {

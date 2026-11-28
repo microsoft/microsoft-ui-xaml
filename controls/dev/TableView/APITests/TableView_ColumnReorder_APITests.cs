@@ -17,7 +17,7 @@ using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
-using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewEditingTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewToolTipTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -90,7 +90,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyHookDragKeepsWidthsAndSortUnlikeAnAppMove()
         {
             TableView tableView = null;
-            List<EditablePerson> items = null;
+            List<NotifyingPerson> items = null;
             TableViewColumn name = null;
             TableViewColumn role = null;
             double grownRole = 0;
@@ -100,10 +100,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                items = MakeEditableItems();
+                items = MakeNotifyingItems();
                 items[0].Role = "A role title long enough to widen its Auto column";
                 tableView = CreateTableView(items, headers: new[] { "Name", "Role" }, width: 600, height: 300);
-                tableView.Columns.Add(MakeTextColumn("Team", bound: false));
+                tableView.Columns.Add(MakeTextTemplateColumn("Team", bound: false));
                 tableView.CanUserReorderColumns = true;
                 tableView.CanUserSortColumns = true;
                 tableView.CanUserResizeColumns = true;
@@ -237,7 +237,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     () => RunOnUIThread.Execute(() => tableView.Columns[2].FrozenEdge = TableViewFrozenEdge.None)),
                 ("turning CanUserReorderColumns off", () => RunOnUIThread.Execute(() => tableView.CanUserReorderColumns = false),
                     () => RunOnUIThread.Execute(() => tableView.CanUserReorderColumns = true)),
-                ("a Columns change", () => RunOnUIThread.Execute(() => tableView.Columns.Add(team = MakeTextColumn("Extra", bound: false, width: new GridLength(250)))),
+                ("a Columns change", () => RunOnUIThread.Execute(() => tableView.Columns.Add(team = MakeTextTemplateColumn("Extra", bound: false, width: new GridLength(250)))),
                     () => RunOnUIThread.Execute(() => tableView.Columns.Remove(team))),
                 ("a Width set in code", () => RunOnUIThread.Execute(() => tableView.Columns[2].Width = new GridLength(270)), null),
                 ("a gripper resize", () => RunOnUIThread.Execute(() =>

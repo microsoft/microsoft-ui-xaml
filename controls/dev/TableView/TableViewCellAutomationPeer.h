@@ -54,23 +54,13 @@ public:
     winrt::com_array<winrt::IRawElementProviderSimple> GetRowHeaderItems();
     winrt::com_array<winrt::IRawElementProviderSimple> GetColumnHeaderItems();
 
-    // IValueProvider — lets assistive technology read the cell text and set it without a pointer.
-    // SetValue drives the same public edit lifecycle a user does (BeginEdit / write / CommitEdit),
-    // so BeginningEdit / CellEditEnding handlers and validation all still run.
-    winrt::hstring Value();
-    bool IsReadOnly();
-    void SetValue(winrt::hstring const& value);
-
     // IVirtualizedItemProvider — available only after the owning row has been recycled out.
     void Realize();
 
-    // The name a client last read, for a NameProperty change; empty while an edit pins the name.
+    // The name a client last read, for a NameProperty change.
     std::optional<winrt::hstring> TakeLastNameInternal();
 
-    winrt::hstring ReadNameForEdit();
-    void BeginEditName();
-    void EndEditName();
-    void ResetEditName();
+    void ResetNameState();
     void UpdateNameItem(winrt::IInspectable const& item);
     bool IsTrackingOtherItem(winrt::IInspectable const& item) const
     {
@@ -80,10 +70,6 @@ public:
     int32_t GetRowIndexInternal();
 
 private:
-    // True when this cell is editable AND its column produces a TextBox editor, which is the only
-    // editor SetValue can drive today.
-    bool SupportsValuePattern();
-
     struct CellOwner
     {
         winrt::TableViewRow Row{ nullptr };
@@ -130,7 +116,6 @@ private:
     void RegisterAutomationContentPropertyCallbacks(winrt::UIElement const& element);
     void InvalidateAutomationContentViewCache();
     void ResetAutomationContentViewCache() noexcept;
-    void QueueFinalName(uint64_t generation);
 
     struct AutomationContentPropertyChangedRevoker
     {
@@ -213,10 +198,6 @@ private:
     int32_t m_trackedItemOccurrence{ -1 };
     tracker_ref<winrt::IInspectable> m_nameItem{ this };
     std::optional<winrt::hstring> m_lastName;
-    // Holds the pre-edit Name only; read paths must not write it or live cell names freeze.
-    std::optional<winrt::hstring> m_editName;
-    uint64_t m_nameGeneration{ 0 };
-    winrt::FrameworkElement::LayoutUpdated_revoker m_nameLayoutUpdatedRevoker{};
     winrt::weak_ref<winrt::FrameworkElement> m_automationContent{ nullptr };
     std::optional<bool> m_hasInteractiveAutomationContent;
     std::vector<AutomationContentPropertyChangedRevoker> m_automationContentPropertyChangedRevokers;

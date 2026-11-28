@@ -6,14 +6,11 @@
     SelectionMode="Single">
     <tv:TableViewTemplateColumn x:Name="ColAvatar" Header="Photo" Width="56"
                                  CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="2*" MinWidth="120"
-                             Binding="{Binding FullName}"/>
+    <tv:TableViewColumn x:Name="ColName" Header="Name" Width="2*" MinWidth="120" DisplayMemberBinding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn x:Name="ColDepartment" Header="Department" Width="130"
                                  CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-    <tv:TableViewTextColumn x:Name="ColRole" Header="Role" Width="*" MinWidth="140"
-                             Binding="{Binding Role}"/>
-    <tv:TableViewTextColumn x:Name="ColSalary" Header="Salary" Width="100"
-                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+    <tv:TableViewColumn x:Name="ColRole" Header="Role" Width="*" MinWidth="140" DisplayMemberBinding="{Binding Role}"/>
+    <tv:TableViewColumn x:Name="ColSalary" Header="Salary" Width="100" DisplayMemberBinding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
     <tv:TableViewTemplateColumn x:Name="ColActive" Header="Active" Width="84"
                                  CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
     <!-- Starts hidden: TableViewColumn.Visibility, not removal from the vector. -->

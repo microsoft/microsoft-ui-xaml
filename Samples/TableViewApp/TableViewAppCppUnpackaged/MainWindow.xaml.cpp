@@ -22,13 +22,13 @@ namespace winrt::TableViewAppCppUnpackaged::implementation
         }
 
         // Person is [bindable], so classic {Binding} resolves without an IXamlType.
-        TableViewTextColumn MakeColumn(hstring const& header, hstring const& path)
+        TableViewColumn MakeColumn(hstring const& header, hstring const& path)
         {
-            TableViewTextColumn column;
+            TableViewColumn column;
             column.Header(box_value(header));
-            Microsoft::UI::Xaml::Data::Binding binding;
+            Data::Binding binding;
             binding.Path(PropertyPath{ path });
-            column.Binding(binding);
+            column.DisplayMemberBinding(binding);
             return column;
         }
     }

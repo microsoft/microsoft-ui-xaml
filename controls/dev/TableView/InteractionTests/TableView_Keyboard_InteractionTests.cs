@@ -30,7 +30,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // reach the state machine the API tests cover in process.
     //
     // Product finding #13 (a client asking a row peer for its children fail-fasted the app) shaped the older tests in
-    // this file: they observe rows at row level, point at cells by coordinates, and read editors and visual states
+    // this file: they observe rows at row level, point at cells by coordinates, and read visual states
     // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
     // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
@@ -2056,7 +2056,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Read-only: Name (tooltip) and Action (Button) stay actionable; every other cell is inactive.
             using (var setup = new TestSetupHelper(PageName))
             {
-                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+                if (!SetPageCheckBox(InactiveCellsCheckBox, true)) { return; }
                 if (!DrillIntoRow(BasicTable, 1)) { return; }
 
                 int lastCell = GetRowsHost(BasicTable).Children[1].Children.Count - 1;
@@ -2666,7 +2666,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(RtlPivotItem)) { Verify.Fail(GoToButton(RtlPivotItem) + " was not found."); return; }
-                if (!SetPageCheckBox(IsReadOnlyCheckBox, true) || !SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
+                if (!SetPageCheckBox(InactiveCellsCheckBox, true) || !SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
 
                 UIObject row = GetRowsHost(RtlTable).Children[1];
                 row.SetFocus();
@@ -2698,7 +2698,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
-                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+                if (!SetPageCheckBox(InactiveCellsCheckBox, true)) { return; }
 
                 UIObject tableView = GetTable(ScrollingTable);
                 if (tableView == null) { return; }
@@ -2733,7 +2733,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
-                if (!SetPageCheckBox(IsReadOnlyCheckBox, true) || !SetPageCheckBox(ScrollCityMenuCheckBox, true)) { return; }
+                if (!SetPageCheckBox(InactiveCellsCheckBox, true) || !SetPageCheckBox(ScrollCityMenuCheckBox, true)) { return; }
 
                 UIObject tableView = GetTable(ScrollingTable);
                 if (tableView == null) { return; }
@@ -2778,7 +2778,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
-                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+                if (!SetPageCheckBox(InactiveCellsCheckBox, true)) { return; }
 
                 UIObject tableView = GetTable(ScrollingTable);
                 if (tableView == null) { return; }
@@ -2807,7 +2807,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(RtlPivotItem)) { Verify.Fail(GoToButton(RtlPivotItem) + " was not found."); return; }
-                if (!SetPageCheckBox(IsReadOnlyCheckBox, true) || !SetPageCheckBox(ScrollFixturesCheckBox, true)) { return; }
+                if (!SetPageCheckBox(InactiveCellsCheckBox, true) || !SetPageCheckBox(ScrollFixturesCheckBox, true)) { return; }
 
                 UIObject row = GetRowsHost(RtlTable).Children[1];
                 row.SetFocus();
@@ -2842,7 +2842,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(RtlPivotItem)) { Verify.Fail(GoToButton(RtlPivotItem) + " was not found."); return; }
-                if (!SetPageCheckBox(IsReadOnlyCheckBox, true) || !SetPageCheckBox(ScrollFixturesCheckBox, true)) { return; }
+                if (!SetPageCheckBox(InactiveCellsCheckBox, true) || !SetPageCheckBox(ScrollFixturesCheckBox, true)) { return; }
 
                 UIObject row = GetRowsHost(RtlTable).Children[1];
                 row.SetFocus();

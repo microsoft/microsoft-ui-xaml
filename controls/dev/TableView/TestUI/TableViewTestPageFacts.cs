@@ -60,7 +60,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string SelectionModeComboBox = "SelectionModeComboBox";
         internal const string SortCycleComboBox = "SortCycleComboBox";
         internal const string CanUserSortColumnsCheckBox = "CanUserSortColumnsCheckBox";
-        internal const string IsReadOnlyCheckBox = "IsReadOnlyCheckBox";
+        // Removes the fixture cell menus (and ContextMenuTable's Age tooltip) that make plain text cells actionable.
+        internal const string InactiveCellsCheckBox = "InactiveCellsCheckBox";
         internal const string CanUserResizeColumnsCheckBox = "CanUserResizeColumnsCheckBox";
         internal const string CanUserReorderColumnsCheckBox = "CanUserReorderColumnsCheckBox";
         internal const string HideColumnHeadersCheckBox = "HideColumnHeadersCheckBox";
@@ -71,16 +72,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string ScrollCityMenuCheckBox = "ScrollCityMenuCheckBox";
         internal const string ScrollScrollingBodyButton = "ScrollScrollingBodyButton";
         internal const string CellHyperlink = "CellHyperlink";
-        internal const string VetoCommitCheckBox = "VetoCommitCheckBox";
-        internal const string SortOnCommitCheckBox = "SortOnCommitCheckBox";
-        internal const string AllowGroupedEditingCheckBox = "AllowGroupedEditingCheckBox";
-        internal const string HideScoreColumnCheckBox = "HideScoreColumnCheckBox";
-        internal const string ShowExtraEditColumnsCheckBox = "ShowExtraEditColumnsCheckBox";
-        internal const string FocusHeaderInCommitCheckBox = "FocusHeaderInCommitCheckBox";
-        internal const string HideAgeInCommitCheckBox = "HideAgeInCommitCheckBox";
-        internal const string DisableSecondRowInCommitCheckBox = "DisableSecondRowInCommitCheckBox";
-        internal const string RedirectSecondRowFocusCheckBox = "RedirectSecondRowFocusCheckBox";
-        internal const string ToggleScrollingFlowDirectionButton = "ToggleScrollingFlowDirectionButton";
         internal const string HookRowStatesButton = "HookRowStatesButton";
         internal const string HookGroupHeadersButton = "HookGroupHeadersButton";
         internal const string ResetHierarchyButton = "ResetHierarchy";
@@ -98,10 +89,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
 
         // ---- Page readouts (AutomationId) ----
 
-        internal const string EditColumnReport = "EditColumnReportTextBlock";
-        internal const string EditorProbe = "EditorProbeTextBlock";
-        internal const string EditEndReport = "EditEndReportTextBlock";
-        internal const string FirstItemName = "FirstItemNameTextBlock";
         internal const string RowStateLog = "RowStateLogTextBlock";
         internal const string GroupHeaderStateLog = "GroupHeaderStateLogTextBlock";
         internal const string GroupToggleReport = "GroupToggleReportTextBlock";
@@ -113,15 +100,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         //                             nothing for a leaf); group headers as [key]
         //   rtl=<projection label>    the same for HierarchyRtlTable
         //   selected=<name|none>      HierarchyTable.SelectedItem
-        //   beginning=<n>             BeginningEdit count since the last reset
-        //   editing=<True|False>      HierarchyTable.IsEditing
         internal const string HierarchyReadout = "HierarchyReadout";
 
         internal const string TreeField = "tree";
         internal const string RtlTreeField = "rtl";
         internal const string SelectedField = "selected";
-        internal const string BeginningEditField = "beginning";
-        internal const string EditingField = "editing";
         internal const string NoneValue = "none";
 
         // ---- BasicTableView columns, in visible order ----
@@ -226,7 +209,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal static readonly int[] HierarchyColumnWidths = { 160, 100, 100 };
 
         // Row-relative x of the centre of the Dept cell, well clear of the chevron.
-        internal static int HierarchyDeptCellCentreX => HierarchyColumnWidths[0] + (HierarchyColumnWidths[1] / 2);
 
         // ---- Context menu fixture (ContextMenuTable) ----
         // Name: CellMenu + HeaderMenu; City: TemplateMenu on its template root; Age: none (row menu applies).
@@ -241,7 +223,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         // Reset undoes both.
         internal const string GroupContextMenuTableButton = "GroupContextMenuTable";
         internal const string MirrorContextMenuTableButton = "MirrorContextMenuTable";
-        internal const string CancelEditorMenuCloseButton = "CancelEditorMenuClose";
 
         // Puts RowTemplateMenu on each realized row's template root. Reset removes it.
         internal const string AttachRowTemplateMenuButton = "AttachRowTemplateMenu";
@@ -299,8 +280,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         }
 
         // Read-only TextBox for the last menu opened, as "key=value;...": menu, open, opens, item, target,
-        // focus (cell:<item>/<column>, row:<item>, group:<key> or header:<text>),
-        // editorMenuOpen/editorMenuClosings, editing, selected.
+        // focus (cell:<item>/<column>, row:<item>, group:<key> or header:<text>), selected.
         internal const string ContextMenuReadout = "ContextMenuReadout";
 
         internal const string MenuField = "menu";
@@ -309,8 +289,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string ItemField = "item";
         internal const string TargetField = "target";
         internal const string FocusField = "focus";
-        internal const string EditorMenuOpenField = "editorMenuOpen";
-        internal const string EditorMenuClosingsField = "editorMenuClosings";
 
         internal static string CellFocus(int id, int column) => "cell:" + ContextMenuName(id) + "/" + column;
         internal static string RowFocus(int id) => "row:" + ContextMenuName(id);

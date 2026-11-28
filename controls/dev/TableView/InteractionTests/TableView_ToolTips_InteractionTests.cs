@@ -28,7 +28,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // peer reports, but nothing programmatic makes ToolTipService open a popup - it shows on pointer dwell.
     //
     // Product finding #13 (a client asking a row peer for its children fail-fasted the app) shaped the older tests in
-    // this file: they observe rows at row level, point at cells by coordinates, and read editors and visual states
+    // this file: they observe rows at row level, point at cells by coordinates, and read visual states
     // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
     // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
