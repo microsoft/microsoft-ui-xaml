@@ -332,7 +332,6 @@ TableViewRowInfo RowMetadataProvider::GetRowInfo(int32_t index)
         info.Level = node->Depth + 1;
         info.IsExpandable = node->HasChildren;
         info.IsExpanded = node->IsExpanded;
-        info.ChildCount = node->ChildCount;
         info.ParentIdentity = node->ParentKey;
         info.PositionInSet = static_cast<uint32_t>(node->SiblingIndex);
         info.SizeOfSet = static_cast<uint32_t>(node->SiblingCount);

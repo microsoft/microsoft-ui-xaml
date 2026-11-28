@@ -98,7 +98,6 @@ public:
         winrt::hstring ParentKey;
         // 0-based (roots render flush); TableViewRowInfo::Level is Depth + 1.
         int32_t Depth{ 0 };
-        int32_t ChildCount{ 0 };
         // 1-based position in the sibling set and its size.
         int32_t SiblingIndex{ 0 };
         int32_t SiblingCount{ 0 };
@@ -107,7 +106,9 @@ public:
         // Kept only because a descendant passes the view's filter.
         bool IsContext{ false };
         winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode Node{ nullptr };
-        // The node's Children, followed while the row exists.
+        // The node's PropertyChanged (HasChildren), followed while the row exists.
+        winrt::event_token NodeToken{};
+        // The node's Children, read and followed only while the row is expanded.
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> Children{ nullptr };
         winrt::event_token ChildrenToken{};
     };
@@ -220,8 +221,11 @@ private:
     NodeRow MakeNodeRow(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node, winrt::hstring const& parentKey, int32_t depth, int32_t siblingIndex, int32_t siblingCount);
     static winrt::hstring NodeKeyFor(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node, winrt::IInspectable const& item = nullptr);
     bool EffectiveExpanded(winrt::hstring const& nodeKey, bool hasChildren, bool isContext) const;
+    void SubscribeToNode(NodeRow& row);
     void SubscribeToChildren(NodeRow& row);
+    // Both of a row's subscriptions.
     void UnsubscribeFromChildren(NodeRow& row);
+    void OnNodeHasChildrenChanged(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node);
     void OnNodeListChanged(
         winrt::hstring const& parentKey,
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& list,

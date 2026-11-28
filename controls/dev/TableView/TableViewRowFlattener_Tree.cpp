@@ -222,11 +222,14 @@ TableViewRowFlattener::NodeRow TableViewRowFlattener::MakeNodeRow(
     row.Depth = depth;
     row.SiblingIndex = siblingIndex;
     row.SiblingCount = siblingCount;
-    row.Children = node.Children();
-    row.ChildCount = row.Children ? static_cast<int32_t>(row.Children.Size()) : 0;
-    row.HasChildren = row.ChildCount > 0;
+    // HasChildren, not Children.Size: a collapsed row makes no Children list.
+    row.HasChildren = node.HasChildren();
     row.IsContext = node.IsContext();
     row.IsExpanded = EffectiveExpanded(row.NodeKey, row.HasChildren, row.IsContext);
+    if (row.IsExpanded)
+    {
+        row.Children = node.Children();
+    }
     return row;
 }
 
@@ -358,16 +361,59 @@ void TableViewRowFlattener::QueueTreeRowsRebuild()
 void TableViewRowFlattener::ApplyTreeRows(std::vector<winrt::IInspectable>&& items, std::vector<NodeRow>&& rows)
 {
     auto previous = std::exchange(m_nodeRows, std::move(rows));
+
+    // A row whose node and Children list stay keeps its subscriptions, so a rebuild does not resubscribe every row.
+    std::unordered_map<void*, NodeRow*> kept;
+    kept.reserve(previous.size());
+    for (auto& row : previous)
+    {
+        kept.emplace(winrt::get_abi(row.Node), &row);
+    }
+    for (auto& row : m_nodeRows)
+    {
+        auto const found = kept.find(winrt::get_abi(row.Node));
+        if (found != kept.end())
+        {
+            auto& old = *found->second;
+            row.NodeToken = std::exchange(old.NodeToken, {});
+            if (row.Children == old.Children)
+            {
+                row.ChildrenToken = std::exchange(old.ChildrenToken, {});
+            }
+            kept.erase(found);
+        }
+        SubscribeToNode(row);
+        SubscribeToChildren(row);
+    }
     for (auto& row : previous)
     {
         UnsubscribeFromChildren(row);
     }
-    for (auto& row : m_nodeRows)
-    {
-        SubscribeToChildren(row);
-    }
     m_indexByNodeKeyValid = false;
     m_treeRows.ReplaceAll(items);
+}
+
+void TableViewRowFlattener::SubscribeToNode(NodeRow& row)
+{
+    if (row.NodeToken.value || !row.Node)
+    {
+        return;
+    }
+    auto const notify = row.Node.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>();
+    if (!notify)
+    {
+        return;
+    }
+
+    std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
+    row.NodeToken = notify.PropertyChanged(
+        [weakThis](winrt::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.lock(); strongThis && args.PropertyName() == L"HasChildren")
+            {
+                strongThis->OnNodeHasChildrenChanged(sender.try_as<ViewNode>());
+            }
+        });
 }
 
 void TableViewRowFlattener::SubscribeToChildren(NodeRow& row)
@@ -395,6 +441,58 @@ void TableViewRowFlattener::UnsubscribeFromChildren(NodeRow& row)
         auto const children = row.Children;
         auto const token = std::exchange(row.ChildrenToken, {});
         ShapingHelpers::SafeRevokeWith([&] { children.VectorChanged(token); });
+    }
+    if (row.Node && row.NodeToken.value)
+    {
+        auto const token = std::exchange(row.NodeToken, {});
+        if (auto const notify = row.Node.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>())
+        {
+            ShapingHelpers::SafeRevokeWith([&] { notify.PropertyChanged(token); });
+        }
+    }
+}
+
+// A collapsed row learns from its node, not from a Children list, that its chevron must appear or go; one meant to be
+// expanded is expanded when its first child arrives.
+void TableViewRowFlattener::OnNodeHasChildrenChanged(ViewNode const& node)
+{
+    AssertOnUiThread();
+    int32_t row = -1;
+    if (!m_treeRowsAttached || m_treeRowsStale || !TryGetIndexForNode(node, row))
+    {
+        return;
+    }
+    if (m_treeRowsInFlight)
+    {
+        m_treeRowsPending = true;
+        return;
+    }
+
+    auto const keepAlive = shared_from_this();
+    bool applied = true;
+    {
+        m_treeRowsInFlight = true;
+        auto const done = wil::scope_exit([this]() noexcept { m_treeRowsInFlight = false; });
+        try
+        {
+            auto& nodeRow = m_nodeRows[row];
+            nodeRow.HasChildren = node.HasChildren();
+            auto const key = nodeRow.NodeKey;
+            if (nodeRow.IsExpanded != EffectiveExpanded(key, nodeRow.HasChildren, nodeRow.IsContext))
+            {
+                applied = TryApplyNodeExpansionSplice(key);
+            }
+            RaiseRowMetadataChanged();
+        }
+        catch (...)
+        {
+            applied = false;
+        }
+    }
+
+    if (!applied || m_treeRowsPending)
+    {
+        RebuildTreeRows();
     }
 }
 
@@ -491,9 +589,15 @@ void TableViewRowFlattener::RenumberSiblingRows(int32_t parentRow)
     if (parentRow >= 0)
     {
         auto& parent = m_nodeRows[parentRow];
-        parent.ChildCount = parent.Children ? static_cast<int32_t>(parent.Children.Size()) : 0;
-        parent.HasChildren = parent.ChildCount > 0;
-        parent.IsExpanded = parent.IsExpanded && parent.HasChildren;
+        parent.HasChildren = count > 0;
+        if (parent.IsExpanded && !parent.HasChildren)
+        {
+            // Its last child left: a leaf follows no Children list.
+            parent.IsExpanded = false;
+            UnsubscribeFromChildren(parent);
+            parent.Children = nullptr;
+            SubscribeToNode(parent);
+        }
     }
 }
 
@@ -502,6 +606,7 @@ void TableViewRowFlattener::InsertTreeRows(int32_t index, std::vector<winrt::IIn
     m_indexByNodeKeyValid = false;
     for (size_t i = 0; i < rows.size(); ++i)
     {
+        SubscribeToNode(rows[i]);
         SubscribeToChildren(rows[i]);
         m_nodeRows.insert(m_nodeRows.begin() + index + i, std::move(rows[i]));
         m_treeRows.InsertAt(static_cast<uint32_t>(index + i), items[i]);
@@ -623,8 +728,7 @@ bool TableViewRowFlattener::TryApplyNodeListChange(
         // A collapsed node's children are not rows: its chevron may appear or go, or, if it is meant to be expanded
         // and just got its first child, its children are spliced in.
         auto& parent = m_nodeRows[parentRow];
-        parent.ChildCount = static_cast<int32_t>(list.Size());
-        parent.HasChildren = parent.ChildCount > 0;
+        parent.HasChildren = list.Size() > 0;
         auto const key = parent.NodeKey;
         if (EffectiveExpanded(key, parent.HasChildren, parent.IsContext))
         {
@@ -858,11 +962,11 @@ void TableViewRowFlattener::ExpandSubtree(winrt::hstring const& nodeKey)
         {
             auto const node = stack.back();
             stack.pop_back();
-            auto const children = node.Children();
-            if (!children || children.Size() == 0)
+            if (!node.HasChildren())
             {
                 continue;
             }
+            auto const children = node.Children();
             auto const key = NodeKeyFor(node);
             m_filterOverlayCollapsed.erase(key);
             m_nodeExpansion.SetExpanded(key, true);
@@ -974,6 +1078,12 @@ bool TableViewRowFlattener::TryApplyNodeExpansionSplice(winrt::hstring const& no
     node.IsExpanded = isExpanded;
     if (isExpanded)
     {
+        // Followed only while expanded.
+        if (!node.Children)
+        {
+            node.Children = node.Node.Children();
+        }
+        SubscribeToChildren(node);
         auto const children = node.Children;
         const int32_t depth = node.Depth + 1;
         std::vector<winrt::IInspectable> items;
@@ -993,6 +1103,14 @@ bool TableViewRowFlattener::TryApplyNodeExpansionSplice(winrt::hstring const& no
             return false;
         }
         RemoveTreeRows(row + 1, end - row - 1);
+        auto& collapsed = m_nodeRows[row];
+        if (collapsed.ChildrenToken.value)
+        {
+            auto const children = collapsed.Children;
+            auto const token = std::exchange(collapsed.ChildrenToken, {});
+            ShapingHelpers::SafeRevokeWith([&] { children.VectorChanged(token); });
+        }
+        collapsed.Children = nullptr;
     }
 
     RaiseRowMetadataChanged();

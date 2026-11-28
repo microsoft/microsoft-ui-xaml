@@ -23,8 +23,8 @@ struct TableViewRowInfo
     int32_t Level{ 0 };
     bool IsExpandable{ false };
     bool IsExpanded{ false };
-    // GroupHeader: group item count (0 presents a leaf). Hierarchical data row: child count.
-    // Otherwise 0.
+    // GroupHeader: group item count (0 presents a leaf). Otherwise 0 (a tree row's IsExpandable says whether it has
+    // children).
     int32_t ChildCount{ 0 };
 
     // Hierarchical data rows only. PositionInSet is 1-based within the sibling set (a root's group
