@@ -218,7 +218,7 @@ private:
         std::vector<winrt::IInspectable>& items,
         std::vector<NodeRow>& rows);
     NodeRow MakeNodeRow(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node, winrt::hstring const& parentKey, int32_t depth, int32_t siblingIndex, int32_t siblingCount);
-    static winrt::hstring NodeKeyFor(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node);
+    static winrt::hstring NodeKeyFor(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node, winrt::IInspectable const& item = nullptr);
     bool EffectiveExpanded(winrt::hstring const& nodeKey, bool hasChildren, bool isContext) const;
     void SubscribeToChildren(NodeRow& row);
     void UnsubscribeFromChildren(NodeRow& row);
@@ -231,7 +231,11 @@ private:
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& list,
         winrt::Windows::Foundation::Collections::CollectionChange change,
         uint32_t index);
+    void OnViewItemsChanged(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     void OnViewItemChanged(uint32_t index);
+    // The rows no longer follow the view: rebuilt at the end of the view's change, or on the next turn.
+    void QueueTreeRowsRebuild();
+    bool TryGetIndexForNode(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node, int32_t& index) const;
     void OnNodeExpansionChanged(ShapingHelpers::RowExpansionModel::Change const& change);
     bool TryApplyNodeExpansionSplice(winrt::hstring const& nodeKey);
     // The row after a row's visible subtree.
@@ -312,6 +316,8 @@ private:
     // Index-aligned 1:1 with m_treeRows.
     std::vector<NodeRow> m_nodeRows;
     mutable std::unordered_map<winrt::hstring, int32_t> m_indexByNodeKey;
+    // By node object (ICollectionViewNode ABI pointer); rebuilt with m_indexByNodeKey.
+    mutable std::unordered_map<void*, int32_t> m_indexByNode;
     mutable bool m_indexByNodeKeyValid{ false };
     // Collapsed baseline, so the first build realizes only the roots.
     ShapingHelpers::RowExpansionModel m_nodeExpansion;
@@ -325,4 +331,8 @@ private:
     // A change raised while the tree rows are being changed is remembered and applied as one rebuild after.
     bool m_treeRowsInFlight{ false };
     bool m_treeRowsPending{ false };
+    bool m_treeRowsStale{ false };
+    bool m_treeRebuildQueued{ false };
+    // A handler that changes the tree on every rebuild: after this many passes the next one waits a turn.
+    static constexpr int c_maxTreeRebuildPasses = 8;
 };

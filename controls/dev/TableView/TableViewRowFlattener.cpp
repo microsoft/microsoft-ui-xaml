@@ -164,6 +164,10 @@ TableViewRowFlattener::~TableViewRowFlattener()
     {
         ShapingHelpers::SafeRevokeWith([&] { m_viewNodes.VectorChanged(m_viewNodesChangedToken); });
     }
+    if (m_view && m_viewItemsChangedToken.value)
+    {
+        ShapingHelpers::SafeRevokeWith([&] { m_view.VectorChanged(m_viewItemsChangedToken); });
+    }
     DetachTreeRows();
 }
 

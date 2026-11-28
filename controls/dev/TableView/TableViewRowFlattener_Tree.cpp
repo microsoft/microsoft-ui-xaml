@@ -45,8 +45,20 @@ namespace
         case PropertyType::UInt32: text = std::to_wstring(scalar.GetUInt32()); break;
         case PropertyType::Int64: text = std::to_wstring(scalar.GetInt64()); break;
         case PropertyType::UInt64: text = std::to_wstring(scalar.GetUInt64()); break;
-        case PropertyType::Single: text = std::to_wstring(scalar.GetSingle()); break;
-        case PropertyType::Double: text = std::to_wstring(scalar.GetDouble()); break;
+        case PropertyType::Single:
+        case PropertyType::Double:
+        {
+            // Bit-exact, as the view compares them: decimal text would merge nearby values (1e-7 and 2e-7). -0 is 0.
+            double value = (type == PropertyType::Single) ? static_cast<double>(scalar.GetSingle()) : scalar.GetDouble();
+            value = (value == 0) ? 0 : value;
+            uint64_t bits = 0;
+            static_assert(sizeof(bits) == sizeof(value));
+            memcpy(&bits, &value, sizeof(bits));
+            wchar_t buffer[17]{};
+            swprintf_s(buffer, L"%016llx", static_cast<unsigned long long>(bits));
+            text = buffer;
+            break;
+        }
         case PropertyType::DateTime: text = std::to_wstring(scalar.GetDateTime().time_since_epoch().count()); break;
         case PropertyType::TimeSpan: text = std::to_wstring(scalar.GetTimeSpan().count()); break;
         case PropertyType::Guid:
@@ -75,13 +87,13 @@ bool TableViewRowFlattener::IsNodeKey(winrt::hstring const& key)
 }
 
 // The node's Key in lookup form, so expansion survives the view recreating its nodes; a node without a key is
-// addressed by its item.
-winrt::hstring TableViewRowFlattener::NodeKeyFor(ViewNode const& node)
+// addressed by its item (item: the one it holds now, when the node may not have it yet).
+winrt::hstring TableViewRowFlattener::NodeKeyFor(ViewNode const& node, winrt::IInspectable const& item)
 {
     auto const key = node.Key();
     if (!key)
     {
-        return winrt::hstring{ std::wstring(c_nodeKeyPrefix) + L"i" + std::wstring(ObjectIdentity(node.Item())) };
+        return winrt::hstring{ std::wstring(c_nodeKeyPrefix) + L"i" + std::wstring(ObjectIdentity(item ? item : node.Item())) };
     }
     if (auto text = ScalarKeyText(key))
     {
@@ -137,13 +149,14 @@ bool TableViewRowFlattener::AttachViewNodesNow()
                 }
             });
 
-        // A Replace that keeps the item's keys keeps its node; only the flat list says which item it now holds.
+        // A Replace that keeps the item's keys keeps its node; only the flat list says which item it now holds. The flat
+        // list changes after the node lists, so it also ends a change whose node lists the rows could not follow.
         m_viewItemsChangedToken = m_view.VectorChanged(
             [weakThis](auto const&, winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
             {
-                if (auto strongThis = weakThis.lock(); strongThis && args.CollectionChange() == winrt::Windows::Foundation::Collections::CollectionChange::ItemChanged)
+                if (auto strongThis = weakThis.lock())
                 {
-                    strongThis->OnViewItemChanged(args.Index());
+                    strongThis->OnViewItemsChanged(args);
                 }
             });
     }
@@ -170,7 +183,15 @@ void TableViewRowFlattener::DetachTreeRows()
     {
         UnsubscribeFromChildren(row);
     }
+    m_indexByNodeKey.clear();
     m_indexByNodeKeyValid = false;
+    m_treeRowsStale = false;
+    m_filterOverlayCollapsed.clear();
+    m_removedNodeKeys.clear();
+    // A new list, not Clear(): the repeater may still show the old one until the rows change, and needs no Reset. The
+    // old one, and the items it holds, go when the repeater lets go of it.
+    m_treeRows = winrt::single_threaded_observable_vector<winrt::IInspectable>();
+    m_treeRowsView = winrt::ItemsSourceView{ m_treeRows };
 }
 
 bool TableViewRowFlattener::EffectiveExpanded(winrt::hstring const& nodeKey, bool hasChildren, bool isContext) const
@@ -272,8 +293,20 @@ void TableViewRowFlattener::RebuildTreeRows()
     }
 
     auto const keepAlive = shared_from_this();
+    m_treeRowsStale = false;
+    int passes = 0;
     do
     {
+        if (passes++ == c_maxTreeRebuildPasses)
+        {
+            // A handler that changes the tree on every rebuild would keep the UI thread here; the rest waits a turn.
+            TVDiag::LogRetailF(L"[TableView] The view's tree changed during each of %d consecutive row rebuilds; rebuilding again on the next turn.",
+                c_maxTreeRebuildPasses);
+            m_treeRowsPending = false;
+            QueueTreeRowsRebuild();
+            break;
+        }
+
         m_treeRowsInFlight = true;
         m_treeRowsPending = false;
         auto const done = wil::scope_exit([this]() noexcept { m_treeRowsInFlight = false; });
@@ -298,6 +331,28 @@ void TableViewRowFlattener::RebuildTreeRows()
     } while (m_treeRowsPending);
 
     RunPendingAttachViewGroups();
+}
+
+void TableViewRowFlattener::QueueTreeRowsRebuild()
+{
+    m_treeRowsStale = true;
+    if (m_treeRebuildQueued)
+    {
+        return;
+    }
+    auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+    std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
+    m_treeRebuildQueued = queue && queue.TryEnqueue([weakThis]()
+    {
+        if (auto const strongThis = weakThis.lock())
+        {
+            strongThis->m_treeRebuildQueued = false;
+            if (strongThis->m_treeRowsAttached && strongThis->m_treeRowsStale)
+            {
+                strongThis->RebuildTreeRows();
+            }
+        }
+    });
 }
 
 void TableViewRowFlattener::ApplyTreeRows(std::vector<winrt::IInspectable>&& items, std::vector<NodeRow>&& rows)
@@ -351,11 +406,31 @@ void TableViewRowFlattener::EnsureNodeKeyIndex() const
     }
     m_indexByNodeKey.clear();
     m_indexByNodeKey.reserve(m_nodeRows.size());
+    m_indexByNode.clear();
+    m_indexByNode.reserve(m_nodeRows.size());
     for (int32_t i = 0; i < static_cast<int32_t>(m_nodeRows.size()); ++i)
     {
         m_indexByNodeKey.emplace(m_nodeRows[i].NodeKey, i);
+        m_indexByNode.emplace(winrt::get_abi(m_nodeRows[i].Node), i);
     }
     m_indexByNodeKeyValid = true;
+}
+
+bool TableViewRowFlattener::TryGetIndexForNode(ViewNode const& node, int32_t& index) const
+{
+    index = -1;
+    if (m_kind != Kind::Tree || !node)
+    {
+        return false;
+    }
+    EnsureNodeKeyIndex();
+    auto const found = m_indexByNode.find(winrt::get_abi(node));
+    if (found == m_indexByNode.end())
+    {
+        return false;
+    }
+    index = found->second;
+    return true;
 }
 
 TableViewRowFlattener::NodeRow const* TableViewRowFlattener::TryGetNodeRow(int32_t index) const
@@ -469,17 +544,22 @@ void TableViewRowFlattener::OnNodeListChanged(
         return;
     }
 
+    const auto change = args.CollectionChange();
+    const bool isRootsReset = parentKey.empty() && change == winrt::Windows::Foundation::Collections::CollectionChange::Reset;
+    if (m_treeRowsStale && !isRootsReset)
+    {
+        // Rebuilt once the change ends (OnViewItemsChanged), not per node list it touches.
+        return;
+    }
+
     auto const keepAlive = shared_from_this();
     bool applied = false;
-    bool isRootsReset = false;
     {
         m_treeRowsInFlight = true;
         m_treeRowsPending = false;
         auto const done = wil::scope_exit([this]() noexcept { m_treeRowsInFlight = false; });
         try
         {
-            const auto change = args.CollectionChange();
-            isRootsReset = parentKey.empty() && change == winrt::Windows::Foundation::Collections::CollectionChange::Reset;
             applied = !isRootsReset && TryApplyNodeListChange(parentKey, list, change, args.Index());
         }
         catch (...)
@@ -492,9 +572,14 @@ void TableViewRowFlattener::OnNodeListChanged(
     {
         // The view recomputed (a new filter, sort or Refresh): context rows start expanded again.
         m_filterOverlayCollapsed.clear();
+        RebuildTreeRows();
     }
-
-    if (!applied || m_treeRowsPending)
+    else if (!applied)
+    {
+        // A long splice: one rebuild when the view's flat list reports the change (a move is a remove and an insert).
+        QueueTreeRowsRebuild();
+    }
+    else if (m_treeRowsPending)
     {
         RebuildTreeRows();
     }
@@ -597,21 +682,51 @@ bool TableViewRowFlattener::TryApplyNodeListChange(
     return true;
 }
 
+void TableViewRowFlattener::OnViewItemsChanged(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+{
+    if (!m_treeRowsAttached)
+    {
+        return;
+    }
+
+    if (m_treeRowsStale)
+    {
+        RebuildTreeRows();
+        return;
+    }
+
+    if (args.CollectionChange() == winrt::Windows::Foundation::Collections::CollectionChange::ItemChanged)
+    {
+        OnViewItemChanged(args.Index());
+    }
+}
+
 void TableViewRowFlattener::OnViewItemChanged(uint32_t index)
 {
-    if (!m_treeRowsAttached || !m_hierarchy || m_treeRowsInFlight)
+    if (!m_hierarchy || m_treeRowsInFlight)
     {
         return;
     }
 
     try
     {
+        // By node, not key: a node without a key is keyed by its item, which this change replaced.
         auto const item = m_view.GetAt(index);
         auto const node = m_hierarchy.NodeFromItem(item);
         int32_t row = -1;
-        if (node && TryGetIndexForNodeKey(NodeKeyFor(node), row))
+        if (node && TryGetIndexForNode(node, row))
         {
-            m_nodeRows[row].Item = item;
+            auto& nodeRow = m_nodeRows[row];
+            nodeRow.Item = item;
+            if (!node.Key())
+            {
+                auto key = NodeKeyFor(node, item);
+                if (key != nodeRow.NodeKey)
+                {
+                    nodeRow.NodeKey = std::move(key);
+                    m_indexByNodeKeyValid = false;
+                }
+            }
             m_treeRows.SetAt(static_cast<uint32_t>(row), item);
         }
     }
@@ -699,13 +814,22 @@ void TableViewRowFlattener::SetNodeExpanded(winrt::hstring const& nodeKey, bool 
 void TableViewRowFlattener::ExpandAllNodes()
 {
     m_filterOverlayCollapsed.clear();
-    m_nodeExpansion.SetAllExpanded(true);
+    {
+        // The model reports the change at once; one rebuild below instead of one there and one here.
+        auto const wasInFlight = std::exchange(m_treeRowsInFlight, true);
+        auto const done = wil::scope_exit([this, wasInFlight]() noexcept { m_treeRowsInFlight = wasInFlight; });
+        m_nodeExpansion.SetAllExpanded(true);
+    }
     RebuildTreeRows();
 }
 
 void TableViewRowFlattener::CollapseAllNodes()
 {
-    m_nodeExpansion.SetAllExpanded(false);
+    {
+        auto const wasInFlight = std::exchange(m_treeRowsInFlight, true);
+        auto const done = wil::scope_exit([this, wasInFlight]() noexcept { m_treeRowsInFlight = wasInFlight; });
+        m_nodeExpansion.SetAllExpanded(false);
+    }
     // Context rows collapse too; the overlay records the visible ones.
     for (auto const& row : m_nodeRows)
     {
@@ -727,8 +851,8 @@ void TableViewRowFlattener::ExpandSubtree(winrt::hstring const& nodeKey)
 
     {
         // One rebuild for the whole subtree: the toggles below only record intent.
-        m_treeRowsInFlight = true;
-        auto const done = wil::scope_exit([this]() noexcept { m_treeRowsInFlight = false; });
+        auto const wasInFlight = std::exchange(m_treeRowsInFlight, true);
+        auto const done = wil::scope_exit([this, wasInFlight]() noexcept { m_treeRowsInFlight = wasInFlight; });
         std::vector<ViewNode> stack{ m_nodeRows[row].Node };
         while (!stack.empty())
         {
