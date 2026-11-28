@@ -284,7 +284,8 @@ protected:
         _In_ const XUINT32 uDecodePixelWidthInLogicalPixels,
         _In_ const XUINT32 uDecodePixelHeightInLogicalPixels,
         _Out_ XUINT32 * const pDecodePixelWidthInPhysicalPixels,
-        _Out_ XUINT32 * const pDecodePixelHeightInPhysicalPixels
+        _Out_ XUINT32 * const pDecodePixelHeightInPhysicalPixels,
+        _Out_opt_ float * const pScaleFactor = nullptr
     );
 
     virtual bool ShouldKeepSoftwareSurfaces() { return true; }
@@ -585,8 +586,8 @@ private:
     _Check_return_ HRESULT UnregisterWithReloadManager();
     _Check_return_ HRESULT ShouldReloadOnResourceInvalidation(ResourceInvalidationReason reason, _Out_ bool* shouldReload);
 
-    XUINT32 GetLogicalSize(XUINT32 physicalSize) const;
-    bool HasLogicalDecodeSize() const;
+    XUINT32 GetLogicalSize(XUINT32 physicalSize);
+    bool HasLogicalDecodeSize();
 
     bool IsAnimatedBitmap();
 
@@ -622,6 +623,9 @@ private:
     bool m_publicBitmapEventFired : 1;
 
     xref_ptr<IPALUri> m_absoluteUri; // Cached to avoid redoing expensive URI combine operations.
+
+    // Rasterization scale DecodeStream applied to a logical decode size; GetLogicalSize divides by the same value.
+    float m_logicalDecodeScale = 1.0f;
 };
 
 class CBitmapSource : public CImageSource
