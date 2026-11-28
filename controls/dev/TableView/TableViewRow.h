@@ -86,6 +86,8 @@ public:
 
     // ExpandCollapsePattern state: LeafNode unless an expandable tree row.
     winrt::ExpandCollapseState HierarchyExpandCollapseState();
+    // A cleared row forgets its item; prepared again for it, it counts as a new item.
+    void ReleaseHierarchyStamp() { m_hierarchyStampedItem = nullptr; }
 
     // Used by automation peers to enumerate live cells after template application.
     winrt::Panel GetCellsHostPanelInternal() const { return m_cellsHost.get(); }

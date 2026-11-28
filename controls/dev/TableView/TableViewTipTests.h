@@ -135,9 +135,9 @@ namespace TableViewTip
         }
     };
 
-    // Sort, filter and group expansion share this test; each reports under its
-    // own measure and name (OperationTestIdentity), so the declaration's measure is Sort's. Initialize keeps its own
-    // declaration, so a change to these tests' data leaves its data version alone.
+    // Sort, filter, group expansion and tree expansion share this test; each reports under its own measure and name
+    // (OperationTestIdentity), so the declaration's measure is Sort's. Initialize has its own declaration, so its data
+    // version is independent of this one.
     TIP_declare_test(TableViewOperationTest, OperationMeasure::Sort)
     {
         // 2: the reason set gained hierarchy_expansion_failed (26).

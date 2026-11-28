@@ -427,6 +427,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 IdleSynchronizer.Wait();
             }
         }
+
         private static int CountProjected(TableView tableView)
         {
             var count = 0;

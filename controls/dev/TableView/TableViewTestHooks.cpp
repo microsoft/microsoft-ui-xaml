@@ -16,6 +16,7 @@ namespace
     std::atomic<RowCellRebuiltEvent*> s_rowCellRebuilt{ nullptr };
     std::atomic<RowCellRebuiltEvent*> s_rowAutomationPropertyChanged{ nullptr };
     std::atomic<bool> s_isAutomationListenerForced{ false };
+    std::atomic<uint32_t> s_rowHierarchyRestamps{ 0 };
 
     RowCellRebuiltEvent& EnsureEvent(std::atomic<RowCellRebuiltEvent*>& slot)
     {
@@ -151,4 +152,14 @@ void TableViewTestHooks::NoteRowAutomationPropertyChanged(winrt::IInspectable co
     catch (...)
     {
     }
+}
+
+uint32_t TableViewTestHooks::GetRowHierarchyRestampCount()
+{
+    return s_rowHierarchyRestamps.load(std::memory_order_relaxed);
+}
+
+void TableViewTestHooks::NoteRowHierarchyRestamp()
+{
+    s_rowHierarchyRestamps.fetch_add(1, std::memory_order_relaxed);
 }

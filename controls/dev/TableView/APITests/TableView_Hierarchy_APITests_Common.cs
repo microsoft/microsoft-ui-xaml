@@ -186,6 +186,174 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public bool Remove(object item) => throw new NotSupportedException();
     }
 
+    // An app's hierarchical view whose nodes implement ICollectionViewNode only (no INotifyPropertyChanged): HasChildren
+    // changes are seen only through Children. The flat list is a plain view over every item, appended after the node
+    // lists change, as the framework view orders them.
+    internal sealed partial class PlainHierarchyView : ICollectionView, ICollectionViewHierarchy
+    {
+        private readonly ObservableCollection<TreeEmployee> _items = new ObservableCollection<TreeEmployee>();
+        private readonly ICollectionView _inner;
+        private readonly Dictionary<object, PlainNode> _nodes = new Dictionary<object, PlainNode>();
+        private readonly PlainNodeList _roots = new PlainNodeList();
+
+        public PlainHierarchyView()
+        {
+            _inner = new CollectionViewSource { Source = _items }.View;
+        }
+
+        public PlainNode Add(PlainNode parent, string name)
+        {
+            var item = new TreeEmployee { Id = _items.Count + 1, Name = name };
+            var node = new PlainNode(item, parent);
+            _nodes[item] = node;
+            (parent?.ChildList ?? _roots).Add(node);
+            _items.Add(item);
+            return node;
+        }
+
+        public void RemoveLastChild(PlainNode parent)
+        {
+            var list = parent.ChildList;
+            var node = (PlainNode)list[list.Count - 1];
+            list.RemoveAt(list.Count - 1);
+            _nodes.Remove(node.Item);
+            _items.Remove((TreeEmployee)node.Item);
+        }
+
+        public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged
+        {
+            add { _inner.VectorChanged += value; }
+            remove { _inner.VectorChanged -= value; }
+        }
+        public event EventHandler<object> CurrentChanged { add { } remove { } }
+        public event CurrentChangingEventHandler CurrentChanging { add { } remove { } }
+
+        public HierarchyDescription HierarchyDescription { get => null; set { } }
+        public bool CanBuildHierarchy => true;
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionNodes => _roots;
+        public ICollectionViewNode NodeFromItem(object item) => item != null && _nodes.TryGetValue(item, out var node) ? node : null;
+
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionGroups => null;
+        public object CurrentItem => _inner.CurrentItem;
+        public int CurrentPosition => _inner.CurrentPosition;
+        public bool HasMoreItems => false;
+        public bool IsCurrentAfterLast => _inner.IsCurrentAfterLast;
+        public bool IsCurrentBeforeFirst => _inner.IsCurrentBeforeFirst;
+        public int Count => _inner.Count;
+        public bool IsReadOnly => true;
+
+        public object this[int index]
+        {
+            get => _inner[index];
+            set => throw new NotSupportedException();
+        }
+
+        public bool MoveCurrentTo(object item) => _inner.MoveCurrentTo(item);
+        public bool MoveCurrentToFirst() => _inner.MoveCurrentToFirst();
+        public bool MoveCurrentToLast() => _inner.MoveCurrentToLast();
+        public bool MoveCurrentToNext() => _inner.MoveCurrentToNext();
+        public bool MoveCurrentToPrevious() => _inner.MoveCurrentToPrevious();
+        public bool MoveCurrentToPosition(int index) => _inner.MoveCurrentToPosition(index);
+        public global::Windows.Foundation.IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count) => throw new NotSupportedException();
+
+        public int IndexOf(object item) => _inner.IndexOf(item);
+        public bool Contains(object item) => _inner.Contains(item);
+        public void CopyTo(object[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
+        public IEnumerator<object> GetEnumerator() => _inner.GetEnumerator();
+        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Insert(int index, object item) => throw new NotSupportedException();
+        public void RemoveAt(int index) => throw new NotSupportedException();
+        public void Add(object item) => throw new NotSupportedException();
+        public void Clear() => throw new NotSupportedException();
+        public bool Remove(object item) => throw new NotSupportedException();
+    }
+
+    internal sealed partial class PlainNode : ICollectionViewNode
+    {
+        public PlainNode(object item, PlainNode parent)
+        {
+            Item = item;
+            Parent = parent;
+        }
+
+        internal PlainNodeList ChildList { get; } = new PlainNodeList();
+
+        public object Item { get; }
+        public object Key => ((TreeEmployee)Item).Id;
+        public ICollectionViewNode Parent { get; }
+        public global::Windows.Foundation.Collections.IObservableVector<object> Children => ChildList;
+        public bool IsContext => false;
+        public bool HasChildren => ChildList.Count > 0;
+    }
+
+    internal sealed partial class PlainNodeList : global::Windows.Foundation.Collections.IObservableVector<object>
+    {
+        private readonly List<object> _items = new List<object>();
+
+        public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged;
+
+        public object this[int index]
+        {
+            get => _items[index];
+            set => throw new NotSupportedException();
+        }
+
+        public int Count => _items.Count;
+        public bool IsReadOnly => false;
+
+        public void Add(object item) => Insert(_items.Count, item);
+
+        public void Insert(int index, object item)
+        {
+            _items.Insert(index, item);
+            Raise(global::Windows.Foundation.Collections.CollectionChange.ItemInserted, index);
+        }
+
+        public void RemoveAt(int index)
+        {
+            _items.RemoveAt(index);
+            Raise(global::Windows.Foundation.Collections.CollectionChange.ItemRemoved, index);
+        }
+
+        public bool Remove(object item)
+        {
+            var index = _items.IndexOf(item);
+            if (index < 0)
+            {
+                return false;
+            }
+            RemoveAt(index);
+            return true;
+        }
+
+        public void Clear()
+        {
+            _items.Clear();
+            Raise(global::Windows.Foundation.Collections.CollectionChange.Reset, 0);
+        }
+
+        public int IndexOf(object item) => _items.IndexOf(item);
+        public bool Contains(object item) => _items.Contains(item);
+        public void CopyTo(object[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
+        public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
+        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private void Raise(global::Windows.Foundation.Collections.CollectionChange change, int index)
+            => VectorChanged?.Invoke(this, new PlainVectorChangedEventArgs(change, (uint)index));
+    }
+
+    internal sealed partial class PlainVectorChangedEventArgs : global::Windows.Foundation.Collections.IVectorChangedEventArgs
+    {
+        public PlainVectorChangedEventArgs(global::Windows.Foundation.Collections.CollectionChange change, uint index)
+        {
+            CollectionChange = change;
+            Index = index;
+        }
+
+        public global::Windows.Foundation.Collections.CollectionChange CollectionChange { get; }
+        public uint Index { get; }
+    }
     // Orders LiveRows by Score through the column CustomSortComparer path rather than a key.
     internal sealed partial class LiveScoreComparer : ITableViewSortComparer
     {

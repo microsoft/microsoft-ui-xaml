@@ -835,6 +835,11 @@ settled insert into the expanded tree 11 ms (main 965 ms), view-only build 889 m
 puts the engine's own code at ~3% of samples; the per-item key reads (two `ICustomPropertyProvider` reads through the
 property path reader, boxed keys, GC) dominate, so a faster load needs a cheaper shared key reader, not tree changes.
 
+Flat and grouped tables pay nothing for the tree: `VerifyFlatAndGroupedTablesNeverRestampTreeState` asserts they never
+restamp tree state (a `TableViewTestHooks` counter), and `BenchFlatAndGroupedPrepare` (Ignore; 10k rows, settled load and
+scroll step, flat and grouped) is the timing baseline. Its numbers against the base (`b5a535696`) are pending the next
+benchmark run.
+
 ### One engine: every ItemsSource goes through a view
 
 TableView has one data-shaping engine: the framework `CollectionViewSource` view. Like WPF, where every

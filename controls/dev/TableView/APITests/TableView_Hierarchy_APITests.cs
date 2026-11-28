@@ -45,6 +45,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private const string AllRoots = "Ada1 Ben1 Cy1 Dan1 Eve1 Fay1 Gus1";
         private const string Flat = "Ada Ben Cy Dan Eve Fay Gus";
 
+        // A test that failed before its own reset must not leave rows raising forced UI Automation events for the next.
+        [TestCleanup]
+        public void ResetAutomationHooks()
+        {
+            RunOnUIThread.Execute(() => Microsoft.UI.Private.Controls.TableViewTestHooks.SetAutomationListenerForced(false));
+        }
+
         #region 3.1 Projection basics
 
         [TestMethod]
@@ -1418,6 +1425,156 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies setting ItemsSource to null releases every item an expanded tree showed, while the table stays alive: no recycled row keeps the item it last showed.")]
+        public void VerifyClearingItemsSourceReleasesTreeItems()
+        {
+            TableView tableView = null;
+            ObservableCollection<TreeEmployee> list = null;
+            List<WeakReference> weak = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                ShowExpandedTree(out tableView, out list, out weak);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, FullTree, "precondition");
+                tableView.ItemsSource = null;
+                list = null;
+            });
+            SettleLayout(tableView);
+            WaitForRelease(() => weak.All(w => !w.IsAlive));
+            RunOnUIThread.Execute(() =>
+            {
+                var alive = string.Join(" ", weak.Where(w => w.IsAlive).Select(w => ((TreeEmployee)w.Target)?.Name));
+                Verify.AreEqual(0, weak.Count(w => w.IsAlive), $"No item stays alive. Alive: [{alive}]");
+                GC.KeepAlive(tableView);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app's nodes without INotifyPropertyChanged: a collapsed row follows its node's Children for its chevron, also after a collapse and after a rebuild.")]
+        public void VerifyNodesWithoutPropertyChangedFollowChildren()
+        {
+            PlainHierarchyView view = null;
+            PlainNode a = null;
+            PlainNode b = null;
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                view = new PlainHierarchyView();
+                a = view.Add(null, "A");
+                view.Add(a, "A0");
+                b = view.Add(null, "B");
+                tableView = CreateTreeTable(view);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "A1+ B1", "precondition");
+                view.Add(b, "B0");
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "A1+ B1+", "B's first child");
+                tableView.ExpandRow(b.Item);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "A1+ B1- B02", "expanded");
+                tableView.CollapseRow(b.Item);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "A1+ B1+", "collapsed again");
+                view.RemoveLastChild(b);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "A1+ B1", "B's last child left");
+                for (var i = 1; i <= 70; i++)
+                {
+                    view.Add(a, $"A{i}");
+                }
+                tableView.ExpandRow(a.Item);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(73, GetProjectedCount(tableView), "A's 71 children are more than one splice: the rows were rebuilt.");
+                tableView.CollapseRow(a.Item);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "A1+ B1", "collapsed after the rebuild");
+                view.Add(b, "B1");
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "A1+ B1+", "B's chevron after the rebuild");
+                view.RemoveLastChild(b);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "A1+ B1", "and gone again"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies flat and grouped tables never restamp tree state on their rows: not on load, scroll, source changes, a group toggle or a Reset.")]
+        public void VerifyFlatAndGroupedTablesNeverRestampTreeState()
+        {
+            foreach (var grouped in new[] { false, true })
+            {
+                var context = grouped ? "grouped" : "flat";
+                ObservableCollection<TreeEmployee> list = null;
+                TableView tableView = null;
+                uint before = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    EnsureTabularControlsResources();
+                    before = Microsoft.UI.Private.Controls.TableViewTestHooks.GetRowHierarchyRestampCount();
+                    list = new ObservableCollection<TreeEmployee>(Enumerable.Range(0, 120).Select(i => new TreeEmployee { Id = i + 1, Name = $"N{i:D3}", Dept = $"D{i % 3}" }));
+                    var cvs = new CollectionViewSource { Source = list };
+                    if (grouped)
+                    {
+                        cvs.GroupDescriptions.Add(new PropertyGroupDescription("Dept"));
+                    }
+                    tableView = CreateTreeTable(cvs.View);
+                    tableView.Height = 200;
+                    LoadContent(tableView);
+                });
+                SettleLayout(tableView);
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, 1000);
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, 0);
+                RunOnUIThread.Execute(() =>
+                {
+                    list.Insert(0, new TreeEmployee { Id = 500, Name = "New", Dept = "D0" });
+                    list.RemoveAt(5);
+                    list[3] = new TreeEmployee { Id = 501, Name = "Swap", Dept = "D1" };
+                    if (grouped)
+                    {
+                        tableView.CollapseGroup("D0");
+                    }
+                });
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() => list.Clear());
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() => Verify.AreEqual(before, Microsoft.UI.Private.Controls.TableViewTestHooks.GetRowHierarchyRestampCount(), $"No restamp ({context})."));
+            }
+        }
+
         #endregion
 
         #region Helpers
@@ -1435,14 +1592,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     log.Add($"{args}");
                 }
             };
-            RunOnUIThread.Execute(() =>
-            {
-                Microsoft.UI.Private.Controls.TableViewTestHooks.SetAutomationListenerForced(true);
-                Microsoft.UI.Private.Controls.TableViewTestHooks.RowAutomationPropertyChanged += handler;
-                ReadRowAutomationProperties(tableView);
-            });
             try
             {
+                RunOnUIThread.Execute(() =>
+                {
+                    Microsoft.UI.Private.Controls.TableViewTestHooks.SetAutomationListenerForced(true);
+                    Microsoft.UI.Private.Controls.TableViewTestHooks.RowAutomationPropertyChanged += handler;
+                    ReadRowAutomationProperties(tableView);
+                });
                 act();
             }
             finally

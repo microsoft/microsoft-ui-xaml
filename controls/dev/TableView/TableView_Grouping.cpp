@@ -589,14 +589,18 @@ void TableView::ApplyGroupExpansionByIdentity(
 
     std::optional<winrt::ExpandCollapseState> groupStateBefore;
     std::optional<winrt::ExpandCollapseState> rowStateBefore;
-    if (!subtree && TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
+    if (TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
         if (axis == BulkExpansionAxis::Groups)
         {
-            groupStateBefore = TryGetGroupExpandCollapseState(identity);
+            if (!subtree)
+            {
+                groupStateBefore = TryGetGroupExpandCollapseState(identity);
+            }
         }
         else
         {
+            // A subtree request too: its root row was shown, its descendants were not.
             rowStateBefore = TryGetRowExpandCollapseState(identity);
         }
     }
@@ -713,7 +717,7 @@ void TableView::ApplyGroupExpansionByIdentity(
         RaiseGroupCollapsed(changingGroup->Key);
     }
 
-    if (changed && axis == BulkExpansionAxis::Rows && !subtree &&
+    if (changed && axis == BulkExpansionAxis::Rows &&
         generation == m_rowMetadataGeneration && provider == m_tableViewSourceRowMetadata &&
         bulkGeneration == BulkExpansionGeneration(axis))
     {
@@ -766,40 +770,49 @@ std::optional<winrt::ExpandCollapseState> TableView::TryGetRowExpandCollapseStat
     return std::nullopt;
 }
 
-// A toggled tree row that the table showed again in another container (a rebuild re-realizes every row) tells UI
-// Automation its new state here, once the rows have settled; a row that already reported it raises nothing.
+// A toggled tree row tells UI Automation its new state once a container shows it again: when the row is prepared (a
+// rebuild re-realizes every row) or, for a row that stayed realized, once the rows have settled. A row that already
+// reported the state raises nothing. Unmatched entries wait for their row until the source changes.
 void TableView::RaisePendingRowExpansionEvents()
 {
     if (m_pendingRowExpansionStates.empty())
     {
         return;
     }
-    auto pending = std::exchange(m_pendingRowExpansionStates, {});
+    ForEachRealizedRow([this](winrt::TableViewRow const& row)
+    {
+        RaisePendingRowExpansionEvent(row);
+    });
+}
+
+void TableView::RaisePendingRowExpansionEvent(winrt::TableViewRow const& row)
+{
+    if (m_pendingRowExpansionStates.empty())
+    {
+        return;
+    }
+    auto const identity = TryGetContainerIdentity(row);
+    auto const found = identity.empty() ? m_pendingRowExpansionStates.end() : m_pendingRowExpansionStates.find(identity);
+    if (found == m_pendingRowExpansionStates.end())
+    {
+        return;
+    }
+    auto const oldState = found->second;
+    m_pendingRowExpansionStates.erase(found);
     if (!TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
         return;
     }
-
-    ForEachRealizedRow([this, &pending](winrt::TableViewRow const& row)
+    auto const newState = winrt::get_self<TableViewRow>(row)->HierarchyExpandCollapseState();
+    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(row);
+    if (!peer)
     {
-        auto const identity = TryGetContainerIdentity(row);
-        auto const found = identity.empty() ? pending.end() : pending.find(identity);
-        if (found == pending.end())
-        {
-            return;
-        }
-        auto const newState = winrt::get_self<TableViewRow>(row)->HierarchyExpandCollapseState();
-        auto peer = winrt::FrameworkElementAutomationPeer::FromElement(row);
-        if (!peer)
-        {
-            peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(row);
-        }
-        if (auto const rowPeer = peer.try_as<winrt::TableViewRowAutomationPeer>())
-        {
-            winrt::get_self<TableViewRowAutomationPeer>(rowPeer)->RaiseExpandCollapseIfUnreported(found->second, newState);
-        }
-        pending.erase(found);
-    });
+        peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(row);
+    }
+    if (auto const rowPeer = peer.try_as<winrt::TableViewRowAutomationPeer>())
+    {
+        winrt::get_self<TableViewRowAutomationPeer>(rowPeer)->RaiseExpandCollapseIfUnreported(oldState, newState);
+    }
 }
 
 void TableView::AnnounceRowExpansionChange(winrt::hstring const& identity)
@@ -1408,6 +1421,7 @@ void TableView::RefreshRealizedRowHierarchyState()
     {
         return;
     }
+    TableViewTestHooks::NoteRowHierarchyRestamp();
 
     ForEachRealizedRow([this, repeater](winrt::TableViewRow const& row)
     {

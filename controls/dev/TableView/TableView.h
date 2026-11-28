@@ -1086,6 +1086,7 @@ private:
     std::optional<winrt::ExpandCollapseState> TryGetGroupExpandCollapseState(winrt::hstring const& identity);
     std::optional<winrt::ExpandCollapseState> TryGetRowExpandCollapseState(winrt::hstring const& identity);
     void RaisePendingRowExpansionEvents();
+    void RaisePendingRowExpansionEvent(winrt::TableViewRow const& row);
     // Tree row identity -> ExpandCollapseState before a toggle, until the rows settle (RaisePendingRowExpansionEvents).
     std::unordered_map<winrt::hstring, winrt::ExpandCollapseState> m_pendingRowExpansionStates;
     // The rows were a tree when they last changed, so leaving the tree still restamps them.

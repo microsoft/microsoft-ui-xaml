@@ -25,6 +25,9 @@ runtimeclass TableViewTestHooks
     // Raised (sender: the row; args: the property's programmatic name, e.g. "ExpandCollapseState") for each
     // property change a row peer raises.
     static event Windows.Foundation.EventHandler<Object> RowAutomationPropertyChanged;
+
+    // How many times a TableView restamped the tree state of all its realized rows (process-wide).
+    static UInt32 GetRowHierarchyRestampCount();
 }
 
 }

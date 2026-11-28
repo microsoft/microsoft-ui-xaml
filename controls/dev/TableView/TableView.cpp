@@ -2909,6 +2909,7 @@ void TableView::OnRowElementPrepared(
         }
         rowImpl->RefreshCellToolTips();
         RefreshRowHierarchyState(row, args.Index());
+        RaisePendingRowExpansionEvent(row);
         RefreshRowSelectionState(row);
         InvalidateMeasureForRowRealizationChange();
         QueueTerminalGridLineRefresh();
@@ -2937,8 +2938,9 @@ void TableView::OnRowElementClearing(
         {
             m_cellLevelRow = nullptr;
         }
-        // Release app-supplied tooltip content rather than pinning it in the recycle pool.
+        // Release app-supplied tooltip content and the stamped tree item rather than pinning them in the recycle pool.
         rowImpl->ReleaseCellToolTips();
+        rowImpl->ReleaseHierarchyStamp();
         rowImpl->SetTerminalGridLineSuppression({}, false /* refresh */);
         if (auto terminalRow = m_terminalGridLineRow.get(); terminalRow && IsSameObject(row, terminalRow))
         {

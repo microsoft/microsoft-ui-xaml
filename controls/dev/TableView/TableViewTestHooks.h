@@ -27,4 +27,8 @@ public:
     static bool AutomationListenerExists(winrt::AutomationEvents eventId);
     // Called by the row peer for each property change it raises.
     static void NoteRowAutomationPropertyChanged(winrt::IInspectable const& row, wchar_t const* property);
+
+    static uint32_t GetRowHierarchyRestampCount();
+    // Called by TableView each time it restamps its realized rows.
+    static void NoteRowHierarchyRestamp();
 };
