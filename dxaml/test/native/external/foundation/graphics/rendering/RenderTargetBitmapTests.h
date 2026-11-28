@@ -207,6 +207,36 @@ public:
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(RotatedNestedClipsRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for nested clipped elements under a rotation and verifies that the clips rotate with the content.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(NestedAxisAlignedClipsRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for two partly overlapping clips on nested elements under an axis-aligned scale and verifies that only their intersection is rendered.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ProjectedClippedRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a clipped element with a translating Matrix3DProjection and verifies that the clip moves with the projected content.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(RotatedChildInClippedParentRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a rotated, clipped element inside a parent with an axis-aligned clip that contains, is contained in, partly overlaps or misses it, and for a rotated clip on an element that is also layout-clipped; only the intersections are rendered.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(GeometryGroupFillRuleRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for Paths whose Data is a GeometryGroup of nested rectangles with the EvenOdd and Nonzero fill rules, and gets their alpha masks.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(RotatedAndProjectedClipsRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a rotated, layout-clipped element with its own Clip, and for an element with both a PlaneProjection and a Clip; only the clipped content is rendered, transformed with the element.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
 private:
     void BasicRenderTargetBitmapInternal();
     void PopupChildRTBInternal();

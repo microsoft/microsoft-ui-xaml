@@ -103,6 +103,7 @@
     <ClInclude Include="graphics\rendering\AlphaMaskTests.h" />
     <ClInclude Include="graphics\rendering\BorderTests.h" />
     <ClInclude Include="graphics\rendering\BrushTests.h" />
+    <ClInclude Include="graphics\rendering\ColorStringTests.h" />
     <ClInclude Include="graphics\rendering\CaretBrowsingAutomationIntegrationTests.h" />
     <ClInclude Include="graphics\rendering\CaretBrowsingTests.h" />
     <ClInclude Include="graphics\rendering\ChromeFocusRectangleTests.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="input\DManip\Sync.h" />
     <ClInclude Include="input\DManip\TextBox.h" />
     <ClInclude Include="input\DragDrop\BasicDragDropTests.h" />
+    <ClInclude Include="input\ElementSoundPlayer\ElementSoundPlayerTests.h" />
     <ClInclude Include="input\Engagement\BasicEngagementTests.h" />
     <ClInclude Include="input\Focus\AllowFocusOnInteractionTests.h" />
     <ClInclude Include="input\Focus\AllowFocusWhenDisabledTests.h" />
@@ -251,6 +253,7 @@
     <ClCompile Include="graphics\rendering\CompNodeTests.cpp" />
     <ClCompile Include="graphics\rendering\BorderTests.cpp" />
     <ClCompile Include="graphics\rendering\BrushTests.cpp" />
+    <ClCompile Include="graphics\rendering\ColorStringTests.cpp" />
     <ClCompile Include="graphics\rendering\ColorTextTests.cpp" />
     <ClCompile Include="graphics\rendering\DownloadableTextTests.cpp" />
     <ClCompile Include="graphics\rendering\RenderPropertyTests.cpp" />
@@ -313,6 +316,7 @@
     <ClCompile Include="input\DManip\SetContact.cpp" />
     <ClCompile Include="input\DManip\Sync.cpp" />
     <ClCompile Include="input\DragDrop\BasicDragDropTests.cpp" />
+    <ClCompile Include="input\ElementSoundPlayer\ElementSoundPlayerTests.cpp" />
     <ClCompile Include="input\Engagement\BasicEngagementTests.cpp" />
     <ClCompile Include="input\Focus\BasicFocusTests.cpp" />
     <ClCompile Include="input\Focus\FocusInputActivationTests.cpp" />

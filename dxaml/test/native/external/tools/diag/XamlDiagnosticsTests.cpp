@@ -2115,6 +2115,42 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             }
         }
 
+        void XamlDiagnosticsTests::TestColorValuesUseKnownColorNames()
+        {
+            auto xamlText = ref new Platform::String(
+                L"<StackPanel x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"    <Border x:Name='black' Width='10' Height='10'><Border.Background><SolidColorBrush Color='#FF000000'/></Border.Background></Border>"
+                L"    <Border x:Name='aqua' Width='10' Height='10'><Border.Background><SolidColorBrush Color='#FF00FFFF'/></Border.Background></Border>"
+                L"    <Border x:Name='fuchsia' Width='10' Height='10'><Border.Background><SolidColorBrush Color='#FFFF00FF'/></Border.Background></Border>"
+                L"    <Border x:Name='transparent' Width='10' Height='10'><Border.Background><SolidColorBrush Color='#00FFFFFF'/></Border.Background></Border>"
+                L"    <Border x:Name='unnamed' Width='10' Height='10'><Border.Background><SolidColorBrush Color='#80123456'/></Border.Background></Border>"
+                L"    <Border x:Name='almostBlack' Width='10' Height='10'><Border.Background><SolidColorBrush Color='#FF000001'/></Border.Background></Border>"
+                L"</StackPanel>");
+            wrl::ComPtr<VisualTreeServiceCallback> callback;
+            auto cleanup = m_connectionHelper->Advise(xamlText, callback);
+
+            auto verifyColorValue = [&](const wchar_t* elementName, const wchar_t* expectedValue)
+            {
+                auto border = callback->GetElementByName(elementName);
+                auto background = GetPropertyChainValue(border.Handle, L"Background", BaseValueSourceLocal);
+                auto color = GetPropertyChainValue(std::stoll(background.Value), L"Color", BaseValueSourceLocal);
+                const std::wstring actualValue = color.Value ? std::wstring(color.Value) : std::wstring(L"<null>");
+                LOG_OUTPUT(L"%s: Color value '%s' (expected '%s')", elementName, actualValue.c_str(), expectedValue);
+                VERIFY_ARE_EQUAL(std::wstring(expectedValue), actualValue);
+            };
+
+            // Known colors are reported by name. When several names share a value (Aqua/Cyan, Fuchsia/Magenta), the first
+            // name in alphabetical order is used.
+            verifyColorValue(L"black", L"Black");
+            verifyColorValue(L"aqua", L"Aqua");
+            verifyColorValue(L"fuchsia", L"Fuchsia");
+            verifyColorValue(L"transparent", L"Transparent");
+
+            // Colors without a name are reported as #AARRGGBB.
+            verifyColorValue(L"unnamed", L"#80123456");
+            verifyColorValue(L"almostBlack", L"#FF000001");
+        }
+
         void XamlDiagnosticsTests::VerifyMutationEvents()
         {
             LOG_OUTPUT(L"Scenario 1: Basic adding/remove from Grid");
