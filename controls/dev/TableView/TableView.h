@@ -242,7 +242,6 @@ public:
 
     // Property-changed callbacks (from TableViewProperties)
     void OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-
     void OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeadersVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -564,6 +563,8 @@ public:
     TableViewRowMetadataProvider RowMetadataInternal() const { return m_tableViewSourceRowMetadata; }
     // True when the rows include group headers.
     bool IsGroupedRowSource() const;
+    // The rows are the view's tree (ICollectionViewHierarchy).
+    bool IsHierarchicalRowSource() const;
     // True when the flat row at `index` is a group header rather than a data row. Group headers
     // share the flat projection (and its index space) with data rows, but are not selectable and
     // must be recognized by keyboard navigation as valid focus anchors.

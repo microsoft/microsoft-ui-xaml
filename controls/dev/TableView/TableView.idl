@@ -232,6 +232,9 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsSelected { get; };
 
+    // The row's depth in the view's tree (ICollectionViewHierarchy): 1 for a root, 2 for its children, and so on; 0 when
+    // the row is not a tree row (flat and grouped rows). Not the UI Automation level, which for a row under nested
+    // groups is its group depth.
     [MUX_DEFAULT_VALUE("0")]
     Int32 Level { get; };
 
@@ -294,7 +297,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object ItemsSource { get; set; };
-
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Windows.Foundation.Collections.IVector<TableViewColumn> Columns { get; };
@@ -373,7 +375,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewColumnReorderedEventArgs> ColumnReordered;
 
     static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
-
     static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };

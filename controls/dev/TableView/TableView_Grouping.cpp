@@ -148,6 +148,11 @@ bool TableView::IsGroupedRowSource() const
     return m_rowFlattener && m_rowFlattener->IsGrouped();
 }
 
+bool TableView::IsHierarchicalRowSource() const
+{
+    return m_rowFlattener && m_rowFlattener->HasHierarchy();
+}
+
 bool TableView::IsGroupHeaderRow(int32_t index) const
 {
     TableViewRowInfo rowInfo{};
@@ -672,12 +677,12 @@ void TableView::ApplyGroupExpansionByIdentity(
             m_pendingGroupExpansionStates.try_emplace(identity, *groupStateBefore);
         }
         QueueGroupExpansionRowRefresh();
-        // The toggled row keeps its index, so it is never re-prepared; restamp it here. In a tree,
-        // rows below the splice may still report pre-reconcile indices, so restamp again once the
-        // repeater has reconciled. Flat grouped rows carry no tree state, so one pass is enough.
-        RefreshRealizedRowHierarchyState();
-        if (m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource())
+        // The toggled row keeps its index, so it is never re-prepared; restamp it here. Rows below the
+        // splice may still report pre-reconcile indices, so restamp again once the repeater has
+        // reconciled. Grouped rows carry no tree state.
+        if (IsHierarchicalRowSource())
         {
+            RefreshRealizedRowHierarchyState();
             QueueRefreshRealizedRowHierarchyState();
         }
         RaiseGroupStructureChanged();
@@ -1119,8 +1124,11 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     {
         QueueGroupExpansionRowRefresh();
         // Sync for rows that kept their index; queued for rows whose index the splice shifted.
-        RefreshRealizedRowHierarchyState();
-        QueueRefreshRealizedRowHierarchyState();
+        if (IsHierarchicalRowSource())
+        {
+            RefreshRealizedRowHierarchyState();
+            QueueRefreshRealizedRowHierarchyState();
+        }
 
         // Both axes: under a grouped tree, row expansion changes group contents.
         RaiseGroupStructureChanged();
@@ -1240,17 +1248,31 @@ void TableView::SetRowExpansionByItem(winrt::IInspectable const& item, bool expa
     }
 
     auto const focusedIdentity = CaptureFocusedContainerForRestore();
+    auto const generation = m_rowMetadataGeneration;
     bool changed = false;
-    try
     {
-        changed = flattener->SetItemExpanded(item, expand);
-    }
-    catch (...)
-    {
+        // As a chevron or arrow on the row (ApplyGroupExpansionByIdentity): a failure writes TableView_Error, and an
+        // app's exception is reported as the app's.
+        ActionTip tip{ *this, TableViewTip::Operation::HierarchyExpansion, TableViewTip::Stage::Expansion, true, false /* withTest */ };
+        try
+        {
+            changed = flattener->SetItemExpanded(item, expand);
+            if (generation != m_rowMetadataGeneration) { tip.Ignore(TableViewTip::IgnoreReason::Stale); }
+            else if (changed) { tip.Complete(); }
+            else { tip.Ignore(TableViewTip::IgnoreReason::DeferredOrUnproven); }
+        }
+        catch (winrt::hresult_error const&)
+        {
+            auto const fault = TableViewTip::CurrentFault();
+            if (generation != m_rowMetadataGeneration) { tip.Ignore(TableViewTip::IgnoreReason::Stale); }
+            else if (fault.appFault != TableViewTip::AppFaultKind::None) { tip.ApplicationFault(fault.appFault, fault.error); }
+            else { tip.Fail(fault.error); }
+        }
     }
 
     if (changed)
     {
+        TableViewTelemetry::MarkUsed(m_telemetrySession, m_telemetrySession.generation, TableViewTelemetry::Feature::Hierarchy);
         RefreshRealizedRowHierarchyState();
         QueueRefreshRealizedRowHierarchyState();
     }

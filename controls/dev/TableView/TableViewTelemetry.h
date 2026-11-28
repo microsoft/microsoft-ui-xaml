@@ -19,8 +19,9 @@ namespace TableViewTelemetry
         // 1u << 1 was Editing; do not reuse it.
         constexpr uint32_t Filtering = 1u << 2;
         constexpr uint32_t Grouping = 1u << 3;
-        constexpr uint32_t Hierarchy = 1u << 4;
+        // 1u << 4 was Hierarchy (key paths on TableView); do not reuse it.
         // 1u << 5 was LiveShaping; do not reuse it.
+        constexpr uint32_t Hierarchy = 1u << 6;
     }
     // TableView_Instance's ColumnKinds bits. A column whose class is not one of ours is the app's.
     namespace ColumnKind
