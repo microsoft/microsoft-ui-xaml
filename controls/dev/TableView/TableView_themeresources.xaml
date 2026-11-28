@@ -4,19 +4,176 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular">
 
+    <!-- Shared brush dependencies come from XamlControlsResources, merged before
+         TabularControlsResources. Verify these aliases on loaded elements during theme changes. -->
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
+            <!-- Row backgrounds -->
+            <StaticResource x:Key="TableViewRowBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundAlternatingBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundPointerOverBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundPressedBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedPointerOverBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedPressedBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedDisabledBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundDisabledBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewSelectionIndicatorBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="TableViewSelectionIndicatorDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
+
+            <!-- Row foregrounds -->
+            <StaticResource x:Key="TableViewRowForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundSelectedBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundSelectedPointerOverBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundSelectedPressedBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundPointerOverBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundPressedBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundDisabledBrush" ResourceKey="TextFillColorDisabledBrush" />
+
+            <!-- Header surfaces -->
+            <StaticResource x:Key="TableViewHeaderBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewHeaderSeparatorBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="TableViewHeaderBackgroundPointerOverBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewHeaderBackgroundPressedBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TableViewHeaderBackgroundSortableBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderSortableBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderPointerOverBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderPressedBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderForegroundPointerOverBrush" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewHeaderForegroundPressedBrush" ResourceKey="TextFillColorSecondaryBrush" />
             <Thickness x:Key="TableViewHeaderInteractionBorderThickness">0</Thickness>
+
+            <!-- Group-header surfaces -->
+            <StaticResource x:Key="TableViewGroupHeaderBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderBackgroundPointerOverBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderBackgroundPressedBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderInteractionBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderInteractionBorderPointerOverBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderInteractionBorderPressedBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <x:Double x:Key="TableViewGroupHeaderCountOpacity">0.7</x:Double>
+            <StaticResource x:Key="TableViewGroupHeaderBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <Thickness x:Key="TableViewGroupHeaderBorderThickness">0,0,0,1</Thickness>
+
+            <!-- Grid lines -->
+            <StaticResource x:Key="TableViewGridLineBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="TableViewOuterBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="TableViewBorderlessOuterBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
+            <!-- Row backgrounds -->
+            <StaticResource x:Key="TableViewRowBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundAlternatingBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundPointerOverBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundPressedBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedPointerOverBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedPressedBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedDisabledBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundDisabledBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewSelectionIndicatorBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="TableViewSelectionIndicatorDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
+
+            <!-- Row foregrounds -->
+            <StaticResource x:Key="TableViewRowForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundSelectedBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundSelectedPointerOverBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundSelectedPressedBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundPointerOverBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundPressedBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="TableViewRowForegroundDisabledBrush" ResourceKey="TextFillColorDisabledBrush" />
+
+            <!-- Header surfaces -->
+            <StaticResource x:Key="TableViewHeaderBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewHeaderSeparatorBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="TableViewHeaderBackgroundPointerOverBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewHeaderBackgroundPressedBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TableViewHeaderBackgroundSortableBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderSortableBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderPointerOverBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderPressedBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewHeaderForegroundPointerOverBrush" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewHeaderForegroundPressedBrush" ResourceKey="TextFillColorSecondaryBrush" />
             <Thickness x:Key="TableViewHeaderInteractionBorderThickness">0</Thickness>
+
+            <!-- Group-header surfaces -->
+            <StaticResource x:Key="TableViewGroupHeaderBackgroundBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderBackgroundPointerOverBrush" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderBackgroundPressedBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderInteractionBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderInteractionBorderPointerOverBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderInteractionBorderPressedBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
+            <x:Double x:Key="TableViewGroupHeaderCountOpacity">0.77</x:Double>
+            <StaticResource x:Key="TableViewGroupHeaderBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <Thickness x:Key="TableViewGroupHeaderBorderThickness">0,0,0,1</Thickness>
+
+            <!-- Grid lines -->
+            <StaticResource x:Key="TableViewGridLineBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="TableViewOuterBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="TableViewBorderlessOuterBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
+            <!-- Row backgrounds -->
+            <StaticResource x:Key="TableViewRowBackgroundBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundAlternatingBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundSelectedDisabledBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TableViewRowBackgroundDisabledBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TableViewSelectionIndicatorBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TableViewSelectionIndicatorDisabledBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+
+            <!-- Row foregrounds -->
+            <StaticResource x:Key="TableViewRowForegroundBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="TableViewRowForegroundSelectedBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TableViewRowForegroundSelectedPointerOverBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TableViewRowForegroundSelectedPressedBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TableViewRowForegroundPointerOverBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TableViewRowForegroundPressedBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TableViewRowForegroundDisabledBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+
+            <!-- Header surfaces -->
+            <StaticResource x:Key="TableViewHeaderBackgroundBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TableViewHeaderForegroundBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="TableViewHeaderSeparatorBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="TableViewHeaderBackgroundPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewHeaderBackgroundPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewHeaderBackgroundSortableBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderSortableBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewHeaderBorderPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewHeaderForegroundPointerOverBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TableViewHeaderForegroundPressedBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
             <Thickness x:Key="TableViewHeaderInteractionBorderThickness">1</Thickness>
+
+            <!-- Group-header surfaces -->
+            <StaticResource x:Key="TableViewGroupHeaderBackgroundBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderBackgroundPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderBackgroundPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderInteractionBorderBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderInteractionBorderPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderInteractionBorderPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TableViewGroupHeaderForegroundBrush" ResourceKey="SystemColorButtonTextColorBrush" />
+            <x:Double x:Key="TableViewGroupHeaderCountOpacity">1.0</x:Double>
+            <StaticResource x:Key="TableViewGroupHeaderBorderBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+            <Thickness x:Key="TableViewGroupHeaderBorderThickness">0,0,0,1</Thickness>
+
+            <!-- Grid lines -->
+            <StaticResource x:Key="TableViewGridLineBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="TableViewOuterBorderBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="TableViewBorderlessOuterBorderBrush" ResourceKey="SystemColorGrayTextColorBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <!-- TabularSurface* brushes live in CommonStyles/TabularSurfaces_themeresources.xaml. -->
     <!-- Typography -->
     <x:Double x:Key="TableViewCellFontSize">14</x:Double>
     <x:Double x:Key="TableViewCellFontSizeSmall">14</x:Double>
@@ -81,11 +238,11 @@
     </Style>
 
     <Style x:Key="BandedTableViewStyle" TargetType="tabular:TableView">
-        <Setter Property="AlternatingRowBackground" Value="{ThemeResource TabularSurfaceRowBackgroundAlternatingBrush}" />
+        <Setter Property="AlternatingRowBackground" Value="{ThemeResource TableViewRowBackgroundAlternatingBrush}" />
     </Style>
 
     <Style x:Key="BorderlessTableViewStyle" TargetType="tabular:TableView">
-        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceBorderlessOuterBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TableViewBorderlessOuterBorderBrush}" />
     </Style>
 
     <Style x:Key="StrongTableViewColumnHeaderStyle" TargetType="tabular:TableViewColumnHeader">

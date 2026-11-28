@@ -123,7 +123,7 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
     }
     // </snippet>
 
-    private const string HeaderSeparatorBrushKey = "TabularSurfaceHeaderSeparatorBrush";
+    private const string HeaderSeparatorBrushKey = "TableViewHeaderSeparatorBrush";
 
     // Demo plumbing; an app declares the brush in XAML. {ThemeResource} resolves when a template is
     // applied, so a runtime switch re-applies the table's template and then restores the scroll.

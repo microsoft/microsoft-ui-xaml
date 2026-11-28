@@ -21,17 +21,17 @@
                             <VisualState x:Name="Normal"/>
                             <VisualState x:Name="PointerOver">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}"/>
+                                    <Setter Target="PART_Root.Background" Value="{ThemeResource TableViewHeaderBackgroundPointerOverBrush}"/>
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Pressed">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}"/>
+                                    <Setter Target="PART_Root.Background" Value="{ThemeResource TableViewHeaderBackgroundPressedBrush}"/>
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Disabled">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}"/>
+                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TableViewRowForegroundDisabledBrush}"/>
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
@@ -39,13 +39,13 @@
                             <VisualState x:Name="HighContrastNormal"/>
                             <VisualState x:Name="HighContrastPointerOver">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}"/>
+                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TableViewHeaderForegroundPointerOverBrush}"/>
                                     <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None"/>
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="HighContrastPressed">
                                 <VisualState.Setters>
-                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPressedBrush}"/>
+                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TableViewHeaderForegroundPressedBrush}"/>
                                     <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None"/>
                                 </VisualState.Setters>
                             </VisualState>
@@ -100,7 +100,7 @@
     <!-- To hide every header line (column separators and bottom rule), override the brush
          both use; the Header lines option switches this at runtime:
     <tv:TableView.Resources>
-        <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="Transparent"/>
+        <SolidColorBrush x:Key="TableViewHeaderSeparatorBrush" Color="Transparent"/>
     </tv:TableView.Resources>
     -->
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>

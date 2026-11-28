@@ -8,7 +8,7 @@
     <Thickness x:Key="TableViewSelectionIndicatorMargin">3,2,3,2</Thickness>
     <Thickness x:Key="TableViewGroupHeaderInteractionMargin">0,2,0,2</Thickness>
 
-    <!-- TabularControlsResources is required to supply TabularSurface* brushes for all themes. -->
+    <!-- TabularControlsResources is required to supply TableView* brushes for all themes. -->
 
     <!-- TableView default style. Header cells stack horizontally (one per
          column); the body is an ItemsRepeater of TableViewRow, each building its cells from
@@ -22,9 +22,9 @@
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="TabNavigation" Value="Once" />
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
-        <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceOuterBorderBrush}" />
+        <Setter Property="Background" Value="{ThemeResource TableViewRowBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource TableViewRowForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TableViewOuterBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
@@ -42,7 +42,7 @@
                             </Grid.RowDefinitions>
                             <Border x:Name="PART_HeaderRow"
                                     Grid.Row="0"
-                                    Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}">
+                                    Background="{ThemeResource TableViewHeaderBackgroundBrush}">
                                 <Grid>
                                     <ScrollViewer x:Name="PART_HeaderScroller"
                                                   HorizontalScrollMode="Disabled"
@@ -56,7 +56,7 @@
                                                                       HorizontalAlignment="Left" />
                                     </ScrollViewer>
                                     <Border x:Name="PART_HeaderGridLine"
-                                            BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
+                                            BorderBrush="{ThemeResource TableViewHeaderSeparatorBrush}"
                                             BorderThickness="0,0,0,1"
                                             IsHitTestVisible="False"
                                             AutomationProperties.AccessibilityView="Raw" />
@@ -99,9 +99,9 @@
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="{ThemeResource TableViewFocusVisualMargin}" />
         <!-- Without a fill the padding takes no pointer input, killing the tooltip and click-to-sort there. -->
-        <Setter Property="Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderBrush}" />
-        <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundBrush}" />
+        <Setter Property="Background" Value="{ThemeResource TableViewHeaderBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TableViewHeaderBorderBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource TableViewHeaderForegroundBrush}" />
         <Setter Property="FontSize" Value="{ThemeResource TableViewHeaderFontSize}" />
         <Setter Property="FontWeight" Value="{ThemeResource TableViewHeaderFontWeight}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -120,13 +120,13 @@
                                 <VisualState x:Name="PointerOver" />
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}" />
-                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderPressedBrush}" />
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TableViewHeaderBackgroundPressedBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TableViewHeaderBorderPressedBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TableViewRowForegroundDisabledBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -154,25 +154,25 @@
                                 <VisualState x:Name="HighContrastNormal" />
                                 <VisualState x:Name="HighContrastSortable">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundSortableBrush}" />
-                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderSortableBrush}" />
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TableViewHeaderBackgroundSortableBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TableViewHeaderBorderSortableBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource SystemColorButtonTextColorBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="HighContrastPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}" />
-                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderPointerOverBrush}" />
-                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}" />
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TableViewHeaderBackgroundPointerOverBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TableViewHeaderBorderPointerOverBrush}" />
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TableViewHeaderForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="HighContrastPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}" />
-                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderPressedBrush}" />
-                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPressedBrush}" />
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TableViewHeaderBackgroundPressedBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TableViewHeaderBorderPressedBrush}" />
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TableViewHeaderForegroundPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -254,7 +254,7 @@
                         <Border x:Name="PART_GridLine"
                                 Width="1"
                                 HorizontalAlignment="Right"
-                                Background="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
+                                Background="{ThemeResource TableViewHeaderSeparatorBrush}"
                                 IsHitTestVisible="False"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
@@ -285,8 +285,8 @@
              comment on SetCellLevelInternal for why the framework's tab walk forces the trade. -->
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />        
-        <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
+        <Setter Property="Background" Value="{ThemeResource TableViewRowBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TableViewGridLineBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="{ThemeResource TableViewRowFocusVisualMargin}" />
@@ -339,10 +339,10 @@
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundPointerOverBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowBackgroundPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowForegroundPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
@@ -355,10 +355,10 @@
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundPressedBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowBackgroundPressedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowForegroundPressedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
@@ -368,10 +368,10 @@
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundDisabledBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowBackgroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowForegroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -387,10 +387,10 @@
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowBackgroundSelectedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowForegroundSelectedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
@@ -407,10 +407,10 @@
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedPointerOverBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowBackgroundSelectedPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPointerOverBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowForegroundSelectedPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
@@ -427,10 +427,10 @@
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedPressedBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowBackgroundSelectedPressedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPressedBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowForegroundSelectedPressedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
@@ -447,17 +447,17 @@
                                     </VisualState.Setters>
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedDisabledBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowBackgroundSelectedDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewRowForegroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <!-- Suppress the High Contrast text backplate wherever the row paints a state fill (hover, press, selection). -->
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectionIndicatorDisabledBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TableViewSelectionIndicatorDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
@@ -560,7 +560,7 @@
                               AutomationProperties.AccessibilityView="Raw">
                             <Border x:Name="PART_SelectionIndicator"
                                     Margin="{ThemeResource TableViewSelectionIndicatorMargin}"
-                                    BorderBrush="{ThemeResource TabularSurfaceSelectionIndicatorBrush}"
+                                    BorderBrush="{ThemeResource TableViewSelectionIndicatorBrush}"
                                     BorderThickness="1"
                                     CornerRadius="{TemplateBinding CornerRadius}"
                                     IsHitTestVisible="False"
@@ -596,7 +596,7 @@
 
     <!-- Opacity is a Style setter, not a local value, so TableViewGroupHeader can override it while disabled and clear it back. -->
     <Style x:Key="TableViewGroupHeaderCountTextStyle" TargetType="TextBlock">
-        <Setter Property="Opacity" Value="{ThemeResource TabularSurfaceGroupHeaderCountOpacity}" />
+        <Setter Property="Opacity" Value="{ThemeResource TableViewGroupHeaderCountOpacity}" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
@@ -614,10 +614,10 @@
     </DataTemplate>
 
     <Style TargetType="controls:TableViewGroupHeader">
-        <Setter Property="Background" Value="{ThemeResource TabularSurfaceGroupHeaderBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceGroupHeaderForegroundBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGroupHeaderBorderBrush}" />
-        <Setter Property="BorderThickness" Value="{ThemeResource TabularSurfaceGroupHeaderBorderThickness}" />
+        <Setter Property="Background" Value="{ThemeResource TableViewGroupHeaderBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource TableViewGroupHeaderForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TableViewGroupHeaderBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource TableViewGroupHeaderBorderThickness}" />
         <Setter Property="Padding" Value="{ThemeResource TableViewGroupHeaderPaddingMedium}" />
         <Setter Property="MinHeight" Value="{ThemeResource TableViewGroupHeaderMinHeightMedium}" />
         <Setter Property="FontSize" Value="{ThemeResource TableViewCellFontSize}" />
@@ -640,30 +640,30 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceGroupHeaderBackgroundPointerOverBrush}" />
+                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TableViewGroupHeaderBackgroundPointerOverBrush}" />
                                         <Setter Target="PART_Root.Margin" Value="{ThemeResource TableViewGroupHeaderInteractionMargin}" />
-                                        <Setter Target="PART_Root.BorderBrush" Value="{ThemeResource TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush}" />
-                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
-                                        <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
+                                        <Setter Target="PART_Root.BorderBrush" Value="{ThemeResource TableViewGroupHeaderInteractionBorderPointerOverBrush}" />
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TableViewRowForegroundPointerOverBrush}" />
+                                        <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TableViewRowForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                         <Setter Target="PART_ExpanderIcon.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceGroupHeaderBackgroundPressedBrush}" />
+                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TableViewGroupHeaderBackgroundPressedBrush}" />
                                         <Setter Target="PART_Root.Margin" Value="{ThemeResource TableViewGroupHeaderInteractionMargin}" />
-                                        <Setter Target="PART_Root.BorderBrush" Value="{ThemeResource TabularSurfaceGroupHeaderInteractionBorderPressedBrush}" />
-                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
-                                        <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
+                                        <Setter Target="PART_Root.BorderBrush" Value="{ThemeResource TableViewGroupHeaderInteractionBorderPressedBrush}" />
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TableViewRowForegroundPressedBrush}" />
+                                        <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TableViewRowForegroundPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                         <Setter Target="PART_ExpanderIcon.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
-                                        <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TableViewRowForegroundDisabledBrush}" />
+                                        <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TableViewRowForegroundDisabledBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -701,7 +701,7 @@
                             <Border x:Name="PART_Root"
                                     Background="{TemplateBinding Background}"
                                     BackgroundSizing="OuterBorderEdge"
-                                    BorderBrush="{ThemeResource TabularSurfaceGroupHeaderInteractionBorderBrush}"
+                                    BorderBrush="{ThemeResource TableViewGroupHeaderInteractionBorderBrush}"
                                     BorderThickness="{ThemeResource TableViewHeaderInteractionBorderThickness}"
                                     CornerRadius="{TemplateBinding CornerRadius}" />
                         </Grid>

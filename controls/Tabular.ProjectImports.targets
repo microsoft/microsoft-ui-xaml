@@ -48,12 +48,4 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)dev\Common\GridCoordinateHelper.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)dev\Common\GridCoordinateHelper.cpp" />
   </ItemGroup>
-  <!-- TabularSurface* surface tokens consumed by TableView.xaml. Listed explicitly because no imported
-       vcxitems carries it; pages owned by an imported vcxitems arrive with that import. -->
-  <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)dev\CommonStyles\TabularSurfaces_themeresources.xaml">
-      <Type>ThemeResources</Type>
-      <Priority>2</Priority>
-    </Page>
-  </ItemGroup>
 </Project>

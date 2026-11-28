@@ -37,6 +37,8 @@ static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"s
 
 namespace
 {
+    GlobalDependencyProperty s_gridLineResourceProperty{ nullptr };
+
     // cppwinrt's == compares raw ABI pointers, which can differ for the same object across a QI,
     // so fall back to canonical IUnknown identity.
     bool IsSameObject(winrt::IInspectable const& left, winrt::IInspectable const& right)
@@ -484,7 +486,7 @@ namespace
         return false;
     }
 
-    // The stock style always supplies TabularSurfaceGridLineBrush; on a miss draw only in High Contrast.
+    // The stock style always supplies TableViewGridLineBrush; on a miss draw only in High Contrast.
     winrt::Brush CreateGridLineFallbackBrush(winrt::FrameworkElement const& start, bool highContrast)
     {
         if (!highContrast)
@@ -500,6 +502,11 @@ namespace
 
 }
 
+void TableView::ClearResourceProperties()
+{
+    s_gridLineResourceProperty = nullptr;
+}
+
 winrt::Brush TableView::GetGridLineBrush()
 {
     auto& cache = GetTableViewResourceCache(this);
@@ -512,7 +519,35 @@ winrt::Brush TableView::GetGridLineBrush()
         return cache.gridLine.brush;
     }
 
-    auto brush = LookupElementResource(*this, L"TabularSurfaceGridLineBrush", highContrast).try_as<winrt::Brush>();
+    if (!s_gridLineResourceProperty)
+    {
+        s_gridLineResourceProperty = InitializeDependencyProperty(
+            L"TableViewGridLineResource",
+            winrt::name_of<winrt::IInspectable>(),
+            winrt::name_of<winrt::TableView>(),
+            true /* isAttached */,
+            nullptr /* defaultValue */);
+    }
+
+    // Let XAML resolve aliases in this element's theme and preserve actual dictionary precedence.
+    // Comparing the returned brush with a fallback cannot distinguish a shared-brush app override.
+    ClearValue(s_gridLineResourceProperty);
+    try
+    {
+        SetThemeResourceBinding(s_gridLineResourceProperty, L"TableViewGridLineBrush");
+    }
+    catch (winrt::hresult_error const& error)
+    {
+        // The binding API reports a missing resource as E_FAIL. Retain the custom-template
+        // fallback only for a genuine miss; propagate malformed resources and other failures.
+        if (error.code() != E_FAIL || LookupElementResource(*this, L"TableViewGridLineBrush", highContrast))
+        {
+            throw;
+        }
+        TVDiag::LogDebugger(L"TableViewGridLineBrush was not found; using the gridline fallback.");
+    }
+
+    auto brush = GetValue(s_gridLineResourceProperty).try_as<winrt::Brush>();
     if (!brush)
     {
         brush = CreateGridLineFallbackBrush(*this, highContrast);
