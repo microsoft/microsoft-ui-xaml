@@ -102,6 +102,90 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public int Score { get; set; }
     }
 
+    // A tree keyed by floating-point values (PropertyHierarchyDescription("Key", "ParentKey")).
+    internal sealed class FloatKeyRow
+    {
+        public double Key { get; set; }
+        public double? ParentKey { get; set; }
+        public string Name { get; set; } = "";
+    }
+
+    // An app's ICustomPropertyProvider, for a node's accessors to refuse.
+    internal sealed partial class ForeignPropertyProvider : ICustomPropertyProvider
+    {
+        public Type Type => typeof(ForeignPropertyProvider);
+        public ICustomProperty GetCustomProperty(string name) => null;
+        public ICustomProperty GetIndexedProperty(string name, Type type) => null;
+        public string GetStringRepresentation() => nameof(ForeignPropertyProvider);
+    }
+
+    // An app's view over a framework hierarchical view: forwards everything and counts the VectorChanged handlers
+    // registered on it, so a test can tell whether a control let go of the view.
+    internal sealed partial class CountingHierarchyView : ICollectionView, ICollectionViewHierarchy
+    {
+        private readonly ICollectionView _inner;
+
+        public CountingHierarchyView(ICollectionView inner)
+        {
+            _inner = inner;
+        }
+
+        public int VectorChangedHandlers { get; private set; }
+
+        public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged
+        {
+            add { VectorChangedHandlers++; _inner.VectorChanged += value; }
+            remove { VectorChangedHandlers--; _inner.VectorChanged -= value; }
+        }
+
+        public event EventHandler<object> CurrentChanged { add { } remove { } }
+        public event CurrentChangingEventHandler CurrentChanging { add { } remove { } }
+
+        public HierarchyDescription HierarchyDescription
+        {
+            get => ((ICollectionViewHierarchy)_inner).HierarchyDescription;
+            set => ((ICollectionViewHierarchy)_inner).HierarchyDescription = value;
+        }
+        public bool CanBuildHierarchy => ((ICollectionViewHierarchy)_inner).CanBuildHierarchy;
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionNodes => ((ICollectionViewHierarchy)_inner).CollectionNodes;
+        public ICollectionViewNode NodeFromItem(object item) => ((ICollectionViewHierarchy)_inner).NodeFromItem(item);
+
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionGroups => _inner.CollectionGroups;
+        public object CurrentItem => _inner.CurrentItem;
+        public int CurrentPosition => _inner.CurrentPosition;
+        public bool HasMoreItems => false;
+        public bool IsCurrentAfterLast => _inner.IsCurrentAfterLast;
+        public bool IsCurrentBeforeFirst => _inner.IsCurrentBeforeFirst;
+        public int Count => _inner.Count;
+        public bool IsReadOnly => true;
+
+        public object this[int index]
+        {
+            get => _inner[index];
+            set => throw new NotSupportedException();
+        }
+
+        public bool MoveCurrentTo(object item) => _inner.MoveCurrentTo(item);
+        public bool MoveCurrentToFirst() => _inner.MoveCurrentToFirst();
+        public bool MoveCurrentToLast() => _inner.MoveCurrentToLast();
+        public bool MoveCurrentToNext() => _inner.MoveCurrentToNext();
+        public bool MoveCurrentToPrevious() => _inner.MoveCurrentToPrevious();
+        public bool MoveCurrentToPosition(int index) => _inner.MoveCurrentToPosition(index);
+        public global::Windows.Foundation.IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count) => throw new NotSupportedException();
+
+        public int IndexOf(object item) => _inner.IndexOf(item);
+        public bool Contains(object item) => _inner.Contains(item);
+        public void CopyTo(object[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
+        public IEnumerator<object> GetEnumerator() => _inner.GetEnumerator();
+        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Insert(int index, object item) => throw new NotSupportedException();
+        public void RemoveAt(int index) => throw new NotSupportedException();
+        public void Add(object item) => throw new NotSupportedException();
+        public void Clear() => throw new NotSupportedException();
+        public bool Remove(object item) => throw new NotSupportedException();
+    }
+
     // Orders LiveRows by Score through the column CustomSortComparer path rather than a key.
     internal sealed partial class LiveScoreComparer : ITableViewSortComparer
     {
@@ -181,6 +265,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 case TreeEmployee e: return e.Name;
                 case LiveRow l: return l.Name;
                 case PlainRow p: return p.Name;
+                case FloatKeyRow f: return f.Name;
                 case ShapedPerson s: return s.Name;
                 default: return "?";
             }
@@ -356,6 +441,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             catch (Exception ex)
             {
                 return ex.GetType().Name;
+            }
+        }
+
+        // The HRESULT action failed with, 0 if it did not fail. UIA_E_* codes have no stable projected exception type.
+        internal static int ThrownHResult(Action action)
+        {
+            try
+            {
+                action();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return ex.HResult;
             }
         }
     }

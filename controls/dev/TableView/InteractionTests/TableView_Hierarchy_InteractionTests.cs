@@ -87,6 +87,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies scrolling a tree, which moves recycled rows between expandable and leaf items, raises no UIA ExpandCollapseState property-changed event: no item's state changed.")]
+        public void ScrollingTreeRaisesNoExpandCollapseStateEvents()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectHierarchyPivotAndGetTable();
+                if (table == null) { return; }
+
+                var grow = FindElement.ById<Button>(GrowHierarchyButton);
+                if (grow == null) { Verify.Fail(GrowHierarchyButton + " was not found."); return; }
+                grow.InvokeAndWait();
+                Wait.ForIdle();
+
+                using (var waiter = new PropertyChangedEventWaiter(table, Scope.Descendants, UIProperty.Get("ExpandCollapse.ExpandCollapseState")))
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        WheelAtPoint(CentreOf(table), -10 * 120);
+                    }
+                    Verify.IsFalse(waiter.TryWait(TimeSpan.FromSeconds(1)), "Scrolling must not raise ExpandCollapseState changes.");
+                }
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a tree row focused through UIA SetFocus - the route a screen reader takes - keeps focus when it is collapsed and expanded through its ExpandCollapse pattern, so the next key reaches the same row.")]
         public void TreeRowKeepsFocusAcrossCollapseWhenFocusedThroughUia()
         {

@@ -477,6 +477,192 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         #endregion
 
+        #region Robustness and contracts
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a change that needs a recompute leaves the tree untouched when the recompute fails (a throwing CurrentChanging handler), and later source changes recompute instead of reading stale indices.")]
+        public void VerifyFailedRecomputeLeavesNoStaleTree()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var list = MakeTree();
+                var cvs = MakeTreeSource(list);
+                var view = cvs.View;
+                Verify.IsTrue(view.MoveCurrentTo(Named(list, "Ada")), "Ada is current, so a recompute raises CurrentChanging.");
+                var isThrowing = true;
+                CurrentChangingEventHandler handler = (s, e) =>
+                {
+                    if (isThrowing)
+                    {
+                        throw new InvalidOperationException("CurrentChanging refused.");
+                    }
+                };
+                view.CurrentChanging += handler;
+
+                // Cy becomes her own parent: the view must recompute, and the recompute fails.
+                Log.Comment("Replace: " + ThrownTypeName(() => list[2] = new TreeEmployee { Id = 3, ManagerId = 3, Name = "Cy" }));
+                isThrowing = false;
+                view.CurrentChanging -= handler;
+
+                list.Insert(0, new TreeEmployee { Id = 8, Name = "Hal" });
+                list.RemoveAt(list.Count - 1);
+                list.Add(new TreeEmployee { Id = 9, ManagerId = 2, Name = "Ivy" });
+                Verify.AreEqual(Tree(MakeTreeSource(new ObservableCollection<TreeEmployee>(list)).View), Tree(view), "The view equals a recompute.");
+                Verify.AreEqual(Flat(MakeTreeSource(new ObservableCollection<TreeEmployee>(list)).View), Flat(view), "The flat list equals a recompute.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a node's custom properties ({Binding Item.Name}) read only nodes: another ICustomPropertyProvider, or any other object, is an invalid argument, and the node reports its own TypeName.")]
+        public void VerifyNodePropertiesRejectOtherTargets()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var list = MakeTree();
+                var view = MakeTreeSource(list).View;
+                var node = (ICustomPropertyProvider)((ICollectionViewHierarchy)view).CollectionNodes[0];
+                Log.Comment($"Node type: {node.Type}");
+                var item = node.GetCustomProperty("Item");
+                Verify.AreSame(Named(list, "Ada"), item.GetValue(node), "A node reads its item.");
+
+                var grouped = MakeShapingView(MakeTree(), "Dept").View;
+                Verify.AreEqual("ArgumentException", ThrownTypeName(() => item.GetValue(grouped.CollectionGroups[0])), "A group is not a node.");
+                Verify.AreEqual("ArgumentException", ThrownTypeName(() => item.GetValue(new ForeignPropertyProvider())), "An app's provider is not a node.");
+                Verify.AreEqual("ArgumentException", ThrownTypeName(() => node.GetCustomProperty("Children").GetValue(new object())), "Nor is any other object.");
+                Verify.AreEqual("ArgumentException", ThrownTypeName(() => node.GetCustomProperty("IsContext").GetValue(new ForeignPropertyProvider())), "IsContext checks too.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Children list a consumer follows raises a Reset when a recompute or leaving the hierarchy empties it, after the roots' Reset.")]
+        public void VerifyEmptiedChildrenRaiseReset()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeTreeSource(MakeTree());
+                var view = cvs.View;
+                var roots = ((ICollectionViewHierarchy)view).CollectionNodes;
+                var children = ((ICollectionViewNode)roots[0]).Children;
+                var log = new List<string>();
+                roots.VectorChanged += (s, e) => log.Add("roots:" + e.CollectionChange);
+                children.VectorChanged += (s, e) => log.Add($"children:{e.CollectionChange}:{children.Count}");
+
+                ((ICollectionViewShaping)view).Refresh();
+                Verify.AreEqual("roots:Reset,children:Reset:0", string.Join(",", log), "Refresh empties Ada's old Children and says so.");
+
+                log.Clear();
+                children = ((ICollectionViewNode)roots[0]).Children;
+                children.VectorChanged += (s, e) => log.Add($"children:{e.CollectionChange}:{children.Count}");
+                cvs.HierarchyDescription = null;
+                Verify.AreEqual("roots:Reset,children:Reset:0", string.Join(",", log), "Leaving the hierarchy empties them too.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a node raises PropertyChanged(Parent) when removing its parent makes it a root and when an inserted item adopts it.")]
+        public void VerifyReparentRaisesParentChanged()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var list = MakeTree();
+                var view = MakeTreeSource(list).View;
+                var dan = ((ICollectionViewHierarchy)view).NodeFromItem(Named(list, "Dan"));
+                var log = new List<string>();
+                ((INotifyPropertyChanged)dan).PropertyChanged += (s, e) => log.Add(e.PropertyName);
+
+                list.RemoveAt(1);
+                Verify.IsNull(dan.Parent, "Dan is a root once Ben is gone.");
+                Verify.AreEqual("Parent", string.Join(",", log), "Orphaned.");
+
+                log.Clear();
+                list.Insert(1, new TreeEmployee { Id = 2, ManagerId = 1, Name = "Bo" });
+                Verify.AreEqual("Bo", NameOf(dan.Parent.Item), "Bo has Ben's key and adopts Dan.");
+                Verify.AreEqual("Parent", string.Join(",", log), "Adopted.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies grouping and a hierarchy are refused before either rule changes: CanGroup and CanBuildHierarchy say so, the rejected description is not kept, and the view keeps working.")]
+        public void VerifyConflictingRuleRejectedBeforeChange()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeTreeSource(MakeTree());
+                var view = cvs.View;
+                Verify.IsFalse(((ICollectionViewShaping)view).CanGroup, "A tree cannot group.");
+                Verify.IsTrue(((ICollectionViewHierarchy)view).CanBuildHierarchy, "It builds its tree.");
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => cvs.GroupDescriptions.Add(new PropertyGroupDescription("Dept"))), "Grouping a tree.");
+                Verify.AreEqual(0, cvs.GroupDescriptions.Count, "The group description was not added.");
+                Verify.AreEqual("no exception", ThrownTypeName(() => cvs.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Descending))), "Later rules still apply.");
+                Verify.AreEqual("Gus(0) Eve(0) Fay(1) Ada(0) Cy(1) Ben(1) Dan(2)", Tree(view), "Sorted tree.");
+
+                var grouped = MakeShapingView(MakeTree(), "Dept");
+                var groupedView = grouped.View;
+                Verify.IsTrue(((ICollectionViewShaping)groupedView).CanGroup, "A grouped view groups.");
+                Verify.IsFalse(((ICollectionViewHierarchy)groupedView).CanBuildHierarchy, "A grouped view cannot build a tree.");
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => grouped.HierarchyDescription = new PropertyHierarchyDescription(IdPath, ManagerPath)), "A tree on a grouped view.");
+                Verify.IsNull(grouped.HierarchyDescription, "The rejected description is undone.");
+                Verify.AreEqual(2, groupedView.CollectionGroups.Count, "Still grouped.");
+                grouped.GroupDescriptions.Clear();
+                grouped.HierarchyDescription = new PropertyHierarchyDescription(IdPath, ManagerPath);
+                Verify.AreEqual("Ada(0) Ben(1) Dan(2) Cy(1) Eve(0) Fay(1) Gus(0)", Tree(groupedView), "Without the group the tree builds.");
+
+                var pending = new CollectionViewSource { HierarchyDescription = new PropertyHierarchyDescription(IdPath, ManagerPath) };
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => pending.GroupDescriptions.Add(new PropertyGroupDescription("Dept"))), "Before it has a view too.");
+                Verify.AreEqual(0, pending.GroupDescriptions.Count, "Not added.");
+                pending.Source = MakeTree();
+                Verify.AreEqual("Ada(0) Ben(1) Dan(2) Cy(1) Eve(0) Fay(1) Gus(0)", Tree(pending.View), "The view is a tree.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies one PropertyHierarchyDescription can serve two CollectionViewSources, in code and as a markup resource: both build their tree, and a key path change rebuilds both.")]
+        public void VerifyDescriptionSharedByTwoSources()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var shared = new PropertyHierarchyDescription(IdPath, ManagerPath);
+                var first = new CollectionViewSource { Source = MakeTree(), HierarchyDescription = shared };
+                var second = new CollectionViewSource { Source = MakeTree(), HierarchyDescription = shared };
+                Verify.AreEqual("Ada(0) Ben(1) Dan(2) Cy(1) Eve(0) Fay(1) Gus(0)", Tree(first.View), "First.");
+                Verify.AreEqual("Ada(0) Ben(1) Dan(2) Cy(1) Eve(0) Fay(1) Gus(0)", Tree(second.View), "Second.");
+                shared.ParentKeyPath = "MentorId";
+                Verify.AreEqual("Ada(0) Fay(1) Cy(0) Dan(0) Eve(0) Ben(1) Gus(0)", Tree(first.View), "First follows the change.");
+                Verify.AreEqual("Ada(0) Fay(1) Cy(0) Dan(0) Eve(0) Ben(1) Gus(0)", Tree(second.View), "Second follows the change.");
+
+                var root = (Grid)XamlReader.Load(
+                    "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>" +
+                    "<Grid.Resources>" +
+                    "<PropertyHierarchyDescription x:Key='Relation' ItemKeyPath='Id' ParentKeyPath='ManagerId'/>" +
+                    "<CollectionViewSource x:Key='A' HierarchyDescription='{StaticResource Relation}'/>" +
+                    "<CollectionViewSource x:Key='B' HierarchyDescription='{StaticResource Relation}'/>" +
+                    "</Grid.Resources></Grid>");
+                var a = (CollectionViewSource)root.Resources["A"];
+                var b = (CollectionViewSource)root.Resources["B"];
+                Verify.AreSame(a.HierarchyDescription, b.HierarchyDescription, "One description.");
+                a.Source = MakeTree();
+                b.Source = MakeTree();
+                Verify.AreEqual("Ada(0) Ben(1) Dan(2) Cy(1) Eve(0) Fay(1) Gus(0)", Tree(a.View), "A.");
+                Verify.AreEqual("Ada(0) Ben(1) Dan(2) Cy(1) Eve(0) Fay(1) Gus(0)", Tree(b.View), "B.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies only the item that owns a key reports it as its node's Key; a later duplicate's node has none.")]
+        public void VerifyDuplicateNodeHasNoKey()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var list = MakeTree();
+                list.Add(new TreeEmployee { Id = 1, Name = "Zed" });
+                var hierarchy = (ICollectionViewHierarchy)MakeTreeSource(list).View;
+                Verify.AreEqual(1, (int)hierarchy.NodeFromItem(Named(list, "Ada")).Key, "Ada owns key 1.");
+                Verify.IsNull(hierarchy.NodeFromItem(Named(list, "Zed")).Key, "Zed duplicates it and reports no key.");
+            });
+        }
+
+        #endregion
+
         #region Helpers
 
         private static TreeEmployee NewFuzzEmployee(Random random, int id)

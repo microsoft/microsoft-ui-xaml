@@ -1117,7 +1117,252 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         #endregion
 
+        #region 3.10 Identity, lifetime and chrome
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a duplicate key sorted before the item that owns the key does not take the owner's row identity: ExpandRow expands the owner, and the selection restored after a recompute stays on the owner.")]
+        public void VerifyDuplicateKeySortedFirstKeepsOwnerIdentity()
+        {
+            ObservableCollection<TreeEmployee> list = null;
+            RunOnUIThread.Execute(() =>
+            {
+                list = MakeTree();
+                list.Add(new TreeEmployee { Id = 1, Name = "Zed", Dept = "Ops" });
+            });
+            var tableView = Place(list);
+            RunOnUIThread.Execute(() => tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => tableView.ExpandRow(Named(list, "Ada")));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "Zed1 Gus1 Eve1+ Ada1- Cy2 Ben2+", "Ada expands although Zed, sorted first, has her key");
+                var elements = GetProjectedElements(tableView);
+                tableView.Select(elements.FindIndex(el => el is TableViewRow r && NameOf(r.DataContext) == "Ada"));
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => ((ICollectionViewShaping)TreeSourceOf(tableView).View).Refresh());
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Ada", SelectedName(tableView), "The selection comes back to Ada, not to Zed.");
+                VerifyTree(tableView, "Zed1 Gus1 Eve1+ Ada1- Cy2 Ben2+", "after Refresh");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row whose node has no key follows each Replace that keeps its (empty) key, not only the first.")]
+        public void VerifyKeylessRowFollowsEachReplace()
+        {
+            ObservableCollection<TreeEmployee> list = null;
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list, "Code", "ParentCode");
+
+            RunOnUIThread.Execute(() =>
+            {
+                list[6] = new TreeEmployee { Id = 7, Name = "Hal", Code = "", ParentCode = "Z" };
+                list[6] = new TreeEmployee { Id = 7, Name = "Ivy", Code = "", ParentCode = "Z" };
+                list[6] = new TreeEmployee { Id = 7, Name = "Jo", Code = "", ParentCode = "Z" };
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1+ Eve1+ Jo1", "the keyless row shows the last replacement"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies floating-point keys that print alike (1e-7 and 2e-7) stay distinct rows: expanding one does not address the other.")]
+        public void VerifyCloseFloatingPointKeysStayDistinct()
+        {
+            ObservableCollection<FloatKeyRow> list = null;
+            RunOnUIThread.Execute(() => list = new ObservableCollection<FloatKeyRow>(new[]
+            {
+                new FloatKeyRow { Key = 1e-7, Name = "A" },
+                new FloatKeyRow { Key = 2e-7, Name = "B" },
+                new FloatKeyRow { Key = 3e-7, ParentKey = 2e-7, Name = "C" },
+            }));
+            var tableView = Place(list, "Key", "ParentKey");
+            RunOnUIThread.Execute(() => tableView.ExpandRow(Named(list, "B")));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "A1 B1- C2", "B expands; A is a separate leaf"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the table lets go of an app's hierarchical view when its ItemsSource changes: the view's VectorChanged handlers do not accumulate across swaps and are all removed once the table no longer shows it.")]
+        public void VerifyTableLetsGoOfViewOnSourceChange()
+        {
+            CountingHierarchyView view = null;
+            TableView tableView = null;
+            var attached = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                view = new CountingHierarchyView(MakeTreeSource(MakeTree()).View);
+                tableView = CreateTreeTable(view);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, Roots, "the app's view is a tree");
+                attached = view.VectorChangedHandlers;
+                Verify.IsTrue(attached > 0, "The table follows the view's flat list.");
+            });
+
+            for (var i = 0; i < 5; i++)
+            {
+                RunOnUIThread.Execute(() => tableView.ItemsSource = new List<TreeEmployee>());
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() => tableView.ItemsSource = view);
+                SettleLayout(tableView);
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(attached, view.VectorChangedHandlers, "Re-attaching the view five times leaves one table's handlers.");
+                tableView.ItemsSource = null;
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.AreEqual(0, view.VectorChangedHandlers, "No handler stays on the view once the table lets go of it."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies leaving the tree releases the items the tree rows held, while the table stays alive.")]
+        public void VerifyLeavingTreeReleasesTreeRowItems()
+        {
+            TableView tableView = null;
+            ObservableCollection<TreeEmployee> list = null;
+            List<WeakReference> weak = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                ShowExpandedTree(out tableView, out list, out weak);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.ExpandAllRows();
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, FullTree, "precondition");
+                TreeSourceOf(tableView).HierarchyDescription = null;
+                ReplaceWithStrangers(list);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                var alive = string.Join(" ", weak.Where(w => w.IsAlive).Select(w => ((TreeEmployee)w.Target)?.Name));
+                Verify.AreEqual(0, weak.Count(w => w.IsAlive), $"No old item stays alive. Alive: [{alive}]");
+                GC.KeepAlive(tableView);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies flat rows never load the chevron gutter, and rows load it once the same table shows a tree.")]
+        public void VerifyFlatRowsLoadNoChevron()
+        {
+            CollectionViewSource cvs = null;
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                cvs = new CollectionViewSource { Source = MakeTree() };
+                tableView = CreateTreeTable(cvs.View);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, Flat, "flat");
+                foreach (var row in GetProjectedElements(tableView).OfType<TableViewRow>())
+                {
+                    Verify.IsNull(row.FindVisualChildByName("PART_RowExpanderGutter"), $"Flat row {NameOf(row.DataContext)} has no chevron gutter.");
+                }
+                cvs.HierarchyDescription = new PropertyHierarchyDescription(IdPath, ManagerPath);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, Roots, "tree");
+                Verify.IsNotNull(FindTreeRow(tableView, "Ada").FindVisualChildByName("PART_RowExpanderGutter"), "A tree row loads the gutter.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the row peer's ExpandCollapse pattern fails with UIA_E_INVALIDOPERATION on a leaf and UIA_E_ELEMENTNOTENABLED when the table is disabled, and changes nothing.")]
+        public void VerifyExpandCollapseFailsOnLeafAndDisabledRow()
+        {
+            const int UIA_E_ELEMENTNOTENABLED = unchecked((int)0x80040200);
+            const int UIA_E_INVALIDOPERATION = unchecked((int)0x80131509);
+            var tableView = Place(MakeTree());
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var gus = GetRowExpandCollapse(FindTreeRow(tableView, "Gus"));
+                Verify.AreEqual(UIA_E_INVALIDOPERATION, ThrownHResult(() => gus.Expand()), "Expand on a leaf.");
+                Verify.AreEqual(UIA_E_INVALIDOPERATION, ThrownHResult(() => gus.Collapse()), "Collapse on a leaf.");
+                tableView.IsEnabled = false;
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                var ada = GetRowExpandCollapse(FindTreeRow(tableView, "Ada"));
+                Verify.AreEqual(UIA_E_ELEMENTNOTENABLED, ThrownHResult(() => ada.Collapse()), "Collapse on a disabled row.");
+                Verify.AreEqual(UIA_E_ELEMENTNOTENABLED, ThrownHResult(() => ada.Expand()), "Expand on a disabled row.");
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyTree(tableView, FullTree, "nothing changed"));
+        }
+
+        #endregion
+
         #region Helpers
+
+        // A tree table over a fresh MakeTree, and weak references to its items. Not inlined, so no local here keeps an
+        // item alive for the caller's GC.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void ShowExpandedTree(out TableView tableView, out ObservableCollection<TreeEmployee> list, out List<WeakReference> weak)
+        {
+            list = MakeTree();
+            weak = list.Select(e => new WeakReference(e)).ToList();
+            tableView = CreateTreeTable(list, IdPath, ManagerPath);
+        }
+
+        // As many new items as there were, so every realized row is prepared again for one of them.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void ReplaceWithStrangers(ObservableCollection<TreeEmployee> list)
+        {
+            var count = list.Count;
+            list.Clear();
+            for (var i = 0; i < count; i++)
+            {
+                list.Add(new TreeEmployee { Id = 100 + i, Name = $"New{i}" });
+            }
+        }
 
         // Loads a tree table over items as the test content and settles it. Call off the UI thread.
         private TableView Place(object items, string itemKeyPath = IdPath, string parentKeyPath = ManagerPath)

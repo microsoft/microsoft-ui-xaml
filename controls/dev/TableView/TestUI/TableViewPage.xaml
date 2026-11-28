@@ -424,6 +424,10 @@
                             AutomationProperties.Name="ResetHierarchy"
                             AutomationProperties.AutomationId="ResetHierarchy"
                             Click="OnResetHierarchyClick" />
+                    <Button Content="Grow"
+                            AutomationProperties.Name="GrowHierarchy"
+                            AutomationProperties.AutomationId="GrowHierarchy"
+                            Click="OnGrowHierarchyClick" />
                 </StackPanel>
 
                 <!-- Format documented on TableViewTestPageFacts.HierarchyReadout. -->

@@ -75,6 +75,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string HookRowStatesButton = "HookRowStatesButton";
         internal const string HookGroupHeadersButton = "HookGroupHeadersButton";
         internal const string ResetHierarchyButton = "ResetHierarchy";
+    // Appends 60 roots to HierarchyTable's source, every other one with a child, so the table scrolls.
+    internal const string GrowHierarchyButton = "GrowHierarchy";
 
         // Pivot navigation buttons are "GoTo<Item>Button".
         internal const string BasicPivotItem = "Basic";

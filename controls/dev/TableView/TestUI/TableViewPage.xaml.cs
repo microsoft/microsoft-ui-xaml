@@ -502,10 +502,15 @@ namespace MUXControlsTestApp
             return items;
         }
 
+        // HierarchyTable's source, for GrowHierarchy.
+        private ObservableCollection<HierarchyTestEmployee> _hierarchyItems;
+
         // The tree is the view's (CollectionViewSource.HierarchyDescription).
-        private static object CreateHierarchyView()
+        private static object CreateHierarchyView() => CreateHierarchyView(CreateHierarchySource());
+
+        private static object CreateHierarchyView(ObservableCollection<HierarchyTestEmployee> items)
         {
-            var cvs = new Microsoft.UI.Xaml.Data.CollectionViewSource { Source = CreateHierarchySource() };
+            var cvs = new Microsoft.UI.Xaml.Data.CollectionViewSource { Source = items };
             cvs.HierarchyDescription = new Microsoft.UI.Xaml.Data.PropertyHierarchyDescription("Id", "ManagerId");
             return cvs.View;
         }
@@ -524,7 +529,8 @@ namespace MUXControlsTestApp
         // A fresh source per table: every test starts from the same all-collapsed, unshaped, unselected state.
         private void ResetHierarchy()
         {
-            HierarchyTable.ItemsSource = CreateHierarchyView();
+            _hierarchyItems = CreateHierarchySource();
+            HierarchyTable.ItemsSource = CreateHierarchyView(_hierarchyItems);
             HierarchyRtlTable.ItemsSource = CreateHierarchyView();
             if (HierarchyTable.IsLoaded)
             {
@@ -536,6 +542,19 @@ namespace MUXControlsTestApp
         }
 
         private void OnResetHierarchyClick(object sender, RoutedEventArgs e) => ResetHierarchy();
+
+        private void OnGrowHierarchyClick(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < 60; i++)
+            {
+                int id = 1000 + (2 * i);
+                _hierarchyItems.Add(new HierarchyTestEmployee(id, null, "Root" + i, "Ops", i));
+                if (i % 2 == 0)
+                {
+                    _hierarchyItems.Add(new HierarchyTestEmployee(id + 1, id, "Leaf" + i, "Ops", i));
+                }
+            }
+        }
 
         // Low priority so the readout describes the settled state, after focus and layout have moved.
         private void QueueHierarchyReadoutRefresh()
