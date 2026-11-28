@@ -282,6 +282,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_Popup();
     _Check_return_ IActivationFactory* CreateActivationFactory_Thumb();
     _Check_return_ IActivationFactory* CreateActivationFactory_CollectionViewSource();
+    _Check_return_ IActivationFactory* CreateActivationFactory_HierarchyDescription();
     _Check_return_ IActivationFactory* CreateActivationFactory_Transform3D();
     _Check_return_ IActivationFactory* CreateActivationFactory_PageStackEntry();
     _Check_return_ IActivationFactory* CreateActivationFactory_DependencyObjectCollection();
@@ -413,6 +414,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_DockPatternIdentifiers();
     _Check_return_ IActivationFactory* CreateActivationFactory_DragPatternIdentifiers();
     _Check_return_ IActivationFactory* CreateActivationFactory_GridPatternIdentifiers();
+    _Check_return_ IActivationFactory* CreateActivationFactory_PropertyHierarchyDescription();
     _Check_return_ IActivationFactory* CreateActivationFactory_ProvideValueTargetProperty();
     _Check_return_ IActivationFactory* CreateActivationFactory_FrameNavigationOptions();
     _Check_return_ IActivationFactory* CreateActivationFactory_ElementCompositionPreview();
@@ -943,6 +945,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.Primitives.Popup"), &DirectUI::CreateActivationFactory_Popup)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.Primitives.Thumb"), &DirectUI::CreateActivationFactory_Thumb)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.CollectionViewSource"), &DirectUI::CreateActivationFactory_CollectionViewSource)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.HierarchyDescription"), &DirectUI::CreateActivationFactory_HierarchyDescription)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Media3D.Transform3D"), &DirectUI::CreateActivationFactory_Transform3D)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Navigation.PageStackEntry"), &DirectUI::CreateActivationFactory_PageStackEntry)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.DependencyObjectCollection"), &DirectUI::CreateActivationFactory_DependencyObjectCollection)
@@ -1074,6 +1077,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.DockPatternIdentifiers"), &DirectUI::CreateActivationFactory_DockPatternIdentifiers)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.DragPatternIdentifiers"), &DirectUI::CreateActivationFactory_DragPatternIdentifiers)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.GridPatternIdentifiers"), &DirectUI::CreateActivationFactory_GridPatternIdentifiers)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.PropertyHierarchyDescription"), &DirectUI::CreateActivationFactory_PropertyHierarchyDescription)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Markup.ProvideValueTargetProperty"), &DirectUI::CreateActivationFactory_ProvideValueTargetProperty)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Navigation.FrameNavigationOptions"), &DirectUI::CreateActivationFactory_FrameNavigationOptions)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Hosting.ElementCompositionPreview"), &DirectUI::CreateActivationFactory_ElementCompositionPreview)

@@ -56,6 +56,30 @@ namespace
             m_kind = kind;
         }
 
+        using T_abi = typename ObservableTrackerCollection<T>::T_abi;
+
+        // A group description is rejected before it is added while a hierarchy is set, so the rules never hold both.
+        IFACEMETHODIMP SetAt(_In_ UINT index, _In_opt_ T_abi item) override
+        {
+            IFC_RETURN(CheckCanGroup());
+            IFC_RETURN(ObservableTrackerCollection<T>::SetAt(index, item));
+            return S_OK;
+        }
+
+        IFACEMETHODIMP InsertAt(_In_ unsigned index, _In_opt_ T_abi item) override
+        {
+            IFC_RETURN(CheckCanGroup());
+            IFC_RETURN(ObservableTrackerCollection<T>::InsertAt(index, item));
+            return S_OK;
+        }
+
+        IFACEMETHODIMP Append(_In_opt_ T_abi item) override
+        {
+            IFC_RETURN(CheckCanGroup());
+            IFC_RETURN(ObservableTrackerCollection<T>::Append(item));
+            return S_OK;
+        }
+
     protected:
         ShapingDescriptionCollection() = default;
 
@@ -109,6 +133,39 @@ namespace
 
     private:
         enum class OwnerKind { Source, View, GroupDescription };
+
+        _Check_return_ HRESULT CheckCanGroup()
+        {
+            if (m_kind != DescriptionsKind::GroupDescriptions || !m_ownerRef || !VectorCollectionView::IsHierarchyEnabled())
+            {
+                return S_OK;
+            }
+
+            bool hasHierarchy = false;
+            if (m_ownerKind == OwnerKind::View)
+            {
+                ctl::ComPtr<xaml_data::ICollectionView> spView;
+                IFC_RETURN(m_ownerRef.As(&spView));
+                hasHierarchy = spView && static_cast<VectorCollectionView*>(static_cast<CollectionView*>(spView.Get()))->HasHierarchyDescription();
+            }
+            else if (m_ownerKind == OwnerKind::Source)
+            {
+                ctl::ComPtr<xaml_data::ICollectionViewSource> spOwner;
+                IFC_RETURN(m_ownerRef.As(&spOwner));
+                if (spOwner)
+                {
+                    ctl::ComPtr<xaml_data::IHierarchyDescription> spHierarchy;
+                    IFC_RETURN(spOwner.Cast<CollectionViewSource>()->get_HierarchyDescription(spHierarchy.ReleaseAndGetAddressOf()));
+                    hasHierarchy = !!spHierarchy;
+                }
+            }
+
+            if (hasHierarchy)
+            {
+                IFC_RETURN(VectorCollectionView::CheckHierarchyWithoutGrouping(1));
+            }
+            return S_OK;
+        }
 
         _Check_return_ HRESULT SealSortDescriptions(_In_ wfc::CollectionChange action, UINT index)
         {
@@ -643,12 +700,22 @@ _Check_return_ HRESULT CollectionViewSource::GetLiveShapingRequests(_Out_ bool* 
     return S_OK;
 }
 
-// WPF: CollectionViewSource.ApplyPropertiesToView. The view takes the rules and owns them while it is View.
+// WPF: CollectionViewSource.ApplyPropertiesToView. The view takes the rules and owns them while it is View. Rules that
+// cannot apply together are refused before anything changes, so the CollectionViewSource keeps no half-attached view.
 _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCollectionView* pView)
 {
     ctl::ComPtr<xaml_data::ICollectionViewComparer> spCustomSort = m_tpCustomSort.Get();
+    ctl::ComPtr<xaml_data::IHierarchyDescription> spHierarchy;
 
     IFC_RETURN(EnsureShapingDescriptions());
+    IFC_RETURN(get_HierarchyDescription(spHierarchy.ReleaseAndGetAddressOf()));
+    if (spHierarchy && VectorCollectionView::IsHierarchyEnabled())
+    {
+        UINT groupCount = 0;
+        IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
+        IFC_RETURN(VectorCollectionView::CheckHierarchyWithoutGrouping(groupCount));
+    }
+
     IFC_RETURN(SetDescriptionsOwner(m_tpSortDescriptions.Get(), pView));
     IFC_RETURN(SetDescriptionsOwner(m_tpGroupDescriptions.Get(), pView));
     SetPtrValue(m_tpShapingView, static_cast<xaml_data::ICollectionView*>(pView));
@@ -670,6 +737,7 @@ _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCo
         m_spLiveSortingProperties.Get(), m_spLiveFilteringProperties.Get(), m_spLiveGroupingProperties.Get()));
     wrl_wrappers::HString culture;
     IFC_RETURN(get_Culture(culture.GetAddressOf()));
+    IFC_RETURN(pView->SetHierarchyDescription(spHierarchy.Get()));
     IFC_RETURN(pView->ApplyShapingRules(m_tpSortDescriptions.Get(), m_tpGroupDescriptions.Get(), nullptr /* pFilter */, spCustomSort.Get(), culture.Get()));
     return S_OK;
 }
@@ -795,6 +863,39 @@ _Check_return_ HRESULT CollectionViewSource::OnCultureChanged(_In_ const Propert
     {
         IFC_RETURN(AsShapingView(m_tpShapingView.Get())->put_Culture(culture.Get()));
     }
+    return S_OK;
+}
+
+// Like Culture, the CollectionViewSource's own value, applied to each view it creates and to View when it changes. A
+// hierarchy is refused, and the value undone, while the CollectionViewSource groups.
+_Check_return_ HRESULT CollectionViewSource::OnHierarchyDescriptionChanged(_In_ const PropertyChangedParams& args)
+{
+    if (m_isRestoringHierarchy)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<xaml_data::IHierarchyDescription> spHierarchy;
+    IFC_RETURN(get_HierarchyDescription(spHierarchy.ReleaseAndGetAddressOf()));
+    UINT groupCount = 0;
+    if (spHierarchy && m_tpGroupDescriptions && VectorCollectionView::IsHierarchyEnabled())
+    {
+        IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
+    }
+    if (groupCount > 0)
+    {
+        static constexpr WCHAR c_message[] = L"CollectionViewSource.HierarchyDescription cannot be set while GroupDescriptions has items; the change was undone.";
+        IFC_RETURN(RestorePreviousValue(this, args, &m_isRestoringHierarchy, c_message));
+        IFC_RETURN(VectorCollectionView::CheckHierarchyWithoutGrouping(groupCount));
+    }
+
+    if (m_tpShapingView)
+    {
+        IFC_RETURN(AsShapingView(m_tpShapingView.Get())->put_HierarchyDescription(spHierarchy.Get()));
+        return S_OK;
+    }
+
+    IFC_RETURN(OnShapingDescriptionsChanged());
     return S_OK;
 }
 
@@ -1119,7 +1220,9 @@ _Check_return_ HRESULT CollectionViewSource::HasShapingRules(_Out_ bool* pHasRul
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
 
-    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpCustomSort || HasFilterEventHandlers();
+    ctl::ComPtr<xaml_data::IHierarchyDescription> spHierarchy;
+    IFC_RETURN(get_HierarchyDescription(spHierarchy.ReleaseAndGetAddressOf()));
+    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpCustomSort || HasFilterEventHandlers() || spHierarchy;
     return S_OK;
 }
 
@@ -1160,7 +1263,7 @@ _Check_return_ HRESULT CollectionViewSource::CheckShapingSupported(_In_ IInspect
 
     if (!isShapeable)
     {
-        static constexpr WCHAR c_message[] = L"A CollectionViewSource with IsSourceGrouped set, or over an ICollectionViewFactory, cannot sort, filter or group its View.";
+        static constexpr WCHAR c_message[] = L"A CollectionViewSource with IsSourceGrouped set, or over an ICollectionViewFactory, cannot sort, filter, group or build a hierarchy in its View.";
         IFC_RETURN(ErrorHelper::OriginateError(E_ILLEGAL_METHOD_CALL, ARRAYSIZE(c_message) - 1, c_message));
     }
     return S_OK;

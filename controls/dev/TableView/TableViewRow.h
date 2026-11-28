@@ -40,7 +40,7 @@ public:
     void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
-    // Keeps the body one tab stop; see the definition.
+    // Keeps the body one tab stop, and expands a tree row's subtree; see the definition.
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
     // Updates the weak owner ref, column subscription, and realized cells. Both return true when the
@@ -72,8 +72,22 @@ public:
     // which clears it without transitions.
     void SetIsSelectedInternal(bool isSelected);
 
-    // Under group headers, lines the lead cell's content up with the group key text.
-    void ApplyLeadCellOffset();
+    // Owner-only writer for the read-only hierarchy DPs. Level 0 clears (flat/grouped sources).
+    void SetHierarchyStateInternal(int32_t level, bool isExpandable, bool isExpanded);
+
+    // Re-applies indent and chevron; template apply and cell rebuild both discard prior layout.
+    void ApplyHierarchyAffordance();
+    // The chevron gutter, loaded on first use.
+    winrt::FrameworkElement EnsureExpanderGutter();
+    void ApplyHierarchyIndentToCells();
+    // Overload taking a pre-resolved indent, avoiding a second TableViewRowIndentSize lookup.
+    void ApplyHierarchyIndentToCells(double indent);
+    double HierarchyIndent();
+
+    // ExpandCollapsePattern state: LeafNode unless an expandable tree row.
+    winrt::ExpandCollapseState HierarchyExpandCollapseState();
+    // A cleared row forgets its item; prepared again for it, it counts as a new item.
+    void ReleaseHierarchyStamp() { m_hierarchyStampedItem = nullptr; }
 
     // Used by automation peers to enumerate live cells after template application.
     winrt::Panel GetCellsHostPanelInternal() const { return m_cellsHost.get(); }
@@ -109,6 +123,9 @@ public:
     void EnableRowFocusInternal();
 
     void RefreshFrozenColumnLayout(double horizontalOffset, double leadingFrozenWidth);
+    void SyncExpanderGutterWithLeadCell(winrt::Panel const& host);
+    // Cells panel reports the lead cell's arranged slot to confine the chevron. leadWidth < 0: none.
+    void OnCellsArrangedInternal(double leadLeft, double leadWidth, double height);
     double GetContentVerticalOffset() const { return m_contentVerticalOffset; }
     void RefreshDensity();
     void RefreshCells();
@@ -142,9 +159,13 @@ private:
     void RestoreCellContentTabStopsInternal();
 
     void OnRowGotFocus(winrt::DependencyObject const& focusedElement);
+    // Routes an expansion-state transition to this row's automation peer, if a client is listening.
+    void RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
     // True when focus is on the row itself, not cell content (which keeps its own arrow keys).
     bool IsRowItselfFocused();
+
+    // Directional expand/collapse for the keyboard, routed through the owner like the chevron.
 
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
     // binding a template column needs. GenerateDisplayElement alone is not a complete cell.
@@ -182,6 +203,18 @@ private:
         const winrt::Windows::Foundation::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs& args);
 
+    void OnExpanderGutterPointerPressed(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
+    void OnExpanderGutterPointerReleased(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
+    void OnExpanderGutterPointerCanceled(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
+    bool IsWithinExpanderGutter(const winrt::IInspectable& source) const;
+    void UpdateExpanderGutterClip();
+
     // Returns true when the rebuild reached the row-chrome refresh (grid lines and row background).
     bool RebuildCells(bool updateExistingCellPeerItems = true);
     bool RebuildCellsCore(bool updateExistingCellPeerItems);
@@ -206,8 +239,30 @@ private:
     tracker_ref<winrt::Panel> m_cellsHost{ this };
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     tracker_ref<winrt::FrameworkElement> m_rowChrome{ this };
+    // Chevron hit target, loaded (x:Load) the first time the row shows a tree row. Null for a row that never did, or if a
+    // re-template drops the part (indent still applies).
+    tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
+    // The template's gutter part was looked up (and loaded) since the last template apply.
+    bool m_rowExpanderGutterResolved{ false };
+    // The hierarchy visual states were last set for a tree row; a flat row that never was one skips them.
+    bool m_hierarchyStatesApplied{ false };
+    // The item the hierarchy state was last stamped for (tree rows only): a change of state is announced to UI
+    // Automation only for the same item, never for a recycled row moving to another one.
+    winrt::IInspectable m_hierarchyStampedItem{ nullptr };
     // Transparent cell wrapper fill, created on first use and shared by this row's cells.
     winrt::Brush m_cellWrapperBackground{ nullptr };
+    winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};
+    winrt::UIElement::PointerReleased_revoker m_gutterPointerReleasedRevoker{};
+    winrt::UIElement::PointerExited_revoker m_gutterPointerExitedRevoker{};
+    winrt::UIElement::PointerCaptureLost_revoker m_gutterPointerCaptureLostRevoker{};
+    // Chevron toggles on release-inside, like TableViewGroupHeader.
+    bool m_isGutterPressed{ false };
+    // Lead cell's last arranged slot in the cells host (negative width: none yet / none visible).
+    double m_leadCellLeft{ 0.0 };
+    double m_leadCellWidth{ -1.0 };
+    double m_cellsArrangedHeight{ 0.0 };
+    // Distinguishes "not arranged yet" from "arranged with no visible cell" (both report width -1).
+    bool m_cellsArranged{ false };
     // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_cellsHostContextRequestedRevoker{};

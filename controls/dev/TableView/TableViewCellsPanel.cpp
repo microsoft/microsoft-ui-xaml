@@ -53,6 +53,11 @@ winrt::FrameworkElement TableViewCellsPanel::CellForColumn(const winrt::Panel& h
     return nullptr;
 }
 
+void TableViewCellsPanel::SetOwningRowInternal(winrt::TableViewRow const& row)
+{
+    m_owningRow = row;
+}
+
 double TableViewCellsPanel::MeasuredWidthForColumn(winrt::TableViewColumn const& column) const
 {
     if (!column)
@@ -221,6 +226,8 @@ winrt::Size TableViewCellsPanel::ArrangeOverride(winrt::Size const& finalSize)
 {
     TableView::ElementLayoutScope const layoutScope;
     float x = 0.0f;
+    float leadLeft = 0.0f;
+    float leadWidth = -1.0f;
 
     for (winrt::UIElement const& child : Children())
     {
@@ -231,7 +238,20 @@ winrt::Size TableViewCellsPanel::ArrangeOverride(winrt::Size const& finalSize)
 
         // Cells are arranged at the resolved column width; content wider than the column clips/ellipsizes.
         child.Arrange({ x, 0.0f, w, finalSize.Height });
+
+        // Same "lead" rule as TableViewRow::ApplyHierarchyIndentToCells: the first visible wrapper.
+        if (leadWidth < 0.0f && child.Visibility() == winrt::Visibility::Visible && column)
+        {
+            leadLeft = x;
+            leadWidth = w;
+        }
         x += w;
+    }
+
+    // Report the lead slot so the chevron is confined to it; every width change passes through here.
+    if (auto const row = m_owningRow.get())
+    {
+        winrt::get_self<TableViewRow>(row)->OnCellsArrangedInternal(leadLeft, leadWidth, finalSize.Height);
     }
 
     return { x, finalSize.Height };

@@ -406,6 +406,74 @@
                 </StackPanel>
             </Grid>
 
+            <!-- Hierarchical rows: the same PropertyHierarchyDescription(Id, ManagerId) fixture shown left-to-right and
+                 right-to-left. ResetHierarchy rebuilds both sources, so each test starts all collapsed. -->
+            <Grid x:Name="HierarchyTableHost" Visibility="Collapsed" RowSpacing="4" ColumnSpacing="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Reset"
+                            AutomationProperties.Name="ResetHierarchy"
+                            AutomationProperties.AutomationId="ResetHierarchy"
+                            Click="OnResetHierarchyClick" />
+                    <Button Content="Grow"
+                            AutomationProperties.Name="GrowHierarchy"
+                            AutomationProperties.AutomationId="GrowHierarchy"
+                            Click="OnGrowHierarchyClick" />
+                </StackPanel>
+
+                <!-- Format documented on TableViewTestPageFacts.HierarchyReadout. -->
+                <TextBox x:Name="HierarchyReadout"
+                         Grid.Row="1"
+                         Grid.ColumnSpan="2"
+                         AutomationProperties.Name="HierarchyReadout"
+                         AutomationProperties.AutomationId="HierarchyReadout"
+                         HorizontalAlignment="Left"
+                         Width="840"
+                         IsReadOnly="True"
+                         IsTabStop="False"
+                         Text="" />
+
+                <controls:TableView x:Name="HierarchyTable"
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    AutomationProperties.Name="HierarchyTable"
+                                    AutomationProperties.AutomationId="HierarchyTable"
+                                    Height="320"
+                                    Width="400"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    SelectionMode="Single">
+                    <controls:TableViewTemplateColumn Header="Name" Width="160" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="Dept" Width="100" SortMemberPath="Dept" CellTemplate="{StaticResource DeptTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="Score" Width="100" SortMemberPath="Score" CellTemplate="{StaticResource ScoreTextCellTemplate}" />
+                </controls:TableView>
+
+                <controls:TableView x:Name="HierarchyRtlTable"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    AutomationProperties.Name="HierarchyRtlTable"
+                                    AutomationProperties.AutomationId="HierarchyRtlTable"
+                                    FlowDirection="RightToLeft"
+                                    Height="320"
+                                    Width="400"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    SelectionMode="Single">
+                    <controls:TableViewTemplateColumn Header="RtlName" Width="160" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="RtlDept" Width="100" SortMemberPath="Dept" CellTemplate="{StaticResource DeptTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="RtlScore" Width="100" SortMemberPath="Score" CellTemplate="{StaticResource ScoreTextCellTemplate}" />
+                </controls:TableView>
+            </Grid>
+
             <!-- Context menus: one menu per resolution level, laid out as TableViewTestPageFacts describes. Each
                  menu's Opening/Closed handlers write ContextMenuReadout. -->
             <Grid x:Name="ContextMenuTableHost" Visibility="Collapsed" RowSpacing="4">
@@ -573,6 +641,10 @@
                     AutomationProperties.Name="GoToScrollingButton"
                     AutomationProperties.AutomationId="GoToScrollingButton"
                     Click="OnGoToScrollingClick" />
+            <Button Content="Hierarchy"
+                    AutomationProperties.Name="GoToHierarchyButton"
+                    AutomationProperties.AutomationId="GoToHierarchyButton"
+                    Click="OnGoToHierarchyClick" />
             <Button Content="Grouped Paging"
                     AutomationProperties.Name="GoToGroupedPagingButton"
                     AutomationProperties.AutomationId="GoToGroupedPagingButton"

@@ -168,6 +168,7 @@
         <ClCompile Include="..\VectorCollectionView_SourceChanges.cpp"/>
         <ClCompile Include="..\VectorCollectionView_Currency.cpp"/>
         <ClCompile Include="..\VectorCollectionView_LiveShaping.cpp"/>
+        <ClCompile Include="..\VectorCollectionView_Hierarchy.cpp"/>
         <ClCompile Include="..\IterableCollectionView_Partial.cpp"/>
         <ClCompile Include="..\CollectionViewManager.cpp"/>
         <ClCompile Include="..\GroupedDataCollectionView_Partial.cpp"/>

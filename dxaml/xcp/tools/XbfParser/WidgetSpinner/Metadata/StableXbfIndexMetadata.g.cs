@@ -1007,6 +1007,8 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         PropertyGroupDescription = 986,
         CollectionViewSortDirection = 987,
         CollectionViewStringComparison = 988,
+        HierarchyDescription = 989,
+        PropertyHierarchyDescription = 990,
     }
 
     // Define the stable XBF property indices
@@ -3504,6 +3506,9 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         PropertyGroupDescription_StringComparison = 2489,
         GroupDescription_GroupNames = 2490,
         CollectionViewSource_Culture = 2491,
+        CollectionViewSource_HierarchyDescription = 2492,
+        PropertyHierarchyDescription_ItemKeyPath = 2493,
+        PropertyHierarchyDescription_ParentKeyPath = 2494,
     }
 
     // Define the stable XBF event indices
@@ -3994,6 +3999,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfTypeIndex.GridLength, new XamlTypeInfo("Microsoft.UI.Xaml.GridLength", StableXbfTypeIndex.DependencyObject, XamlTypeFlags.None) },
             { StableXbfTypeIndex.GroupDescription, new XamlTypeInfo("Microsoft.UI.Xaml.Data.GroupDescription", StableXbfTypeIndex.DependencyObject, XamlTypeFlags.None) },
             { StableXbfTypeIndex.GroupStyle, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.GroupStyle", StableXbfTypeIndex.DependencyObject, XamlTypeFlags.None) },
+            { StableXbfTypeIndex.HierarchyDescription, new XamlTypeInfo("Microsoft.UI.Xaml.Data.HierarchyDescription", StableXbfTypeIndex.DependencyObject, XamlTypeFlags.None) },
             { StableXbfTypeIndex.HWCompNode, new XamlTypeInfo("Microsoft.UI.Xaml.Internal.HWCompNode", StableXbfTypeIndex.DependencyObject, XamlTypeFlags.None) },
             { StableXbfTypeIndex.IconSource, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.IconSource", StableXbfTypeIndex.DependencyObject, XamlTypeFlags.None) },
             { StableXbfTypeIndex.ImageSource, new XamlTypeInfo("Microsoft.UI.Xaml.Media.ImageSource", StableXbfTypeIndex.DependencyObject, XamlTypeFlags.None) },
@@ -4217,6 +4223,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfTypeIndex.PopupThemeTransition, new XamlTypeInfo("Microsoft.UI.Xaml.Media.Animation.PopupThemeTransition", StableXbfTypeIndex.Transition, XamlTypeFlags.None) },
             { StableXbfTypeIndex.PowerEase, new XamlTypeInfo("Microsoft.UI.Xaml.Media.Animation.PowerEase", StableXbfTypeIndex.EasingFunctionBase, XamlTypeFlags.None) },
             { StableXbfTypeIndex.PropertyGroupDescription, new XamlTypeInfo("Microsoft.UI.Xaml.Data.PropertyGroupDescription", StableXbfTypeIndex.GroupDescription, XamlTypeFlags.None) },
+            { StableXbfTypeIndex.PropertyHierarchyDescription, new XamlTypeInfo("Microsoft.UI.Xaml.Data.PropertyHierarchyDescription", StableXbfTypeIndex.HierarchyDescription, XamlTypeFlags.None) },
             { StableXbfTypeIndex.PVLStaggerFunction, new XamlTypeInfo("Microsoft.UI.Xaml.PVLStaggerFunction", StableXbfTypeIndex.StaggerFunctionBase, XamlTypeFlags.None) },
             { StableXbfTypeIndex.QuadraticBezierSegment, new XamlTypeInfo("Microsoft.UI.Xaml.Media.QuadraticBezierSegment", StableXbfTypeIndex.PathSegment, XamlTypeFlags.None) },
             { StableXbfTypeIndex.QuadraticEase, new XamlTypeInfo("Microsoft.UI.Xaml.Media.Animation.QuadraticEase", StableXbfTypeIndex.EasingFunctionBase, XamlTypeFlags.None) },
@@ -4913,6 +4920,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfPropertyIndex.CalendarViewTemplateSettings_WeekDay7, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.Primitives.CalendarViewTemplateSettings.WeekDay7", StableXbfTypeIndex.String, StableXbfTypeIndex.CalendarViewTemplateSettings, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.CollectionViewSource_Culture, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.CollectionViewSource.Culture", StableXbfTypeIndex.String, StableXbfTypeIndex.CollectionViewSource, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.CollectionViewSource_GroupDescriptions, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.CollectionViewSource.GroupDescriptions", StableXbfTypeIndex.UnknownType, StableXbfTypeIndex.CollectionViewSource, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.CollectionViewSource_HierarchyDescription, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.CollectionViewSource.HierarchyDescription", StableXbfTypeIndex.HierarchyDescription, StableXbfTypeIndex.CollectionViewSource, XamlPropertyFlags.IsVisualTreeProperty) },
             { StableXbfPropertyIndex.CollectionViewSource_IsLiveFilteringRequested, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveFilteringRequested", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.CollectionViewSource, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.CollectionViewSource_IsLiveGroupingRequested, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveGroupingRequested", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.CollectionViewSource, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.CollectionViewSource_IsLiveSortingRequested, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveSortingRequested", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.CollectionViewSource, XamlPropertyFlags.None) },
@@ -5483,6 +5491,8 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfPropertyIndex.PropertyGroupDescription_Converter, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.PropertyGroupDescription.Converter", StableXbfTypeIndex.UnknownType, StableXbfTypeIndex.PropertyGroupDescription, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.PropertyGroupDescription_PropertyName, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.PropertyGroupDescription.PropertyName", StableXbfTypeIndex.String, StableXbfTypeIndex.PropertyGroupDescription, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.PropertyGroupDescription_StringComparison, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.PropertyGroupDescription.StringComparison", StableXbfTypeIndex.CollectionViewStringComparison, StableXbfTypeIndex.PropertyGroupDescription, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.PropertyHierarchyDescription_ItemKeyPath, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.PropertyHierarchyDescription.ItemKeyPath", StableXbfTypeIndex.String, StableXbfTypeIndex.PropertyHierarchyDescription, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.PropertyHierarchyDescription_ParentKeyPath, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.PropertyHierarchyDescription.ParentKeyPath", StableXbfTypeIndex.String, StableXbfTypeIndex.PropertyHierarchyDescription, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.PVLStaggerFunction_Delay, new XamlPropertyInfo("Microsoft.UI.Xaml.PVLStaggerFunction.Delay", StableXbfTypeIndex.Double, StableXbfTypeIndex.PVLStaggerFunction, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.PVLStaggerFunction_DelayReduce, new XamlPropertyInfo("Microsoft.UI.Xaml.PVLStaggerFunction.DelayReduce", StableXbfTypeIndex.Double, StableXbfTypeIndex.PVLStaggerFunction, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.PVLStaggerFunction_Maximum, new XamlPropertyInfo("Microsoft.UI.Xaml.PVLStaggerFunction.Maximum", StableXbfTypeIndex.Double, StableXbfTypeIndex.PVLStaggerFunction, XamlPropertyFlags.None) },

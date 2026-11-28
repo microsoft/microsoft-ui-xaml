@@ -23,8 +23,9 @@
 // groups: the view does (TableView wraps a plain collection in an internal CollectionViewSource). It
 // only lays the view out as rows:
 //   - flat: the view itself, so the view's fine-grained changes reach the repeater unchanged;
-//   - grouped: a header row (GroupedEntry) plus the data rows of each of the view's CollectionGroups.
-// Group expansion state is this control's, never the view's: one view can feed several controls.
+//   - grouped: a header row (GroupedEntry) plus the data rows of each of the view's CollectionGroups;
+//   - tree: the view's nodes (ICollectionViewHierarchy.CollectionNodes), each expanded node followed by its children.
+// Group and node expansion state is this control's, never the view's: one view can feed several controls.
 //
 // UI-thread affine. Owned by one TableView.
 class TableViewRowFlattener : public std::enable_shared_from_this<TableViewRowFlattener>
@@ -56,12 +57,18 @@ public:
     };
     std::vector<GroupInfo> CurrentGroups() const;
 
-    // The view's items.
+    // The view's items, and the data rows shown before expansion (every kept node of a tree).
     uint32_t SourceRowCount() const;
+    uint32_t DataRowCount() const;
+
+    // True when the rows are the view's tree.
+    bool HasHierarchy() const noexcept { return m_kind == Kind::Tree; }
 
     // Raised after the rows were rebuilt: a different ItemsSourceView or row-metadata provider, or a
     // group set rebuilt in place.
     void SetRowsChangedHandler(std::function<void()> handler) { m_rowsChanged = std::move(handler); }
+    // Raised when tree rows' metadata (sibling position, child count) changed while the rows themselves did not.
+    void SetRowMetadataChangedHandler(std::function<void()> handler) { m_rowMetadataChanged = std::move(handler); }
 
     // A row's identity: the item's COM identity, unique among live objects.
     static winrt::hstring ObjectIdentity(winrt::IInspectable const& item);
@@ -79,8 +86,55 @@ public:
     std::vector<GroupInfo> const& LiveGroups() const noexcept { return m_liveGroups; }
     GroupInfo const* TryGetLiveGroup(winrt::hstring const& groupIdentity) const;
 
+    // --- Tree nodes (tree rows) ---
+
+    winrt::ItemsSourceView TreeRows() const noexcept { return m_treeRowsView; }
+
+    struct NodeRow
+    {
+        winrt::IInspectable Item{ nullptr };
+        winrt::hstring NodeKey;
+        // Node key of the parent row; empty for roots.
+        winrt::hstring ParentKey;
+        // 0-based (roots render flush); TableViewRowInfo::Level is Depth + 1.
+        int32_t Depth{ 0 };
+        // 1-based position in the sibling set and its size.
+        int32_t SiblingIndex{ 0 };
+        int32_t SiblingCount{ 0 };
+        bool HasChildren{ false };
+        bool IsExpanded{ false };
+        // Kept only because a descendant passes the view's filter.
+        bool IsContext{ false };
+        winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode Node{ nullptr };
+        // The node's PropertyChanged (HasChildren), followed while the row exists.
+        winrt::event_token NodeToken{};
+        // The node's Children, read and followed only while the row is expanded.
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> Children{ nullptr };
+        winrt::event_token ChildrenToken{};
+    };
+
+    // Index into TreeRows.
+    NodeRow const* TryGetNodeRow(int32_t index) const;
+    bool TryGetIndexForNodeKey(winrt::hstring const& nodeKey, int32_t& index) const;
+
+    // Addressed by node key ("node:" + the node's Key). On a context row, moves only the filter overlay, never
+    // intent.
+    bool IsNodeExpanded(winrt::hstring const& nodeKey) const;
+    void SetNodeExpanded(winrt::hstring const& nodeKey, bool isExpanded);
+    void ExpandAllNodes();
+    void CollapseAllNodes();
+    void ExpandSubtree(winrt::hstring const& nodeKey);
+    // TableView.ExpandRow / CollapseRow: the item's node; expanding also expands its ancestors. False when the item
+    // has no node.
+    bool SetItemExpanded(winrt::IInspectable const& item, bool isExpanded);
+    // The row identity (node key) of the item's node; empty when the item has no node.
+    winrt::hstring TryGetIdentityForItem(winrt::IInspectable const& item) const;
+
+    // Positive prefix test, so a stale or foreign key cannot become node intent.
+    static bool IsNodeKey(winrt::hstring const& key);
+
 private:
-    enum class Kind { None, Flat, Grouped };
+    enum class Kind { None, Flat, Grouped, Tree };
 
     // Rebuilds for the view's current grouping; coalesces requests raised while it runs.
     void Update();
@@ -150,6 +204,57 @@ private:
     void UnsubscribeFromGroupItems();
     static winrt::hstring GroupIntentKey(winrt::hstring const& groupIdentity);
 
+    // --- Tree rows ---
+
+    // Follows the view's CollectionNodes object; true when it changed.
+    bool AttachViewNodesNow();
+    // isDestroying: only unsubscribes; no new row list.
+    void DetachTreeRows(bool isDestroying = false);
+    void RebuildTreeRows();
+    void ApplyTreeRows(std::vector<winrt::IInspectable>&& items, std::vector<NodeRow>&& rows);
+    // Appends the rows of the nodes in a list and, under each expanded node, its children; explicit stack.
+    void EmitNodeRows(
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& list,
+        uint32_t begin,
+        uint32_t end,
+        winrt::hstring const& parentKey,
+        int32_t depth,
+        std::vector<winrt::IInspectable>& items,
+        std::vector<NodeRow>& rows);
+    NodeRow MakeNodeRow(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node, winrt::hstring const& parentKey, int32_t depth, int32_t siblingIndex, int32_t siblingCount);
+    static winrt::hstring NodeKeyFor(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node, winrt::IInspectable const& item = nullptr);
+    bool EffectiveExpanded(winrt::hstring const& nodeKey, bool hasChildren, bool isContext) const;
+    void SubscribeToNode(NodeRow& row);
+    void SubscribeToChildren(NodeRow& row);
+    // Both of a row's subscriptions.
+    void UnsubscribeFromChildren(NodeRow& row);
+    void OnNodeHasChildrenChanged(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node);
+    void OnNodeListChanged(
+        bool isRoots,
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& list,
+        winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
+    bool TryApplyNodeListChange(
+        bool isRoots,
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& list,
+        winrt::Windows::Foundation::Collections::CollectionChange change,
+        uint32_t index);
+    void OnViewItemsChanged(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
+    void OnViewItemChanged(uint32_t index);
+    // The rows no longer follow the view: rebuilt at the end of the view's change, or on the next turn.
+    void QueueTreeRowsRebuild();
+    bool TryGetIndexForNode(winrt::Microsoft::UI::Xaml::Data::ICollectionViewNode const& node, int32_t& index) const;
+    void OnNodeExpansionChanged(ShapingHelpers::RowExpansionModel::Change const& change);
+    bool TryApplyNodeExpansionSplice(winrt::hstring const& nodeKey);
+    // The row after a row's visible subtree.
+    int32_t SubtreeEnd(int32_t row) const;
+    // Renumbers the rows of one sibling list (roots when parentRow is -1) and the parent's child count.
+    void RenumberSiblingRows(int32_t parentRow);
+    void InsertTreeRows(int32_t index, std::vector<winrt::IInspectable> const& items, std::vector<NodeRow>&& rows);
+    void RemoveTreeRows(int32_t index, int32_t count);
+    void EnsureNodeKeyIndex() const;
+    void RaiseRowMetadataChanged() const;
+    void QueueForgetRemovedKeys();
+
     winrt::Microsoft::UI::Xaml::Data::ICollectionView m_view{ nullptr };
     winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged m_viewNotify{ nullptr };
     winrt::event_token m_viewPropertyChangedToken{};
@@ -168,6 +273,7 @@ private:
     bool m_updating{ false };
     bool m_updatePending{ false };
     std::function<void()> m_rowsChanged{};
+    std::function<void()> m_rowMetadataChanged{};
 
     // The view's CollectionGroups; null when the view is not grouped.
     winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> m_viewGroups{ nullptr };
@@ -176,6 +282,8 @@ private:
     std::vector<ViewGroup> m_groups;
     bool m_attachingViewGroups{ false };
     bool m_attachViewGroupsPending{ false };
+    // A CollectionNodes change, deferred the same way (and while tree rows are spliced).
+    bool m_attachViewNodesPending{ false };
     bool m_runningPendingAttach{ false };
     bool m_readingGroups{ false };
     bool m_readGroupsPending{ false };
@@ -203,4 +311,35 @@ private:
     bool m_groupRowsPending{ false };
     bool m_groupRowsProfiled{ false };
 
+    winrt::Microsoft::UI::Xaml::Data::ICollectionViewHierarchy m_hierarchy{ nullptr };
+    // The view's CollectionNodes; null while the view is flat.
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> m_viewNodes{ nullptr };
+    winrt::event_token m_viewNodesChangedToken{};
+    winrt::event_token m_viewItemsChangedToken{};
+    bool m_treeRowsAttached{ false };
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> m_treeRows{
+        winrt::single_threaded_observable_vector<winrt::IInspectable>() };
+    winrt::ItemsSourceView m_treeRowsView{ nullptr };
+    // Index-aligned 1:1 with m_treeRows.
+    std::vector<NodeRow> m_nodeRows;
+    mutable std::unordered_map<winrt::hstring, int32_t> m_indexByNodeKey;
+    // By node object (ICollectionViewNode ABI pointer); rebuilt with m_indexByNodeKey.
+    mutable std::unordered_map<void*, int32_t> m_indexByNode;
+    mutable bool m_indexByNodeKeyValid{ false };
+    // Collapsed baseline, so the first build realizes only the roots.
+    ShapingHelpers::RowExpansionModel m_nodeExpansion;
+    // Context rows (shown for a filter match below them) start expanded; collapsing one is recorded here, not as
+    // intent.
+    std::unordered_set<winrt::hstring> m_filterOverlayCollapsed;
+    // Keys of rows removed this turn: their intent is dropped at the turn's end unless they returned (a live move is a
+    // remove and an insert).
+    std::vector<winrt::hstring> m_removedNodeKeys;
+    bool m_forgetQueued{ false };
+    // A change raised while the tree rows are being changed is remembered and applied as one rebuild after.
+    bool m_treeRowsInFlight{ false };
+    bool m_treeRowsPending{ false };
+    bool m_treeRowsStale{ false };
+    bool m_treeRebuildQueued{ false };
+    // A handler that changes the tree on every rebuild: after this many passes the next one waits a turn.
+    static constexpr int c_maxTreeRebuildPasses = 8;
 };

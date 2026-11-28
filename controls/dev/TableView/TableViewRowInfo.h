@@ -20,13 +20,18 @@ enum class TableViewRowKind
 struct TableViewRowInfo
 {
     TableViewRowKind Kind{ TableViewRowKind::Data };
-    // GroupHeader: 0 for a top-level group, one deeper per subgroup level. Data row under groups: one
-    // deeper than its header. Otherwise 0.
     int32_t Level{ 0 };
     bool IsExpandable{ false };
     bool IsExpanded{ false };
-    // GroupHeader: group item count (0 presents a leaf). Otherwise 0.
+    // GroupHeader: group item count (0 presents a leaf). Otherwise 0 (a tree row's IsExpandable says whether it has
+    // children).
     int32_t ChildCount{ 0 };
+
+    // Hierarchical data rows only. PositionInSet is 1-based within the sibling set (a root's group
+    // bucket under grouping); ParentIdentity is empty for roots.
+    winrt::hstring ParentIdentity;
+    uint32_t PositionInSet{ 0 };
+    uint32_t SizeOfSet{ 0 };
 };
 
 using TableViewRowItemKeySelector = std::function<winrt::hstring(winrt::IInspectable const&)>;
@@ -56,14 +61,24 @@ struct ITableViewRowMetadataProvider
     // Whether Expand (desired true), Collapse (false) or Toggle (empty) would change the state; true when unsure.
     virtual bool WouldChangeExpansion(winrt::hstring const& key, std::optional<bool> desired) noexcept = 0;
 
+    // One verb per axis: expanding group headers must not materialize the whole tree.
     virtual void ExpandAllGroups() = 0;
     virtual void CollapseAllGroups() = 0;
+    virtual void ExpandAllRows() = 0;
+    virtual void CollapseAllRows() = 0;
+
+    // True for tree projections. Leaf roots must still reserve chevron width, which row info alone
+    // cannot distinguish from grouped data rows.
+    virtual bool IsHierarchicalSource() const { return false; }
+
+    // Expands a tree node and all descendants. No-op for group keys or non-hierarchical sources.
+    virtual void ExpandSubtree(winrt::hstring const&) {}
 
     // Every group in the projection, in display order: O(groups). Empty when the source is not grouped.
     virtual std::vector<TableViewGroupExpansionInfo> GetGroupExpansionInfos() { return {}; }
     // The expansion identity of the group with this stable identity. Empty when it has none.
     virtual winrt::hstring GetGroupExpansionIdentity(winrt::hstring const& /*groupIdentity*/) { return {}; }
-    // The group a group expansion identity names. False for unknown groups.
+    // The group a group expansion identity names. False for node keys and unknown groups.
     virtual bool TryGetGroupExpansionInfo(winrt::hstring const& /*identity*/, TableViewGroupExpansionInfo& /*info*/) { return false; }
 
     // 1-based position among data rows between adjacent header bands, and that count. Returns false

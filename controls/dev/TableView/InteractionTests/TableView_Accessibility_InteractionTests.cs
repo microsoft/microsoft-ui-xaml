@@ -301,7 +301,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             // Contract: RaiseGroupStructureChanged fires when, and only when, a group's expansion actually
             //   changed. RowMetadataProvider::SetGroupExpandedCore reports "changed", not the resulting state.
-            //   It once returned the resulting state, so a collapse (state false) never raised and
+            //   Before hierarchy it returned the resulting state, so a collapse (state false) never raised and
             //   a client kept the collapsed rows in its cached tree.
             // Failure means: a screen reader keeps reading rows a collapse removed, or re-reads a tree that a
             //   no-op expand never changed.

@@ -101,6 +101,10 @@ visible on purpose.
   lifecycle (add, remove, reorder at runtime), plus header visibility
 - Tooltips, context menus, grid lines (including hiding the header lines), cell templating,
   text wrapping, row height, empty state, density, and grouped rows
+- Hierarchical rows (Hierarchy page): a Task Manager style process tree that the CollectionViewSource
+  builds from one flat process list (`HierarchyDescription` = `PropertyHierarchyDescription` with
+  `ItemKeyPath` Pid and `ParentKeyPath` ParentPid), with filter, per-sibling sort and live sorting;
+  TableView only presents it (`ExpandRow`, `ExpandAllRows`), and a ListView shows the same view depth first
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTemplateColumn` usage (text and richer cells) with source snippets embedded in the
   sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing

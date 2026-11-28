@@ -37,6 +37,12 @@ public:
         FlattenerPtr const& flattener,
         ItemKeySelector const& itemKeySelector = {});
 
+    // The rows of the view's tree (ICollectionViewHierarchy): all data rows; level and expansion come from the node
+    // rows, keys are "node:".
+    static TableViewRowMetadataProvider CreateForHierarchicalRows(
+        FlattenerPtr const& flattener,
+        ItemKeySelector const& itemKeySelector = {});
+
     TableViewRowInfo GetRowInfo(int32_t index) override;
     winrt::hstring GetIdentity(int32_t index) override;
     bool TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) override;
@@ -48,10 +54,18 @@ public:
     // Bulk group commands. No-ops when the source is not grouped.
     void ExpandAllGroups() override;
     void CollapseAllGroups() override;
+    void ExpandAllRows() override;
+    void CollapseAllRows() override;
+    void ExpandSubtree(winrt::hstring const& key) override;
 
     std::vector<TableViewGroupExpansionInfo> GetGroupExpansionInfos() override;
     winrt::hstring GetGroupExpansionIdentity(winrt::hstring const& groupIdentity) override;
     bool TryGetGroupExpansionInfo(winrt::hstring const& identity, TableViewGroupExpansionInfo& info) override;
+
+    bool IsHierarchicalSource() const override
+    {
+        return HasNodes();
+    }
 
     bool TryGetGroupMembership(
         winrt::IInspectable const& rows,
@@ -69,6 +83,7 @@ public:
     {
         Flat,
         Grouped,
+        Hierarchical,
     };
 
     RowMetadataProvider(
@@ -82,10 +97,18 @@ private:
     {
         return m_flattener && m_sourceKind == SourceKind::Grouped;
     }
+    bool HasNodes() const noexcept
+    {
+        return m_flattener && m_sourceKind == SourceKind::Hierarchical;
+    }
 
     // Single implementation behind the group expand/collapse/toggle entry points. `desired` empty means
     // toggle. Returns true when the expansion state changed.
     bool SetGroupExpandedCore(winrt::hstring const& groupIdentity, std::optional<bool> desired);
+    bool SetNodeExpandedCore(winrt::hstring const& nodeKey, std::optional<bool> desired);
+
+    // Both "group:" and "node:" keys reach Expand/Collapse/Toggle.
+    bool IsNodeExpansionKey(winrt::hstring const& key) const;
 
     winrt::IInspectable GetRow(int32_t index) const;
     winrt::com_ptr<GroupedEntry> TryGetGroupHeaderEntry(int32_t index) const;

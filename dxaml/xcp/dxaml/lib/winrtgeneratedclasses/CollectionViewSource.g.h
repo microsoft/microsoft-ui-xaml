@@ -32,6 +32,8 @@ namespace ctl
         IFACEMETHOD(get_CustomSort)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue) override { return This()->get_CustomSort(ppValue); }
         IFACEMETHOD(put_CustomSort)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue) override { return This()->put_CustomSort(pValue); }
         IFACEMETHOD(get_GroupDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::GroupDescription*>** ppValue) override { return This()->get_GroupDescriptions(ppValue); }
+        IFACEMETHOD(get_HierarchyDescription)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IHierarchyDescription** ppValue) override { return This()->get_HierarchyDescription(ppValue); }
+        IFACEMETHOD(put_HierarchyDescription)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IHierarchyDescription* pValue) override { return This()->put_HierarchyDescription(pValue); }
         IFACEMETHOD(get_IsLiveFilteringRequested)(_Out_ BOOLEAN* pValue) override { return This()->get_IsLiveFilteringRequested(pValue); }
         IFACEMETHOD(put_IsLiveFilteringRequested)(BOOLEAN value) override { return This()->put_IsLiveFilteringRequested(value); }
         IFACEMETHOD(get_IsLiveGroupingRequested)(_Out_ BOOLEAN* pValue) override { return This()->get_IsLiveGroupingRequested(pValue); }
@@ -53,6 +55,7 @@ namespace ctl
 namespace DirectUI
 {
     class CollectionViewSource;
+    class HierarchyDescription;
     class PropertyPath;
 
     class __declspec(novtable) CollectionViewSourceGenerated:
@@ -95,6 +98,8 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE get_CustomSort(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_CustomSort(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_GroupDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::GroupDescription*>** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_HierarchyDescription(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IHierarchyDescription** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_HierarchyDescription(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IHierarchyDescription* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsLiveFilteringRequested(_Out_ BOOLEAN* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_IsLiveFilteringRequested(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsLiveGroupingRequested(_Out_ BOOLEAN* pValue);
@@ -180,6 +185,7 @@ namespace DirectUI
         
         
         
+        IFACEMETHOD(get_HierarchyDescriptionProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
 
         // Attached properties.
 

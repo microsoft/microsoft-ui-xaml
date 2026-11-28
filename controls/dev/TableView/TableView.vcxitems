@@ -91,6 +91,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRowInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RowMetadataProvider.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRowFlattener.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRowFlattener_Tree.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)GroupedEntry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_CurrentCell.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Grouping.cpp" />

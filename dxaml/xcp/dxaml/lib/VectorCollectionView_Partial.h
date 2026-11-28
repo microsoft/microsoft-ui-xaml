@@ -12,7 +12,13 @@ namespace DirectUI
 {
     class CollectionViewSource;
     class GroupDescription;
+    class HierarchyDescription;
     class VectorCollectionView;
+    namespace ShapingEngine
+    {
+        class HierarchyStore;
+        struct HierarchyOutput;
+    }
     struct ShapingSortState;
     struct IFilterEventSource;
 
@@ -39,7 +45,8 @@ namespace DirectUI
     // new DependencyObject type (KnownTypeIndex, metadata tables), so the existing view class carries it.
     PARTIAL_CLASS(VectorCollectionView),
         public xaml_data::ICollectionViewShaping,
-        public xaml_data::ICollectionViewLiveShaping
+        public xaml_data::ICollectionViewLiveShaping,
+        public xaml_data::ICollectionViewHierarchy
     {
     protected:
 
@@ -79,6 +86,22 @@ namespace DirectUI
         IFACEMETHOD(get_LiveSortingProperties)(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue) override;
         IFACEMETHOD(get_LiveFilteringProperties)(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue) override;
         IFACEMETHOD(get_LiveGroupingProperties)(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue) override;
+
+        // ICollectionViewHierarchy (VectorCollectionView_Hierarchy.cpp)
+        IFACEMETHOD(get_HierarchyDescription)(_Outptr_result_maybenull_ xaml_data::IHierarchyDescription** ppValue) override;
+        IFACEMETHOD(put_HierarchyDescription)(_In_opt_ xaml_data::IHierarchyDescription* pValue) override;
+        IFACEMETHOD(get_CanBuildHierarchy)(_Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(get_CollectionNodes)(_Outptr_result_maybenull_ wfc::IObservableVector<IInspectable*>** ppValue) override;
+        IFACEMETHOD(NodeFromItem)(_In_opt_ IInspectable* pItem, _Outptr_result_maybenull_ xaml_data::ICollectionViewNode** ppNode) override;
+
+        // Sets the description without recomputing (ApplyPropertiesToView applies the rules after).
+        _Check_return_ HRESULT SetHierarchyDescription(_In_opt_ xaml_data::IHierarchyDescription* pValue);
+        _Check_return_ HRESULT OnHierarchyDescriptionChanged(_In_ HierarchyDescription* pDescription);
+        // A hierarchy description is set and the experimental feature is on; with the feature off it is ignored.
+        bool HasHierarchyDescription() const;
+        static bool IsHierarchyEnabled();
+        // Grouping and a hierarchy exclude each other; checked before either rule is added.
+        static _Check_return_ HRESULT CheckHierarchyWithoutGrouping(UINT groupCount);
 
         // WPF: the live shaping part of CollectionViewSource.ApplyPropertiesToView. A property list is copied
         // only when its feature is requested.
@@ -246,6 +269,18 @@ namespace DirectUI
         _Check_return_ HRESULT OnLiveShapingRestoreCallback();
         _Check_return_ HRESULT RestoreLiveShaping();
         bool IsLiveShaping() const;
+
+        // Hierarchy (VectorCollectionView_Hierarchy.cpp).
+        _Check_return_ HRESULT RefreshHierarchy();
+        _Check_return_ HRESULT LeaveHierarchy();
+        _Check_return_ HRESULT EnsureNodeList();
+        _Check_return_ HRESULT AllocateHierarchyNode(_In_ ShapingEngine::HierarchyStore& store, const ShapingFilterEvents& filterEvents, _In_opt_ IInspectable* pItem, UINT sourceIndex, _Out_ UINT* pId);
+        _Check_return_ HRESULT ProcessHierarchyCollectionChanged(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied);
+        _Check_return_ HRESULT RestoreHierarchyItem(UINT sourceIndex, bool isFiltering, bool isResorting, _In_opt_ IInspectable* pItem, const std::function<bool(UINT)>& isSkipped, _Out_ bool* pIsApplied);
+        ShapingEngine::HierarchyOutput GetHierarchyOutput() const;
+        void WalkHierarchy(EReferenceTrackerWalkType walkType);
+        _Check_return_ HRESULT RaiseCapabilityChanges();
+        void ReleaseHierarchy();
         bool HasSortDirtyLiveItems() const;
         bool IsSortDirtyAfterSourceChange(wfc::CollectionChange change, UINT index, UINT sourceIndex) const;
         _Check_return_ HRESULT OnIsLiveChanged(UINT turnedOn, UINT turnedOff);
@@ -376,5 +411,15 @@ namespace DirectUI
         ctl::ComPtr<wfc::IObservableVector<HSTRING>> m_spLiveGroupingProperties;
         std::shared_ptr<LiveShapingState> m_spLiveShaping;
         bool m_isApplyingLiveShaping = false;
+
+        // ICollectionViewHierarchy. While hierarchical the flat output is the tree in pre-order and m_sourceIndices is
+        // unused; CollectionNodes is one list object for the view's lifetime, bound to each tree the view builds.
+        TrackerPtr<xaml_data::IHierarchyDescription> m_tpHierarchyDescription;
+        std::shared_ptr<ShapingEngine::HierarchyStore> m_spHierarchy;
+        TrackerPtr<wfc::IVector<IInspectable*>> m_tpNodeList;
+        bool m_isHierarchical = false;
+        // CanGroup / CanBuildHierarchy as last announced (PropertyChanged when a rule change flips them).
+        bool m_lastCanGroup = true;
+        bool m_lastCanBuildHierarchy = true;
     };
 }

@@ -217,8 +217,10 @@
 #include <CCollectionViewGroup.g.h>
 #include <CGroupDescription.g.h>
 #include <CGroupedDataCollectionView.g.h>
+#include <CHierarchyDescription.g.h>
 #include <CIterableCollectionView.g.h>
 #include <CPropertyGroupDescription.g.h>
+#include <CPropertyHierarchyDescription.g.h>
 #include <CSortDescription.g.h>
 #include <CVectorCollectionView.g.h>
 #include <CVectorViewCollectionView.g.h>

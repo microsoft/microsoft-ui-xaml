@@ -449,6 +449,8 @@ void VectorCollectionView::OnReferenceTrackerWalk(INT walkType)
         static_cast<CollectionViewGroupRoot*>(static_cast<CollectionViewGroupInternal*>(m_spGroupRoot.Get()))->WalkAppReferences(walkTypeAsEnum);
     }
 
+    WalkHierarchy(walkTypeAsEnum);
+
     if (m_spLiveShaping)
     {
         for (const auto& spItem : m_spLiveShaping->items)
@@ -799,6 +801,7 @@ void VectorCollectionView::ReleaseShapingState()
     std::shared_ptr<ShapingSortState> spSortState;
     ctl::ComPtr<xaml_data::ICollectionViewGroup> spGroupRoot;
     ctl::ComPtr<IFilterEventSource> spFilterEvents;
+    ReleaseHierarchy();
     if (!m_spSortState && !m_spGroupRoot && !m_spFilterEvents)
     {
         return;
@@ -1060,7 +1063,18 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
     const UINT itemCount = static_cast<UINT>(spState->items.size());
     const UINT presentedCount = static_cast<UINT>(m_sourceIndices.size());
     bool isResorted = false;
-    if (m_isGrouping)
+    if (m_isHierarchical)
+    {
+        // A move shifts the flat pre-order list; a recompute rebuilds the tree.
+        UINT treeCount = 0;
+        IFC_RETURN(m_tpInternalList->get_Size(&treeCount));
+        if (!AreChangesPreferred(2ull * dirtyCount, treeCount, itemCount * c_nsPerRecomputedRow))
+        {
+            IFC_RETURN(RefreshOrDefer());
+            return S_OK;
+        }
+    }
+    else if (m_isGrouping)
     {
         // A move shifts the leaves of its top-level group.
         UINT topLevelGroupCount = 0;
@@ -1600,7 +1614,19 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
             hr = m_tpSourceList->GetAt(i, spItem.ReleaseAndGetAddressOf());
             if (SUCCEEDED(hr))
             {
-                hr = m_isGrouping ? restoreGrouped(i, flags, spItem.Get()) : restoreFlat(i, flags, spItem.Get());
+                if (m_isHierarchical)
+                {
+                    bool isItemApplied = false;
+                    hr = RestoreHierarchyItem(i,
+                        (flags & LiveShapingFlag_Filtering) && m_isLiveFiltering && hasFilter,
+                        (flags & LiveShapingFlag_Sorting) && isSorting,
+                        spItem.Get(), isSkipped, &isItemApplied);
+                    isApplied = isApplied && isItemApplied;
+                }
+                else
+                {
+                    hr = m_isGrouping ? restoreGrouped(i, flags, spItem.Get()) : restoreFlat(i, flags, spItem.Get());
+                }
             }
         }
         isSortDirty[i] = false;

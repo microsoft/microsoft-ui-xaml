@@ -8,6 +8,7 @@
 #include "TableViewRowAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
+#include "TableViewTestHooks.h"
 #include "TableViewRowAutomationPeer.properties.cpp"
 
 #include <UIAutomationCore.h>
@@ -119,6 +120,13 @@ winrt::IInspectable TableViewRowAutomationPeer::GetPatternCore(winrt::PatternInt
         return *this;
     }
 
+    // Tree rows only (keyed off Level, not IsExpandable): a tree leaf reports LeafNode, while flat/
+    // grouped rows withhold the pattern so the grid isn't announced as a collapsed tree.
+    if (patternInterface == winrt::PatternInterface::ExpandCollapse && IsHierarchicalRow())
+    {
+        return *this;
+    }
+
     return __super::GetPatternCore(patternInterface);
 }
 
@@ -141,6 +149,13 @@ void TableViewRowAutomationPeer::ShowContextMenuCore()
     }
 
     __super::ShowContextMenuCore();
+}
+
+bool TableViewRowAutomationPeer::IsHierarchicalRow() const
+{
+    // Level: 0 for flat/grouped, 1-based for tree rows.
+    auto const row = GetRow();
+    return row && row.Level() > 0;
 }
 
 winrt::TableView TableViewRowAutomationPeer::GetOwningTableView()
@@ -557,6 +572,13 @@ std::wstring TableViewRowAutomationPeer::ComposeCellTexts(
 
 int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
 {
+    const int32_t value = ComputePositionInSet();
+    m_lastReportedPositionInSet = value;
+    return value;
+}
+
+int32_t TableViewRowAutomationPeer::ComputePositionInSet()
+{
     // An app-set AutomationProperties value wins, as in every dxaml peer that computes this.
     if (const auto provided = __super::GetPositionInSetCore(); provided > 0)
     {
@@ -569,6 +591,14 @@ int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
 
 int32_t TableViewRowAutomationPeer::PositionInSetAt(winrt::TableView const& tableView, int32_t rowIndex)
 {
+    // A tree row reports its place among its siblings, not its offset into the flat row axis.
+    int32_t position = 0;
+    int32_t sizeOfSet = 0;
+    if (TryGetTreeSetAt(tableView, rowIndex, position, sizeOfSet))
+    {
+        return position;
+    }
+
     if (rowIndex < 0)
     {
         // 0 is UIA's "not specified"; -1 would reach the client verbatim.
@@ -587,6 +617,13 @@ int32_t TableViewRowAutomationPeer::PositionInSetAt(winrt::TableView const& tabl
 
 int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
 {
+    const int32_t value = ComputeSizeOfSet();
+    m_lastReportedSizeOfSet = value;
+    return value;
+}
+
+int32_t TableViewRowAutomationPeer::ComputeSizeOfSet()
+{
     if (const auto provided = __super::GetSizeOfSetCore(); provided > 0)
     {
         return provided;
@@ -602,6 +639,13 @@ int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
 
 int32_t TableViewRowAutomationPeer::SizeOfSetAt(winrt::TableView const& tableView, int32_t rowIndex)
 {
+    int32_t position = 0;
+    int32_t sizeOfSet = 0;
+    if (TryGetTreeSetAt(tableView, rowIndex, position, sizeOfSet))
+    {
+        return sizeOfSet;
+    }
+
     auto const tableImpl = winrt::get_self<TableView>(tableView);
     int32_t groupPosition = 0;
     int32_t groupSize = 0;
@@ -613,18 +657,15 @@ int32_t TableViewRowAutomationPeer::SizeOfSetAt(winrt::TableView const& tableVie
     return count > 0 ? count : 0;
 }
 
-int32_t TableViewRowAutomationPeer::GetLevelCore()
+int32_t TableViewRowAutomationPeer::LevelAt(winrt::TableView const& tableView, int32_t rowIndex)
 {
-    if (const auto provided = __super::GetLevelCore(); provided > 0)
+    auto const tableImpl = winrt::get_self<TableView>(tableView);
+    TableViewRowInfo info{};
+    if (IsTreeRowInfo(tableImpl, rowIndex, info))
     {
-        return provided;
+        return info.Level;
     }
-
-    if (auto const tableView = GetOwningTableView())
-    {
-        return winrt::get_self<TableView>(tableView)->GetGroupedRowAutomationLevelInternal(GetRowIndex());
-    }
-    return 0;
+    return tableImpl->GetGroupedRowAutomationLevelInternal(rowIndex);
 }
 
 winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
@@ -769,6 +810,185 @@ void TableViewRowAutomationPeer::ApplySelectionItemActionAt(
         // toggle=false: UIA Select() means "make this the selection", never "clear it".
         impl->SelectRowIndexFromInteraction(rowIndex, false);
     }
+}
+
+// ----- IExpandCollapseProvider -----
+
+winrt::ExpandCollapseState TableViewRowAutomationPeer::ExpandCollapseState()
+{
+    auto const row = GetRow();
+    // Leaf or recycled row; non-tree rows never expose the pattern.
+    const auto state = (!row || !row.IsExpandable()) ? winrt::ExpandCollapseState::LeafNode
+        : row.IsExpanded() ? winrt::ExpandCollapseState::Expanded
+        : winrt::ExpandCollapseState::Collapsed;
+    m_lastReportedExpandCollapseState = state;
+    return state;
+}
+
+void TableViewRowAutomationPeer::Expand()
+{
+    SetExpansion(true);
+}
+
+void TableViewRowAutomationPeer::Collapse()
+{
+    SetExpansion(false);
+}
+
+void TableViewRowAutomationPeer::SetExpansion(bool expand)
+{
+    // UIA ExpandCollapse contract: a disabled element is ElementNotEnabled, a leaf InvalidOperation.
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+
+    auto const row = GetRow();
+    if (!row || !row.IsExpandable())
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
+
+    // Pass direction, not a toggle: the mutation is deferred, so IsExpanded() can't make it
+    // idempotent as ExpandCollapsePattern requires. Same entry point as the chevron gesture.
+    if (auto const tableView = GetOwningTableView())
+    {
+        winrt::get_self<TableView>(tableView)->SetGroupExpansion(row, expand);
+    }
+}
+
+void TableViewRowAutomationPeer::RaiseExpandCollapseAutomationEvent(
+    winrt::ExpandCollapseState oldState,
+    winrt::ExpandCollapseState newState)
+{
+    if (oldState == newState)
+    {
+        return;
+    }
+
+    if (!TableViewTestHooks::AutomationListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        return;
+    }
+
+    try
+    {
+        m_lastReportedExpandCollapseState = newState;
+        RaisePropertyChangedEvent(
+            winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
+            box_value(oldState),
+            box_value(newState));
+        TableViewTestHooks::NoteRowAutomationPropertyChanged(Owner(), L"ExpandCollapseState");
+    }
+    catch (...)
+    {
+        // best-effort: the tree may be tearing down.
+    }
+}
+
+void TableViewRowAutomationPeer::RaiseExpandCollapseIfUnreported(
+    winrt::ExpandCollapseState oldState,
+    winrt::ExpandCollapseState newState)
+{
+    if (m_lastReportedExpandCollapseState == newState)
+    {
+        return;
+    }
+    RaiseExpandCollapseAutomationEvent(oldState, newState);
+}
+
+void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
+{
+    // A row that left the tree (the view stopped being a tree, or a recycled row bound to a flat item)
+    // still owes a client that read its tree Level the change back.
+    if (!IsHierarchicalRow() && m_lastReportedLevel <= 0)
+    {
+        return;
+    }
+
+    try
+    {
+        // Compare against what this peer last reported to a client (recorded by the Get*Core
+        // overrides). -1 means never reported, so no client can hold a stale value.
+        auto raiseIfChanged = [this](winrt::AutomationProperty const& property, wchar_t const* name, int32_t& last, int32_t current)
+        {
+            if (last >= 0 && last != current)
+            {
+                RaisePropertyChangedEvent(property, box_value(last), box_value(current));
+                last = current;
+                TableViewTestHooks::NoteRowAutomationPropertyChanged(Owner(), name);
+            }
+        };
+
+        raiseIfChanged(winrt::AutomationElementIdentifiers::LevelProperty(), L"Level", m_lastReportedLevel, ComputeLevel());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::PositionInSetProperty(), L"PositionInSet", m_lastReportedPositionInSet, ComputePositionInSet());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::SizeOfSetProperty(), L"SizeOfSet", m_lastReportedSizeOfSet, ComputeSizeOfSet());
+    }
+    catch (...)
+    {
+        // best-effort: the tree may be tearing down.
+    }
+}
+
+void TableViewRowAutomationPeer::ResetReportedHierarchyState()
+{
+    m_lastReportedLevel = -1;
+    m_lastReportedPositionInSet = -1;
+    m_lastReportedSizeOfSet = -1;
+    m_lastReportedExpandCollapseState.reset();
+}
+
+// ----- IAutomationPeerOverrides3 -----
+
+int32_t TableViewRowAutomationPeer::GetLevelCore()
+{
+    const int32_t value = ComputeLevel();
+    m_lastReportedLevel = value;
+    return value;
+}
+
+int32_t TableViewRowAutomationPeer::ComputeLevel()
+{
+    // An app-set AutomationProperties.Level wins, as in GetPositionInSetCore/GetSizeOfSetCore.
+    if (const auto provided = __super::GetLevelCore(); provided > 0)
+    {
+        return provided;
+    }
+
+    // Tree Level is already 1-based; 0 (neither a tree row nor under nested groups) is UIA's "not specified".
+    if (auto const row = GetRow(); row && row.Level() > 0)
+    {
+        return row.Level();
+    }
+    auto const tableView = GetOwningTableView();
+    return tableView ? LevelAt(tableView, GetRowIndex()) : 0;
+}
+
+// Hierarchy and grouping are exclusive, so a data row with a sibling set is a tree row.
+bool TableViewRowAutomationPeer::IsTreeRowInfo(TableView* tableImpl, int32_t rowIndex, TableViewRowInfo& info)
+{
+    return rowIndex >= 0 &&
+        tableImpl->IsHierarchicalRowSource() &&
+        tableImpl->TryGetRowInfo(rowIndex, info) &&
+        info.Kind == TableViewRowKind::Data &&
+        info.SizeOfSet > 0;
+}
+
+// Position within the sibling set (not the flat axis), O(1) from the hierarchy descriptor.
+bool TableViewRowAutomationPeer::TryGetTreeSetAt(winrt::TableView const& tableView, int32_t rowIndex, int32_t& positionInSet, int32_t& sizeOfSet)
+{
+    positionInSet = 0;
+    sizeOfSet = 0;
+
+    TableViewRowInfo info{};
+    if (!IsTreeRowInfo(winrt::get_self<TableView>(tableView), rowIndex, info))
+    {
+        return false;
+    }
+
+    positionInSet = static_cast<int32_t>(info.PositionInSet);
+    sizeOfSet = static_cast<int32_t>(info.SizeOfSet);
+    return true;
 }
 
 // See header comment for rationale.

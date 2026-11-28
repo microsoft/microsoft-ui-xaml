@@ -65,6 +65,8 @@ namespace TableViewTelemetry
             case TableViewTip::Operation::Selection: return 6;
             case TableViewTip::Operation::GroupExpansion: return 10;
             case TableViewTip::Operation::ColumnReorder: return 12;
+            // 11 was the key-path hierarchy's expansion; do not reuse it.
+            case TableViewTip::Operation::HierarchyExpansion: return 13;
             default: return std::nullopt;
             }
         }

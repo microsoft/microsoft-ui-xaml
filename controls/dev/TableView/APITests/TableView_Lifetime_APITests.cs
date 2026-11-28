@@ -148,7 +148,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewShapingTestHelpers.MakeShapingView(items, "Role");
+                source = TableViewTreeTestHelpers.MakeShapingView(items, "Role");
                 CreateAndLoadTable(source.View, tracked);
             });
             SettleAfterLoad();

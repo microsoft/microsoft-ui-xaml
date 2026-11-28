@@ -18,4 +18,18 @@ public:
 
     // Called by TableViewRow at the end of each cell rebuild.
     static void NoteRowCellRebuild(winrt::IInspectable const& row);
+
+    static void SetAutomationListenerForced(bool isForced);
+    static winrt::event_token RowAutomationPropertyChanged(winrt::Windows::Foundation::EventHandler<winrt::IInspectable> const& handler);
+    static void RowAutomationPropertyChanged(winrt::event_token const& token);
+
+    // AutomationPeer::ListenerExists, or true while a test forces it.
+    static bool AutomationListenerExists(winrt::AutomationEvents eventId);
+    // Called by the row peer for each property change it raises.
+    static void NoteRowAutomationPropertyChanged(winrt::IInspectable const& row, wchar_t const* property);
+
+    static uint32_t GetRowHierarchyRestampCount();
+    static void ExpandRowSubtree(winrt::IInspectable const& tableView, winrt::IInspectable const& row);
+    // Called by TableView each time it restamps its realized rows.
+    static void NoteRowHierarchyRestamp();
 };

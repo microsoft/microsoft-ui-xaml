@@ -133,11 +133,19 @@ TableViewRowFlattener::TableViewRowFlattener(winrt::Microsoft::UI::Xaml::Data::I
     }
 
     m_groupRowsView = winrt::ItemsSourceView{ m_groupRows };
+    m_treeRowsView = winrt::ItemsSourceView{ m_treeRows };
 
     m_groupExpansion.SetChangedHandler(
         [this](ShapingHelpers::RowExpansionModel::Change const& change)
         {
             OnGroupExpansionChanged(change);
+        });
+
+    m_nodeExpansion.SetAllExpanded(false);
+    m_nodeExpansion.SetChangedHandler(
+        [this](ShapingHelpers::RowExpansionModel::Change const& change)
+        {
+            OnNodeExpansionChanged(change);
         });
 }
 
@@ -152,6 +160,15 @@ TableViewRowFlattener::~TableViewRowFlattener()
         ShapingHelpers::SafeRevokeWith([&] { m_viewGroups.VectorChanged(m_viewGroupsChangedToken); });
     }
     UnsubscribeFromGroupItems();
+    if (m_viewNodes && m_viewNodesChangedToken.value)
+    {
+        ShapingHelpers::SafeRevokeWith([&] { m_viewNodes.VectorChanged(m_viewNodesChangedToken); });
+    }
+    if (m_view && m_viewItemsChangedToken.value)
+    {
+        ShapingHelpers::SafeRevokeWith([&] { m_view.VectorChanged(m_viewItemsChangedToken); });
+    }
+    DetachTreeRows(true /* isDestroying */);
 }
 
 winrt::hstring TableViewRowFlattener::ObjectIdentity(winrt::IInspectable const& item)
@@ -176,7 +193,9 @@ void TableViewRowFlattener::Start()
 {
     std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
     m_isShapingView = static_cast<bool>(m_view.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewShaping>());
+    m_hierarchy = m_view.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewHierarchy>();
     AttachViewGroupsNow();
+    AttachViewNodesNow();
 
     // A shaping view keeps its identity when it starts or stops grouping (WPF): CollectionGroups turns
     // non-null or null and PropertyChanged("CollectionGroups") is raised before the view's Reset.
@@ -186,9 +205,17 @@ void TableViewRowFlattener::Start()
         m_viewPropertyChangedToken = notify.PropertyChanged(
             [weakThis](winrt::IInspectable const&, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
             {
-                if (auto strongThis = weakThis.lock(); strongThis && args.PropertyName() == L"CollectionGroups")
+                if (auto strongThis = weakThis.lock())
                 {
-                    strongThis->AttachViewGroups();
+                    if (args.PropertyName() == L"CollectionGroups")
+                    {
+                        strongThis->AttachViewGroups();
+                    }
+                    else if (args.PropertyName() == L"CollectionNodes")
+                    {
+                        strongThis->m_attachViewNodesPending = true;
+                        strongThis->RunPendingAttachViewGroups();
+                    }
                 }
             });
     }
@@ -198,7 +225,7 @@ void TableViewRowFlattener::Start()
 
 bool TableViewRowFlattener::IsBusyWithGroups() const noexcept
 {
-    return m_attachingViewGroups || m_readingGroups || m_groupRowsInFlight || m_updating;
+    return m_attachingViewGroups || m_readingGroups || m_groupRowsInFlight || m_treeRowsInFlight || m_updating;
 }
 
 void TableViewRowFlattener::AttachViewGroups()
@@ -211,7 +238,7 @@ void TableViewRowFlattener::AttachViewGroups()
 
 void TableViewRowFlattener::RunPendingAttachViewGroups()
 {
-    if (!m_attachViewGroupsPending || m_runningPendingAttach || IsBusyWithGroups())
+    if ((!m_attachViewGroupsPending && !m_attachViewNodesPending) || m_runningPendingAttach || IsBusyWithGroups())
     {
         return;
     }
@@ -225,10 +252,15 @@ void TableViewRowFlattener::RunPendingAttachViewGroups()
     m_runningPendingAttach = true;
     auto const done = wil::scope_exit([this]() noexcept { m_runningPendingAttach = false; });
     int reattaches = 0;
-    while (m_attachViewGroupsPending && !IsBusyWithGroups() && WithinReattachCap(reattaches))
+    while ((m_attachViewGroupsPending || m_attachViewNodesPending) && !IsBusyWithGroups() && WithinReattachCap(reattaches))
     {
         ++reattaches;
-        if (AttachViewGroupsNow())
+        bool changed = m_attachViewGroupsPending && AttachViewGroupsNow();
+        if (std::exchange(m_attachViewNodesPending, false))
+        {
+            changed = AttachViewNodesNow() || changed;
+        }
+        if (changed)
         {
             Update();
         }
@@ -243,6 +275,7 @@ bool TableViewRowFlattener::WithinReattachCap(int reattaches) noexcept
     }
     // Cleared, not left set: a request still pending would be retried by the next caller and spin again.
     m_attachViewGroupsPending = false;
+    m_attachViewNodesPending = false;
     TVDiag::LogRetailF(L"[TableView] The ICollectionView changed CollectionGroups on each of %d consecutive reads; keeping the groups read last.",
         c_maxReattachesPerLoop);
     return false;
@@ -349,6 +382,19 @@ void TableViewRowFlattener::SetKind(Kind kind, winrt::ItemsSourceView const& row
 
 void TableViewRowFlattener::UpdateCore()
 {
+    if (m_viewNodes)
+    {
+        DetachGroupRows();
+        if (m_kind != Kind::Tree)
+        {
+            m_treeRowsAttached = true;
+            RebuildTreeRows();
+        }
+        SetKind(Kind::Tree, m_treeRowsView);
+        return;
+    }
+
+    DetachTreeRows();
     if (!m_viewGroups)
     {
         DetachGroupRows();
@@ -369,7 +415,7 @@ void TableViewRowFlattener::UpdateCore()
 
 TableViewRowMetadataProvider TableViewRowFlattener::RowMetadata()
 {
-    if (m_kind != Kind::Grouped)
+    if (m_kind != Kind::Grouped && m_kind != Kind::Tree)
     {
         return nullptr;
     }
@@ -381,7 +427,9 @@ TableViewRowMetadataProvider TableViewRowFlattener::RowMetadata()
         }
     }
 
-    auto const created = tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(shared_from_this(), MakeIdentitySelector());
+    auto const created = (m_kind == Kind::Tree)
+        ? tabularPrimitives::RowMetadataProvider::CreateForHierarchicalRows(shared_from_this(), MakeIdentitySelector())
+        : tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(shared_from_this(), MakeIdentitySelector());
     m_rowMetadata = created;
     m_rowMetadataStale = false;
     return created;
@@ -418,6 +466,12 @@ std::vector<TableViewRowFlattener::GroupInfo> TableViewRowFlattener::CurrentGrou
 }
 
 uint32_t TableViewRowFlattener::SourceRowCount() const
+{
+    return m_view.Size();
+}
+
+// A tree view's own list is every kept node, so the data rows are the view's items in every kind.
+uint32_t TableViewRowFlattener::DataRowCount() const
 {
     return m_view.Size();
 }

@@ -13,8 +13,8 @@ namespace TableViewTip
     {
         Setup = 0, ReplaceSource = 1, Sort = 2, HeaderRefresh = 3,
         Filter = 5, GroupConfiguration = 6, GroupExpansion = 7, Selection = 8,
-        // 12 was HierarchyExpansion; do not reuse it.
-        ColumnReorder = 13,
+        // 12 was HierarchyExpansion (key paths on TableView); do not reuse it.
+        ColumnReorder = 13, HierarchyExpansion = 14,
         // One past the last operation: add operations above it. TableViewTelemetry.cpp checks every value below it.
         Max
     };
@@ -63,6 +63,7 @@ namespace TableViewTip
         case Operation::GroupConfiguration:
         case Operation::Selection:
         case Operation::GroupExpansion:
+        case Operation::HierarchyExpansion:
             return true;
         default:
             return false;

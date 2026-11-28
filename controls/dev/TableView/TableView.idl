@@ -232,7 +232,22 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsSelected { get; };
 
+    // The row's depth in the view's tree (ICollectionViewHierarchy): 1 for a root, 2 for its children, and so on; 0 when
+    // the row is not a tree row (flat and grouped rows). Not the UI Automation level, which for a row under nested
+    // groups is its group depth.
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 Level { get; };
+
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpandable { get; };
+
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpanded { get; };
+
     static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty LevelProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
 }
 
 [MUX_INTERNAL]
@@ -344,6 +359,10 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     void CollapseGroup(Object groupKey);
     void ExpandAllGroups();
     void CollapseAllGroups();
+    void ExpandRow(Object item);
+    void CollapseRow(Object item);
+    void ExpandAllRows();
+    void CollapseAllRows();
     Boolean SortByColumn(MU_XC_NAMESPACE.TableViewColumn column, SortDirection direction);
     Boolean ToggleSortDirection(MU_XC_NAMESPACE.TableViewColumn column);
     Boolean ClearSort();
@@ -408,7 +427,8 @@ unsealed runtimeclass TableViewColumnHeaderAutomationPeer
 [webhosthidden]
 unsealed runtimeclass TableViewRowAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
+      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider,
+      Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
 {
     TableViewRowAutomationPeer(MU_XC_NAMESPACE.TableViewRow owner);
 }

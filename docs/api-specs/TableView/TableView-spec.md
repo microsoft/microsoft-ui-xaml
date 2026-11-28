@@ -614,7 +614,34 @@ A column with a `CustomSortComparer` sorts the view through its `CustomSort` ins
 
 ### Hierarchical rows
 
-TableView shows no hierarchy in this release; hierarchical rows move to a follow-up PR, as a hierarchy description in the `CollectionViewSource` view.
+TableView has no hierarchy of its own: it shows the tree of a view that builds one. Set `CollectionViewSource.HierarchyDescription` to a `PropertyHierarchyDescription` and bind the view; an item whose `ParentKeyPath` value equals another item's `ItemKeyPath` value is its child (experimental, `ICollectionViewHierarchy`; see the [CollectionViewSource shaping design note](../../design-notes/CollectionViewSourceShaping-POC.md#hierarchy)).
+
+```xml
+<CollectionViewSource x:Name="Processes">
+    <CollectionViewSource.HierarchyDescription>
+        <PropertyHierarchyDescription ItemKeyPath="Pid" ParentKeyPath="ParentPid"/>
+    </CollectionViewSource.HierarchyDescription>
+</CollectionViewSource>
+
+<tv:TableView ItemsSource="{x:Bind Processes.View}"/>
+```
+
+```csharp
+ProcessTable.ExpandRow(selectedProcess);   // also expands its ancestors
+ProcessTable.CollapseAllRows();
+```
+
+Rows start collapsed (only the roots show). The view sorts each sibling list and filters (a match keeps its ancestors as context rows, which start expanded so the match shows); a header click sorts the siblings. Expansion is intent keyed by the node's `Key`, so it survives sort, filter, `Refresh()` and an item replaced by one with the same key; two tables over one view keep their own expansion. A row has `Level` (1 for a root), `IsExpandable` and `IsExpanded`; the lead cell is indented per level (`TableViewRowIndentSize`) and hosts the chevron. Keyboard: <kbd>Right</kbd> expands a collapsed row, then moves into its first cell; <kbd>Left</kbd> collapses an expanded row, then moves to its parent; <kbd>*</kbd> expands the row's subtree. `IndexOf` is the displayed row (`-1` inside a collapsed row); collapsing a row deselects a hidden selected row. The row peer implements `IExpandCollapseProvider` (`Expand`/`Collapse` fail with `UIA_E_INVALIDOPERATION` on a leaf and `UIA_E_ELEMENTNOTENABLED` while the table is disabled) and reports `Level`, `PositionInSet` and `SizeOfSet` within the sibling set. The chevron gutter (`PART_RowExpanderGutter`, `x:Load="False"`) is loaded the first time a row shows a tree row, so flat and grouped tables never create it; its glyph size is the `TableViewRowExpanderGlyphSize` resource. A view cannot group and build a hierarchy at once.
+
+An app view can supply its own nodes (`ICollectionViewHierarchy` on the view, `ICollectionViewNode` nodes). A collapsed row learns that its chevron appears or goes from the node's `PropertyChanged("HasChildren")`, so a node should implement `INotifyPropertyChanged` and raise it; for a node that does not, TableView watches the node's `Children` list instead (reading `Children` for each such row). Nodes the view stops using (after a `Refresh()` or rule change) are inert: their `Children` empty and raise one `Reset`, and their `HasChildren` and `Parent` read `false` and `null` without a change notification.
+
+| Member | Kind | Description |
+|---|---|---|
+| `ExpandRow(Object item)` | method | Expands the item's row and its ancestors, so the row is shown. No-op for an item the view does not show, or when the view is not a tree. |
+| `CollapseRow(Object item)` | method | Collapses the item's row; its descendants keep their own expansion. |
+| `ExpandAllRows()` / `CollapseAllRows()` | method | Move the default, so rows that arrive later follow it, and reset per-row exceptions. No-op when the view is not a tree. |
+| `TableViewRow.Level` | `Int32` (read-only DP) | The row's depth in the view's tree: 1 for a root, one more per level; 0 when the row is not a tree row (flat and grouped rows). It is not the UI Automation level: a data row under nested groups reports its group depth to UI Automation (`AutomationProperties.Level` via the peer) and `Level` 0 here, so a template that indents by `Level` indents tree rows only. |
+| `TableViewRow.IsExpandable` / `IsExpanded` | `Boolean` (read-only DP) | The row's node has children / the row shows them. |
 
 ### Editing cells
 
@@ -1419,12 +1446,18 @@ Template parts:
 | `PART_RowChrome` | `Grid` | Optional native-focus target and selection host. Its margin excludes effective horizontal separator thickness, including terminal-line suppression. Templates without this part retain full-row focus geometry. |
 | `PART_CellsHost` | `TableViewCellsPanel` (typed `Panel`) | Host for generated cell elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_SelectionIndicator` | `Border` | **Required by the default state definitions.** Rounded whole-row interaction/selection outline. `Selected*` and `HighContrast*` interaction states show it; `SelectedDisabled` and the HC states also set its brush. Custom templates using other indicator types must adapt the corresponding state targets. |
+| `PART_RowExpanderGutter` | `FrameworkElement` | Optional. The tree chevron column in the lead cell. It must default to `Collapsed` (the default template also defers it with `x:Load="False"`): code shows it only once the row shows a tree row, so a flat or grouped row never realizes it. |
 
 Visual states:
 
 | Group | States |
 |---|---|
 | `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled`, `Selected`, `SelectedPointerOver`, `SelectedPressed`, `SelectedDisabled`, `HighContrastPointerOver`, `HighContrastPressed`, `HighContrastSelected`, `HighContrastSelectedPointerOver`, `HighContrastSelectedPressed` |
+| `RowHierarchyStates` | `RowNotHierarchical`, `RowHierarchical` |
+| `RowExpandabilityStates` | `RowExpandable`, `RowNotExpandable` |
+| `RowExpansionStates` | `RowCollapsed`, `RowExpanded` |
+
+Every row enters `RowNotHierarchical` when its template is applied. The three hierarchy groups change only once the row shows a tree row (`RowNotHierarchical` again when it later shows a flat or grouped row); before that a row is in no expandability or expansion state. Setters in `RowNotHierarchical` therefore apply to flat rows; setters in the other states may target `PART_RowExpanderGutter` and its icon, which realizes them.
 
 Selected states share the one group rather than living in a second, overlapping one: they animate the same `PART_RootBorder.Background`, so two groups would make the result depend on `GoToState` call order. Encoding both dimensions in the state name is the pattern `TreeViewItem` and `ItemContainer` use.
 
@@ -1560,7 +1593,7 @@ TableView provides UI Automation peers for grid/table accessibility and row sele
 | Peer | Base type | Provider interfaces |
 |---|---|---|
 | `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
-| `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
+| `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider`, `IExpandCollapseProvider` (tree rows; `LeafNode` for a leaf) |
 | `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort), `ITransformProvider` (resize; implementation-only, not in the IDL) |
 | `TableViewGroupHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
 | `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider` |
@@ -1811,8 +1844,14 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         TableViewRow();
 
         Boolean IsSelected { get; };
+        Int32 Level { get; };
+        Boolean IsExpandable { get; };
+        Boolean IsExpanded { get; };
 
         static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty LevelProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
     };
 
     [MUX_PREVIEW, webhosthidden, contentproperty("Columns")]
@@ -1871,6 +1910,13 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         void ExpandAllGroups();
         void CollapseAllGroups();
 
+        // ----- Tree rows (the view's ICollectionViewHierarchy) -----
+
+        void ExpandRow(Object item);
+        void CollapseRow(Object item);
+        void ExpandAllRows();
+        void CollapseAllRows();
+
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupExpandingEventArgs> GroupExpanding;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupCollapsedEventArgs> GroupCollapsed;
 
@@ -1906,7 +1952,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
     [MUX_PREVIEW, webhosthidden]
     unsealed runtimeclass TableViewRowAutomationPeer :
         Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-        Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
+        Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider,
+        Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
     {
         TableViewRowAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableViewRow owner);
     };
@@ -2110,7 +2157,7 @@ TableView has no `TableViewTextColumn` (`Binding`, with a built-in `TextBox` edi
 - Multi-column sort from the column headers (`CollectionViewSource.SortDescriptions` provides multi-level sort from code).
 - Column virtualization.
 - Row headers.
-- Hierarchy deeper than two levels; row drag-drop.
+- Grouping and hierarchy at once; row drag-drop.
 - Spreadsheet-like interaction.
 - Spreadsheet-scale column counts (100+) — `TableView` realizes a cell per visible column per row and targets ~5–50 columns.
 

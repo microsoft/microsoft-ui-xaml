@@ -21,7 +21,7 @@ using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
-using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewShapingTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpers;
 
 using CollectionChange = global::Windows.Foundation.Collections.CollectionChange;
 using SortDescription = Microsoft.UI.Xaml.Data.SortDescription;
@@ -30,7 +30,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
     // The CollectionViewSource shaping engine (VectorCollectionView) as TableView consumes it: incremental
     // updates against a full refresh, re-entrancy, incremental loading, lifetime, currency, key comparison
-    // and live shaping, plus TableView's live paths over it.
+    // and live shaping, plus TableView's live and tree paths over it.
     [TestClass]
     public class TableViewViewEngineTests : TableViewApiTestBase
     {
@@ -656,7 +656,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
-                tableView = CreateNameTable(MakeLiveFlat());
+                tableView = CreateTreeTable(MakeLiveFlat());
                 LoadContent(tableView);
             });
             SettleLayout(tableView);
@@ -1879,6 +1879,134 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row inserted into an expanded tree reaches the rows as an insert, not a Reset, and the tree shows it under its parent.")]
+        public void VerifyTreeInsertIsSplicedIntoRows()
+        {
+            var list = MakeLiveTree();
+            CollectionViewSource cvs = null;
+            var tableView = PlaceLive(list, s => { }, out cvs, IdPath, ParentIdPath);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+            Verify.AreEqual("Dee1- Eli2 Ann1- Cat2 Bob2", TreeLabelsOf(tableView), "Precondition: siblings by Score.");
+
+            var actions = new List<string>();
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (sender, args) => actions.Add(args.Action.ToString());
+                list.Add(new LiveRow { Id = 6, Name = "Fay", Score = 20, Team = "X", ParentId = 1 });
+            });
+            SettleLayout(tableView);
+
+            Verify.AreEqual("Add", string.Join(",", actions), "One row inserted, no Reset.");
+            Verify.AreEqual("Dee1- Eli2 Ann1- Cat2 Fay2 Bob2", TreeLabelsOf(tableView), "Fay is among Ann's children by Score.");
+
+            actions.Clear();
+            RunOnUIThread.Execute(() => list.Remove(Named(list, "Eli")));
+            SettleLayout(tableView);
+            Verify.AreEqual("Remove", string.Join(",", actions), "One row removed, no Reset.");
+            Verify.AreEqual("Dee1 Ann1- Cat2 Fay2 Bob2", TreeLabelsOf(tableView), "Dee lost its only child.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies random inserts, removes, replacements, re-parentings, moves and expand/collapse on a TableView tree over a sorted view leave the rows (labels, depth, expansion, position in set) equal to a full rebuild of the same tree and expansion.")]
+        public void VerifyIncrementalTreeMatchesRebuildFuzz()
+        {
+            var random = new Random(2026);
+            var nextId = 1;
+            LiveRow NewRow()
+            {
+                var id = nextId++;
+                int? parent = null;
+                var roll = random.Next(10);
+                if (roll < 6 && id > 1)
+                {
+                    parent = random.Next(1, id);
+                }
+                else if (roll == 6)
+                {
+                    parent = 1000 + random.Next(5);
+                }
+                return new LiveRow { Id = id, Name = $"N{id}", Score = random.Next(20), Team = "X", ParentId = parent };
+            }
+
+            var list = new ObservableCollection<LiveRow>();
+            for (var i = 0; i < 14; i++)
+            {
+                list.Add(NewRow());
+            }
+            CollectionViewSource cvs = null;
+            var tableView = PlaceLive(list, s => { }, out cvs, IdPath, ParentIdPath);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+
+            string Rows()
+            {
+                string labels = null;
+                RunOnUIThread.Execute(() => labels = TreeLabels(tableView) + " | " + PositionLabels(tableView));
+                return labels;
+            }
+
+            for (var step = 0; step < 160; step++)
+            {
+                var op = "";
+                RunOnUIThread.Execute(() =>
+                {
+                    var roll = random.Next(100);
+                    if (list.Count < 6 || (roll < 30 && list.Count < 24))
+                    {
+                        var row = NewRow();
+                        var at = random.Next(list.Count + 1);
+                        list.Insert(at, row);
+                        op = $"insert {row.Name}->{row.ParentId}@{at}";
+                    }
+                    else if (roll < 55)
+                    {
+                        var at = random.Next(list.Count);
+                        op = $"remove {list[at].Name}";
+                        list.RemoveAt(at);
+                    }
+                    else if (roll < 75)
+                    {
+                        // Same key, new parent (no cycle: a parent's Id is always smaller) or a new score.
+                        var at = random.Next(list.Count);
+                        var old = list[at];
+                        var parent = (old.Id > 1 && random.Next(3) > 0) ? random.Next(1, old.Id) : (int?)null;
+                        list[at] = new LiveRow { Id = old.Id, Name = old.Name, Score = random.Next(20), Team = "X", ParentId = parent };
+                        op = $"replace {old.Name}->{parent}";
+                    }
+                    else if (roll < 85)
+                    {
+                        var from = random.Next(list.Count);
+                        var to = random.Next(list.Count);
+                        list.Move(from, to);
+                        op = $"move {from}->{to}";
+                    }
+                    else
+                    {
+                        var rows = GetProjectedElements(tableView).OfType<TableViewRow>().Where(r => r.IsExpandable).ToList();
+                        if (rows.Count > 0)
+                        {
+                            var row = rows[random.Next(rows.Count)];
+                            var expand = !row.IsExpanded;
+                            ToggleTreeRow(tableView, NameOf(row.DataContext), expand);
+                            op = $"{(expand ? "expand" : "collapse")} {NameOf(row.DataContext)}";
+                        }
+                    }
+                });
+                SettleLayout(tableView);
+                var incremental = Rows();
+
+                RunOnUIThread.Execute(() => ((ICollectionViewShaping)cvs.View).Refresh());
+                SettleLayout(tableView);
+                var rebuilt = Rows();
+                if (rebuilt != incremental)
+                {
+                    Verify.Fail($"step {step} ({op}): the rows differ from a rebuild.\n  rebuilt     {rebuilt}\n  incremental {incremental}");
+                }
+            }
+        }
+
         #region TableView over a live view
 
         [TestMethod]
@@ -1888,7 +2016,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var list = MakeLiveFlat();
             CollectionViewSource cvs = null;
             var tableView = PlaceLive(list, s => s.IsLiveSortingRequested = true, out cvs);
-            Verify.AreEqual("A B C D", RowLabelsOf(tableView), "Precondition: sorted by Score.");
+            Verify.AreEqual("A B C D", TreeLabelsOf(tableView), "Precondition: sorted by Score.");
 
             Verify.AreEqual("B C D A", After(tableView, () => Named(list, "A").Score = 50), "A sort key edit moves the row.");
             Verify.AreEqual("C D B A", After(tableView, () =>
@@ -1948,7 +2076,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 s.IsLiveFilteringRequested = true;
                 s.LiveFilteringProperties.Add("Score");
             }, out cvs);
-            Verify.AreEqual("A B C", RowLabelsOf(tableView), "Precondition: D is filtered out.");
+            Verify.AreEqual("A B C", TreeLabelsOf(tableView), "Precondition: D is filtered out.");
 
             Verify.AreEqual("A C", After(tableView, () => Named(list, "B").Score = 36), "B leaves the filter.");
             Verify.AreEqual("A B C", After(tableView, () => Named(list, "B").Score = 20), "B joins it again.");
@@ -1973,13 +2101,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 s.GroupDescriptions.Add(new PropertyGroupDescription("Team"));
                 s.IsLiveGroupingRequested = true;
             }, out cvs);
-            Verify.AreEqual("[X] A C [Y] B D", RowLabelsOf(tableView), "Precondition: grouped by Team.");
+            Verify.AreEqual("[X] A C [Y] B D", TreeLabelsOf(tableView), "Precondition: grouped by Team.");
 
             Verify.AreEqual("[X] A C [Y] B [Z] D", After(tableView, () => Named(list, "D").Team = "Z"), "D moves to a new group.");
             Verify.AreEqual("[X] A B C [Z] D", After(tableView, () => Named(list, "B").Team = "X"), "B joins X and Y goes.");
         }
 
-        private TableView PlaceLive(ObservableCollection<LiveRow> list, Action<CollectionViewSource> configure, out CollectionViewSource source)
+        [TestMethod]
+        [TestProperty("Description", "Verifies a live sort on a tree moves a root with its expanded subtree within its siblings.")]
+        public void VerifyLiveSortMovesTreeSubtree()
+        {
+            var list = MakeLiveTree();
+            CollectionViewSource cvs = null;
+            var tableView = PlaceLive(list, s => s.IsLiveSortingRequested = true, out cvs, IdPath, ParentIdPath);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+            Verify.AreEqual("Dee1- Eli2 Ann1- Cat2 Bob2", TreeLabelsOf(tableView), "Precondition: siblings by Score.");
+
+            Verify.AreEqual("Ann1- Cat2 Bob2 Dee1- Eli2", After(tableView, () => Named(list, "Dee").Score = 70), "Dee moves after Ann with its child.");
+            Verify.AreEqual("Ann1- Bob2 Cat2 Dee1- Eli2", After(tableView, () => Named(list, "Cat").Score = 40), "Cat moves within Ann's children.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a live tick that moves many rows of a tree rebuilds it at most once per dispatcher turn, not twice per moved row.")]
+        public void VerifyTreeRebuildsOncePerLiveTick()
+        {
+            var list = new ObservableCollection<LiveRow>(Enumerable.Range(1, 20).Select(i => new LiveRow { Id = i, Name = $"R{i:00}", Score = i, Team = "X" }));
+            CollectionViewSource cvs = null;
+            var tableView = PlaceLive(list, s => s.IsLiveSortingRequested = true, out cvs, IdPath, ParentIdPath);
+
+            LiveRow.IdReads = 0;
+            var labels = After(tableView, () =>
+            {
+                foreach (var row in list.Take(8))
+                {
+                    row.Score += 100;
+                }
+            });
+
+            Verify.AreEqual(string.Join(" ", list.OrderBy(r => r.Score).Select(r => r.Name + "1")), labels, "The tree shows the new order.");
+            Log.Comment($"Id reads for one tick moving 8 of {list.Count} rows: {LiveRow.IdReads}");
+            Verify.IsLessThanOrEqual(LiveRow.IdReads, 4 * list.Count, "The tree is rebuilt at most a couple of times for the tick, not twice per moved row.");
+        }
+
+        private TableView PlaceLive(ObservableCollection<LiveRow> list, Action<CollectionViewSource> configure, out CollectionViewSource source,
+            string itemKeyPath = null, string parentKeyPath = null)
         {
             TableView tableView = null;
             CollectionViewSource cvs = null;
@@ -1989,7 +2155,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 cvs = new CollectionViewSource { Source = list };
                 cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
                 configure(cvs);
-                tableView = CreateNameTable(cvs.View);
+                tableView = CreateTreeTable(cvs.View, itemKeyPath, parentKeyPath);
                 tableView.Tag = cvs;
                 LoadContent(tableView);
             });
@@ -1998,10 +2164,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return tableView;
         }
 
-        private static string RowLabelsOf(TableView tableView)
+        private static string TreeLabelsOf(TableView tableView)
         {
             string labels = null;
-            RunOnUIThread.Execute(() => labels = RowLabels(tableView));
+            RunOnUIThread.Execute(() => labels = TreeLabels(tableView));
             return labels;
         }
 
@@ -2009,7 +2175,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(action);
             SettleLayout(tableView);
-            return RowLabelsOf(tableView);
+            return TreeLabelsOf(tableView);
         }
 
         #endregion

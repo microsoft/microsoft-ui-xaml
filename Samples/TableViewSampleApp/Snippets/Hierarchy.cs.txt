@@ -1,0 +1,92 @@
+// The CollectionViewSource and its HierarchyDescription and SortDescriptions are declared in the page's markup.
+InitializeComponent();
+Processes.Source = ProcessList;
+ProcessTable.ItemsSource = Processes.View;
+// A ListView over the same view shows the tree's nodes depth first.
+ViewList.ItemsSource = Processes.View;
+
+// One flat list: each child process records its parent's id in ParentPid.
+public ObservableCollection<ProcessItem> ProcessList { get; } = new();
+
+// A match keeps its ancestors in the view as context, so a matching child process shows under its app.
+private void OnProcessFilter(object sender, FilterEventArgs e) =>
+    e.Accepted = Query.Length == 0 || ((ProcessItem)e.Item).Name.Contains(Query, StringComparison.CurrentCultureIgnoreCase);
+
+private void OnFilterChanged(object sender, TextChangedEventArgs e)
+{
+    Processes.Refresh();
+}
+
+// The SortDescriptions order every sibling list, the roots included.
+private void OnSortChanged(object sender, SelectionChangedEventArgs e)
+{
+    using (Processes.DeferRefresh())
+    {
+        Processes.SortDescriptions.Clear();
+        switch (SortCombo.SelectedIndex)
+        {
+            case 0: Processes.SortDescriptions.Add(new SortDescription(nameof(ProcessItem.CpuPercent), CollectionViewSortDirection.Descending)); break;
+            case 1: Processes.SortDescriptions.Add(new SortDescription(nameof(ProcessItem.MemoryMB), CollectionViewSortDirection.Descending)); break;
+            case 2: Processes.SortDescriptions.Add(new SortDescription(nameof(ProcessItem.Name), CollectionViewSortDirection.Ascending)); break;
+        }
+    }
+}
+
+// IsLiveSortingRequested: a CPU change moves the process among its siblings at the next dispatcher turn.
+private void Tick()
+{
+    foreach (var process in ProcessList.Where(_ => _rng.Next(3) == 0).ToList())
+    {
+        UpdateValues(process);
+    }
+}
+
+private void OnExpandAllClick(object sender, RoutedEventArgs e) => ProcessTable.ExpandAllRows();
+
+private void OnCollapseAllClick(object sender, RoutedEventArgs e) => ProcessTable.CollapseAllRows();
+
+// ExpandRow also expands the row's ancestors, so the row is shown.
+private void OnRevealClick(object sender, RoutedEventArgs e)
+{
+    var busiest = ProcessList.Where(p => p.ParentPid is not null).OrderByDescending(p => p.CpuPercent).FirstOrDefault();
+    if (busiest is null)
+    {
+        return;
+    }
+
+    ProcessTable.ExpandRow(busiest);
+    var index = ProcessTable.IndexOf(busiest);
+    if (index >= 0)
+    {
+        ProcessTable.Select(index);
+        ProcessTable.StartBringItemIntoView(index, new BringIntoViewOptions());
+    }
+}
+
+// A new process whose ParentPid is the selected process's Pid lands under it at its sorted place.
+private void OnStartChildClick(object sender, RoutedEventArgs e)
+{
+    var parent = Selected;
+    var process = new ProcessItem
+    {
+        Name = parent is null ? "New app" : parent.Name + " helper",
+        Category = parent?.Category ?? ProcessData.Categories[0],
+        Pid = _nextPid += 4,
+        ParentPid = parent?.Pid,
+    };
+    UpdateValues(process);
+    ProcessList.Add(process);
+    if (parent is not null)
+    {
+        ProcessTable.ExpandRow(parent);
+    }
+}
+
+// Ending a parent makes its child processes roots: their ParentPid no longer matches a process.
+private void OnEndClick(object sender, RoutedEventArgs e)
+{
+    if (Selected is { } process)
+    {
+        ProcessList.Remove(process);
+    }
+}

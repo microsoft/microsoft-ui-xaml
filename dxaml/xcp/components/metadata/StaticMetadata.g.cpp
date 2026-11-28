@@ -1092,6 +1092,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::EventArgs, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
     },
+    // Microsoft.UI.Xaml.Data.HierarchyDescription
+    {
+        KnownTypeIndex::HierarchyDescription, // Index name
+        KnownTypeIndex::DependencyObject, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
+    },
     // Microsoft.UI.Xaml.Controls.HubSectionHeaderClickEventArgs
     {
         KnownTypeIndex::HubSectionHeaderClickEventArgs, // Index name
@@ -2854,6 +2860,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
     {
         KnownTypeIndex::PropertyGroupDescription, // Index name
         KnownTypeIndex::GroupDescription, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
+    },
+    // Microsoft.UI.Xaml.Data.PropertyHierarchyDescription
+    {
+        KnownTypeIndex::PropertyHierarchyDescription, // Index name
+        KnownTypeIndex::HierarchyDescription, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction
@@ -7127,6 +7139,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.HasValidationErrorsChangedEventArgs"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Controls, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.Data.HierarchyDescription
+    {
+        XSTRING_PTR_STORAGE(L"HierarchyDescription"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.HierarchyDescription"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Data, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Controls.HubSectionHeaderClickEventArgs
     {
         XSTRING_PTR_STORAGE(L"HubSectionHeaderClickEventArgs"), // Name
@@ -8889,6 +8907,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
     {
         XSTRING_PTR_STORAGE(L"PropertyGroupDescription"), // Name
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.PropertyGroupDescription"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Data, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.Data.PropertyHierarchyDescription
+    {
+        XSTRING_PTR_STORAGE(L"PropertyHierarchyDescription"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.PropertyHierarchyDescription"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Data, // Declaring namespace index
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction
@@ -13163,7 +13187,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
-        21, // Property slot count
+        22, // Property slot count
     },
     // Windows.UI.Color
     {
@@ -13641,6 +13665,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
         0, // Property slot count
+    },
+    // Microsoft.UI.Xaml.Data.HierarchyDescription
+    {
+        KnownPropertyIndex::DependencyObject_Column, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        8, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.HubSectionHeaderClickEventArgs
     {
@@ -16287,6 +16320,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
         13, // Property slot count
+    },
+    // Microsoft.UI.Xaml.Data.PropertyHierarchyDescription
+    {
+        KnownPropertyIndex::PropertyHierarchyDescription_ItemKeyPath, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        10, // Property slot count
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction
     {
@@ -21227,6 +21269,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::Data::IGroupDescription),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupStyle),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IHasValidationErrorsChangedEventArgs),
+    __uuidof(ABI::Microsoft::UI::Xaml::Data::IHierarchyDescription),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IHubSectionHeaderClickEventArgs),
     GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IIconSource),
@@ -21521,6 +21564,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPopupThemeTransition),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPowerEase),
     __uuidof(ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription),
+    __uuidof(ABI::Microsoft::UI::Xaml::Data::IPropertyHierarchyDescription),
     GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Microsoft::UI::Xaml::Media::IQuadraticBezierSegment),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IQuadraticEase),
@@ -22075,7 +22119,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
 };
 
 // Types that can be referenced from XAML.
-extern const MetaDataTypeName c_aTypeNames[947] =
+extern const MetaDataTypeName c_aTypeNames[949] =
 {
     { KnownTypeIndex::UnknownType },
     { KnownTypeIndex::Hub },
@@ -22609,6 +22653,7 @@ extern const MetaDataTypeName c_aTypeNames[947] =
     { KnownTypeIndex::GradientSpreadMethod },
     { KnownTypeIndex::GroupHeaderPlacement },
     { KnownTypeIndex::GroupStyleCollection },
+    { KnownTypeIndex::HierarchyDescription },
     { KnownTypeIndex::HubSectionCollection },
     { KnownTypeIndex::HWCompRenderDataNode },
     { KnownTypeIndex::IMediaPlaybackSource },
@@ -22891,6 +22936,7 @@ extern const MetaDataTypeName c_aTypeNames[947] =
     { KnownTypeIndex::MenuFlyoutItemBaseCollection },
     { KnownTypeIndex::NamedContainerAutomationPeer },
     { KnownTypeIndex::PointAnimationUsingKeyFrames },
+    { KnownTypeIndex::PropertyHierarchyDescription },
     { KnownTypeIndex::ResourceDictionaryCollection },
     { KnownTypeIndex::SecondaryContentRelationship },
     { KnownTypeIndex::TextBoxTextChangingEventArgs },
@@ -24220,6 +24266,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::CollectionViewSource, // Declaring type
         KnownTypeIndex::CollectionViewSource, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.HierarchyDescription
+    {
+        KnownPropertyIndex::CollectionViewSource_HierarchyDescription, // Index name
+        KnownTypeIndex::HierarchyDescription, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsVisualTreeProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveFilteringRequested
     {
@@ -28779,6 +28833,22 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::CollectionViewStringComparison, // Property type
         KnownTypeIndex::PropertyGroupDescription, // Declaring type
         KnownTypeIndex::PropertyGroupDescription, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.PropertyHierarchyDescription.ItemKeyPath
+    {
+        KnownPropertyIndex::PropertyHierarchyDescription_ItemKeyPath, // Index name
+        KnownTypeIndex::String, // Property type
+        KnownTypeIndex::PropertyHierarchyDescription, // Declaring type
+        KnownTypeIndex::PropertyHierarchyDescription, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.PropertyHierarchyDescription.ParentKeyPath
+    {
+        KnownPropertyIndex::PropertyHierarchyDescription_ParentKeyPath, // Index name
+        KnownTypeIndex::String, // Property type
+        KnownTypeIndex::PropertyHierarchyDescription, // Declaring type
+        KnownTypeIndex::PropertyHierarchyDescription, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction.Delay
@@ -38958,7 +39028,8 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::CalendarViewTemplateSettings_WeekDay7, // CalendarViewTemplateSettings_WeekDay6
     KnownPropertyIndex::DependencyObject_Column, // CalendarViewTemplateSettings_WeekDay7
     KnownPropertyIndex::CollectionViewSource_GroupDescriptions, // CollectionViewSource_Culture
-    KnownPropertyIndex::CollectionViewSource_IsLiveFilteringRequested, // CollectionViewSource_GroupDescriptions
+    KnownPropertyIndex::CollectionViewSource_HierarchyDescription, // CollectionViewSource_GroupDescriptions
+    KnownPropertyIndex::CollectionViewSource_IsLiveFilteringRequested, // CollectionViewSource_HierarchyDescription
     KnownPropertyIndex::CollectionViewSource_IsLiveGroupingRequested, // CollectionViewSource_IsLiveFilteringRequested
     KnownPropertyIndex::CollectionViewSource_IsLiveSortingRequested, // CollectionViewSource_IsLiveGroupingRequested
     KnownPropertyIndex::CollectionViewSource_IsSourceGrouped, // CollectionViewSource_IsLiveSortingRequested
@@ -39529,6 +39600,8 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::PropertyGroupDescription_PropertyName, // PropertyGroupDescription_Converter
     KnownPropertyIndex::PropertyGroupDescription_StringComparison, // PropertyGroupDescription_PropertyName
     KnownPropertyIndex::GroupDescription_GroupNames, // PropertyGroupDescription_StringComparison
+    KnownPropertyIndex::PropertyHierarchyDescription_ParentKeyPath, // PropertyHierarchyDescription_ItemKeyPath
+    KnownPropertyIndex::DependencyObject_Column, // PropertyHierarchyDescription_ParentKeyPath
     KnownPropertyIndex::PVLStaggerFunction_DelayReduce, // PVLStaggerFunction_Delay
     KnownPropertyIndex::PVLStaggerFunction_Maximum, // PVLStaggerFunction_DelayReduce
     KnownPropertyIndex::PVLStaggerFunction_Reverse, // PVLStaggerFunction_Maximum
@@ -40936,17 +41009,18 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     22, // CalendarViewTemplateSettings_WeekDay7
     8, // CollectionViewSource_Culture
     9, // CollectionViewSource_GroupDescriptions
-    10, // CollectionViewSource_IsLiveFilteringRequested
-    11, // CollectionViewSource_IsLiveGroupingRequested
-    12, // CollectionViewSource_IsLiveSortingRequested
-    13, // CollectionViewSource_IsSourceGrouped
-    14, // CollectionViewSource_ItemsPath
-    15, // CollectionViewSource_LiveFilteringProperties
-    16, // CollectionViewSource_LiveGroupingProperties
-    17, // CollectionViewSource_LiveSortingProperties
-    18, // CollectionViewSource_SortDescriptions
-    19, // CollectionViewSource_Source
-    20, // CollectionViewSource_View
+    10, // CollectionViewSource_HierarchyDescription
+    11, // CollectionViewSource_IsLiveFilteringRequested
+    12, // CollectionViewSource_IsLiveGroupingRequested
+    13, // CollectionViewSource_IsLiveSortingRequested
+    14, // CollectionViewSource_IsSourceGrouped
+    15, // CollectionViewSource_ItemsPath
+    16, // CollectionViewSource_LiveFilteringProperties
+    17, // CollectionViewSource_LiveGroupingProperties
+    18, // CollectionViewSource_LiveSortingProperties
+    19, // CollectionViewSource_SortDescriptions
+    20, // CollectionViewSource_Source
+    21, // CollectionViewSource_View
     8, // Color_A
     9, // Color_B
     10, // Color_ContentProperty
@@ -41506,6 +41580,8 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     10, // PropertyGroupDescription_Converter
     11, // PropertyGroupDescription_PropertyName
     12, // PropertyGroupDescription_StringComparison
+    8, // PropertyHierarchyDescription_ItemKeyPath
+    9, // PropertyHierarchyDescription_ParentKeyPath
     8, // PVLStaggerFunction_Delay
     9, // PVLStaggerFunction_DelayReduce
     10, // PVLStaggerFunction_Maximum
@@ -42913,6 +42989,7 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"WeekDay7"),
     XSTRING_PTR_STORAGE(L"Culture"),
     XSTRING_PTR_STORAGE(L"GroupDescriptions"),
+    XSTRING_PTR_STORAGE(L"HierarchyDescription"),
     XSTRING_PTR_STORAGE(L"IsLiveFilteringRequested"),
     XSTRING_PTR_STORAGE(L"IsLiveGroupingRequested"),
     XSTRING_PTR_STORAGE(L"IsLiveSortingRequested"),
@@ -43483,6 +43560,8 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"Converter"),
     XSTRING_PTR_STORAGE(L"PropertyName"),
     XSTRING_PTR_STORAGE(L"StringComparison"),
+    XSTRING_PTR_STORAGE(L"ItemKeyPath"),
+    XSTRING_PTR_STORAGE(L"ParentKeyPath"),
     XSTRING_PTR_STORAGE(L"Delay"),
     XSTRING_PTR_STORAGE(L"DelayReduce"),
     XSTRING_PTR_STORAGE(L"Maximum"),
@@ -44795,83 +44874,83 @@ UINT MapTypeNameLengthToSearchRange(_In_ UINT nLength, _Out_ UINT* pnEndIndex)
             *pnEndIndex = 512;
             return 459;
         case 20:
-            *pnEndIndex = 560;
+            *pnEndIndex = 561;
             return 512;
         case 21:
-            *pnEndIndex = 594;
-            return 560;
+            *pnEndIndex = 595;
+            return 561;
         case 22:
-            *pnEndIndex = 645;
-            return 594;
+            *pnEndIndex = 646;
+            return 595;
         case 23:
-            *pnEndIndex = 685;
-            return 645;
+            *pnEndIndex = 686;
+            return 646;
         case 24:
-            *pnEndIndex = 719;
-            return 685;
+            *pnEndIndex = 720;
+            return 686;
         case 25:
-            *pnEndIndex = 754;
-            return 719;
+            *pnEndIndex = 755;
+            return 720;
         case 26:
-            *pnEndIndex = 782;
-            return 754;
+            *pnEndIndex = 783;
+            return 755;
         case 27:
-            *pnEndIndex = 797;
-            return 782;
+            *pnEndIndex = 798;
+            return 783;
         case 28:
-            *pnEndIndex = 818;
-            return 797;
+            *pnEndIndex = 820;
+            return 798;
         case 29:
-            *pnEndIndex = 838;
-            return 818;
+            *pnEndIndex = 840;
+            return 820;
         case 30:
-            *pnEndIndex = 860;
-            return 838;
+            *pnEndIndex = 862;
+            return 840;
         case 31:
-            *pnEndIndex = 872;
-            return 860;
+            *pnEndIndex = 874;
+            return 862;
         case 32:
-            *pnEndIndex = 889;
-            return 872;
+            *pnEndIndex = 891;
+            return 874;
         case 33:
-            *pnEndIndex = 903;
-            return 889;
+            *pnEndIndex = 905;
+            return 891;
         case 34:
-            *pnEndIndex = 916;
-            return 903;
+            *pnEndIndex = 918;
+            return 905;
         case 35:
-            *pnEndIndex = 922;
-            return 916;
+            *pnEndIndex = 924;
+            return 918;
         case 36:
-            *pnEndIndex = 928;
-            return 922;
+            *pnEndIndex = 930;
+            return 924;
         case 37:
-            *pnEndIndex = 933;
-            return 928;
+            *pnEndIndex = 935;
+            return 930;
         case 38:
-            *pnEndIndex = 936;
-            return 933;
+            *pnEndIndex = 938;
+            return 935;
         case 39:
-            *pnEndIndex = 941;
-            return 936;
-        case 40:
-            *pnEndIndex = 942;
-            return 941;
-        case 41:
             *pnEndIndex = 943;
-            return 942;
-        case 42:
+            return 938;
+        case 40:
             *pnEndIndex = 944;
             return 943;
-        case 43:
+        case 41:
             *pnEndIndex = 945;
             return 944;
-        case 49:
+        case 42:
             *pnEndIndex = 946;
             return 945;
-        case 50:
+        case 43:
             *pnEndIndex = 947;
             return 946;
+        case 49:
+            *pnEndIndex = 948;
+            return 947;
+        case 50:
+            *pnEndIndex = 949;
+            return 948;
         default:
             *pnEndIndex = 0;
             return 0;

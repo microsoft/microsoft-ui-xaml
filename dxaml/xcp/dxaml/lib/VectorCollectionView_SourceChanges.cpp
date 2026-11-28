@@ -117,6 +117,12 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
         return S_OK;
     }
 
+    if (m_isHierarchical)
+    {
+        IFC_RETURN(ProcessHierarchyCollectionChanged(change, index, pIsApplied));
+        return S_OK;
+    }
+
     auto spSort = m_spSortState;
     auto& slots = spSort->flatSlots;
     if (change != wfc::CollectionChange_ItemInserted)

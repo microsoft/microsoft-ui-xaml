@@ -42,6 +42,13 @@ HRESULT VectorCollectionView::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void*
         return S_OK;
     }
 
+    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewHierarchy)) && m_isShapingEnabled && Feature_ExperimentalApi::IsEnabled())
+    {
+        *ppObject = static_cast<xaml_data::ICollectionViewHierarchy*>(this);
+        AddRefOuter();
+        return S_OK;
+    }
+
     return VectorCollectionViewGenerated::QueryInterfaceImpl(iid, ppObject);
 }
 
@@ -252,7 +259,7 @@ IFACEMETHODIMP VectorCollectionView::put_Culture(_In_opt_ HSTRING value)
     return S_OK;
 }
 
-// WPF: ListCollectionView.CanSort / CanFilter / CanGroup, all true.
+// WPF: ListCollectionView.CanSort / CanFilter / CanGroup, all true; a view that builds a hierarchy cannot group.
 IFACEMETHODIMP VectorCollectionView::get_CanSort(_Out_ BOOLEAN* pValue)
 {
     ARG_VALIDRETURNPOINTER(pValue);
@@ -270,7 +277,7 @@ IFACEMETHODIMP VectorCollectionView::get_CanFilter(_Out_ BOOLEAN* pValue)
 IFACEMETHODIMP VectorCollectionView::get_CanGroup(_Out_ BOOLEAN* pValue)
 {
     ARG_VALIDRETURNPOINTER(pValue);
-    *pValue = TRUE;
+    *pValue = !HasHierarchyDescription();
     return S_OK;
 }
 
@@ -366,7 +373,7 @@ _Check_return_ HRESULT VectorCollectionView::HasShapingRules(_Out_ bool* pHasRul
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
 
-    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort || m_spFilterEvents;
+    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort || m_spFilterEvents || HasHierarchyDescription();
     return S_OK;
 }
 
@@ -381,6 +388,7 @@ _Check_return_ HRESULT VectorCollectionView::OnShapingRulesChanged()
     // Only a rule change starts incremental loading over, not a source change RunPendingRecompute replays.
     ResetIncrementalLoadState();
     IFC_RETURN(ApplyShapingRules());
+    IFC_RETURN(RaiseCapabilityChanges());
     return S_OK;
 }
 
@@ -406,6 +414,10 @@ _Check_return_ HRESULT VectorCollectionView::ApplyShapingRules()
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
     const bool isGrouping = (groupCount > 0);
+    if (HasHierarchyDescription())
+    {
+        IFC_RETURN(CheckHierarchyWithoutGrouping(groupCount));
+    }
 
     // Reshaped in place, so a consumer holding the view keeps a live view.
     if (m_tpInternalList && isGrouping == m_isGrouping)
@@ -578,6 +590,13 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
         UINT sourceIndex = 0;
         UINT slot = 0;
     };
+
+    if (HasHierarchyDescription() && !m_isGrouping)
+    {
+        IFC_RETURN(RefreshHierarchy());
+        return S_OK;
+    }
+    IFC_RETURN(LeaveHierarchy());
 
     auto spSort = std::make_shared<ShapingSortState>();
     ctl::ComPtr<CollectionViewGroupRoot> spRoot;

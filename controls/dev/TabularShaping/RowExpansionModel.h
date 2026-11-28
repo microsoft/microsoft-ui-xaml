@@ -13,9 +13,11 @@
 #include <winrt/Windows.Foundation.h>
 
 // Layer 1 of the Tabular shaping stack: expand/collapse INTENT, separated from the structure the
-// intent applies to. Grouping keys it by a group's stable identity.
+// intent applies to. Shared by both flattening axes — grouping keys it by a group's stable
+// identity, hierarchy keys it by a node's stable identity — which is why it lives in layer 1
+// rather than beside either adapter.
 //
-// A group's expansion state looks like it belongs on the group, but it does not.
+// A group's (or node's) expansion state looks like it belongs on the group, but it does not.
 // Groups are derived: the shaping layer above re-mints them on every reshape, so state stored on
 // a group dies with each sort, filter or regroup — which is exactly why "collapse a group, then
 // re-sort" used to lose the collapse. Expansion is a property of the USER's intent about a KEY,
@@ -28,7 +30,8 @@
 // makes `SetAllExpanded` behave correctly for groups that do not exist yet -- a group that
 // arrives later inherits the default rather than an intent nobody expressed about it.
 //
-// Deliberately free of WinRT collection types, XAML and any tabular vocabulary, so it is testable
+// Deliberately free of WinRT collection types, XAML and any tabular vocabulary: a TreeView, a
+// grouped ItemsRepeater or an app-authored hierarchy can use it directly, and it is testable
 // with no dispatcher and no host.
 namespace ShapingHelpers
 {
@@ -65,8 +68,15 @@ namespace ShapingHelpers
         // no live key's resolved state.
         //
         // The live-key set must be COMPLETE -- grouping's is, because every group emits a header
-        // whether it is collapsed or not.
+        // whether it is collapsed or not. A tree's is not (hidden nodes are not visited), so a tree drops
+        // keys one at a time (Forget).
         void RetainOnly(std::unordered_set<winrt::hstring> const& liveKeys);
+
+        // Whether any key differs from the default (RetainOnly has nothing to drop otherwise).
+        bool HasExceptions() const noexcept { return !m_nonDefault.empty(); }
+
+        // Drops intent for one key that no longer exists. Silent, like RetainOnly.
+        void Forget(winrt::hstring const& key) { m_nonDefault.erase(key); }
 
     private:
         void SetDefaultExpanded(bool expanded);

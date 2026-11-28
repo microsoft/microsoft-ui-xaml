@@ -139,7 +139,8 @@ namespace
             TableViewRowItemAutomationPeer,
             winrt::ISelectionItemProvider,
             winrt::IVirtualizedItemProvider,
-            winrt::IScrollItemProvider>
+            winrt::IScrollItemProvider,
+            winrt::IExpandCollapseProvider>
     {
     public:
         TableViewRowItemAutomationPeer(winrt::TableView const& table, winrt::IInspectable const& item, int32_t index, bool byIndex)
@@ -174,7 +175,7 @@ namespace
         int32_t GetLevelCore()
         {
             return ReadSetValue([](auto const& p) { return p.GetLevel(); },
-                [](TableView* table, int32_t index) { return table->GetGroupedRowAutomationLevelInternal(index); });
+                [this](TableView*, int32_t index) { return TableViewRowAutomationPeer::LevelAt(m_table.get(), index); });
         }
 
         int32_t GetPositionInSetCore()
@@ -202,6 +203,14 @@ namespace
                 const int32_t index = ItemIndex();
                 live = index >= 0;
                 rowPeer = RealizedRowPeer(index);
+            }
+            if (patternInterface == winrt::PatternInterface::ExpandCollapse)
+            {
+                if (rowPeer && rowPeer.GetPattern(patternInterface))
+                {
+                    return *this;
+                }
+                return nullptr;
             }
             if (patternInterface == winrt::PatternInterface::SelectionItem ||
                 patternInterface == winrt::PatternInterface::VirtualizedItem)
@@ -399,6 +408,10 @@ namespace
         {
             ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Select);
         }
+
+        winrt::ExpandCollapseState ExpandCollapseState() { return LiveRowPeer().ExpandCollapseState(); }
+        void Expand() { LiveRowPeer().Expand(); }
+        void Collapse() { LiveRowPeer().Collapse(); }
 
         void Realize()
         {

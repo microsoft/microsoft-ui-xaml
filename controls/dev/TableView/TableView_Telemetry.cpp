@@ -43,8 +43,9 @@ void TableView::SampleInstanceTelemetry() noexcept
         {
             if (m_collectionViewShaping && m_collectionViewShaping.Filter()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Filtering; }
             if (flattener->IsGrouped()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Grouping; }
+            if (flattener->HasHierarchy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Hierarchy; }
             sample.sourceRows = flattener->SourceRowCount();
-            sample.dataRows = sample.sourceRows;
+            sample.dataRows = flattener->DataRowCount();
             if (sample.dataRows == 0)
             {
                 TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Empty);

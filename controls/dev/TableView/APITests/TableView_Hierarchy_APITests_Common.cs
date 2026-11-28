@@ -1,0 +1,629 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+
+using WEX.TestExecution;
+
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
+
+namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
+{
+    // A non-notifying employee for hierarchy tests. PropertyHierarchyDescription("Id", "ManagerId") gives:
+    //   Ada > { Ben > { Dan }, Cy }, Eve > { Fay }, Gus (ManagerId 99 matches nobody, so a root).
+    internal sealed class TreeEmployee
+    {
+        public int Id { get; set; }
+        public int? ManagerId { get; set; }
+        // Starts equal to ManagerId; lets a test declare a second relation over edited data.
+        public int? BossId { get; set; }
+        public int? MentorId { get; set; }
+        public long? BigManagerId { get; set; }
+        public string Code { get; set; } = "";
+        public string ParentCode { get; set; } = "";
+        public TreeEmployee Manager { get; set; }
+        public string Name { get; set; } = "";
+        public string Dept { get; set; } = "";
+        public int Score { get; set; }
+    }
+
+    // Observable row for live shaping; PropertyChanged is the only signal live shaping listens to.
+    internal sealed class LiveRow : INotifyPropertyChanged
+    {
+        private string _name = "";
+        private int _score;
+        private string _team = "";
+        private int? _parentId;
+        private LiveAddress _addr = new LiveAddress("");
+        private LiveRow _parentRow;
+        private int _id;
+
+        // Reads of Id (the tree key), so a test can tell how often a tree was rebuilt.
+        public static int IdReads;
+
+        public int Id { get { IdReads++; return _id; } set => _id = value; }
+        public string Name { get => _name; set => Set(ref _name, value); }
+        public int Score { get => _score; set => Set(ref _score, value); }
+        public string Team { get => _team; set => Set(ref _team, value); }
+        public int? ParentId { get => _parentId; set => Set(ref _parentId, value); }
+        public LiveAddress Addr { get => _addr; set => Set(ref _addr, value); }
+
+        // Same relation as ParentId, keyed by reference identity instead of by value.
+        public LiveRow ParentRow { get => _parentRow; set => Set(ref _parentRow, value); }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void Set<T>(ref T field, T value, [CallerMemberName] string name = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+    }
+
+    // A change to City is raised on the address, not on the row that owns it.
+    internal sealed class LiveAddress : INotifyPropertyChanged
+    {
+        private string _city;
+
+        public LiveAddress(string city) { _city = city; }
+
+        public string City
+        {
+            get => _city;
+            set
+            {
+                _city = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(City)));
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+    }
+
+    internal sealed class PlainRow
+    {
+        public string Name { get; set; } = "";
+        public int Score { get; set; }
+    }
+
+    // A tree keyed by floating-point values (PropertyHierarchyDescription("Key", "ParentKey")).
+    internal sealed class FloatKeyRow
+    {
+        public double Key { get; set; }
+        public double? ParentKey { get; set; }
+        public string Name { get; set; } = "";
+    }
+
+    // An app's ICustomPropertyProvider, for a node's accessors to refuse.
+    internal sealed partial class ForeignPropertyProvider : ICustomPropertyProvider
+    {
+        public Type Type => typeof(ForeignPropertyProvider);
+        public ICustomProperty GetCustomProperty(string name) => null;
+        public ICustomProperty GetIndexedProperty(string name, Type type) => null;
+        public string GetStringRepresentation() => nameof(ForeignPropertyProvider);
+    }
+
+    // An app's view over a framework hierarchical view: forwards everything and counts the VectorChanged handlers
+    // registered on it, so a test can tell whether a control let go of the view.
+    internal sealed partial class CountingHierarchyView : ICollectionView, ICollectionViewHierarchy
+    {
+        private readonly ICollectionView _inner;
+
+        public CountingHierarchyView(ICollectionView inner)
+        {
+            _inner = inner;
+        }
+
+        public int VectorChangedHandlers { get; private set; }
+
+        public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged
+        {
+            add { VectorChangedHandlers++; _inner.VectorChanged += value; }
+            remove { VectorChangedHandlers--; _inner.VectorChanged -= value; }
+        }
+
+        public event EventHandler<object> CurrentChanged { add { } remove { } }
+        public event CurrentChangingEventHandler CurrentChanging { add { } remove { } }
+
+        public HierarchyDescription HierarchyDescription
+        {
+            get => ((ICollectionViewHierarchy)_inner).HierarchyDescription;
+            set => ((ICollectionViewHierarchy)_inner).HierarchyDescription = value;
+        }
+        public bool CanBuildHierarchy => ((ICollectionViewHierarchy)_inner).CanBuildHierarchy;
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionNodes => ((ICollectionViewHierarchy)_inner).CollectionNodes;
+        public ICollectionViewNode NodeFromItem(object item) => ((ICollectionViewHierarchy)_inner).NodeFromItem(item);
+
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionGroups => _inner.CollectionGroups;
+        public object CurrentItem => _inner.CurrentItem;
+        public int CurrentPosition => _inner.CurrentPosition;
+        public bool HasMoreItems => false;
+        public bool IsCurrentAfterLast => _inner.IsCurrentAfterLast;
+        public bool IsCurrentBeforeFirst => _inner.IsCurrentBeforeFirst;
+        public int Count => _inner.Count;
+        public bool IsReadOnly => true;
+
+        public object this[int index]
+        {
+            get => _inner[index];
+            set => throw new NotSupportedException();
+        }
+
+        public bool MoveCurrentTo(object item) => _inner.MoveCurrentTo(item);
+        public bool MoveCurrentToFirst() => _inner.MoveCurrentToFirst();
+        public bool MoveCurrentToLast() => _inner.MoveCurrentToLast();
+        public bool MoveCurrentToNext() => _inner.MoveCurrentToNext();
+        public bool MoveCurrentToPrevious() => _inner.MoveCurrentToPrevious();
+        public bool MoveCurrentToPosition(int index) => _inner.MoveCurrentToPosition(index);
+        public global::Windows.Foundation.IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count) => throw new NotSupportedException();
+
+        public int IndexOf(object item) => _inner.IndexOf(item);
+        public bool Contains(object item) => _inner.Contains(item);
+        public void CopyTo(object[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
+        public IEnumerator<object> GetEnumerator() => _inner.GetEnumerator();
+        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Insert(int index, object item) => throw new NotSupportedException();
+        public void RemoveAt(int index) => throw new NotSupportedException();
+        public void Add(object item) => throw new NotSupportedException();
+        public void Clear() => throw new NotSupportedException();
+        public bool Remove(object item) => throw new NotSupportedException();
+    }
+
+    // An app's hierarchical view whose nodes implement ICollectionViewNode only (no INotifyPropertyChanged): HasChildren
+    // changes are seen only through Children. The flat list is a plain view over every item, appended after the node
+    // lists change, as the framework view orders them.
+    internal sealed partial class PlainHierarchyView : ICollectionView, ICollectionViewHierarchy
+    {
+        private readonly ObservableCollection<TreeEmployee> _items = new ObservableCollection<TreeEmployee>();
+        private readonly ICollectionView _inner;
+        private readonly Dictionary<object, PlainNode> _nodes = new Dictionary<object, PlainNode>();
+        private readonly PlainNodeList _roots = new PlainNodeList();
+
+        public PlainHierarchyView()
+        {
+            _inner = new CollectionViewSource { Source = _items }.View;
+        }
+
+        public PlainNode Add(PlainNode parent, string name)
+        {
+            var item = new TreeEmployee { Id = _items.Count + 1, Name = name };
+            var node = new PlainNode(item, parent);
+            _nodes[item] = node;
+            (parent?.ChildList ?? _roots).Add(node);
+            _items.Add(item);
+            return node;
+        }
+
+        public void RemoveLastChild(PlainNode parent)
+        {
+            var list = parent.ChildList;
+            var node = (PlainNode)list[list.Count - 1];
+            list.RemoveAt(list.Count - 1);
+            _nodes.Remove(node.Item);
+            _items.Remove((TreeEmployee)node.Item);
+        }
+
+        public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged
+        {
+            add { _inner.VectorChanged += value; }
+            remove { _inner.VectorChanged -= value; }
+        }
+        public event EventHandler<object> CurrentChanged { add { } remove { } }
+        public event CurrentChangingEventHandler CurrentChanging { add { } remove { } }
+
+        public HierarchyDescription HierarchyDescription { get => null; set { } }
+        public bool CanBuildHierarchy => true;
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionNodes => _roots;
+        public ICollectionViewNode NodeFromItem(object item) => item != null && _nodes.TryGetValue(item, out var node) ? node : null;
+
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionGroups => null;
+        public object CurrentItem => _inner.CurrentItem;
+        public int CurrentPosition => _inner.CurrentPosition;
+        public bool HasMoreItems => false;
+        public bool IsCurrentAfterLast => _inner.IsCurrentAfterLast;
+        public bool IsCurrentBeforeFirst => _inner.IsCurrentBeforeFirst;
+        public int Count => _inner.Count;
+        public bool IsReadOnly => true;
+
+        public object this[int index]
+        {
+            get => _inner[index];
+            set => throw new NotSupportedException();
+        }
+
+        public bool MoveCurrentTo(object item) => _inner.MoveCurrentTo(item);
+        public bool MoveCurrentToFirst() => _inner.MoveCurrentToFirst();
+        public bool MoveCurrentToLast() => _inner.MoveCurrentToLast();
+        public bool MoveCurrentToNext() => _inner.MoveCurrentToNext();
+        public bool MoveCurrentToPrevious() => _inner.MoveCurrentToPrevious();
+        public bool MoveCurrentToPosition(int index) => _inner.MoveCurrentToPosition(index);
+        public global::Windows.Foundation.IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count) => throw new NotSupportedException();
+
+        public int IndexOf(object item) => _inner.IndexOf(item);
+        public bool Contains(object item) => _inner.Contains(item);
+        public void CopyTo(object[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
+        public IEnumerator<object> GetEnumerator() => _inner.GetEnumerator();
+        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Insert(int index, object item) => throw new NotSupportedException();
+        public void RemoveAt(int index) => throw new NotSupportedException();
+        public void Add(object item) => throw new NotSupportedException();
+        public void Clear() => throw new NotSupportedException();
+        public bool Remove(object item) => throw new NotSupportedException();
+    }
+
+    internal sealed partial class PlainNode : ICollectionViewNode
+    {
+        public PlainNode(object item, PlainNode parent)
+        {
+            Item = item;
+            Parent = parent;
+        }
+
+        internal PlainNodeList ChildList { get; } = new PlainNodeList();
+
+        public object Item { get; }
+        public object Key => ((TreeEmployee)Item).Id;
+        public ICollectionViewNode Parent { get; }
+        public global::Windows.Foundation.Collections.IObservableVector<object> Children => ChildList;
+        public bool IsContext => false;
+        public bool HasChildren => ChildList.Count > 0;
+    }
+
+    internal sealed partial class PlainNodeList : global::Windows.Foundation.Collections.IObservableVector<object>
+    {
+        private readonly List<object> _items = new List<object>();
+
+        public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged;
+
+        public object this[int index]
+        {
+            get => _items[index];
+            set => throw new NotSupportedException();
+        }
+
+        public int Count => _items.Count;
+        public bool IsReadOnly => false;
+
+        public void Add(object item) => Insert(_items.Count, item);
+
+        public void Insert(int index, object item)
+        {
+            _items.Insert(index, item);
+            Raise(global::Windows.Foundation.Collections.CollectionChange.ItemInserted, index);
+        }
+
+        public void RemoveAt(int index)
+        {
+            _items.RemoveAt(index);
+            Raise(global::Windows.Foundation.Collections.CollectionChange.ItemRemoved, index);
+        }
+
+        public bool Remove(object item)
+        {
+            var index = _items.IndexOf(item);
+            if (index < 0)
+            {
+                return false;
+            }
+            RemoveAt(index);
+            return true;
+        }
+
+        public void Clear()
+        {
+            _items.Clear();
+            Raise(global::Windows.Foundation.Collections.CollectionChange.Reset, 0);
+        }
+
+        public int IndexOf(object item) => _items.IndexOf(item);
+        public bool Contains(object item) => _items.Contains(item);
+        public void CopyTo(object[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
+        public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
+        global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private void Raise(global::Windows.Foundation.Collections.CollectionChange change, int index)
+            => VectorChanged?.Invoke(this, new PlainVectorChangedEventArgs(change, (uint)index));
+    }
+
+    internal sealed partial class PlainVectorChangedEventArgs : global::Windows.Foundation.Collections.IVectorChangedEventArgs
+    {
+        public PlainVectorChangedEventArgs(global::Windows.Foundation.Collections.CollectionChange change, uint index)
+        {
+            CollectionChange = change;
+            Index = index;
+        }
+
+        public global::Windows.Foundation.Collections.CollectionChange CollectionChange { get; }
+        public uint Index { get; }
+    }
+    // Orders LiveRows by Score through the column CustomSortComparer path rather than a key.
+    internal sealed partial class LiveScoreComparer : ITableViewSortComparer
+    {
+        public int Compare(object left, object right) => ((LiveRow)left).Score.CompareTo(((LiveRow)right).Score);
+    }
+
+    // Use ResettableCollection<T> from TableView_Selection_APITests.cs for a single-Reset replace.
+
+    internal static class TableViewTreeTestHelpers
+    {
+        // The default relation: PropertyHierarchyDescription("Id", "ManagerId").
+        internal const string IdPath = "Id";
+        internal const string ManagerPath = "ManagerId";
+        internal const string ParentIdPath = "ParentId";
+
+        // Ada > { Ben > { Dan }, Cy }, Eve > { Fay }, Gus. Ada and her reports are Eng; the rest Ops.
+        // Mentor relation: Ben > Eve, Fay > Ada.
+        internal static ObservableCollection<TreeEmployee> MakeTree()
+        {
+            var ada = new TreeEmployee { Id = 1, Name = "Ada", Dept = "Eng", Code = "A", Score = 50 };
+            var ben = new TreeEmployee { Id = 2, ManagerId = 1, Manager = ada, Name = "Ben", Dept = "Eng", Code = "B", ParentCode = "A", Score = 40 };
+            var cy = new TreeEmployee { Id = 3, ManagerId = 1, Manager = ada, Name = "Cy", Dept = "Eng", Code = "C", ParentCode = "A", Score = 30 };
+            var dan = new TreeEmployee { Id = 4, ManagerId = 2, Manager = ben, Name = "Dan", Dept = "Eng", Code = "D", ParentCode = "B", Score = 20 };
+            var eve = new TreeEmployee { Id = 5, Name = "Eve", Dept = "Ops", Code = "E", Score = 60 };
+            var fay = new TreeEmployee { Id = 6, ManagerId = 5, Manager = eve, Name = "Fay", Dept = "Ops", Code = "F", ParentCode = "E", Score = 10 };
+            var gus = new TreeEmployee { Id = 7, ManagerId = 99, Name = "Gus", Dept = "Ops", Code = "G", ParentCode = "Z", Score = 70 };
+            var all = new[] { ada, ben, cy, dan, eve, fay, gus };
+            foreach (var e in all)
+            {
+                e.BigManagerId = e.ManagerId;
+                e.BossId = e.ManagerId;
+            }
+
+            ben.MentorId = 5;
+            fay.MentorId = 1;
+            return new ObservableCollection<TreeEmployee>(all);
+        }
+
+        // Flat live fixture: source order A B C D, scores ascending, teams alternating X/Y.
+        internal static ObservableCollection<LiveRow> MakeLiveFlat() => new ObservableCollection<LiveRow>(new[]
+        {
+            new LiveRow { Id = 1, Name = "A", Score = 10, Team = "X", Addr = new LiveAddress("Amsterdam") },
+            new LiveRow { Id = 2, Name = "B", Score = 20, Team = "Y", Addr = new LiveAddress("Berlin") },
+            new LiveRow { Id = 3, Name = "C", Score = 30, Team = "X", Addr = new LiveAddress("Cairo") },
+            new LiveRow { Id = 4, Name = "D", Score = 40, Team = "Y", Addr = new LiveAddress("Dublin") },
+        });
+
+        // Live tree fixture (ParentId): Ann > { Bob, Cat }, Dee > { Eli }. Children share their root's team.
+        internal static ObservableCollection<LiveRow> MakeLiveTree() => new ObservableCollection<LiveRow>(new[]
+        {
+            new LiveRow { Id = 1, Name = "Ann", Score = 50, Team = "X" },
+            new LiveRow { Id = 2, Name = "Bob", Score = 30, Team = "X", ParentId = 1 },
+            new LiveRow { Id = 3, Name = "Cat", Score = 10, Team = "X", ParentId = 1 },
+            new LiveRow { Id = 4, Name = "Dee", Score = 20, Team = "Y" },
+            new LiveRow { Id = 5, Name = "Eli", Score = 5, Team = "Y", ParentId = 4 },
+        });
+
+        // MakeLiveTree with ParentRow mirroring ParentId.
+        internal static ObservableCollection<LiveRow> MakeLiveObjectTree()
+        {
+            var list = MakeLiveTree();
+            foreach (var r in list)
+            {
+                r.ParentRow = r.ParentId.HasValue ? list.First(p => p.Id == r.ParentId.Value) : null;
+            }
+
+            return list;
+        }
+
+        internal static T Named<T>(IEnumerable<T> items, string name) where T : class
+            => items.First(i => NameOf(i) == name);
+
+        internal static string NameOf(object item)
+        {
+            switch (item)
+            {
+                case TreeEmployee e: return e.Name;
+                case LiveRow l: return l.Name;
+                case PlainRow p: return p.Name;
+                case FloatKeyRow f: return f.Name;
+                case ShapedPerson s: return s.Name;
+                default: return "?";
+            }
+        }
+
+        // A single Name text template column over the source. With paths, the rows are the tree of a view that builds
+        // one (CollectionViewSource.HierarchyDescription): the source's view, or a CollectionViewSource's over a plain
+        // collection, which is then the table's Tag.
+        internal static TableView CreateTreeTable(object source, string itemKeyPath = null, string parentKeyPath = null)
+        {
+            var column = MakeTextTemplateColumn("Name", width: new GridLength(1, GridUnitType.Star));
+
+            var tableView = new TableView { Width = 400, Height = 600 };
+            tableView.Columns.Add(column);
+            if (itemKeyPath != null)
+            {
+                if (source is ICollectionViewHierarchy view)
+                {
+                    view.HierarchyDescription = new PropertyHierarchyDescription(itemKeyPath, parentKeyPath);
+                }
+                else
+                {
+                    var cvs = MakeTreeSource(source, itemKeyPath, parentKeyPath);
+                    tableView.Tag = cvs;
+                    source = cvs.View;
+                }
+            }
+
+            tableView.ItemsSource = source;
+            return tableView;
+        }
+
+        internal static CollectionViewSource MakeTreeSource(object items, string itemKeyPath = IdPath, string parentKeyPath = ManagerPath)
+            => new CollectionViewSource { Source = items, HierarchyDescription = new PropertyHierarchyDescription(itemKeyPath, parentKeyPath) };
+
+        // The CollectionViewSource CreateTreeTable made for the table.
+        internal static CollectionViewSource TreeSourceOf(TableView tableView) => (CollectionViewSource)tableView.Tag;
+
+        // The view's nodes, depth first, as "Name" with a '*' for a context node.
+        internal static string NodeLabels(object view)
+        {
+            var parts = new List<string>();
+            var stack = new Stack<ICollectionViewNode>();
+            var roots = ((ICollectionViewHierarchy)view).CollectionNodes;
+            for (var i = roots.Count - 1; i >= 0; i--)
+            {
+                stack.Push((ICollectionViewNode)roots[i]);
+            }
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                parts.Add(NameOf(node.Item) + (node.IsContext ? "*" : ""));
+                for (var i = node.Children.Count - 1; i >= 0; i--)
+                {
+                    stack.Push((ICollectionViewNode)node.Children[i]);
+                }
+            }
+            return string.Join(" ", parts);
+        }
+
+        // A CollectionViewSource over items, optionally grouped by groupPath and sorted by sortPath.
+        // Bind its View: the view owns the shaping and holds the CollectionViewSource only weakly.
+        internal static CollectionViewSource MakeShapingView(object items, string groupPath = null, string sortPath = null,
+            CollectionViewSortDirection direction = CollectionViewSortDirection.Ascending)
+        {
+            var cvs = new CollectionViewSource { Source = items };
+            if (groupPath != null)
+            {
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription(groupPath));
+            }
+
+            if (sortPath != null)
+            {
+                cvs.SortDescriptions.Add(new Microsoft.UI.Xaml.Data.SortDescription(sortPath, direction));
+            }
+
+            return cvs;
+        }
+
+        // Projected rows as one space-separated string. Data row: Name, then Level and a state mark
+        // when Level > 0 ('+' collapsed, '-' expanded, nothing for a leaf). Group header: [key].
+        // Example: "Ada1- Ben2+ Cy2 Eve1+ Gus1".
+        internal static string TreeLabels(TableView tableView)
+        {
+            var parts = new List<string>();
+            foreach (var element in GetProjectedElements(tableView))
+            {
+                if (element is TableViewGroupHeader header)
+                {
+                    var info = header.Content as TableViewGroupInfo;
+                    parts.Add(info == null ? "[H]" : $"[{info.Key}]");
+                }
+                else if (element is TableViewRow row)
+                {
+                    parts.Add(RowLabel(row));
+                }
+                else
+                {
+                    parts.Add("?");
+                }
+            }
+
+            return string.Join(" ", parts);
+        }
+
+        internal static string RowLabel(TableViewRow row)
+        {
+            var name = NameOf(row.DataContext);
+            if (row.Level == 0)
+            {
+                return name;
+            }
+
+            var mark = row.IsExpandable ? (row.IsExpanded ? "-" : "+") : "";
+            return $"{name}{row.Level}{mark}";
+        }
+
+        internal static void VerifyTree(TableView tableView, string expected, string context)
+        {
+            var actual = TreeLabels(tableView);
+            Verify.AreEqual(expected, actual, $"Projection ({context}).");
+        }
+
+        internal static TableViewRow FindTreeRow(TableView tableView, string name)
+        {
+            var row = GetProjectedElements(tableView).OfType<TableViewRow>().FirstOrDefault(r => NameOf(r.DataContext) == name);
+            if (row == null)
+            {
+                Verify.Fail($"Row '{name}' is not realized. Projection: {TreeLabels(tableView)}");
+            }
+
+            return row;
+        }
+
+        internal static IExpandCollapseProvider GetRowExpandCollapse(TableViewRow row)
+            => GetRowPeer(row).GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+
+        // Toggles a row through its peer's ExpandCollapse pattern, the input-free path the chevron uses.
+        internal static void ToggleTreeRow(TableView tableView, string name, bool expand)
+        {
+            var provider = GetRowExpandCollapse(FindTreeRow(tableView, name));
+            if (provider == null)
+            {
+                Verify.Fail($"Row '{name}' must expose ExpandCollapse.");
+                return;
+            }
+
+            if (expand)
+            {
+                provider.Expand();
+            }
+            else
+            {
+                provider.Collapse();
+            }
+        }
+
+        // "Name pos/size" per projected data row, from the row peers.
+        internal static string PositionLabels(TableView tableView)
+            => string.Join(" ", GetProjectedElements(tableView).OfType<TableViewRow>().Select(r =>
+            {
+                var peer = GetRowPeer(r);
+                return $"{NameOf(r.DataContext)} {peer.GetPositionInSet()}/{peer.GetSizeOfSet()}";
+            }));
+
+        internal static string ThrownTypeName(Action action)
+        {
+            try
+            {
+                action();
+                return "no exception";
+            }
+            catch (Exception ex)
+            {
+                return ex.GetType().Name;
+            }
+        }
+
+        // The HRESULT action failed with, 0 if it did not fail. UIA_E_* codes have no stable projected exception type.
+        internal static int ThrownHResult(Action action)
+        {
+            try
+            {
+                action();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return ex.HResult;
+            }
+        }
+    }
+}

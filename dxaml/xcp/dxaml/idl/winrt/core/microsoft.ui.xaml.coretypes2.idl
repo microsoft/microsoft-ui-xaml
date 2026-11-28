@@ -2041,6 +2041,17 @@ namespace Microsoft.UI.Xaml.Data
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
     [feature(Feature_ExperimentalApi)]
     [webhosthidden]
+    interface ICollectionViewHierarchy 
+    {
+        Microsoft.UI.Xaml.Data.HierarchyDescription HierarchyDescription;
+        Boolean CanBuildHierarchy{ get; };
+        Windows.Foundation.Collections.IObservableVector<Object> CollectionNodes{ get; };
+        Microsoft.UI.Xaml.Data.ICollectionViewNode NodeFromItem(Object item);
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
     interface ICollectionViewLiveShaping 
     {
         Boolean CanChangeLiveSorting{ get; };
@@ -2052,6 +2063,19 @@ namespace Microsoft.UI.Xaml.Data
         Windows.Foundation.Collections.IObservableVector<String> LiveSortingProperties{ get; };
         Windows.Foundation.Collections.IObservableVector<String> LiveFilteringProperties{ get; };
         Windows.Foundation.Collections.IObservableVector<String> LiveGroupingProperties{ get; };
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    interface ICollectionViewNode 
+    {
+        Object Item{ get; };
+        Object Key{ get; };
+        Microsoft.UI.Xaml.Data.ICollectionViewNode Parent{ get; };
+        Windows.Foundation.Collections.IObservableVector<Object> Children{ get; };
+        Boolean IsContext{ get; };
+        Boolean HasChildren{ get; };
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
@@ -2138,6 +2162,7 @@ namespace Microsoft.UI.Xaml.Data
             Windows.Foundation.Collections.IObservableVector<String> LiveSortingProperties{ get; };
             Windows.Foundation.Collections.IObservableVector<String> LiveFilteringProperties{ get; };
             Windows.Foundation.Collections.IObservableVector<String> LiveGroupingProperties{ get; };
+            Microsoft.UI.Xaml.Data.HierarchyDescription HierarchyDescription;
             event Microsoft.UI.Xaml.Data.FilterEventHandler Filter;
             void Refresh();
             Windows.Foundation.IClosable DeferRefresh();
@@ -2145,6 +2170,7 @@ namespace Microsoft.UI.Xaml.Data
             static Microsoft.UI.Xaml.DependencyProperty IsLiveSortingRequestedProperty{ get; };
             static Microsoft.UI.Xaml.DependencyProperty IsLiveFilteringRequestedProperty{ get; };
             static Microsoft.UI.Xaml.DependencyProperty IsLiveGroupingRequestedProperty{ get; };
+            static Microsoft.UI.Xaml.DependencyProperty HierarchyDescriptionProperty{ get; };
         }
     };
 
@@ -2164,6 +2190,16 @@ namespace Microsoft.UI.Xaml.Data
         protected void OnPropertyChanged(Microsoft.UI.Xaml.Data.PropertyChangedEventArgs e);
         overridable Object GroupNameFromItemCore(Object item, Int32 level, String culture);
         overridable Boolean NamesMatchCore(Object groupName, Object itemName);
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    [constructor_name("Microsoft.UI.Xaml.Data.IHierarchyDescriptionFactory")]
+    [default_interface]
+    unsealed runtimeclass HierarchyDescription
+        : Microsoft.UI.Xaml.DependencyObject
+    {
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
@@ -2191,6 +2227,18 @@ namespace Microsoft.UI.Xaml.Data
         String PropertyName;
         Microsoft.UI.Xaml.Data.IValueConverter Converter;
         Microsoft.UI.Xaml.Data.CollectionViewStringComparison StringComparison;
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    runtimeclass PropertyHierarchyDescription
+        : Microsoft.UI.Xaml.Data.HierarchyDescription
+    {
+        PropertyHierarchyDescription();
+        [method_name("CreateInstanceWithKeyPaths")] PropertyHierarchyDescription(String itemKeyPath, String parentKeyPath);
+        String ItemKeyPath;
+        String ParentKeyPath;
     };
 
 }
