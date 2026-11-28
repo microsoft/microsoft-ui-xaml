@@ -1733,17 +1733,24 @@ _Check_return_ HRESULT HierarchyStore::DemoteAncestors(NodeId from, const Hierar
     }
 
     IFC_RETURN(Detach(top, output));
+    // The whole chain first, then its objects: a handler of one Children Reset that reads another list of the chain
+    // finds it already empty.
+    std::vector<NodeId> chain;
     for (NodeId ancestor = from; ; ancestor = nodes[ancestor].parent)
     {
         auto& node = nodes[ancestor];
         node.isKept = false;
         node.kept.clear();
         node.keptSubtree = 0;
-        ReleaseProjection(ancestor);
+        chain.push_back(ancestor);
         if (ancestor == top)
         {
             break;
         }
+    }
+    for (const NodeId ancestor : chain)
+    {
+        ReleaseProjection(ancestor);
     }
     return S_OK;
 }
@@ -2090,6 +2097,11 @@ bool VectorCollectionView::HasHierarchyDescription() const
 
 _Check_return_ HRESULT VectorCollectionView::RaiseCapabilityChanges()
 {
+    if (!IsHierarchyEnabled())
+    {
+        // Both are hierarchy capabilities; without the feature nothing can read them.
+        return S_OK;
+    }
     BOOLEAN canGroup = TRUE;
     BOOLEAN canBuildHierarchy = TRUE;
     IFC_RETURN(get_CanGroup(&canGroup));

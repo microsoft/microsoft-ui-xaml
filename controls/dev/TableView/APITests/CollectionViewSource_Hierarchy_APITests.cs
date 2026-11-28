@@ -739,6 +739,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies context ancestors that lose their last match leave together: while one's Children raises its Reset, another's Children of the same chain is already empty and holds no null node.")]
+        public void VerifyDemotedContextChainIsEmptyDuringReset()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var list = MakeTree();
+                var cvs = MakeTreeSource(list);
+                ((ICollectionViewShaping)cvs.View).Filter = o => ((TreeEmployee)o).Score >= 50;
+                list.Add(new TreeEmployee { Id = 8, ManagerId = 4, Name = "Hal", Score = 90 });
+                var hierarchy = (ICollectionViewHierarchy)cvs.View;
+                var benChildren = hierarchy.NodeFromItem(Named(list, "Ben")).Children;
+                var danChildren = hierarchy.NodeFromItem(Named(list, "Dan")).Children;
+                Verify.AreEqual(1, benChildren.Count, "Ben is context for Dan.");
+                var seen = new List<string>();
+                VectorChangedEventHandler<object> read = (s, e) =>
+                {
+                    if (e.CollectionChange == CollectionChange.Reset)
+                    {
+                        seen.Add($"ben={benChildren.Count}:{benChildren.Count(n => n == null)},dan={danChildren.Count}:{danChildren.Count(n => n == null)}");
+                    }
+                };
+                benChildren.VectorChanged += read;
+                danChildren.VectorChanged += read;
+
+                list.RemoveAt(list.Count - 1);
+                Verify.AreEqual("ben=0:0,dan=0:0;ben=0:0,dan=0:0", string.Join(";", seen), "Both lists are empty in each Reset.");
+                Verify.AreEqual("Ada(0) Eve(0) Gus(0)", Tree(cvs.View), "The context nodes left.");
+            });
+        }
+        [TestMethod]
         [TestProperty("Description", "Verifies the view raises PropertyChanged for CanGroup and CanBuildHierarchy when a hierarchy or a group description turns them off and back on, and not for other rule changes.")]
         public void VerifyCapabilityChangesRaisePropertyChanged()
         {
